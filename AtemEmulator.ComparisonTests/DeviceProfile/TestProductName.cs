@@ -1,7 +1,7 @@
 ﻿using LibAtem.Commands.DeviceProfile;
 using Xunit;
 
-namespace AtemEmulator.ComparisonTests
+namespace AtemEmulator.ComparisonTests.DeviceProfile
 {
     public class TestProductName : AtemCommandTestBase
     {

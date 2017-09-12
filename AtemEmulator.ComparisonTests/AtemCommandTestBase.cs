@@ -6,6 +6,7 @@ using System.Threading;
 using BMDSwitcherAPI;
 using LibAtem.Commands;
 using LibAtem.Net;
+using LibAtem.Util;
 using Xunit;
 
 namespace AtemEmulator.ComparisonTests
@@ -109,6 +110,17 @@ namespace AtemEmulator.ComparisonTests
         {
             lock (_receivedCommands)
                 return _receivedCommands.OfType<T>().ToList();
+        }
+
+        public T GetSingleReceivedCommands<T>() where T : ICommand
+        {
+            lock (_receivedCommands)
+                return _receivedCommands.OfType<T>().Single();
+        }
+
+        public void SendCommand(params ICommand[] commands)
+        {
+            commands.ForEach(c => _client.SendCommand(c));
         }
 
         public void Dispose()
