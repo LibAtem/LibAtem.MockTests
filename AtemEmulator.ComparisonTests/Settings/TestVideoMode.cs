@@ -15,7 +15,8 @@ namespace AtemEmulator.ComparisonTests.Settings
         // TODO IBMDSwitcher::DoesSupportVideoMode
         // TODO IBMDSwitcher::GetDownConvertedHDVideoMode
         // IBMDSwitcher::SetDownConvertedHDVideoMode
-        // IBMDSwitcher::DoesSupportDownConvertedHDVideoMode        // IBMDSwitcher::GetMultiViewVideoMode
+        // IBMDSwitcher::DoesSupportDownConvertedHDVideoMode
+        // IBMDSwitcher::GetMultiViewVideoMode
         // IBMDSwitcher::SetMultiViewVideoMode
         // IBMDSwitcher::Get3GSDIOutputLevel
         // IBMDSwitcher::Set3GSDIOutputLevel
@@ -84,8 +85,7 @@ namespace AtemEmulator.ComparisonTests.Settings
         [Fact]
         public void TestGetCurrentMode()
         {
-            _BMDSwitcherVideoMode sdkMode;
-            _sdkSwitcher.GetVideoMode(out sdkMode);
+            _sdkSwitcher.GetVideoMode(out _BMDSwitcherVideoMode sdkMode);
             
             var cmd = GetSingleReceivedCommands<VideoModeGetCommand>();
             VideoMode myMode = cmd.VideoMode;
@@ -101,8 +101,7 @@ namespace AtemEmulator.ComparisonTests.Settings
             {
                 ClearReceivedCommands();
 
-                int supported;
-                _sdkSwitcher.DoesSupportVideoMode(mode.Value, out supported);
+                _sdkSwitcher.DoesSupportVideoMode(mode.Value, out int supported);
                 Assert.Equal(supported == 0, unsupportedVideoModes.Contains(mode.Key));
 
                 if (supported == 0)
@@ -112,8 +111,7 @@ namespace AtemEmulator.ComparisonTests.Settings
 
                 Thread.Sleep(50);
 
-                _BMDSwitcherVideoMode sdkMode;
-                _sdkSwitcher.GetVideoMode(out sdkMode);
+                _sdkSwitcher.GetVideoMode(out _BMDSwitcherVideoMode sdkMode);
                 Assert.Equal(mode.Value, sdkMode);
 
                 var cmd = GetSingleReceivedCommands<VideoModeGetCommand>();
@@ -140,15 +138,14 @@ namespace AtemEmulator.ComparisonTests.Settings
                 var cmds = GetReceivedCommands<VideoModeGetCommand>();
                 if (!supported)
                 {
-                    Assert.Equal(0, cmds.Count);
+                    Assert.Empty(cmds);
                     continue;
                 }
 
-                Assert.Equal(1, cmds.Count);
+                Assert.Single(cmds);
                 Assert.Equal(mode.Key, cmds[0].VideoMode);
 
-                _BMDSwitcherVideoMode sdkMode;
-                _sdkSwitcher.GetVideoMode(out sdkMode);
+                _sdkSwitcher.GetVideoMode(out _BMDSwitcherVideoMode sdkMode);
                 Assert.Equal(mode.Value, sdkMode);
             }
         }

@@ -10,12 +10,11 @@ namespace AtemEmulator.ComparisonTests.DeviceProfile
         [Fact]
         public void Test1()
         {
-            string sdkName;
-            _sdkSwitcher.GetProductName(out sdkName);
+            _sdkSwitcher.GetProductName(out string sdkName);
             Assert.NotNull(sdkName);
 
             var cmds = GetReceivedCommands<ProductIdentifierCommand>();
-            Assert.Equal(1, cmds.Count);
+            Assert.Single(cmds);
 
             Assert.Equal(sdkName, cmds[0].Name);
             Assert.InRange(sdkName.Length, 5, 40);
