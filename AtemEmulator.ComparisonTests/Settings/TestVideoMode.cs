@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading;
 using BMDSwitcherAPI;
 using LibAtem.Commands.Settings;
 using LibAtem.Common;
@@ -10,7 +9,7 @@ using Xunit;
 
 namespace AtemEmulator.ComparisonTests.Settings
 {
-    public class TestVideoMode : AtemCommandTestBase
+    public class TestVideoMode
     {
         // TODO IBMDSwitcher::DoesSupportVideoMode
         // TODO IBMDSwitcher::GetDownConvertedHDVideoMode
@@ -22,7 +21,7 @@ namespace AtemEmulator.ComparisonTests.Settings
         // IBMDSwitcher::Set3GSDIOutputLevel
         // IBMDSwitcher::DoesSupportMultiViewVideoMode
 
-        protected override bool LogLibAtemHandshake => true;
+//        protected override bool LogLibAtemHandshake => true;
 
         private static readonly IReadOnlyDictionary<VideoMode, _BMDSwitcherVideoMode> videoModes;
         private static readonly IReadOnlyDictionary<DownConvertMode, _BMDSwitcherDownConversionMethod> sdDownconvertModes;
@@ -85,68 +84,77 @@ namespace AtemEmulator.ComparisonTests.Settings
         [Fact]
         public void TestGetCurrentMode()
         {
-            _sdkSwitcher.GetVideoMode(out _BMDSwitcherVideoMode sdkMode);
-            
-            var cmd = GetSingleReceivedCommands<VideoModeGetCommand>();
-            VideoMode myMode = cmd.VideoMode;
+            using (var conn = new AtemComparisonHelper() {LogLibAtemHandshake = true})
+            {
+                conn.SdkSwitcher.GetVideoMode(out _BMDSwitcherVideoMode sdkMode);
 
-            _BMDSwitcherVideoMode expectedSdkMode = videoModes[myMode];
-            Assert.Equal(expectedSdkMode, sdkMode);
+                var cmd = conn.GetSingleReceivedCommands<VideoModeGetCommand>();
+                VideoMode myMode = cmd.VideoMode;
+
+                _BMDSwitcherVideoMode expectedSdkMode = videoModes[myMode];
+                Assert.Equal(expectedSdkMode, sdkMode);
+            }
         }
         
         [Fact]
         public void TestSetModeViaSDK()
         {
-            foreach (KeyValuePair<VideoMode, _BMDSwitcherVideoMode> mode in videoModes.Shuffle())
+            using (var conn = new AtemComparisonHelper() {LogLibAtemHandshake = true})
             {
-                ClearReceivedCommands();
+                foreach (KeyValuePair<VideoMode, _BMDSwitcherVideoMode> mode in videoModes.Shuffle())
+                {
+                    conn.ClearReceivedCommands();
 
-                _sdkSwitcher.DoesSupportVideoMode(mode.Value, out int supported);
-                Assert.Equal(supported == 0, unsupportedVideoModes.Contains(mode.Key));
+                    conn.SdkSwitcher.DoesSupportVideoMode(mode.Value, out int supported);
+                    Assert.Equal(supported == 0, unsupportedVideoModes.Contains(mode.Key));
 
-                if (supported == 0)
-                    continue;
+                    if (supported == 0)
+                        continue;
 
-                _sdkSwitcher.SetVideoMode(mode.Value);
+                    conn.SdkSwitcher.SetVideoMode(mode.Value);
 
-                Thread.Sleep(50);
+                    conn.Sleep();
 
-                _sdkSwitcher.GetVideoMode(out _BMDSwitcherVideoMode sdkMode);
-                Assert.Equal(mode.Value, sdkMode);
+                    conn.SdkSwitcher.GetVideoMode(out _BMDSwitcherVideoMode sdkMode);
+                    Assert.Equal(mode.Value, sdkMode);
 
-                var cmd = GetSingleReceivedCommands<VideoModeGetCommand>();
-                Assert.Equal(mode.Key, cmd.VideoMode);
+                    var cmd = conn.GetSingleReceivedCommands<VideoModeGetCommand>();
+                    Assert.Equal(mode.Key, cmd.VideoMode);
+                }
             }
         }
 
         [Fact]
         public void TestSetModeViaLibAtem()
         {
-            foreach (KeyValuePair<VideoMode, _BMDSwitcherVideoMode> mode in videoModes.Shuffle())
+            using (var conn = new AtemComparisonHelper() {LogLibAtemHandshake = true})
             {
-                ClearReceivedCommands();
-
-                SendCommand(new VideoModeSetCommand()
+                foreach (KeyValuePair<VideoMode, _BMDSwitcherVideoMode> mode in videoModes.Shuffle())
                 {
-                    VideoMode = mode.Key,
-                });
-                
-                Thread.Sleep(50);
+                    conn.ClearReceivedCommands();
 
-                bool supported = !unsupportedVideoModes.Contains(mode.Key);
+                    conn.SendCommand(new VideoModeSetCommand()
+                    {
+                        VideoMode = mode.Key,
+                    });
 
-                var cmds = GetReceivedCommands<VideoModeGetCommand>();
-                if (!supported)
-                {
-                    Assert.Empty(cmds);
-                    continue;
+                    conn.Sleep();
+
+                    bool supported = !unsupportedVideoModes.Contains(mode.Key);
+
+                    var cmds = conn.GetReceivedCommands<VideoModeGetCommand>();
+                    if (!supported)
+                    {
+                        Assert.Empty(cmds);
+                        continue;
+                    }
+
+                    Assert.Single(cmds);
+                    Assert.Equal(mode.Key, cmds[0].VideoMode);
+
+                    conn.SdkSwitcher.GetVideoMode(out _BMDSwitcherVideoMode sdkMode);
+                    Assert.Equal(mode.Value, sdkMode);
                 }
-
-                Assert.Single(cmds);
-                Assert.Equal(mode.Key, cmds[0].VideoMode);
-
-                _sdkSwitcher.GetVideoMode(out _BMDSwitcherVideoMode sdkMode);
-                Assert.Equal(mode.Value, sdkMode);
             }
         }
 

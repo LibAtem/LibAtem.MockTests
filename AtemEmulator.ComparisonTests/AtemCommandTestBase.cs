@@ -11,8 +11,10 @@ using Xunit;
 
 namespace AtemEmulator.ComparisonTests
 {
-    public abstract class AtemCommandTestBase : IDisposable
+    public sealed class AtemComparisonHelper : IDisposable
     {
+        public const int CommandWaitTime = 50;
+
         private readonly AtemClient _client;
         private bool _clientConnected;
 
@@ -21,22 +23,24 @@ namespace AtemEmulator.ComparisonTests
         private bool _isDisposing;
 
         private readonly IBMDSwitcherDiscovery _switcherDiscovery;
-        protected readonly IBMDSwitcher _sdkSwitcher;
+        public readonly IBMDSwitcher _sdkSwitcher;
 
         private readonly List<ICommand> _receivedCommands;
 
         private bool _handshakeFinished;
         private readonly AutoResetEvent _handshakeEvent;
 
-        protected AtemCommandTestBase()
+        public AtemComparisonHelper()
         {
+            const string address = "10.42.13.99";
+
             var connectionEvent = new AutoResetEvent(false);
             _disposeEvent = new AutoResetEvent(false);
             _handshakeEvent = new AutoResetEvent(false);
 
             _receivedCommands = new List<ICommand>();
 
-            _client = new AtemClient("127.0.0.1");
+            _client = new AtemClient(address);
             _client.OnConnection += s =>
             {
                 if (_clientConnected)
@@ -70,13 +74,14 @@ namespace AtemEmulator.ComparisonTests
 
             Assert.True(connectionEvent.WaitOne(TimeSpan.FromSeconds(3)), "LibAtem: Connection attempt timed out");
 
+            Thread.Sleep(1000);
             _switcherDiscovery = new CBMDSwitcherDiscovery();
             Assert.NotNull(_switcherDiscovery);
 
             _BMDSwitcherConnectToFailure failReason = 0;
             try
             {
-                _switcherDiscovery.ConnectTo("127.0.0.1", out _sdkSwitcher, out failReason);
+                _switcherDiscovery.ConnectTo(address, out _sdkSwitcher, out failReason);
             }
             catch (COMException)
             {
@@ -88,7 +93,9 @@ namespace AtemEmulator.ComparisonTests
             WaitForHandshake();
         }
 
-        protected virtual bool LogLibAtemHandshake => false;
+        public bool LogLibAtemHandshake { get; set; } = false;
+
+        public IBMDSwitcher SdkSwitcher => _sdkSwitcher;
 
         private bool WaitForHandshake(bool errorOnTimeout=true)
         {
@@ -129,6 +136,8 @@ namespace AtemEmulator.ComparisonTests
             _client.Dispose();
             // TODO - reenable once LibAtem allows disconnection
             // Assert.True(_disposeEvent.WaitOne(TimeSpan.FromSeconds(1)), "LibAtem: Cleanup timed out");
+
+            Thread.Sleep(1000);
         }
 
         public delegate void SwitcherEventHandler(object sender, object args);
@@ -145,6 +154,11 @@ namespace AtemEmulator.ComparisonTests
                     SwitcherDisconnected?.Invoke(this, null);
                 }
             }
+        }
+
+        public void Sleep(int sleep = -1)
+        {
+            Thread.Sleep(sleep == -1 ? CommandWaitTime : sleep);
         }
     }
 }
