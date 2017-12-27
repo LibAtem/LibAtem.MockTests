@@ -11,6 +11,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\LibAtem.DeviceProfile\LibAtem.DeviceProfile\LibAtem.DeviceProfile.csproj" />
     <ProjectReference Include="..\LibAtem\LibAtem\LibAtem.csproj" />
   </ItemGroup>
 

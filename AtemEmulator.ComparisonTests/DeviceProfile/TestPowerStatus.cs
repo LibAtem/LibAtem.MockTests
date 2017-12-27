@@ -4,14 +4,22 @@ using Xunit;
 
 namespace AtemEmulator.ComparisonTests.DeviceProfile
 {
+    [Collection("Client")]
     public class TestPowerStatus
     {
+        private AtemClientWrapper _client;
+
+        public TestPowerStatus(AtemClientWrapper client)
+        {
+            _client = client;
+        }
+
         [Fact]
         public void TestStatus()
         {
-            using (var conn = new AtemComparisonHelper() {LogLibAtemHandshake = true})
+            using (var conn = new AtemComparisonHelper(_client))
             {
-                var cmd = conn.GetSingleReceivedCommands<PowerStatusCommand>();
+                var cmd = conn.FindWithMatching(new PowerStatusCommand());
                 Assert.True(cmd.Pin1);
                 Assert.False(cmd.Pin2);
 

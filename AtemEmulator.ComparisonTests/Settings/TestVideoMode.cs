@@ -6,9 +6,11 @@ using LibAtem.Commands.Settings;
 using LibAtem.Common;
 using LibAtem.Util;
 using Xunit;
+using LibAtem.DeviceProfile;
 
 namespace AtemEmulator.ComparisonTests.Settings
 {
+    [Collection("Client")]
     public class TestVideoMode
     {
         // TODO IBMDSwitcher::DoesSupportVideoMode
@@ -21,11 +23,9 @@ namespace AtemEmulator.ComparisonTests.Settings
         // IBMDSwitcher::Set3GSDIOutputLevel
         // IBMDSwitcher::DoesSupportMultiViewVideoMode
 
-//        protected override bool LogLibAtemHandshake => true;
-
         private static readonly IReadOnlyDictionary<VideoMode, _BMDSwitcherVideoMode> videoModes;
         private static readonly IReadOnlyDictionary<DownConvertMode, _BMDSwitcherDownConversionMethod> sdDownconvertModes;
-        private static readonly IReadOnlyList<VideoMode> unsupportedVideoModes;
+//        private static readonly IReadOnlyList<VideoMode> unsupportedVideoModes;
 
         static TestVideoMode()
         {
@@ -52,15 +52,20 @@ namespace AtemEmulator.ComparisonTests.Settings
                 {VideoMode.P4KHDp5000, _BMDSwitcherVideoMode.bmdSwitcherVideoMode4KHDp50},
                 {VideoMode.N4KHDp5994, _BMDSwitcherVideoMode.bmdSwitcherVideoMode4KHDp5994},
             };
-
-            unsupportedVideoModes = new List<VideoMode>() {VideoMode.P4KHDp5000, VideoMode.N4KHDp5994};
-
+            
             sdDownconvertModes = new Dictionary<DownConvertMode, _BMDSwitcherDownConversionMethod>()
             {
                 {DownConvertMode.CentreCut, _BMDSwitcherDownConversionMethod.bmdSwitcherDownConversionMethodCentreCut},
                 {DownConvertMode.Letterbox, _BMDSwitcherDownConversionMethod.bmdSwitcherDownConversionMethodLetterbox},
                 {DownConvertMode.Anamorphic, _BMDSwitcherDownConversionMethod.bmdSwitcherDownConversionMethodAnamorphic},
             };
+        }
+
+        private AtemClientWrapper _client;
+
+        public TestVideoMode(AtemClientWrapper client)
+        {
+            _client = client;
         }
 
         #region VideoMode
@@ -82,13 +87,28 @@ namespace AtemEmulator.ComparisonTests.Settings
         }
 
         [Fact]
+        public void TestSupportedVideoModesMatchesSdk()
+        {
+            using (var helper = new AtemComparisonHelper(_client))
+            {
+                foreach(var vals in videoModes)
+                {
+                    helper.SdkSwitcher.DoesSupportVideoMode(vals.Value, out int supported);
+
+                    bool libAtemEnabled = vals.Key.IsAvailable(helper.Profile);
+                    Assert.Equal(libAtemEnabled, supported != 0);
+                }
+            }
+         }
+
+        [Fact]
         public void TestGetCurrentMode()
         {
-            using (var conn = new AtemComparisonHelper() {LogLibAtemHandshake = true})
+            using (var conn = new AtemComparisonHelper(_client))
             {
                 conn.SdkSwitcher.GetVideoMode(out _BMDSwitcherVideoMode sdkMode);
 
-                var cmd = conn.GetSingleReceivedCommands<VideoModeGetCommand>();
+                var cmd = conn.FindWithMatching(new VideoModeGetCommand());
                 VideoMode myMode = cmd.VideoMode;
 
                 _BMDSwitcherVideoMode expectedSdkMode = videoModes[myMode];
@@ -99,15 +119,13 @@ namespace AtemEmulator.ComparisonTests.Settings
         [Fact]
         public void TestSetModeViaSDK()
         {
-            using (var conn = new AtemComparisonHelper() {LogLibAtemHandshake = true})
+            using (var conn = new AtemComparisonHelper(_client))
             {
                 foreach (KeyValuePair<VideoMode, _BMDSwitcherVideoMode> mode in videoModes.Shuffle())
                 {
                     conn.ClearReceivedCommands();
 
                     conn.SdkSwitcher.DoesSupportVideoMode(mode.Value, out int supported);
-                    Assert.Equal(supported == 0, unsupportedVideoModes.Contains(mode.Key));
-
                     if (supported == 0)
                         continue;
 
@@ -127,7 +145,7 @@ namespace AtemEmulator.ComparisonTests.Settings
         [Fact]
         public void TestSetModeViaLibAtem()
         {
-            using (var conn = new AtemComparisonHelper() {LogLibAtemHandshake = true})
+            using (var conn = new AtemComparisonHelper(_client))
             {
                 foreach (KeyValuePair<VideoMode, _BMDSwitcherVideoMode> mode in videoModes.Shuffle())
                 {
@@ -140,10 +158,8 @@ namespace AtemEmulator.ComparisonTests.Settings
 
                     conn.Sleep();
 
-                    bool supported = !unsupportedVideoModes.Contains(mode.Key);
-
                     var cmds = conn.GetReceivedCommands<VideoModeGetCommand>();
-                    if (!supported)
+                    if (!mode.Key.IsAvailable(conn.Profile))
                     {
                         Assert.Empty(cmds);
                         continue;
