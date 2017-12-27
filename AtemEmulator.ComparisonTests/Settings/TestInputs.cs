@@ -30,7 +30,7 @@ namespace AtemEmulator.ComparisonTests.Settings
                 {InternalPortType.MediaPlayerFill, _BMDSwitcherPortType.bmdSwitcherPortTypeMediaPlayerFill},
                 {InternalPortType.SuperSource, _BMDSwitcherPortType.bmdSwitcherPortTypeSuperSource},
             };
-            
+
             ExternalPortTypeMap = new Dictionary<ExternalPortType, _BMDSwitcherExternalPortType>
             {
                 {ExternalPortType.Internal, _BMDSwitcherExternalPortType.bmdSwitcherExternalPortTypeInternal},
@@ -95,16 +95,12 @@ namespace AtemEmulator.ComparisonTests.Settings
 
                     sdkInput.GetLongName(out string longName);
                     if (longName != libAtemInput.LongName)
-                        failures.Add(string.Format("{0}: Long name mismatch: {1}, {2}", libAtemInput.Id, longName,
-                            libAtemInput.LongName));
+                        failures.Add(string.Format("{0}: Long name mismatch: {1}, {2}", libAtemInput.Id, longName, libAtemInput.LongName));
 
                     sdkInput.GetShortName(out string shortName);
                     if (shortName != libAtemInput.ShortName)
-                        failures.Add(string.Format("{0}: Short name mismatch: {1}, {2}", libAtemInput.Id, shortName,
-                            libAtemInput.ShortName));
+                        failures.Add(string.Format("{0}: Short name mismatch: {1}, {2}", libAtemInput.Id, shortName, libAtemInput.ShortName));
 
-                    // TODO these need matching up in some way
-                    //sdkInput.GetAvailableExternalPortTypes(out _BMDSwitcherExternalPortType types);
                     sdkInput.GetCurrentExternalPortType(out _BMDSwitcherExternalPortType sdkPortType);
                     if (sdkPortType != ExternalPortTypeMap[libAtemInput.ExternalPortType])
                         failures.Add(string.Format("{0}: ExternalPortType mismatch: {1}, {2}", libAtemInput.Id, sdkPortType, libAtemInput.ExternalPortType));

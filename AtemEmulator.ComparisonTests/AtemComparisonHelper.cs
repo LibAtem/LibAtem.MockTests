@@ -10,7 +10,7 @@ namespace AtemEmulator.ComparisonTests
 {
     public sealed class AtemComparisonHelper : IDisposable
     {
-        public const int CommandWaitTime = 50;
+        public const int CommandWaitTime = 80;
 
         private readonly AtemClientWrapper _client;
 
