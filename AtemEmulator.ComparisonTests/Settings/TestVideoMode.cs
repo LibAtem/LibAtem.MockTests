@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using AtemEmulator.ComparisonTests.Util;
 using BMDSwitcherAPI;
 using LibAtem.Commands.Settings;
 using LibAtem.Common;
@@ -73,17 +74,7 @@ namespace AtemEmulator.ComparisonTests.Settings
         [Fact]
         public void EnsureAllLibAtemVideoModesAreMapped()
         {
-            List<VideoMode> vals = Enum.GetValues(typeof(VideoMode)).OfType<VideoMode>().ToList();
-
-            var missing = vals.Where(v => !videoModes.ContainsKey(v)).ToList();
-            Assert.Equal(new List<VideoMode>(), missing);
-
-            // Expect map and values to have the same number
-            Assert.Equal(vals.Count, videoModes.Count);
-            Assert.Equal(Enum.GetValues(typeof(_BMDSwitcherVideoMode)).Length, videoModes.Count);
-
-            // Expect all the map values to be unique
-            Assert.Equal(vals.Count, videoModes.Select(v => v.Value).Distinct().Count());
+            EnumMap.EnsureIsComplete(videoModes);
         }
 
         [Fact]
@@ -116,32 +107,6 @@ namespace AtemEmulator.ComparisonTests.Settings
             }
         }
         
-        [Fact]
-        public void TestSetModeViaSDK()
-        {
-            using (var conn = new AtemComparisonHelper(_client))
-            {
-                foreach (KeyValuePair<VideoMode, _BMDSwitcherVideoMode> mode in videoModes.Shuffle())
-                {
-                    conn.ClearReceivedCommands();
-
-                    conn.SdkSwitcher.DoesSupportVideoMode(mode.Value, out int supported);
-                    if (supported == 0)
-                        continue;
-
-                    conn.SdkSwitcher.SetVideoMode(mode.Value);
-
-                    conn.Sleep();
-
-                    conn.SdkSwitcher.GetVideoMode(out _BMDSwitcherVideoMode sdkMode);
-                    Assert.Equal(mode.Value, sdkMode);
-
-                    var cmd = conn.GetSingleReceivedCommands<VideoModeGetCommand>();
-                    Assert.Equal(mode.Key, cmd.VideoMode);
-                }
-            }
-        }
-
         [Fact]
         public void TestSetModeViaLibAtem()
         {
@@ -181,17 +146,7 @@ namespace AtemEmulator.ComparisonTests.Settings
         [Fact]
         public void EnsureAllLibAtemDownConvertModesAreMapped()
         {
-            List<DownConvertMode> vals = Enum.GetValues(typeof(DownConvertMode)).OfType<DownConvertMode>().ToList();
-
-            var missing = vals.Where(v => !sdDownconvertModes.ContainsKey(v)).ToList();
-            Assert.Equal(new List<DownConvertMode>(), missing);
-
-            // Expect map and values to have the same number
-            Assert.Equal(vals.Count, sdDownconvertModes.Count);
-            Assert.Equal(Enum.GetValues(typeof(_BMDSwitcherDownConversionMethod)).Length, sdDownconvertModes.Count);
-
-            // Expect all the map values to be unique
-            Assert.Equal(vals.Count, sdDownconvertModes.Select(v => v.Value).Distinct().Count());
+            EnumMap.EnsureIsComplete(sdDownconvertModes);
         }
 
         // TODO - current device profile doesnt state sd output support

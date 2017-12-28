@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.InteropServices;
+using AtemEmulator.ComparisonTests.Util;
 using BMDSwitcherAPI;
 using LibAtem.Commands.Settings.Multiview;
 using LibAtem.Common;
@@ -34,6 +35,12 @@ namespace AtemEmulator.ComparisonTests.Settings
         {
             _client = client;
             _output = output;
+        }
+
+        [Fact]
+        public void EnsureLayoutMapIsComplete()
+        {
+            EnumMap.EnsureIsComplete(LayoutMap);
         }
 
         private static List<IBMDSwitcherMultiView> GetMultiviewers(AtemComparisonHelper helper)

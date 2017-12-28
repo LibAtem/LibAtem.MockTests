@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.Linq;
+using AtemEmulator.ComparisonTests.Util;
 using BMDSwitcherAPI;
 using LibAtem.Commands.Settings;
 using LibAtem.Common;
@@ -29,6 +30,7 @@ namespace AtemEmulator.ComparisonTests.Settings
                 {InternalPortType.SuperSource, _BMDSwitcherPortType.bmdSwitcherPortTypeSuperSource},
             };
 
+            // Note: This map is expected to be incomplete, as bm include audio in it
             ExternalPortTypeMap = new Dictionary<ExternalPortType, _BMDSwitcherExternalPortType>
             {
                 {ExternalPortType.Internal, _BMDSwitcherExternalPortType.bmdSwitcherExternalPortTypeInternal},
@@ -45,6 +47,12 @@ namespace AtemEmulator.ComparisonTests.Settings
         public TestInputs(AtemClientWrapper client)
         {
             _client = client;
+        }
+
+        [Fact]
+        public void EnsureInternalPortMapIsComplete()
+        {
+            EnumMap.EnsureIsComplete(PortTypeMap);
         }
 
         // TODO - test LibAtem setters

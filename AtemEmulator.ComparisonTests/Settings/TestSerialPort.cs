@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.InteropServices;
+using AtemEmulator.ComparisonTests.Util;
 using BMDSwitcherAPI;
 using LibAtem.Commands.Settings;
 using LibAtem.Common;
@@ -32,6 +33,12 @@ namespace AtemEmulator.ComparisonTests.Settings
         {
             _client = client;
             _output = output;
+        }
+        
+        [Fact]
+        public void EnsureFunctionMapIsComplete()
+        {
+            EnumMap.EnsureIsComplete(FunctionMap);
         }
 
         private static List<IBMDSwitcherSerialPort> GetPorts(AtemComparisonHelper helper)
