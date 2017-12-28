@@ -1,9 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Threading;
 using BMDSwitcherAPI;
 using LibAtem.Commands;
+using LibAtem.Common;
 using LibAtem.Util;
 
 namespace AtemEmulator.ComparisonTests
@@ -64,6 +66,16 @@ namespace AtemEmulator.ComparisonTests
                 return _receivedCommands.OfType<T>().Single();
         }
 
+        public int CountAndClearReceivedCommands<T>() where T : ICommand
+        {
+            lock (_receivedCommands)
+            {
+                int count = _receivedCommands.OfType<T>().Count();
+                _receivedCommands.Clear();
+                return count;
+            }
+        }
+
         public void SendCommand(params ICommand[] commands)
         {
             commands.ForEach(c => _client.Client.SendCommand(c));
@@ -77,6 +89,26 @@ namespace AtemEmulator.ComparisonTests
         public void Sleep(int sleep = -1)
         {
             Thread.Sleep(sleep == -1 ? CommandWaitTime : sleep);
+        }
+
+        public Dictionary<VideoSource, T> GetSdkInputsOfType<T>() where T : class
+        {
+            Guid itId = typeof(IBMDSwitcherInputIterator).GUID;
+            SdkSwitcher.CreateIterator(ref itId, out var itPtr);
+            IBMDSwitcherInputIterator iterator = (IBMDSwitcherInputIterator)Marshal.GetObjectForIUnknown(itPtr);
+
+            Dictionary<VideoSource, T> inputs = new Dictionary<VideoSource, T>();
+            for (iterator.Next(out IBMDSwitcherInput input); input != null; iterator.Next(out input))
+            {
+                var colGen = input as T;
+                if (colGen == null)
+                    continue;
+
+                input.GetInputId(out long id);
+                inputs[(VideoSource)id] = colGen;
+            }
+
+            return inputs;
         }
     }
 

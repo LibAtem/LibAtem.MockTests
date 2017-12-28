@@ -4,7 +4,6 @@ using System.Runtime.InteropServices;
 using BMDSwitcherAPI;
 using LibAtem.Commands.MixEffects;
 using LibAtem.Commands.MixEffects.Transition;
-using LibAtem.Commands.Settings;
 using LibAtem.Common;
 using Xunit;
 using Xunit.Abstractions;
@@ -22,6 +21,8 @@ namespace AtemEmulator.ComparisonTests.MixEffects
             _client = client;
             _output = output;
         }
+
+        // TODO - test LibAtem setters
 
         [Fact]
         public void TestMixEffectProperties()
@@ -65,11 +66,11 @@ namespace AtemEmulator.ComparisonTests.MixEffects
                     // TODO - run transition, wait a few frames, then check props again.
                     // will need to ensure transition is setup appropriately first (mix with good time)
 
-                    // TODO - this appears to be wrong in this, but it is passing the raw deserialized value correctly.
-                    // var sourceProps = helper.FindWithMatching(new InputPropertiesGetCommand {Id = GetSourceIdForMe(blockId)});
-                    // sdkProps.GetInt(_BMDSwitcherMixEffectBlockPropertyId.bmdSwitcherMixEffectBlockPropertyIdInputAvailabilityMask, out long srcAvailability);
-                    // if (sourceProps == null || (long)sourceProps.SourceAvailability != srcAvailability)
-                    //     failures.Add(string.Format("{0}: Input Availability mismatch: {1}, {2}", blockId, (SourceAvailability)srcAvailability, sourceProps?.SourceAvailability));
+                    // bmdSwitcherMixEffectBlockPropertyIdInputAvailabilityMask is used when checking if another input can be used for this output.
+                    // We track this another way
+                    sdkProps.GetInt(_BMDSwitcherMixEffectBlockPropertyId.bmdSwitcherMixEffectBlockPropertyIdInputAvailabilityMask, out long availabilityMask);
+                    if (availabilityMask != (long) SourceAvailability.Auxiliary)
+                        failures.Add("Incorrect SourceAvailability value");
 
                     // TODO - what is this value? is it not the same as InTransition?
                     // bmdSwitcherMixEffectBlockPropertyIdPreviewLive = 1886809206,

@@ -1,7 +1,5 @@
-using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Runtime.InteropServices;
 using BMDSwitcherAPI;
 using LibAtem.Commands.Settings;
 using LibAtem.Common;
@@ -19,7 +17,7 @@ namespace AtemEmulator.ComparisonTests.Settings
         {
             PortTypeMap = new Dictionary<InternalPortType, _BMDSwitcherPortType>
             {
-                {InternalPortType.Auxilary, _BMDSwitcherPortType.bmdSwitcherPortTypeAuxOutput},
+                {InternalPortType.Auxiliary, _BMDSwitcherPortType.bmdSwitcherPortTypeAuxOutput},
                 {InternalPortType.Black, _BMDSwitcherPortType.bmdSwitcherPortTypeBlack},
                 {InternalPortType.ColorBars, _BMDSwitcherPortType.bmdSwitcherPortTypeColorBars},
                 {InternalPortType.ColorGenerator, _BMDSwitcherPortType.bmdSwitcherPortTypeColorGenerator},
@@ -49,29 +47,20 @@ namespace AtemEmulator.ComparisonTests.Settings
             _client = client;
         }
 
+        // TODO - test LibAtem setters
+
         [Fact]
         public void TestInputProperties()
         {
             using (var helper = new AtemComparisonHelper(_client))
             {
-                Guid itId = typeof(IBMDSwitcherInputIterator).GUID;
-                helper.SdkSwitcher.CreateIterator(ref itId, out var itPtr);
-                IBMDSwitcherInputIterator iterator = (IBMDSwitcherInputIterator) Marshal.GetObjectForIUnknown(itPtr);
-
-                List<IBMDSwitcherInput> sdkInputs = new List<IBMDSwitcherInput>();
-                for (iterator.Next(out IBMDSwitcherInput input); input != null; iterator.Next(out input))
-                    sdkInputs.Add(input);
-
+                Dictionary<VideoSource, IBMDSwitcherInput> sdkInputs = helper.GetSdkInputsOfType<IBMDSwitcherInput>();
                 List<InputPropertiesGetCommand> libAtemInputs = helper.FindAllOfType<InputPropertiesGetCommand>();
 
                 Assert.Equal(sdkInputs.Count, libAtemInputs.Count);
 
-                List<long> sdkIds = sdkInputs.Select(i =>
-                {
-                    i.GetInputId(out long id);
-                    return id;
-                }).ToList();
-                List<long> libAtemIds = libAtemInputs.Select(i => (long) i.Id).ToList();
+                List<VideoSource> sdkIds = sdkInputs.Keys.ToList();
+                List<VideoSource> libAtemIds = libAtemInputs.Select(i => i.Id).ToList();
 
                 libAtemIds.Sort();
                 sdkIds.Sort();
@@ -82,12 +71,7 @@ namespace AtemEmulator.ComparisonTests.Settings
                 // TODO compare input properties
                 foreach (InputPropertiesGetCommand libAtemInput in libAtemInputs.OrderBy(i => i.Id))
                 {
-                    IBMDSwitcherInput sdkInput = sdkInputs.FirstOrDefault(i =>
-                    {
-                        i.GetInputId(out var id);
-                        return id == (long) libAtemInput.Id;
-                    });
-                    if (sdkInput == null)
+                    if (!sdkInputs.TryGetValue(libAtemInput.Id, out IBMDSwitcherInput sdkInput))
                     {
                         failures.Add(string.Format("Missing sdk input: {0}", libAtemInput.Id));
                         continue;
