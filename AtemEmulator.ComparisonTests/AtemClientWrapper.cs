@@ -112,7 +112,7 @@ namespace AtemEmulator.ComparisonTests
             };
             _client.Connect();
 
-            Assert.True(connectionEvent.WaitOne(TimeSpan.FromSeconds(30)), "LibAtem: Connection attempt timed out");
+            Assert.True(connectionEvent.WaitOne(TimeSpan.FromSeconds(3)), "LibAtem: Connection attempt timed out");
         }
 
         private bool WaitForHandshake(bool errorOnTimeout = true)

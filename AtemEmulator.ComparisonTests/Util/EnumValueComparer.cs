@@ -33,5 +33,23 @@ namespace AtemEmulator.ComparisonTests.Util
             if (newVal.HasValue)
                 Assert.Equal(newVal.Value, libVal.Value);
         }
+
+        public static void Fail(AtemComparisonHelper helper, IReadOnlyDictionary<T1, T2> map, Func<T1, ICommand> setter, SdkGetter getter, Func<T1?> libget, T1[] newVals)
+        {
+            newVals.ForEach(v => Fail(helper, map, setter, getter, libget, v));
+        }
+
+        public static void Fail(AtemComparisonHelper helper, IReadOnlyDictionary<T1, T2> map, Func<T1, ICommand> setter, SdkGetter getter, Func<T1?> libget, T1 newVal)
+        {
+            helper.SendCommand(setter(newVal));
+            helper.Sleep();
+
+            getter(out T2 val);
+            T1? libVal = libget();
+
+            Assert.NotNull(libVal);
+            Assert.Equal(val, map[libVal.Value]);
+            Assert.NotEqual(newVal, libVal.Value);
+        }
     }
 }
