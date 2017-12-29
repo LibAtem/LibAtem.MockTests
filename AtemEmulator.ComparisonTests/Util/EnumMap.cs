@@ -21,5 +21,15 @@ namespace AtemEmulator.ComparisonTests.Util
             // Expect all the map values to be unique
             Assert.Equal(vals.Count, map.Select(v => v.Value).Distinct().Count());
         }
+
+        public static void EnsureIsMatching<T1, T2>()
+        {
+            int vals = Enum.GetValues(typeof(T1)).OfType<T1>().Select(e => Convert.ToInt32(e)).Sum(a => a);
+            int vals2 = Enum.GetValues(typeof(T2)).OfType<T2>().Select(e => Convert.ToInt32(e)).Sum(a => a);
+
+            // We assume they are valid if their sums are equal. 
+            // This only works for flags. Other types need the conversion map and EnsureIsComplete
+            Assert.Equal(vals, vals2);
+        }
     }
 }

@@ -27,10 +27,28 @@ namespace AtemEmulator.ComparisonTests.Util
             double? libVal = libget();
 
             Assert.NotNull(libVal);
-            Assert.True(Math.Abs(libVal.Value / scale - val) < 0.01);
+            Assert.True(Math.Abs(libVal.Value / scale - val) < 0.001);
 
             if (newVal.HasValue)
-                Assert.True(Math.Abs(val - newVal.Value / scale) < 0.01);
+                Assert.True(Math.Abs(val - newVal.Value / scale) < 0.001);
+        }
+
+        public static void Fail(AtemComparisonHelper helper, Func<double, ICommand> setter, SdkGetter getter, Func<double?> libget, double[] newVals, double scale = 1)
+        {
+            newVals.ForEach(v => Fail(helper, setter, getter, libget, v, scale));
+        }
+
+        public static void Fail(AtemComparisonHelper helper, Func<double, ICommand> setter, SdkGetter getter, Func<double?> libget, double newVal, double scale)
+        {
+            helper.SendCommand(setter(newVal));
+            helper.Sleep();
+
+            getter(out double val);
+            double? libVal = libget();
+
+            Assert.NotNull(libVal);
+            Assert.True(Math.Abs(libVal.Value / scale - val) < 0.001);
+            Assert.False(Math.Abs(val - newVal / scale) < 0.001);
         }
     }
 }

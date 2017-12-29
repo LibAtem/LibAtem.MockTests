@@ -12,13 +12,13 @@ namespace AtemEmulator.ComparisonTests.Util
 
         public static void Run(AtemComparisonHelper helper, IReadOnlyDictionary<T1, T2> map, Func<T1, ICommand> setter, SdkGetter getter, Func<T1?> libget, T1[] newVals)
         {
-            Run(helper, map, setter, getter, libget, (T1?)null);
+            Run(helper, map, setter, getter, libget);
             newVals.ForEach(v => Run(helper, map, setter, getter, libget, (T1?) v));
         }
 
-        public static void Run(AtemComparisonHelper helper, IReadOnlyDictionary<T1, T2> map, Func<T1, ICommand> setter, SdkGetter getter, Func<T1?> libget, T1? newVal)
+        public static void Run(AtemComparisonHelper helper, IReadOnlyDictionary<T1, T2> map, Func<T1, ICommand> setter, SdkGetter getter, Func<T1?> libget, T1? newVal=null)
         {
-            if (newVal.HasValue)
+            if (newVal.HasValue && setter != null)
             {
                 helper.SendCommand(setter(newVal.Value));
                 helper.Sleep();
@@ -41,8 +41,11 @@ namespace AtemEmulator.ComparisonTests.Util
 
         public static void Fail(AtemComparisonHelper helper, IReadOnlyDictionary<T1, T2> map, Func<T1, ICommand> setter, SdkGetter getter, Func<T1?> libget, T1 newVal)
         {
-            helper.SendCommand(setter(newVal));
-            helper.Sleep();
+            if (setter != null)
+            {
+                helper.SendCommand(setter(newVal));
+                helper.Sleep();
+            }
 
             getter(out T2 val);
             T1? libVal = libget();
