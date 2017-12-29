@@ -179,8 +179,8 @@ namespace AtemEmulator.ComparisonTests.MixEffects
                 };
         
                 uint? Getter() => helper.FindWithMatching(new TransitionStingerGetCommand { Index = MixEffectBlockId.One })?.Preroll;
-        
-                UIntValueComparer.Run(helper, Setter, sdkProps.GetPreroll, Getter, testValues);
+
+                ValueTypeComparer<uint>.Run(helper, Setter, sdkProps.GetPreroll, Getter, testValues);
             }
         }
 
@@ -203,7 +203,7 @@ namespace AtemEmulator.ComparisonTests.MixEffects
 
                 uint? Getter() => helper.FindWithMatching(new TransitionStingerGetCommand { Index = MixEffectBlockId.One })?.ClipDuration;
 
-                UIntValueComparer.Run(helper, Setter, sdkProps.GetClipDuration, Getter, testValues);
+                ValueTypeComparer<uint>.Run(helper, Setter, sdkProps.GetClipDuration, Getter, testValues);
             }
         }
 
@@ -226,7 +226,7 @@ namespace AtemEmulator.ComparisonTests.MixEffects
 
                 uint? Getter() => helper.FindWithMatching(new TransitionStingerGetCommand { Index = MixEffectBlockId.One })?.TriggerPoint;
 
-                UIntValueComparer.Run(helper, Setter, sdkProps.GetTriggerPoint, Getter, testValues);
+                ValueTypeComparer<uint>.Run(helper, Setter, sdkProps.GetTriggerPoint, Getter, testValues);
             }
         }
 
@@ -249,7 +249,7 @@ namespace AtemEmulator.ComparisonTests.MixEffects
 
                 uint? Getter() => helper.FindWithMatching(new TransitionStingerGetCommand { Index = MixEffectBlockId.One })?.MixRate;
 
-                UIntValueComparer.Run(helper, Setter, sdkProps.GetMixRate, Getter, testValues);
+                ValueTypeComparer<uint>.Run(helper, Setter, sdkProps.GetMixRate, Getter, testValues);
             }
         }
 

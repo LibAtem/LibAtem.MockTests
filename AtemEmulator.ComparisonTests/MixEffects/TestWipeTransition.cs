@@ -71,7 +71,7 @@ namespace AtemEmulator.ComparisonTests.MixEffects
 
                 uint? Getter() => helper.FindWithMatching(new TransitionWipeGetCommand { Index = MixEffectBlockId.One })?.Rate;
 
-                UIntValueComparer.Run(helper, Setter, sdkProps.GetRate, Getter, testValues);
+                ValueTypeComparer<uint>.Run(helper, Setter, sdkProps.GetRate, Getter, testValues);
             }
         }
         
@@ -145,7 +145,7 @@ namespace AtemEmulator.ComparisonTests.MixEffects
 
                 long? Getter() => (long?) helper.FindWithMatching(new TransitionWipeGetCommand {Index = MixEffectBlockId.One})?.BorderInput;
 
-                IntValueComparer.Run(helper, Setter, sdkProps.GetInputBorder, Getter, testValues);
+                ValueTypeComparer<long>.Run(helper, Setter, sdkProps.GetInputBorder, Getter, testValues);
             }
         }
 

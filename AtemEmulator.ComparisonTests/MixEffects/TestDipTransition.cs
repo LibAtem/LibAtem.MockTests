@@ -36,7 +36,7 @@ namespace AtemEmulator.ComparisonTests.MixEffects
 
                 uint? Getter() => helper.FindWithMatching(new TransitionDipGetCommand { Index = MixEffectBlockId.One })?.Rate;
 
-                UIntValueComparer.Run(helper, Setter, sdkProps.GetRate, Getter, testValues);
+                ValueTypeComparer<uint>.Run(helper, Setter, sdkProps.GetRate, Getter, testValues);
             }
         }
 
@@ -64,7 +64,7 @@ namespace AtemEmulator.ComparisonTests.MixEffects
 
                 long? Getter() => (long?)helper.FindWithMatching(new TransitionDipGetCommand { Index = MixEffectBlockId.One })?.Input;
 
-                IntValueComparer.Run(helper, Setter, sdkProps.GetInputDip, Getter, testValues);
+                ValueTypeComparer<long>.Run(helper, Setter, sdkProps.GetInputDip, Getter, testValues);
             }
         }
     }

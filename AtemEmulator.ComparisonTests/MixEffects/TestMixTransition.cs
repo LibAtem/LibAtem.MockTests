@@ -34,7 +34,7 @@ namespace AtemEmulator.ComparisonTests.MixEffects
 
                 uint? Getter() => helper.FindWithMatching(new TransitionMixGetCommand { Index = MixEffectBlockId.One })?.Rate;
 
-                UIntValueComparer.Run(helper, Setter, sdkProps.GetRate, Getter, testValues);
+                ValueTypeComparer<uint>.Run(helper, Setter, sdkProps.GetRate, Getter, testValues);
             }
         }
     }

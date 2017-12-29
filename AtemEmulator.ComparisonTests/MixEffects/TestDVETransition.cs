@@ -39,7 +39,7 @@ namespace AtemEmulator.ComparisonTests.MixEffects
 
                 uint? Getter() => helper.FindWithMatching(new TransitionDVEGetCommand { Index = MixEffectBlockId.One })?.Rate;
 
-                UIntValueComparer.Run(helper, Setter, sdkProps.GetRate, Getter, testValues);
+                ValueTypeComparer<uint>.Run(helper, Setter, sdkProps.GetRate, Getter, testValues);
             }
         }
 
@@ -62,7 +62,7 @@ namespace AtemEmulator.ComparisonTests.MixEffects
 
                 uint? Getter() => helper.FindWithMatching(new TransitionDVEGetCommand { Index = MixEffectBlockId.One })?.LogoRate;
 
-                UIntValueComparer.Run(helper, Setter, sdkProps.GetLogoRate, Getter, testValues);
+                ValueTypeComparer<uint>.Run(helper, Setter, sdkProps.GetLogoRate, Getter, testValues);
             }
         }
 
@@ -144,8 +144,8 @@ namespace AtemEmulator.ComparisonTests.MixEffects
 
                 long? Getter() => (long?)helper.FindWithMatching(new TransitionDVEGetCommand { Index = MixEffectBlockId.One })?.FillSource;
 
-                IntValueComparer.Run(helper, Setter, sdkProps.GetInputFill, Getter, testValues);
-                IntValueComparer.Fail(helper, Setter, sdkProps.GetInputFill, Getter, badValues);
+                ValueTypeComparer<long>.Run(helper, Setter, sdkProps.GetInputFill, Getter, testValues);
+                ValueTypeComparer<long>.Fail(helper, Setter, sdkProps.GetInputFill, Getter, badValues);
             }
         }
 
@@ -187,8 +187,8 @@ namespace AtemEmulator.ComparisonTests.MixEffects
 
                 long? Getter() => (long?)helper.FindWithMatching(new TransitionDVEGetCommand { Index = MixEffectBlockId.One })?.KeySource;
 
-                IntValueComparer.Run(helper, Setter, sdkProps.GetInputCut, Getter, testValues);
-                IntValueComparer.Fail(helper, Setter, sdkProps.GetInputCut, Getter, badValues);
+                ValueTypeComparer<long>.Run(helper, Setter, sdkProps.GetInputCut, Getter, testValues);
+                ValueTypeComparer<long>.Fail(helper, Setter, sdkProps.GetInputCut, Getter, badValues);
             }
         }
 
