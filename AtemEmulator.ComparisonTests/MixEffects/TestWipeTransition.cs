@@ -11,7 +11,7 @@ using Xunit.Abstractions;
 namespace AtemEmulator.ComparisonTests.MixEffects
 {
     [Collection("Client")]
-    public class TestWipeTransition : TestTransitionBase
+    public class TestWipeTransition : ComparisonTestBase
     {
         private static readonly IReadOnlyDictionary<Pattern, _BMDSwitcherPatternStyle> PatternMap;
 
@@ -57,7 +57,7 @@ namespace AtemEmulator.ComparisonTests.MixEffects
         {
             using (var helper = new AtemComparisonHelper(Client))
             {
-                var sdkProps = GetMixEffect<IBMDSwitcherTransitionWipeParameters>(helper);
+                var sdkProps = GetMixEffect<IBMDSwitcherTransitionWipeParameters>();
                 Assert.NotNull(sdkProps);
 
                 uint[] testValues = {18, 28, 95};
@@ -80,7 +80,7 @@ namespace AtemEmulator.ComparisonTests.MixEffects
         {
             using (var helper = new AtemComparisonHelper(Client))
             {
-                var sdkProps = GetMixEffect<IBMDSwitcherTransitionWipeParameters>(helper);
+                var sdkProps = GetMixEffect<IBMDSwitcherTransitionWipeParameters>();
                 Assert.NotNull(sdkProps);
 
                 Pattern[] testValues = {Pattern.BottomLeftBox, Pattern.CircleIris, Pattern.LeftToRightBar};
@@ -103,7 +103,7 @@ namespace AtemEmulator.ComparisonTests.MixEffects
         {
             using (var helper = new AtemComparisonHelper(Client))
             {
-                var sdkProps = GetMixEffect<IBMDSwitcherTransitionWipeParameters>(helper);
+                var sdkProps = GetMixEffect<IBMDSwitcherTransitionWipeParameters>();
                 Assert.NotNull(sdkProps);
 
                 double[] testValues = {87.4, 14.7};
@@ -126,7 +126,7 @@ namespace AtemEmulator.ComparisonTests.MixEffects
         {
             using (var helper = new AtemComparisonHelper(Client))
             {
-                var sdkProps = GetMixEffect<IBMDSwitcherTransitionWipeParameters>(helper);
+                var sdkProps = GetMixEffect<IBMDSwitcherTransitionWipeParameters>();
                 Assert.NotNull(sdkProps);
 
                 long[] testValues =
@@ -154,7 +154,7 @@ namespace AtemEmulator.ComparisonTests.MixEffects
         {
             using (var helper = new AtemComparisonHelper(Client))
             {
-                var sdkProps = GetMixEffect<IBMDSwitcherTransitionWipeParameters>(helper);
+                var sdkProps = GetMixEffect<IBMDSwitcherTransitionWipeParameters>();
                 Assert.NotNull(sdkProps);
 
                 // Not all props support symmetry
@@ -181,7 +181,7 @@ namespace AtemEmulator.ComparisonTests.MixEffects
         {
             using (var helper = new AtemComparisonHelper(Client))
             {
-                var sdkProps = GetMixEffect<IBMDSwitcherTransitionWipeParameters>(helper);
+                var sdkProps = GetMixEffect<IBMDSwitcherTransitionWipeParameters>();
                 Assert.NotNull(sdkProps);
 
 
@@ -205,7 +205,7 @@ namespace AtemEmulator.ComparisonTests.MixEffects
         {
             using (var helper = new AtemComparisonHelper(Client))
             {
-                var sdkProps = GetMixEffect<IBMDSwitcherTransitionWipeParameters>(helper);
+                var sdkProps = GetMixEffect<IBMDSwitcherTransitionWipeParameters>();
                 Assert.NotNull(sdkProps);
 
                 // Not all props support XPosition
@@ -232,7 +232,7 @@ namespace AtemEmulator.ComparisonTests.MixEffects
         {
             using (var helper = new AtemComparisonHelper(Client))
             {
-                var sdkProps = GetMixEffect<IBMDSwitcherTransitionWipeParameters>(helper);
+                var sdkProps = GetMixEffect<IBMDSwitcherTransitionWipeParameters>();
                 Assert.NotNull(sdkProps);
 
                 // Not all props support YPosition
@@ -258,7 +258,7 @@ namespace AtemEmulator.ComparisonTests.MixEffects
         {
             using (var helper = new AtemComparisonHelper(Client))
             {
-                var sdkProps = GetMixEffect<IBMDSwitcherTransitionWipeParameters>(helper);
+                var sdkProps = GetMixEffect<IBMDSwitcherTransitionWipeParameters>();
                 Assert.NotNull(sdkProps);
 
                 bool[] testValues = { true, false };
@@ -281,7 +281,7 @@ namespace AtemEmulator.ComparisonTests.MixEffects
         {
             using (var helper = new AtemComparisonHelper(Client))
             {
-                var sdkProps = GetMixEffect<IBMDSwitcherTransitionWipeParameters>(helper);
+                var sdkProps = GetMixEffect<IBMDSwitcherTransitionWipeParameters>();
                 Assert.NotNull(sdkProps);
 
                 bool[] testValues = {true, false};

@@ -18,6 +18,9 @@ namespace AtemEmulator.ComparisonTests
 
         private readonly List<ICommand> _receivedCommands;
 
+        private AutoResetEvent responseWait;
+        private CommandQueueKey responseTarget;
+
         public AtemComparisonHelper(AtemClientWrapper client)
         {
             _client = client;
@@ -109,6 +112,31 @@ namespace AtemEmulator.ComparisonTests
             }
 
             return inputs;
+        }
+        
+        // Note: This doesnt quite work properly yet
+        public void SendAndWaitForMatching(CommandQueueKey key, ICommand toSend, int timeout = -1)
+        {
+            if (responseWait != null)
+                return;
+
+            responseWait = new AutoResetEvent(false);
+            responseTarget = key;
+
+            void Handler (object sender, CommandQueueKey queueKey){
+                if (queueKey.Equals(key))
+                    responseWait.Set();
+            };
+
+            _client.OnCommandKey += Handler;
+
+            SendCommand(toSend);
+
+            // Wait for the expected time. If no response, then go with last data
+            responseWait.WaitOne(timeout == -1 ? CommandWaitTime : timeout);
+
+            responseWait = null;
+            _client.OnCommandKey -= Handler;
         }
     }
 

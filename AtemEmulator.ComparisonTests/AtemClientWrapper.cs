@@ -39,6 +39,9 @@ namespace AtemEmulator.ComparisonTests
 
         public LibAtem.DeviceProfile.DeviceProfile Profile => _profile.Profile;
 
+        public delegate void CommandKeyHandler(object sender, CommandQueueKey key);
+        public event CommandKeyHandler OnCommandKey;
+
         public AtemClientWrapper()
         {
             const string address = "10.42.13.99";
@@ -101,6 +104,7 @@ namespace AtemEmulator.ComparisonTests
                     {
                         CommandQueueKey key = new CommandQueueKey(cmd);
                         _lastReceivedLibAtem[key] = cmd;
+                        OnCommandKey?.Invoke(this, key);
                     }
 
                     if (!_handshakeFinished && commands.Any(c => c is InitializationCompleteCommand))
@@ -155,6 +159,17 @@ namespace AtemEmulator.ComparisonTests
         {
             var id = new CommandQueueKey(srcId);
 
+            lock (_lastReceivedLibAtem)
+            {
+                if (_lastReceivedLibAtem.TryGetValue(id, out var val))
+                    return (T)val;
+
+                return default(T);
+            }
+        }
+
+        internal ICommand FindWithMatching<T>(CommandQueueKey id) where T : ICommand
+        {
             lock (_lastReceivedLibAtem)
             {
                 if (_lastReceivedLibAtem.TryGetValue(id, out var val))

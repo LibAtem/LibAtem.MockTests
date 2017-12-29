@@ -9,7 +9,7 @@ using Xunit.Abstractions;
 namespace AtemEmulator.ComparisonTests.MixEffects
 {
     [Collection("Client")]
-    public class TestDipTransition : TestTransitionBase
+    public class TestDipTransition : ComparisonTestBase
     {
         public TestDipTransition(ITestOutputHelper output, AtemClientWrapper client)
             : base(output, client)
@@ -21,7 +21,7 @@ namespace AtemEmulator.ComparisonTests.MixEffects
         {
             using (var helper = new AtemComparisonHelper(Client))
             {
-                var sdkProps = GetMixEffect<IBMDSwitcherTransitionDipParameters>(helper);
+                var sdkProps = GetMixEffect<IBMDSwitcherTransitionDipParameters>();
                 Assert.NotNull(sdkProps);
 
 
@@ -45,7 +45,7 @@ namespace AtemEmulator.ComparisonTests.MixEffects
         {
             using (var helper = new AtemComparisonHelper(Client))
             {
-                var sdkProps = GetMixEffect<IBMDSwitcherTransitionDipParameters>(helper);
+                var sdkProps = GetMixEffect<IBMDSwitcherTransitionDipParameters>();
                 Assert.NotNull(sdkProps);
                 
                 long[] testValues =

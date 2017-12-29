@@ -13,7 +13,7 @@ using Xunit.Abstractions;
 namespace AtemEmulator.ComparisonTests.MixEffects
 {
     [Collection("Client")]
-    public class TestStingerTransition : TestTransitionBase
+    public class TestStingerTransition : ComparisonTestBase
     {
         private static readonly IReadOnlyDictionary<StingerSource, _BMDSwitcherStingerTransitionSource> SourceMap;
 
@@ -34,6 +34,18 @@ namespace AtemEmulator.ComparisonTests.MixEffects
         {
         }
 
+        private void ResetProps(IBMDSwitcherTransitionStingerParameters props)
+        {
+            props.SetTriggerPoint(1);
+            props.SetPreroll(1);
+            props.SetMixRate(1);
+            props.SetClipDuration(40);
+            props.SetTriggerPoint(10);
+            props.SetPreroll(5);
+            props.SetMixRate(15);
+
+        }
+
         [Fact]
         public void EnsureSourceMapIsComplete()
         {
@@ -45,7 +57,7 @@ namespace AtemEmulator.ComparisonTests.MixEffects
         {
             using (var helper = new AtemComparisonHelper(Client))
             {
-                var sdkProps = GetMixEffect<IBMDSwitcherTransitionStingerParameters>(helper);
+                var sdkProps = GetMixEffect<IBMDSwitcherTransitionStingerParameters>();
                 Assert.NotNull(sdkProps);
 
                 StingerSource[] testValues = Enum.GetValues(typeof(StingerSource)).OfType<StingerSource>().Where(s => s.IsAvailable(helper.Profile)).ToArray();
@@ -70,7 +82,7 @@ namespace AtemEmulator.ComparisonTests.MixEffects
         {
             using (var helper = new AtemComparisonHelper(Client))
             {
-                var sdkProps = GetMixEffect<IBMDSwitcherTransitionStingerParameters>(helper);
+                var sdkProps = GetMixEffect<IBMDSwitcherTransitionStingerParameters>();
                 Assert.NotNull(sdkProps);
 
                 bool[] testValues = { true, false };
@@ -93,7 +105,7 @@ namespace AtemEmulator.ComparisonTests.MixEffects
         {
             using (var helper = new AtemComparisonHelper(Client))
             {
-                var sdkProps = GetMixEffect<IBMDSwitcherTransitionStingerParameters>(helper);
+                var sdkProps = GetMixEffect<IBMDSwitcherTransitionStingerParameters>();
                 Assert.NotNull(sdkProps);
 
                 double[] testValues = { 87.4, 14.7 };
@@ -118,7 +130,7 @@ namespace AtemEmulator.ComparisonTests.MixEffects
         {
             using (var helper = new AtemComparisonHelper(Client))
             {
-                var sdkProps = GetMixEffect<IBMDSwitcherTransitionStingerParameters>(helper);
+                var sdkProps = GetMixEffect<IBMDSwitcherTransitionStingerParameters>();
                 Assert.NotNull(sdkProps);
 
                 double[] testValues = { 87.4, 14.7 };
@@ -143,7 +155,7 @@ namespace AtemEmulator.ComparisonTests.MixEffects
         {
             using (var helper = new AtemComparisonHelper(Client))
             {
-                var sdkProps = GetMixEffect<IBMDSwitcherTransitionStingerParameters>(helper);
+                var sdkProps = GetMixEffect<IBMDSwitcherTransitionStingerParameters>();
                 Assert.NotNull(sdkProps);
 
                 bool[] testValues = { true, false };
@@ -166,10 +178,10 @@ namespace AtemEmulator.ComparisonTests.MixEffects
         {
             using (var helper = new AtemComparisonHelper(Client))
             {
-                var sdkProps = GetMixEffect<IBMDSwitcherTransitionStingerParameters>(helper);
+                var sdkProps = GetMixEffect<IBMDSwitcherTransitionStingerParameters>();
                 Assert.NotNull(sdkProps);
         
-                uint[] testValues = { 18, 28, 95 };
+                uint[] testValues = { 18, 28, 90 };
         
                 ICommand Setter(uint v) => new TransitionStingerSetCommand
                 {
@@ -189,10 +201,18 @@ namespace AtemEmulator.ComparisonTests.MixEffects
         {
             using (var helper = new AtemComparisonHelper(Client))
             {
-                var sdkProps = GetMixEffect<IBMDSwitcherTransitionStingerParameters>(helper);
+                var sdkProps = GetMixEffect<IBMDSwitcherTransitionStingerParameters>();
                 Assert.NotNull(sdkProps);
 
-                uint[] testValues = { 18, 28, 95 };
+                // These props all have various relations, that need better testing
+                ResetProps(sdkProps);
+                sdkProps.SetTriggerPoint(17);
+                sdkProps.SetMixRate(13);
+                sdkProps.SetPreroll(5);
+                helper.Sleep();
+
+                uint[] testValues = {35, 48, 95, 199, 30};
+                uint[] badValues = {1, 29, 5};
 
                 ICommand Setter(uint v) => new TransitionStingerSetCommand
                 {
@@ -204,6 +224,16 @@ namespace AtemEmulator.ComparisonTests.MixEffects
                 uint? Getter() => helper.FindWithMatching(new TransitionStingerGetCommand { Index = MixEffectBlockId.One })?.ClipDuration;
 
                 ValueTypeComparer<uint>.Run(helper, Setter, sdkProps.GetClipDuration, Getter, testValues);
+                ValueTypeComparer<uint>.Fail(helper, Setter, sdkProps.GetClipDuration, Getter, badValues);
+
+                sdkProps.SetTriggerPoint(4);
+                sdkProps.SetMixRate(6);
+
+                uint[] testValues2 = {11, 30, 10};
+                uint[] badValues2 = {9, 1};
+
+                ValueTypeComparer<uint>.Run(helper, Setter, sdkProps.GetClipDuration, Getter, testValues2);
+                ValueTypeComparer<uint>.Fail(helper, Setter, sdkProps.GetClipDuration, Getter, badValues2);
             }
         }
 
@@ -212,10 +242,15 @@ namespace AtemEmulator.ComparisonTests.MixEffects
         {
             using (var helper = new AtemComparisonHelper(Client))
             {
-                var sdkProps = GetMixEffect<IBMDSwitcherTransitionStingerParameters>(helper);
+                var sdkProps = GetMixEffect<IBMDSwitcherTransitionStingerParameters>();
                 Assert.NotNull(sdkProps);
 
-                uint[] testValues = { 18, 28, 95 };
+                // These props all have various relations, that need better testing
+                ResetProps(sdkProps);
+                sdkProps.SetMixRate(15);
+
+                uint[] testValues = { 1, 18, 28, 39 };
+                uint[] badValues = { 40, 41, 50 };
 
                 ICommand Setter(uint v) => new TransitionStingerSetCommand
                 {
@@ -227,6 +262,16 @@ namespace AtemEmulator.ComparisonTests.MixEffects
                 uint? Getter() => helper.FindWithMatching(new TransitionStingerGetCommand { Index = MixEffectBlockId.One })?.TriggerPoint;
 
                 ValueTypeComparer<uint>.Run(helper, Setter, sdkProps.GetTriggerPoint, Getter, testValues);
+                ValueTypeComparer<uint>.Fail(helper, Setter, sdkProps.GetTriggerPoint, Getter, badValues);
+                
+                sdkProps.SetTriggerPoint(1);
+                sdkProps.SetClipDuration(25);
+
+                uint[] testValues2 = { 11, 24, 10 };
+                uint[] badValues2 = { 25, 26, 30 };
+
+                ValueTypeComparer<uint>.Run(helper, Setter, sdkProps.GetTriggerPoint, Getter, testValues2);
+                ValueTypeComparer<uint>.Fail(helper, Setter, sdkProps.GetTriggerPoint, Getter, badValues2);
             }
         }
 
@@ -235,10 +280,14 @@ namespace AtemEmulator.ComparisonTests.MixEffects
         {
             using (var helper = new AtemComparisonHelper(Client))
             {
-                var sdkProps = GetMixEffect<IBMDSwitcherTransitionStingerParameters>(helper);
+                var sdkProps = GetMixEffect<IBMDSwitcherTransitionStingerParameters>();
                 Assert.NotNull(sdkProps);
 
-                uint[] testValues = { 18, 28, 95 };
+                // These props all have various relations, that need better testing
+                ResetProps(sdkProps);
+
+                uint[] testValues = { 1, 18, 28, 30 };
+                uint[] badValues = {31, 32, 40};
 
                 ICommand Setter(uint v) => new TransitionStingerSetCommand
                 {
@@ -250,6 +299,16 @@ namespace AtemEmulator.ComparisonTests.MixEffects
                 uint? Getter() => helper.FindWithMatching(new TransitionStingerGetCommand { Index = MixEffectBlockId.One })?.MixRate;
 
                 ValueTypeComparer<uint>.Run(helper, Setter, sdkProps.GetMixRate, Getter, testValues);
+                ValueTypeComparer<uint>.Fail(helper, Setter, sdkProps.GetMixRate, Getter, badValues);
+                
+                sdkProps.SetMixRate(5);
+                sdkProps.SetClipDuration(20);
+
+                uint[] testValues2 = { 9, 1, 10 };
+                uint[] badValues2 = { 11, 12, 20 };
+
+                ValueTypeComparer<uint>.Run(helper, Setter, sdkProps.GetMixRate, Getter, testValues2);
+                ValueTypeComparer<uint>.Fail(helper, Setter, sdkProps.GetMixRate, Getter, badValues2);
             }
         }
 

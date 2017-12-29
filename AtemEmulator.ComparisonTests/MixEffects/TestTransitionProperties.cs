@@ -14,7 +14,7 @@ using Xunit.Abstractions;
 namespace AtemEmulator.ComparisonTests.MixEffects
 {
     [Collection("Client")]
-    public class TestTransitionProperties : TestTransitionBase
+    public class TestTransitionProperties : ComparisonTestBase
     {
         private static readonly IReadOnlyDictionary<TStyle, _BMDSwitcherTransitionStyle> StyleMap;
 
@@ -52,7 +52,7 @@ namespace AtemEmulator.ComparisonTests.MixEffects
         {
             using (var helper = new AtemComparisonHelper(Client))
             {
-                var sdkProps = GetMixEffect<IBMDSwitcherTransitionParameters>(helper);
+                var sdkProps = GetMixEffect<IBMDSwitcherTransitionParameters>();
                 Assert.NotNull(sdkProps);
                 
                 ICommand Setter(TStyle v) => new TransitionPropertiesSetCommand()
@@ -88,9 +88,9 @@ namespace AtemEmulator.ComparisonTests.MixEffects
                 }
 
                 // Now run a mix transition, and ensure the props line up correctly
-                var sdkMix = GetMixEffect<IBMDSwitcherTransitionMixParameters>(helper);
+                var sdkMix = GetMixEffect<IBMDSwitcherTransitionMixParameters>();
                 Assert.NotNull(sdkMix);
-                var sdkMe = GetMixEffect<IBMDSwitcherMixEffectBlock>(helper);
+                var sdkMe = GetMixEffect<IBMDSwitcherMixEffectBlock>();
                 Assert.NotNull(sdkMe);
 
                 sdkProps.SetNextTransitionStyle(_BMDSwitcherTransitionStyle.bmdSwitcherTransitionStyleMix);
@@ -119,8 +119,13 @@ namespace AtemEmulator.ComparisonTests.MixEffects
         {
             using (var helper = new AtemComparisonHelper(Client))
             {
-                var sdkProps = GetMixEffect<IBMDSwitcherTransitionParameters>(helper);
+                var sdkProps = GetMixEffect<IBMDSwitcherTransitionParameters>();
                 Assert.NotNull(sdkProps);
+
+                // Ensure all keyers are not dve
+                List<IBMDSwitcherKey> keyers = GetKeyers<IBMDSwitcherKey>();
+                foreach (var key in keyers)
+                    key.SetType(_BMDSwitcherKeyType.bmdSwitcherKeyTypeLuma);
 
                 ICommand Setter(TransitionLayer v) => new TransitionPropertiesSetCommand()
                 {
@@ -158,9 +163,9 @@ namespace AtemEmulator.ComparisonTests.MixEffects
                 helper.SendCommand(Setter(TransitionLayer.Key1));
 
                 // Now run a mix transition, and ensure the props line up correctly
-                var sdkMix = GetMixEffect<IBMDSwitcherTransitionMixParameters>(helper);
+                var sdkMix = GetMixEffect<IBMDSwitcherTransitionMixParameters>();
                 Assert.NotNull(sdkMix);
-                var sdkMe = GetMixEffect<IBMDSwitcherMixEffectBlock>(helper);
+                var sdkMe = GetMixEffect<IBMDSwitcherMixEffectBlock>();
                 Assert.NotNull(sdkMe);
 
                 sdkProps.SetNextTransitionStyle(_BMDSwitcherTransitionStyle.bmdSwitcherTransitionStyleMix);
@@ -183,5 +188,7 @@ namespace AtemEmulator.ComparisonTests.MixEffects
                 Assert.Equal(CurrentGetter(), NextGetter());
             }
         }
+
+        // TODO - ensure trans cant be set to dve when keyer is
     }
 }
