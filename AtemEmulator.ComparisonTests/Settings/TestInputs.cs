@@ -77,6 +77,7 @@ namespace AtemEmulator.ComparisonTests.Settings
                 var failures = new List<string>();
 
                 // TODO compare input properties
+                // TODO - rewrite to use ValueComparers
                 foreach (InputPropertiesGetCommand libAtemInput in libAtemInputs.OrderBy(i => i.Id))
                 {
                     if (!sdkInputs.TryGetValue(libAtemInput.Id, out IBMDSwitcherInput sdkInput))

@@ -1,10 +1,13 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using AtemEmulator.ComparisonTests.Util;
 using BMDSwitcherAPI;
 using LibAtem.Commands;
 using LibAtem.Commands.MixEffects.Transition;
 using LibAtem.Common;
+using LibAtem.DeviceProfile;
+using LibAtem.XmlState;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -50,28 +53,29 @@ namespace AtemEmulator.ComparisonTests.MixEffects
         {
             EnumMap.EnsureIsComplete(PatternMap);
         }
-
-
+        
         [Fact]
         public void TestWipeRate()
         {
             using (var helper = new AtemComparisonHelper(Client))
             {
-                var sdkProps = GetMixEffect<IBMDSwitcherTransitionWipeParameters>();
-                Assert.NotNull(sdkProps);
-
-                uint[] testValues = {18, 28, 95};
-
-                ICommand Setter(uint v) => new TransitionWipeSetCommand
+                foreach (var me in GetMixEffects<IBMDSwitcherTransitionWipeParameters>())
                 {
-                    Index = MixEffectBlockId.One,
-                    Mask = TransitionWipeSetCommand.MaskFlags.Rate,
-                    Rate = v,
-                };
+                    uint[] testValues = {1, 18, 28, 95, 234, 244, 250};
+                    uint[] badValues = {251, 255, 0};
 
-                uint? Getter() => helper.FindWithMatching(new TransitionWipeGetCommand { Index = MixEffectBlockId.One })?.Rate;
+                    ICommand Setter(uint v) => new TransitionWipeSetCommand
+                    {
+                        Index = me.Item1,
+                        Mask = TransitionWipeSetCommand.MaskFlags.Rate,
+                        Rate = v,
+                    };
 
-                ValueTypeComparer<uint>.Run(helper, Setter, sdkProps.GetRate, Getter, testValues);
+                    uint? Getter() => helper.FindWithMatching(new TransitionWipeGetCommand {Index = me.Item1})?.Rate;
+
+                    ValueTypeComparer<uint>.Run(helper, Setter, me.Item2.GetRate, Getter, testValues);
+                    ValueTypeComparer<uint>.Fail(helper, Setter, me.Item2.GetRate, Getter, badValues);
+                }
             }
         }
         
@@ -80,21 +84,21 @@ namespace AtemEmulator.ComparisonTests.MixEffects
         {
             using (var helper = new AtemComparisonHelper(Client))
             {
-                var sdkProps = GetMixEffect<IBMDSwitcherTransitionWipeParameters>();
-                Assert.NotNull(sdkProps);
-
-                Pattern[] testValues = {Pattern.BottomLeftBox, Pattern.CircleIris, Pattern.LeftToRightBar};
-
-                ICommand Setter(Pattern v) => new TransitionWipeSetCommand
+                foreach (var me in GetMixEffects<IBMDSwitcherTransitionWipeParameters>())
                 {
-                    Index = MixEffectBlockId.One,
-                    Mask = TransitionWipeSetCommand.MaskFlags.Pattern,
-                    Pattern = v,
-                };
+                    Pattern[] testValues = Enum.GetValues(typeof(Pattern)).OfType<Pattern>().ToArray();
 
-                Pattern? Getter() => helper.FindWithMatching(new TransitionWipeGetCommand { Index = MixEffectBlockId.One })?.Pattern;
+                    ICommand Setter(Pattern v) => new TransitionWipeSetCommand
+                    {
+                        Index = me.Item1,
+                        Mask = TransitionWipeSetCommand.MaskFlags.Pattern,
+                        Pattern = v,
+                    };
 
-                EnumValueComparer<Pattern, _BMDSwitcherPatternStyle>.Run(helper, PatternMap, Setter, sdkProps.GetPattern, Getter, testValues);
+                    Pattern? Getter() => helper.FindWithMatching(new TransitionWipeGetCommand {Index = me.Item1})?.Pattern;
+
+                    EnumValueComparer<Pattern, _BMDSwitcherPatternStyle>.Run(helper, PatternMap, Setter, me.Item2.GetPattern, Getter, testValues);
+                }
             }
         }
         
@@ -103,21 +107,23 @@ namespace AtemEmulator.ComparisonTests.MixEffects
         {
             using (var helper = new AtemComparisonHelper(Client))
             {
-                var sdkProps = GetMixEffect<IBMDSwitcherTransitionWipeParameters>();
-                Assert.NotNull(sdkProps);
-
-                double[] testValues = {87.4, 14.7};
-
-                ICommand Setter(double v) => new TransitionWipeSetCommand
+                foreach (var me in GetMixEffects<IBMDSwitcherTransitionWipeParameters>())
                 {
-                    Index = MixEffectBlockId.One,
-                    Mask = TransitionWipeSetCommand.MaskFlags.BorderWidth,
-                    BorderWidth = v
-                };
+                    double[] testValues = {0, 87.4, 14.7, 99.9, 100, 0.01};
+                    double[] badValues = {100.1, 110, 101, -0.01, -1, -10};
 
-                double? Getter() => helper.FindWithMatching(new TransitionWipeGetCommand { Index = MixEffectBlockId.One })?.BorderWidth;
+                    ICommand Setter(double v) => new TransitionWipeSetCommand
+                    {
+                        Index = me.Item1,
+                        Mask = TransitionWipeSetCommand.MaskFlags.BorderWidth,
+                        BorderWidth = v
+                    };
 
-                DoubleValueComparer.Run(helper, Setter, sdkProps.GetBorderSize, Getter, testValues, 100);
+                    double? Getter() => helper.FindWithMatching(new TransitionWipeGetCommand {Index = me.Item1})?.BorderWidth;
+
+                    DoubleValueComparer.Run(helper, Setter, me.Item2.GetBorderSize, Getter, testValues, 100);
+                    DoubleValueComparer.Fail(helper, Setter, me.Item2.GetBorderSize, Getter, badValues, 100);
+                }
             }
         }
         
@@ -126,26 +132,23 @@ namespace AtemEmulator.ComparisonTests.MixEffects
         {
             using (var helper = new AtemComparisonHelper(Client))
             {
-                var sdkProps = GetMixEffect<IBMDSwitcherTransitionWipeParameters>();
-                Assert.NotNull(sdkProps);
-
-                long[] testValues =
+                foreach (var me in GetMixEffects<IBMDSwitcherTransitionWipeParameters>())
                 {
-                    (long) VideoSource.Color1,
-                    (long) VideoSource.MediaPlayer1,
-                    (long) VideoSource.Input3
-                };
+                    long[] testValues = VideoSourceLists.All.Where(s => s.IsAvailable(Client.Profile) && s.IsAvailable(me.Item1)).Select(s => (long)s).ToArray();
+                    long[] badValues = VideoSourceLists.All.Select(s => (long)s).Where(s => !testValues.Contains(s)).ToArray();
 
-                ICommand Setter(long v) => new TransitionWipeSetCommand
-                {
-                    Index = MixEffectBlockId.One,
-                    Mask = TransitionWipeSetCommand.MaskFlags.BorderInput,
-                    BorderInput = (VideoSource)v,
-                };
+                    ICommand Setter(long v) => new TransitionWipeSetCommand
+                    {
+                        Index = me.Item1,
+                        Mask = TransitionWipeSetCommand.MaskFlags.BorderInput,
+                        BorderInput = (VideoSource) v,
+                    };
 
-                long? Getter() => (long?) helper.FindWithMatching(new TransitionWipeGetCommand {Index = MixEffectBlockId.One})?.BorderInput;
+                    long? Getter() => (long?) helper.FindWithMatching(new TransitionWipeGetCommand {Index = me.Item1})?.BorderInput;
 
-                ValueTypeComparer<long>.Run(helper, Setter, sdkProps.GetInputBorder, Getter, testValues);
+                    ValueTypeComparer<long>.Run(helper, Setter, me.Item2.GetInputBorder, Getter, testValues);
+                    ValueTypeComparer<long>.Fail(helper, Setter, me.Item2.GetInputBorder, Getter, badValues);
+                }
             }
         }
 
@@ -154,25 +157,26 @@ namespace AtemEmulator.ComparisonTests.MixEffects
         {
             using (var helper = new AtemComparisonHelper(Client))
             {
-                var sdkProps = GetMixEffect<IBMDSwitcherTransitionWipeParameters>();
-                Assert.NotNull(sdkProps);
-
-                // Not all props support symmetry
-                sdkProps.SetPattern(_BMDSwitcherPatternStyle.bmdSwitcherPatternStyleCircleIris);
-
-
-                double[] testValues = { 87.4, 14.7 };
-
-                ICommand Setter(double v) => new TransitionWipeSetCommand
+                foreach (var me in GetMixEffects<IBMDSwitcherTransitionWipeParameters>())
                 {
-                    Index = MixEffectBlockId.One,
-                    Mask = TransitionWipeSetCommand.MaskFlags.Symmetry,
-                    Symmetry = v
-                };
+                    // Not all props support symmetry
+                    me.Item2.SetPattern(_BMDSwitcherPatternStyle.bmdSwitcherPatternStyleCircleIris);
 
-                double? Getter() => helper.FindWithMatching(new TransitionWipeGetCommand { Index = MixEffectBlockId.One })?.Symmetry;
+                    double[] testValues = {0, 87.4, 14.7, 99.9, 100, 0.01};
+                    double[] badValues = {100.1, 110, 101, -0.01, -1, -10};
 
-                DoubleValueComparer.Run(helper, Setter, sdkProps.GetSymmetry, Getter, testValues, 100);
+                    ICommand Setter(double v) => new TransitionWipeSetCommand
+                    {
+                        Index = me.Item1,
+                        Mask = TransitionWipeSetCommand.MaskFlags.Symmetry,
+                        Symmetry = v
+                    };
+
+                    double? Getter() => helper.FindWithMatching(new TransitionWipeGetCommand {Index = me.Item1})?.Symmetry;
+
+                    DoubleValueComparer.Run(helper, Setter, me.Item2.GetSymmetry, Getter, testValues, 100);
+                    DoubleValueComparer.Fail(helper, Setter, me.Item2.GetSymmetry, Getter, badValues, 100);
+                }
             }
         }
         
@@ -181,22 +185,23 @@ namespace AtemEmulator.ComparisonTests.MixEffects
         {
             using (var helper = new AtemComparisonHelper(Client))
             {
-                var sdkProps = GetMixEffect<IBMDSwitcherTransitionWipeParameters>();
-                Assert.NotNull(sdkProps);
-
-
-                double[] testValues = { 87.4, 14.7 };
-
-                ICommand Setter(double v) => new TransitionWipeSetCommand
+                foreach (var me in GetMixEffects<IBMDSwitcherTransitionWipeParameters>())
                 {
-                    Index = MixEffectBlockId.One,
-                    Mask = TransitionWipeSetCommand.MaskFlags.BorderSoftness,
-                    BorderSoftness = v
-                };
+                    double[] testValues = {0, 87.4, 14.7, 99.9, 100, 0.01};
+                    double[] badValues = {100.1, 110, 101, -0.01, -1, -10};
 
-                double? Getter() => helper.FindWithMatching(new TransitionWipeGetCommand { Index = MixEffectBlockId.One })?.BorderSoftness;
+                    ICommand Setter(double v) => new TransitionWipeSetCommand
+                    {
+                        Index = me.Item1,
+                        Mask = TransitionWipeSetCommand.MaskFlags.BorderSoftness,
+                        BorderSoftness = v
+                    };
 
-                DoubleValueComparer.Run(helper, Setter, sdkProps.GetSoftness, Getter, testValues, 100);
+                    double? Getter() => helper.FindWithMatching(new TransitionWipeGetCommand {Index = me.Item1 })?.BorderSoftness;
+
+                    DoubleValueComparer.Run(helper, Setter, me.Item2.GetSoftness, Getter, testValues, 100);
+                    DoubleValueComparer.Fail(helper, Setter, me.Item2.GetSoftness, Getter, badValues, 100);
+                }
             }
         }
         
@@ -205,25 +210,26 @@ namespace AtemEmulator.ComparisonTests.MixEffects
         {
             using (var helper = new AtemComparisonHelper(Client))
             {
-                var sdkProps = GetMixEffect<IBMDSwitcherTransitionWipeParameters>();
-                Assert.NotNull(sdkProps);
-
-                // Not all props support XPosition
-                sdkProps.SetPattern(_BMDSwitcherPatternStyle.bmdSwitcherPatternStyleCircleIris);
-
-
-                double[] testValues = { 0.76, 0.24, 0.97};
-
-                ICommand Setter(double v) => new TransitionWipeSetCommand
+                foreach (var me in GetMixEffects<IBMDSwitcherTransitionWipeParameters>())
                 {
-                    Index = MixEffectBlockId.One,
-                    Mask = TransitionWipeSetCommand.MaskFlags.XPosition,
-                    XPosition = v
-                };
+                    // Not all props support XPosition
+                    me.Item2.SetPattern(_BMDSwitcherPatternStyle.bmdSwitcherPatternStyleCircleIris);
 
-                double? Getter() => helper.FindWithMatching(new TransitionWipeGetCommand { Index = MixEffectBlockId.One })?.XPosition;
+                    double[] testValues = { 0, 0.874, 0.147, 0.999, 1.00, 0.01 };
+                    double[] badValues = { 1.001, 1.1, 1.01, -0.01, -1, -0.10 };
 
-                DoubleValueComparer.Run(helper, Setter, sdkProps.GetHorizontalOffset, Getter, testValues);
+                    ICommand Setter(double v) => new TransitionWipeSetCommand
+                    {
+                        Index = me.Item1,
+                        Mask = TransitionWipeSetCommand.MaskFlags.XPosition,
+                        XPosition = v
+                    };
+
+                    double? Getter() => helper.FindWithMatching(new TransitionWipeGetCommand {Index = me.Item1})?.XPosition;
+
+                    DoubleValueComparer.Run(helper, Setter, me.Item2.GetHorizontalOffset, Getter, testValues);
+                    DoubleValueComparer.Fail(helper, Setter, me.Item2.GetHorizontalOffset, Getter, badValues);
+                }
             }
         }
 
@@ -232,24 +238,26 @@ namespace AtemEmulator.ComparisonTests.MixEffects
         {
             using (var helper = new AtemComparisonHelper(Client))
             {
-                var sdkProps = GetMixEffect<IBMDSwitcherTransitionWipeParameters>();
-                Assert.NotNull(sdkProps);
-
-                // Not all props support YPosition
-                sdkProps.SetPattern(_BMDSwitcherPatternStyle.bmdSwitcherPatternStyleCircleIris);
-                
-                double[] testValues = { 0.24, 0.37, 0.69 };
-
-                ICommand Setter(double v) => new TransitionWipeSetCommand
+                foreach (var me in GetMixEffects<IBMDSwitcherTransitionWipeParameters>())
                 {
-                    Index = MixEffectBlockId.One,
-                    Mask = TransitionWipeSetCommand.MaskFlags.YPosition,
-                    YPosition = v
-                };
+                    // Not all props support YPosition
+                    me.Item2.SetPattern(_BMDSwitcherPatternStyle.bmdSwitcherPatternStyleCircleIris);
 
-                double? Getter() => helper.FindWithMatching(new TransitionWipeGetCommand { Index = MixEffectBlockId.One })?.YPosition;
+                    double[] testValues = {0, 0.874, 0.147, 0.999, 1.00, 0.01};
+                    double[] badValues = {1.001, 1.1, 1.01, -0.01, -1, -0.10};
 
-                DoubleValueComparer.Run(helper, Setter, sdkProps.GetVerticalOffset, Getter, testValues);
+                    ICommand Setter(double v) => new TransitionWipeSetCommand
+                    {
+                        Index = MixEffectBlockId.One,
+                        Mask = TransitionWipeSetCommand.MaskFlags.YPosition,
+                        YPosition = v
+                    };
+
+                    double? Getter() => helper.FindWithMatching(new TransitionWipeGetCommand {Index = MixEffectBlockId.One})?.YPosition;
+
+                    DoubleValueComparer.Run(helper, Setter, me.Item2.GetVerticalOffset, Getter, testValues);
+                    DoubleValueComparer.Fail(helper, Setter, me.Item2.GetVerticalOffset, Getter, badValues);
+                }
             }
         }
         
@@ -258,21 +266,21 @@ namespace AtemEmulator.ComparisonTests.MixEffects
         {
             using (var helper = new AtemComparisonHelper(Client))
             {
-                var sdkProps = GetMixEffect<IBMDSwitcherTransitionWipeParameters>();
-                Assert.NotNull(sdkProps);
-
-                bool[] testValues = { true, false };
-
-                ICommand Setter(bool v) => new TransitionWipeSetCommand
+                foreach (var me in GetMixEffects<IBMDSwitcherTransitionWipeParameters>())
                 {
-                    Index = MixEffectBlockId.One,
-                    Mask = TransitionWipeSetCommand.MaskFlags.ReverseDirection,
-                    ReverseDirection = v
-                };
+                    bool[] testValues = {true, false};
 
-                bool? Getter() => helper.FindWithMatching(new TransitionWipeGetCommand { Index = MixEffectBlockId.One })?.ReverseDirection;
+                    ICommand Setter(bool v) => new TransitionWipeSetCommand
+                    {
+                        Index = me.Item1,
+                        Mask = TransitionWipeSetCommand.MaskFlags.ReverseDirection,
+                        ReverseDirection = v
+                    };
 
-                BoolValueComparer.Run(helper, Setter, sdkProps.GetReverse, Getter, testValues);
+                    bool? Getter() => helper.FindWithMatching(new TransitionWipeGetCommand {Index = me.Item1})?.ReverseDirection;
+
+                    BoolValueComparer.Run(helper, Setter, me.Item2.GetReverse, Getter, testValues);
+                }
             }
         }
 
@@ -281,21 +289,21 @@ namespace AtemEmulator.ComparisonTests.MixEffects
         {
             using (var helper = new AtemComparisonHelper(Client))
             {
-                var sdkProps = GetMixEffect<IBMDSwitcherTransitionWipeParameters>();
-                Assert.NotNull(sdkProps);
-
-                bool[] testValues = {true, false};
-
-                ICommand Setter(bool v) => new TransitionWipeSetCommand
+                foreach (var me in GetMixEffects<IBMDSwitcherTransitionWipeParameters>())
                 {
-                    Index = MixEffectBlockId.One,
-                    Mask = TransitionWipeSetCommand.MaskFlags.FlipFlop,
-                    FlipFlop = v
-                };
+                    bool[] testValues = {true, false};
 
-                bool? Getter() => helper.FindWithMatching(new TransitionWipeGetCommand {Index = MixEffectBlockId.One})?.FlipFlop;
+                    ICommand Setter(bool v) => new TransitionWipeSetCommand
+                    {
+                        Index = me.Item1,
+                        Mask = TransitionWipeSetCommand.MaskFlags.FlipFlop,
+                        FlipFlop = v
+                    };
 
-                BoolValueComparer.Run(helper, Setter, sdkProps.GetFlipFlop, Getter, testValues);
+                    bool? Getter() => helper.FindWithMatching(new TransitionWipeGetCommand {Index = me.Item1})?.FlipFlop;
+
+                    BoolValueComparer.Run(helper, Setter, me.Item2.GetFlipFlop, Getter, testValues);
+                }
             }
         }
     }

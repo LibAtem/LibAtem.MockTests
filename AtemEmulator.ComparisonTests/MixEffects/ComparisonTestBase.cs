@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
 using BMDSwitcherAPI;
-using LibAtem.Util;
+using LibAtem.Common;
 using Xunit.Abstractions;
 
 namespace AtemEmulator.ComparisonTests.MixEffects
@@ -28,17 +28,43 @@ namespace AtemEmulator.ComparisonTests.MixEffects
             return meBlock as T;
         }
 
-        protected List<T> GetKeyers<T>() where T : class
+        protected List<Tuple<MixEffectBlockId, T>> GetMixEffects<T>() where T : class
         {
-            IBMDSwitcherMixEffectBlock me = GetMixEffect<IBMDSwitcherMixEffectBlock>();
+            Guid itId = typeof(IBMDSwitcherMixEffectBlockIterator).GUID;
+            Client.SdkSwitcher.CreateIterator(ref itId, out IntPtr itPtr);
+            IBMDSwitcherMixEffectBlockIterator iterator = (IBMDSwitcherMixEffectBlockIterator)Marshal.GetObjectForIUnknown(itPtr);
 
-            Guid itId = typeof(IBMDSwitcherKeyIterator).GUID;
-            me.CreateIterator(ref itId, out IntPtr itPtr);
-            IBMDSwitcherKeyIterator iterator = (IBMDSwitcherKeyIterator)Marshal.GetObjectForIUnknown(itPtr);
+            var result = new List<Tuple<MixEffectBlockId, T>>();
+            int index = 0;
+            for (iterator.Next(out IBMDSwitcherMixEffectBlock r); r != null; iterator.Next(out r))
+            {
+                if (r is T rt)
+                    result.Add(Tuple.Create((MixEffectBlockId) index, rt));
+                index++;
+            }
 
-            List<T> result = new List<T>();
-            for (iterator.Next(out IBMDSwitcherKey r); r != null; iterator.Next(out r))
-                result.AddIfNotNull(r as T);
+            return result;
+        }
+
+        protected List<Tuple<MixEffectBlockId, UpstreamKeyId, T>> GetKeyers<T>() where T : class
+        {
+            var result = new List<Tuple<MixEffectBlockId, UpstreamKeyId, T>>();
+
+            List<Tuple<MixEffectBlockId, IBMDSwitcherMixEffectBlock>> mes = GetMixEffects<IBMDSwitcherMixEffectBlock>();
+            foreach (var me in mes)
+            {
+                Guid itId = typeof(IBMDSwitcherKeyIterator).GUID;
+                me.Item2.CreateIterator(ref itId, out IntPtr itPtr);
+                IBMDSwitcherKeyIterator iterator = (IBMDSwitcherKeyIterator) Marshal.GetObjectForIUnknown(itPtr);
+
+                int o = 0;
+                for (iterator.Next(out IBMDSwitcherKey r); r != null; iterator.Next(out r))
+                {
+                    if (r is T rt)
+                        result.Add(Tuple.Create(me.Item1, (UpstreamKeyId) o, rt));
+                    o++;
+                }
+            }
 
             return result;
         }

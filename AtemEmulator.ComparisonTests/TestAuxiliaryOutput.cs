@@ -1,9 +1,11 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using AtemEmulator.ComparisonTests.Util;
 using BMDSwitcherAPI;
 using LibAtem.Commands;
 using LibAtem.Common;
+using LibAtem.DeviceProfile;
 using LibAtem.XmlState;
 using Xunit;
 using Xunit.Abstractions;
@@ -35,15 +37,11 @@ namespace AtemEmulator.ComparisonTests
         }
 
         [Fact]
-        public void TestAuxProperties()
+        public void TestAuxSource()
         {
             using (var helper = new AtemComparisonHelper(_client))
             {
-                Dictionary<VideoSource, IBMDSwitcherInputAux> sdkAux = helper.GetSdkInputsOfType<IBMDSwitcherInputAux>();
-
-                var failures = new List<string>();
-
-                foreach (KeyValuePair<VideoSource, IBMDSwitcherInputAux> a in sdkAux)
+                foreach (KeyValuePair<VideoSource, IBMDSwitcherInputAux> a in helper.GetSdkInputsOfType<IBMDSwitcherInputAux>())
                 {
                     AuxiliaryId auxId = GetAuxId(a.Key);
                     IBMDSwitcherInputAux aux = a.Value;
@@ -51,37 +49,22 @@ namespace AtemEmulator.ComparisonTests
                     // GetInputAvailabilityMask is used when checking if another input can be used for this output.
                     // We track this another way
                     aux.GetInputAvailabilityMask(out _BMDSwitcherInputAvailability availabilityMask);
-                    if (availabilityMask != (_BMDSwitcherInputAvailability) ((int)SourceAvailability.Auxiliary << 2))
-                        failures.Add("Incorrect SourceAvailability value");
+                    Assert.Equal(availabilityMask, (_BMDSwitcherInputAvailability) ((int) SourceAvailability.Auxiliary << 2));
 
-                    failures.AddRange(CheckAuxProps(helper, aux, auxId));
-                    helper.ClearReceivedCommands();
+                    long[] testValues = VideoSourceLists.All.Where(s => s.IsAvailable(_client.Profile, InternalPortType.Mask) && s.IsAvailable(SourceAvailability.Auxiliary)).Select(s => (long)s).ToArray();
+                    long[] badValues = VideoSourceLists.All.Select(s => (long)s).Where(s => !testValues.Contains(s)).ToArray();
 
-                    // Now try changing value and ensure an update is received
-
-                    helper.SendCommand(new AuxSourceSetCommand
+                    ICommand Setter(long v) => new AuxSourceSetCommand
                     {
                         Id = auxId,
-                        Source = VideoSource.Color1
-                    });
-                    helper.Sleep();
-                    failures.AddRange(CheckAuxProps(helper, aux, auxId, VideoSource.Color1));
-                    if (helper.CountAndClearReceivedCommands<AuxSourceGetCommand>() == 0)
-                        failures.Add("No response when setting aux input");
+                        Source = (VideoSource)v,
+                    };
 
-                    helper.SendCommand(new AuxSourceSetCommand
-                    {
-                        Id = auxId,
-                        Source = VideoSource.Input2
-                    });
-                    helper.Sleep();
-                    failures.AddRange(CheckAuxProps(helper, aux, auxId, VideoSource.Input2));
-                    if (helper.CountAndClearReceivedCommands<AuxSourceGetCommand>() == 0)
-                        failures.Add("No response when setting aux input");
+                    long? Getter() => (long?)helper.FindWithMatching(new AuxSourceGetCommand { Id = auxId })?.Source;
+
+                    ValueTypeComparer<long>.Run(helper, Setter, aux.GetInputSource, Getter, testValues);
+                    ValueTypeComparer<long>.Fail(helper, Setter, aux.GetInputSource, Getter, badValues);   
                 }
-
-                failures.ForEach(f => _output.WriteLine(f));
-                Assert.Equal(new List<string>(), failures);
             }
         }
 

@@ -40,10 +40,14 @@ namespace AtemEmulator.ComparisonTests.Util
 
         public static void Fail(AtemComparisonHelper helper, Func<T, ICommand> setter, SdkGetter getter, Func<T?> libget, T newVal)
         {
+            getter(out T val);
+            if (val.Equals(newVal))
+                return;
+
             helper.SendCommand(setter(newVal));
             helper.Sleep();
 
-            getter(out T val);
+            getter(out val);
             T? libVal = libget();
 
             Assert.NotNull(libVal);

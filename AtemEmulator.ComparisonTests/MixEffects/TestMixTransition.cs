@@ -21,20 +21,22 @@ namespace AtemEmulator.ComparisonTests.MixEffects
         {
             using (var helper = new AtemComparisonHelper(Client))
             {
-                var sdkProps = GetMixEffect<IBMDSwitcherTransitionMixParameters>();
-                Assert.NotNull(sdkProps);
-
-                uint[] testValues = { 18, 28, 95 };
-
-                ICommand Setter(uint v) => new TransitionMixSetCommand
+                foreach (var me in GetMixEffects<IBMDSwitcherTransitionMixParameters>())
                 {
-                    Index = MixEffectBlockId.One,
-                    Rate = v,
-                };
+                    uint[] testValues = {1, 18, 28, 95, 234, 244, 250};
+                    uint[] badValues = {251, 255, 0};
+                    
+                    ICommand Setter(uint v) => new TransitionMixSetCommand
+                    {
+                        Index = me.Item1,
+                        Rate = v,
+                    };
 
-                uint? Getter() => helper.FindWithMatching(new TransitionMixGetCommand { Index = MixEffectBlockId.One })?.Rate;
+                    uint? Getter() => helper.FindWithMatching(new TransitionMixGetCommand {Index = me.Item1})?.Rate;
 
-                ValueTypeComparer<uint>.Run(helper, Setter, sdkProps.GetRate, Getter, testValues);
+                    ValueTypeComparer<uint>.Run(helper, Setter, me.Item2.GetRate, Getter, testValues);
+                    ValueTypeComparer<uint>.Fail(helper, Setter, me.Item2.GetRate, Getter, badValues);
+                }
             }
         }
     }

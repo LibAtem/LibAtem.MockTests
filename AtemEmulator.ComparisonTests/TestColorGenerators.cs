@@ -1,25 +1,23 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using AtemEmulator.ComparisonTests.Util;
 using BMDSwitcherAPI;
 using LibAtem.Commands;
 using LibAtem.Common;
 using LibAtem.XmlState;
 using Xunit;
-using Xunit.Abstractions;
 
 namespace AtemEmulator.ComparisonTests
 {
     [Collection("Client")]
     public class TestColorGenerators
     {
-        private readonly ITestOutputHelper _output;
         private readonly AtemClientWrapper _client;
 
-        public TestColorGenerators(ITestOutputHelper output, AtemClientWrapper client)
+        public TestColorGenerators(AtemClientWrapper client)
         {
             _client = client;
-            _output = output;
         }
 
         [Fact]
@@ -35,74 +33,86 @@ namespace AtemEmulator.ComparisonTests
         }
 
         [Fact]
-        public void TestColorGenProperties()
+        public void TestColorGenHue()
         {
             using (var helper = new AtemComparisonHelper(_client))
             {
-                Dictionary<VideoSource, IBMDSwitcherInputColor> sdkCols = helper.GetSdkInputsOfType<IBMDSwitcherInputColor>();
-
-                var failures = new List<string>();
-
-                foreach(KeyValuePair<VideoSource, IBMDSwitcherInputColor> c in sdkCols)
+                foreach (KeyValuePair<VideoSource, IBMDSwitcherInputColor> c in helper.GetSdkInputsOfType<IBMDSwitcherInputColor>())
                 {
                     ColorGeneratorId colId = GetSourceIdForGen(c.Key);
                     IBMDSwitcherInputColor sdkCol = c.Value;
                     
-                    failures.AddRange(CheckColGenProps(helper, sdkCol, colId));
-                    helper.ClearReceivedCommands();
-                    
-                    // Now try changing values in differenc combinations and ensure an update is received
+                    double[] testValues = {0, 123, 233.4, 359.9};
+                    double[] badValues = {360, 360.1, 361, -1, -0.01};
 
-                    helper.SendCommand(new ColorGeneratorSetCommand
-                    {
-                        Index = colId,
-                        Mask = ColorGeneratorSetCommand.MaskFlags.Luma | ColorGeneratorSetCommand.MaskFlags.Hue |
-                               ColorGeneratorSetCommand.MaskFlags.Saturation,
-                        Hue = 62 * (int) colId,
-                        Luma = 16 * (int) colId,
-                        Saturation = 22.8 * (int) colId,
-                    });
-                    helper.Sleep();
-                    failures.AddRange(CheckColGenProps(helper, sdkCol, colId));
-                    if (helper.CountAndClearReceivedCommands<ColorGeneratorGetCommand>() == 0)
-                        failures.Add("No response when setting all color values");
-
-                    helper.SendCommand(new ColorGeneratorSetCommand
-                    {
-                        Index = colId,
-                        Mask = ColorGeneratorSetCommand.MaskFlags.Luma,
-                        Luma = 32 * (int)colId,
-                    });
-                    helper.Sleep();
-                    failures.AddRange(CheckColGenProps(helper, sdkCol, colId));
-                    if (helper.CountAndClearReceivedCommands<ColorGeneratorGetCommand>() == 0)
-                        failures.Add("No response when setting luma color value");
-
-                    helper.SendCommand(new ColorGeneratorSetCommand
+                    ICommand Setter(double v) => new ColorGeneratorSetCommand
                     {
                         Index = colId,
                         Mask = ColorGeneratorSetCommand.MaskFlags.Hue,
-                        Hue = 98 * (int)colId,
-                    });
-                    helper.Sleep();
-                    failures.AddRange(CheckColGenProps(helper, sdkCol, colId));
-                    if (helper.CountAndClearReceivedCommands<ColorGeneratorGetCommand>() == 0)
-                        failures.Add("No response when setting hue color value");
+                        Hue = v,
+                    };
 
-                    helper.SendCommand(new ColorGeneratorSetCommand
+                    double? Getter() => helper.FindWithMatching(new ColorGeneratorGetCommand {Index = colId})?.Hue;
+
+                    DoubleValueComparer.Run(helper, Setter, sdkCol.GetHue, Getter, testValues);
+                    DoubleValueComparer.Fail(helper, Setter, sdkCol.GetHue, Getter, badValues);
+                }
+            }
+        }
+
+        [Fact]
+        public void TestColorGenSaturation()
+        {
+            using (var helper = new AtemComparisonHelper(_client))
+            {
+                foreach (KeyValuePair<VideoSource, IBMDSwitcherInputColor> c in helper.GetSdkInputsOfType<IBMDSwitcherInputColor>())
+                {
+                    ColorGeneratorId colId = GetSourceIdForGen(c.Key);
+                    IBMDSwitcherInputColor sdkCol = c.Value;
+
+                    double[] testValues = {0, 100, 23, 87};
+                    double[] badValues = {100.1, 101, -0.1, -1};
+
+                    ICommand Setter(double v) => new ColorGeneratorSetCommand
+                    {
+                        Index = colId,
+                        Mask = ColorGeneratorSetCommand.MaskFlags.Saturation,
+                        Saturation = v,
+                    };
+
+                    double? Getter() => helper.FindWithMatching(new ColorGeneratorGetCommand { Index = colId })?.Saturation;
+
+                    DoubleValueComparer.Run(helper, Setter, sdkCol.GetSaturation, Getter, testValues, 100);
+                    DoubleValueComparer.Fail(helper, Setter, sdkCol.GetSaturation, Getter, badValues, 100);
+                }
+            }
+        }
+
+        [Fact]
+        public void TestColorGenLuma()
+        {
+            using (var helper = new AtemComparisonHelper(_client))
+            {
+                foreach (KeyValuePair<VideoSource, IBMDSwitcherInputColor> c in helper.GetSdkInputsOfType<IBMDSwitcherInputColor>())
+                {
+                    ColorGeneratorId colId = GetSourceIdForGen(c.Key);
+                    IBMDSwitcherInputColor sdkCol = c.Value;
+
+                    double[] testValues = { 0, 100, 23, 87 };
+                    double[] badValues = { 100.1, 101, -0.1, -1 };
+
+                    ICommand Setter(double v) => new ColorGeneratorSetCommand
                     {
                         Index = colId,
                         Mask = ColorGeneratorSetCommand.MaskFlags.Luma,
-                        Luma = 17.4 * (int)colId,
-                    });
-                    helper.Sleep();
-                    failures.AddRange(CheckColGenProps(helper, sdkCol, colId));
-                    if (helper.CountAndClearReceivedCommands<ColorGeneratorGetCommand>() == 0)
-                        failures.Add("No response when setting luma color value");
-                }
+                        Luma = v,
+                    };
 
-                failures.ForEach(f => _output.WriteLine(f));
-                Assert.Equal(new List<string>(), failures);
+                    double? Getter() => helper.FindWithMatching(new ColorGeneratorGetCommand { Index = colId })?.Luma;
+
+                    DoubleValueComparer.Run(helper, Setter, sdkCol.GetLuma, Getter, testValues, 100);
+                    DoubleValueComparer.Fail(helper, Setter, sdkCol.GetLuma, Getter, badValues, 100);
+                }
             }
         }
 
@@ -117,30 +127,6 @@ namespace AtemEmulator.ComparisonTests
                 default:
                     throw new Exception("Not a ColorGen");
             }
-        }
-
-        private static IEnumerable<string> CheckColGenProps(AtemComparisonHelper helper, IBMDSwitcherInputColor sdkProps, ColorGeneratorId id)
-        {
-            var colCmd = helper.FindWithMatching(new ColorGeneratorGetCommand { Index = id });
-            if (colCmd == null)
-            {
-                yield return string.Format("{0}: ColGen missing state props", id);
-                yield break;
-            }
-
-            sdkProps.GetHue(out double hue);
-            if (Math.Abs(colCmd.Hue - hue) > 0.01)
-                yield return string.Format("{0}: ColGen hue mismatch: {1}, {2}", id, hue, colCmd.Hue);
-
-            sdkProps.GetSaturation(out double saturation);
-            saturation *= 100;
-            if (Math.Abs(colCmd.Saturation - saturation) > 0.01)
-                yield return string.Format("{0}: ColGen saturation mismatch: {1}, {2}", id, saturation, colCmd.Saturation);
-
-            sdkProps.GetLuma(out double luma);
-            luma *= 100;
-            if (Math.Abs(colCmd.Luma - luma) > 0.01)
-                yield return string.Format("{0}: ColGen luma mismatch: {1}, {2}", id, luma, colCmd.Luma);
         }
     }
 }

@@ -27,6 +27,7 @@ namespace AtemEmulator.ComparisonTests.MixEffects
         [Fact]
         public void TestMixEffectProperties()
         {
+            // TODO - refactor to use ValueComparer
             using (var helper = new AtemComparisonHelper(_client))
             {
                 Guid itId = typeof(IBMDSwitcherMixEffectBlockIterator).GUID;

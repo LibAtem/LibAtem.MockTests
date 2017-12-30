@@ -47,8 +47,8 @@ namespace AtemEmulator.ComparisonTests.Util
             double? libVal = libget();
 
             Assert.NotNull(libVal);
-            Assert.True(Math.Abs(libVal.Value / scale - val) < 0.001);
-            Assert.False(Math.Abs(val - newVal / scale) < 0.001);
+            Assert.True(Math.Abs(libVal.Value / scale - val) < 0.0001);
+            Assert.False(Math.Abs(val - newVal / scale) < 0.0001);
         }
     }
 }

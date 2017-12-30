@@ -95,15 +95,15 @@ namespace AtemEmulator.ComparisonTests.Settings
         {
             using (var conn = new AtemComparisonHelper(_client))
             {
-                VideoMode? Libget() => conn.FindWithMatching(new VideoModeGetCommand())?.VideoMode;
+                VideoMode? Getter() => conn.FindWithMatching(new VideoModeGetCommand())?.VideoMode;
 
                 ICommand Setter(VideoMode v) => new VideoModeSetCommand { VideoMode = v };
 
                 VideoMode[] newVals = videoModes.Keys.Where(m => m.IsAvailable(conn.Profile)).ToArray();
-                VideoMode[] badVals = videoModes.Keys.Where(m => !m.IsAvailable(conn.Profile)).ToArray();
+                VideoMode[] badVals = videoModes.Keys.Where(m => !newVals.Contains(m)).ToArray();
 
-                EnumValueComparer<VideoMode, _BMDSwitcherVideoMode>.Run(conn, videoModes, Setter, conn.SdkSwitcher.GetVideoMode, Libget, newVals);
-                EnumValueComparer<VideoMode, _BMDSwitcherVideoMode>.Fail(conn, videoModes, Setter, conn.SdkSwitcher.GetVideoMode, Libget, badVals);
+                EnumValueComparer<VideoMode, _BMDSwitcherVideoMode>.Run(conn, videoModes, Setter, conn.SdkSwitcher.GetVideoMode, Getter, newVals);
+                EnumValueComparer<VideoMode, _BMDSwitcherVideoMode>.Fail(conn, videoModes, Setter, conn.SdkSwitcher.GetVideoMode, Getter, badVals);
             }
         }
 

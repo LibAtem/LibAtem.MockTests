@@ -1,8 +1,11 @@
+using System.Linq;
 using AtemEmulator.ComparisonTests.Util;
 using BMDSwitcherAPI;
 using LibAtem.Commands;
 using LibAtem.Commands.MixEffects.Transition;
 using LibAtem.Common;
+using LibAtem.DeviceProfile;
+using LibAtem.XmlState;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -21,22 +24,23 @@ namespace AtemEmulator.ComparisonTests.MixEffects
         {
             using (var helper = new AtemComparisonHelper(Client))
             {
-                var sdkProps = GetMixEffect<IBMDSwitcherTransitionDipParameters>();
-                Assert.NotNull(sdkProps);
-
-
-                uint[] testValues = { 18, 28, 95 };
-
-                ICommand Setter(uint v) => new TransitionDipSetCommand
+                foreach (var me in GetMixEffects<IBMDSwitcherTransitionDipParameters>())
                 {
-                    Index = MixEffectBlockId.One,
-                    Mask = TransitionDipSetCommand.MaskFlags.Rate,
-                    Rate = v,
-                };
+                    uint[] testValues = {1, 18, 28, 95, 234, 244, 250};
+                    uint[] badValues = {251, 255, 0};
+                    
+                    ICommand Setter(uint v) => new TransitionDipSetCommand
+                    {
+                        Index = me.Item1,
+                        Mask = TransitionDipSetCommand.MaskFlags.Rate,
+                        Rate = v,
+                    };
 
-                uint? Getter() => helper.FindWithMatching(new TransitionDipGetCommand { Index = MixEffectBlockId.One })?.Rate;
+                    uint? Getter() => helper.FindWithMatching(new TransitionDipGetCommand {Index = me.Item1})?.Rate;
 
-                ValueTypeComparer<uint>.Run(helper, Setter, sdkProps.GetRate, Getter, testValues);
+                    ValueTypeComparer<uint>.Run(helper, Setter, me.Item2.GetRate, Getter, testValues);
+                    ValueTypeComparer<uint>.Fail(helper, Setter, me.Item2.GetRate, Getter, badValues);
+                }
             }
         }
 
@@ -45,26 +49,23 @@ namespace AtemEmulator.ComparisonTests.MixEffects
         {
             using (var helper = new AtemComparisonHelper(Client))
             {
-                var sdkProps = GetMixEffect<IBMDSwitcherTransitionDipParameters>();
-                Assert.NotNull(sdkProps);
-                
-                long[] testValues =
+                foreach (var me in GetMixEffects<IBMDSwitcherTransitionDipParameters>())
                 {
-                    (long) VideoSource.Color1,
-                    (long) VideoSource.MediaPlayer1,
-                    (long) VideoSource.Input3
-                };
+                    long[] testValues = VideoSourceLists.All.Where(s => s.IsAvailable(Client.Profile) && s.IsAvailable(me.Item1)).Select(s => (long)s).ToArray();
+                    long[] badValues = VideoSourceLists.All.Select(s => (long)s).Where(s => !testValues.Contains(s)).ToArray();
 
-                ICommand Setter(long v) => new TransitionDipSetCommand
-                {
-                    Index = MixEffectBlockId.One,
-                    Mask = TransitionDipSetCommand.MaskFlags.Input,
-                    Input = (VideoSource)v,
-                };
+                    ICommand Setter(long v) => new TransitionDipSetCommand
+                    {
+                        Index = me.Item1,
+                        Mask = TransitionDipSetCommand.MaskFlags.Input,
+                        Input = (VideoSource) v,
+                    };
 
-                long? Getter() => (long?)helper.FindWithMatching(new TransitionDipGetCommand { Index = MixEffectBlockId.One })?.Input;
+                    long? Getter() => (long?) helper.FindWithMatching(new TransitionDipGetCommand {Index = me.Item1})?.Input;
 
-                ValueTypeComparer<long>.Run(helper, Setter, sdkProps.GetInputDip, Getter, testValues);
+                    ValueTypeComparer<long>.Run(helper, Setter, me.Item2.GetInputDip, Getter, testValues);
+                    ValueTypeComparer<long>.Fail(helper, Setter, me.Item2.GetInputDip, Getter, badValues);
+                }
             }
         }
     }
