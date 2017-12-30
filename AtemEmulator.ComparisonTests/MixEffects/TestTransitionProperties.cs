@@ -51,9 +51,14 @@ namespace AtemEmulator.ComparisonTests.MixEffects
         {
             using (var helper = new AtemComparisonHelper(Client))
             {
+                foreach (Tuple<MixEffectBlockId, UpstreamKeyId, IBMDSwitcherKey> key in GetKeyers<IBMDSwitcherKey>())
+                {
+                    key.Item3.SetType(_BMDSwitcherKeyType.bmdSwitcherKeyTypeLuma);
+                    key.Item3.SetOnAir(0);
+                }
+
                 foreach (var me in GetMixEffects<IBMDSwitcherTransitionParameters>())
                 {
-
                     ICommand Setter(TStyle v) => new TransitionPropertiesSetCommand()
                     {
                         Index = me.Item1,

@@ -180,7 +180,7 @@ namespace AtemEmulator.ComparisonTests.MixEffects
             {
                 foreach (var me in GetMixEffects<IBMDSwitcherTransitionStingerParameters>())
                 {
-                    uint[] testValues = {0, 1, 18, 28, 90, 123, 250};
+                    uint[] testValues = {0, 1, 18, 28, 90};
                     uint[] badValues = {999, 251};
 
                     ICommand Setter(uint v) => new TransitionStingerSetCommand

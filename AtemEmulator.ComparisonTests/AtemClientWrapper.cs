@@ -1,9 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Threading;
 using BMDSwitcherAPI;
+using log4net;
+using log4net.Config;
 using LibAtem.Commands;
 using LibAtem.Net;
 using Xunit;
@@ -44,6 +48,11 @@ namespace AtemEmulator.ComparisonTests
 
         public AtemClientWrapper()
         {
+            var logRepository = LogManager.GetRepository(Assembly.GetEntryAssembly());
+            XmlConfigurator.Configure(logRepository, new FileInfo("log4net.config"));
+            if (!logRepository.Configured) // Default to all on the console
+                BasicConfigurator.Configure(logRepository);
+
             const string address = "10.42.13.99";
 
             _lastReceivedLibAtem = new Dictionary<CommandQueueKey, ICommand>();
