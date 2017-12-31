@@ -16,7 +16,7 @@ namespace AtemEmulator.ComparisonTests.MixEffects
     [Collection("Client")]
     public class TestWipeTransition : ComparisonTestBase
     {
-        private static readonly IReadOnlyDictionary<Pattern, _BMDSwitcherPatternStyle> PatternMap;
+        public static readonly IReadOnlyDictionary<Pattern, _BMDSwitcherPatternStyle> PatternMap;
 
         static TestWipeTransition()
         {
