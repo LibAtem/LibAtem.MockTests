@@ -47,7 +47,7 @@ namespace LibAtem.ComparisonTests.MixEffects
             {
                 foreach (var key in GetKeyers<IBMDSwitcherKeyChromaParameters>())
                 {
-                    double[] testValues = { 0, 87.4, 14.7, 99.9, 100, 0.01 };
+                    double[] testValues = { 0, 87.4, 14.7, 99.9, 100, 0.1 };
                     double[] badValues = { 100.1, 110, 101, -0.01, -1, -10 };
 
                     ICommand Setter(double v) => new MixEffectKeyChromaSetCommand
@@ -73,7 +73,7 @@ namespace LibAtem.ComparisonTests.MixEffects
             {
                 foreach (var key in GetKeyers<IBMDSwitcherKeyChromaParameters>())
                 {
-                    double[] testValues = { 0, 87.4, 14.7, 99.9, 100, 0.01 };
+                    double[] testValues = { 0, 87.4, 14.7, 99.9, 100, 0.1 };
                     double[] badValues = { 100.1, 110, 101, -0.01, -1, -10 };
 
                     ICommand Setter(double v) => new MixEffectKeyChromaSetCommand
@@ -99,7 +99,7 @@ namespace LibAtem.ComparisonTests.MixEffects
             {
                 foreach (var key in GetKeyers<IBMDSwitcherKeyChromaParameters>())
                 {
-                    double[] testValues = { 0, 87.4, 14.7, 99.9, 100, 0.01 };
+                    double[] testValues = { 0, 87.4, 14.7, 99.9, 100, 0.1 };
                     double[] badValues = { 100.1, 110, 101, -0.01, -1, -10 };
 
                     ICommand Setter(double v) => new MixEffectKeyChromaSetCommand

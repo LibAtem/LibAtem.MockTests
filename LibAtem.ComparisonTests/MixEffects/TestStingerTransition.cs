@@ -107,7 +107,7 @@ namespace LibAtem.ComparisonTests.MixEffects
             {
                 foreach (var me in GetMixEffects<IBMDSwitcherTransitionStingerParameters>())
                 {
-                    double[] testValues = { 0, 87.4, 14.7, 99.9, 100, 0.01 };
+                    double[] testValues = { 0, 87.4, 14.7, 99.9, 100, 0.1 };
                     double[] badValues = { 100.1, 110, 101, -0.01, -1, -10 };
 
                     ICommand Setter(double v) => new TransitionStingerSetCommand
@@ -132,7 +132,7 @@ namespace LibAtem.ComparisonTests.MixEffects
             {
                 foreach (var me in GetMixEffects<IBMDSwitcherTransitionStingerParameters>())
                 {
-                    double[] testValues = {0, 87.4, 14.7, 99.9, 100, 0.01};
+                    double[] testValues = {0, 87.4, 14.7, 99.9, 100, 0.1};
                     double[] badValues = {100.1, 110, 101, -0.01, -1, -10};
 
                     ICommand Setter(double v) => new TransitionStingerSetCommand
