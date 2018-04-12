@@ -4,7 +4,7 @@ using System.Runtime.InteropServices;
 using BMDSwitcherAPI;
 using Xunit;
 
-namespace AtemEmulator.ComparisonTests.Settings
+namespace LibAtem.ComparisonTests.Settings
 {
     [Collection("Client")]
     public class TestMixMinusOutput

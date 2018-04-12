@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Xunit;
 
-namespace AtemEmulator.ComparisonTests.Util
+namespace LibAtem.ComparisonTests.Util
 {
     internal static class EnumMap
     {

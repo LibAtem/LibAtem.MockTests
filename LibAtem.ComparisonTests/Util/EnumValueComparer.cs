@@ -4,7 +4,7 @@ using LibAtem.Commands;
 using LibAtem.Util;
 using Xunit;
 
-namespace AtemEmulator.ComparisonTests.Util
+namespace LibAtem.ComparisonTests.Util
 {
     internal static class EnumValueComparer<T1, T2> where T1 : struct
     {

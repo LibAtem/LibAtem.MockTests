@@ -5,7 +5,7 @@ using BMDSwitcherAPI;
 using LibAtem.Common;
 using Xunit.Abstractions;
 
-namespace AtemEmulator.ComparisonTests.MixEffects
+namespace LibAtem.ComparisonTests.MixEffects
 {
     public abstract class ComparisonTestBase
     {

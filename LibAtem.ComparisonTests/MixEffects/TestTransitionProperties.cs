@@ -1,16 +1,16 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using AtemEmulator.ComparisonTests.Util;
 using BMDSwitcherAPI;
 using LibAtem.Commands;
 using LibAtem.Commands.MixEffects.Transition;
 using LibAtem.Common;
+using LibAtem.ComparisonTests.Util;
 using LibAtem.DeviceProfile;
 using Xunit;
 using Xunit.Abstractions;
 
-namespace AtemEmulator.ComparisonTests.MixEffects
+namespace LibAtem.ComparisonTests.MixEffects
 {
     [Collection("Client")]
     public class TestTransitionProperties : ComparisonTestBase

@@ -3,7 +3,7 @@ using LibAtem.Commands;
 using LibAtem.Util;
 using Xunit;
 
-namespace AtemEmulator.ComparisonTests.Util
+namespace LibAtem.ComparisonTests.Util
 {
     internal static class ValueTypeComparer<T> where T : struct
     {

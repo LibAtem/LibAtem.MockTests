@@ -2,15 +2,15 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.InteropServices;
-using AtemEmulator.ComparisonTests.Util;
 using BMDSwitcherAPI;
 using LibAtem.Commands;
 using LibAtem.Commands.Media;
 using LibAtem.Common;
+using LibAtem.ComparisonTests.Util;
 using Xunit;
 using Xunit.Abstractions;
 
-namespace AtemEmulator.ComparisonTests.Media
+namespace LibAtem.ComparisonTests.Media
 {
     [Collection("Client")]
     public class TestMediaPlayers

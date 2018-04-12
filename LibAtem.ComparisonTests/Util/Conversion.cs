@@ -1,7 +1,7 @@
 ﻿using BMDSwitcherAPI;
 using LibAtem.Common;
 
-namespace AtemEmulator.ComparisonTests.Util
+namespace LibAtem.ComparisonTests.Util
 {
     public static class Conversion
     {

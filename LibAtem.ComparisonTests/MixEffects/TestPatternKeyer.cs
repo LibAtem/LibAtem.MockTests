@@ -1,14 +1,14 @@
 using System;
 using System.Linq;
-using AtemEmulator.ComparisonTests.Util;
 using BMDSwitcherAPI;
 using LibAtem.Commands;
 using LibAtem.Commands.MixEffects.Key;
 using LibAtem.Common;
+using LibAtem.ComparisonTests.Util;
 using Xunit;
 using Xunit.Abstractions;
 
-namespace AtemEmulator.ComparisonTests.MixEffects
+namespace LibAtem.ComparisonTests.MixEffects
 {
     [Collection("Client")]
     public class TestPatternKeyer : ComparisonTestBase

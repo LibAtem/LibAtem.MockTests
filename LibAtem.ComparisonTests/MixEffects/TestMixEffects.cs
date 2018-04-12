@@ -8,7 +8,7 @@ using LibAtem.Common;
 using Xunit;
 using Xunit.Abstractions;
 
-namespace AtemEmulator.ComparisonTests.MixEffects
+namespace LibAtem.ComparisonTests.MixEffects
 {
     [Collection("Client")]
     public class TestMixEffects

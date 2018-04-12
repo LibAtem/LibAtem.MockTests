@@ -9,11 +9,11 @@ using BMDSwitcherAPI;
 using log4net;
 using log4net.Config;
 using LibAtem.Commands;
+using LibAtem.DeviceProfile;
 using LibAtem.Net;
 using Xunit;
-using LibAtem.DeviceProfile;
 
-namespace AtemEmulator.ComparisonTests
+namespace LibAtem.ComparisonTests
 {
     [CollectionDefinition("Client")]
     public class ClientCollection : ICollectionFixture<AtemClientWrapper>

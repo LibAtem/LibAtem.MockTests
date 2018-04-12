@@ -2,16 +2,16 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.InteropServices;
-using AtemEmulator.ComparisonTests.Util;
 using BMDSwitcherAPI;
 using LibAtem.Commands;
 using LibAtem.Commands.Settings.Multiview;
 using LibAtem.Common;
+using LibAtem.ComparisonTests.Util;
 using LibAtem.DeviceProfile;
 using Xunit;
 using Xunit.Abstractions;
 
-namespace AtemEmulator.ComparisonTests.Settings
+namespace LibAtem.ComparisonTests.Settings
 {
     [Collection("Client")]
     public class TestMultiView

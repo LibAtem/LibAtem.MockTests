@@ -1,12 +1,12 @@
 using System.Collections.Generic;
 using System.Linq;
-using AtemEmulator.ComparisonTests.Util;
 using BMDSwitcherAPI;
 using LibAtem.Commands.Settings;
 using LibAtem.Common;
+using LibAtem.ComparisonTests.Util;
 using Xunit;
 
-namespace AtemEmulator.ComparisonTests.Settings
+namespace LibAtem.ComparisonTests.Settings
 {
     [Collection("Client")]
     public class TestInputs

@@ -2,7 +2,7 @@ using BMDSwitcherAPI;
 using LibAtem.Commands.DeviceProfile;
 using Xunit;
 
-namespace AtemEmulator.ComparisonTests.DeviceProfile
+namespace LibAtem.ComparisonTests.DeviceProfile
 {
     [Collection("Client")]
     public class TestPowerStatus

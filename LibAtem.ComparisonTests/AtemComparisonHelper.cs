@@ -8,7 +8,7 @@ using LibAtem.Commands;
 using LibAtem.Common;
 using LibAtem.Util;
 
-namespace AtemEmulator.ComparisonTests
+namespace LibAtem.ComparisonTests
 {
     public sealed class AtemComparisonHelper : IDisposable
     {
