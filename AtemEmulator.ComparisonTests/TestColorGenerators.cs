@@ -5,7 +5,6 @@ using AtemEmulator.ComparisonTests.Util;
 using BMDSwitcherAPI;
 using LibAtem.Commands;
 using LibAtem.Common;
-using LibAtem.XmlState;
 using Xunit;
 
 namespace AtemEmulator.ComparisonTests

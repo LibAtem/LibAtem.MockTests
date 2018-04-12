@@ -6,7 +6,6 @@ using BMDSwitcherAPI;
 using LibAtem.Commands;
 using LibAtem.Common;
 using LibAtem.DeviceProfile;
-using LibAtem.XmlState;
 using Xunit;
 using Xunit.Abstractions;
 

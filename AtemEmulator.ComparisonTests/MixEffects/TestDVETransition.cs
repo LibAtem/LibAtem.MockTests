@@ -5,8 +5,6 @@ using LibAtem.Commands;
 using LibAtem.Commands.MixEffects.Transition;
 using LibAtem.Common;
 using LibAtem.DeviceProfile;
-using LibAtem.Util;
-using LibAtem.XmlState;
 using Xunit;
 using Xunit.Abstractions;
 

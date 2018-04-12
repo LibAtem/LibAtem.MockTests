@@ -8,10 +8,8 @@ using LibAtem.Commands;
 using LibAtem.Commands.Settings.Multiview;
 using LibAtem.Common;
 using LibAtem.DeviceProfile;
-using LibAtem.XmlState;
 using Xunit;
 using Xunit.Abstractions;
-using MultiView = LibAtem.XmlState.Settings.MultiView;
 
 namespace AtemEmulator.ComparisonTests.Settings
 {
@@ -77,7 +75,7 @@ namespace AtemEmulator.ComparisonTests.Settings
             foreach (Tuple<uint, IBMDSwitcherMultiView> sdkProps in GetMultiviewers())
             {
                 sdkProps.Item2.GetWindowCount(out uint count);
-                Assert.Equal(MultiView.WindowCount, count);
+                Assert.Equal(Constants.MultiViewWindowCount, count);
             }
         }
 
@@ -169,7 +167,7 @@ namespace AtemEmulator.ComparisonTests.Settings
                     long[] testValues = VideoSourceLists.All.Where(s => s.IsAvailable(_client.Profile, InternalPortType.Mask) && s.IsAvailable(SourceAvailability.Multiviewer)).Select(s => (long)s).ToArray();
                     long[] badValues = VideoSourceLists.All.Select(s => (long)s).Where(s => !testValues.Contains(s)).ToArray();
 
-                    uint unroutableWindows = _client.Profile.MultiView.CanRouteInputs ? 2 : MultiView.WindowCount;
+                    uint unroutableWindows = _client.Profile.MultiView.CanRouteInputs ? 2 : Constants.MultiViewWindowCount;
                     // Pvw/Pgm/unroutable windows
                     for (uint i = 0; i < unroutableWindows; i++)
                     {
@@ -188,7 +186,7 @@ namespace AtemEmulator.ComparisonTests.Settings
                     }
                     
                     // Routable windows
-                    for (uint i = unroutableWindows; i < MultiView.WindowCount; i++)
+                    for (uint i = unroutableWindows; i < Constants.MultiViewWindowCount; i++)
                     {
                         ICommand Setter(long v) => new MultiviewWindowInputSetCommand()
                         {
