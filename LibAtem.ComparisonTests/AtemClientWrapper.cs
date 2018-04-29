@@ -9,6 +9,7 @@ using BMDSwitcherAPI;
 using log4net;
 using log4net.Config;
 using LibAtem.Commands;
+using LibAtem.ComparisonTests.State;
 using LibAtem.DeviceProfile;
 using LibAtem.Net;
 using Xunit;
@@ -43,6 +44,9 @@ namespace LibAtem.ComparisonTests
 
         public LibAtem.DeviceProfile.DeviceProfile Profile => _profile.Profile;
 
+        private readonly AtemSDKComparisonMonitor _sdkState;
+        private readonly ComparisonState _libState;
+
         public delegate void CommandKeyHandler(object sender, CommandQueueKey key);
         public event CommandKeyHandler OnCommandKey;
 
@@ -59,6 +63,8 @@ namespace LibAtem.ComparisonTests
 
             _disposeEvent = new AutoResetEvent(false);
             _handshakeEvent = new AutoResetEvent(false);
+
+            _libState = new ComparisonState();
 
             ConnectLibAtem(address);
             
@@ -78,9 +84,13 @@ namespace LibAtem.ComparisonTests
             }
 
             _sdkSwitcher.AddCallback(new SwitcherConnectionMonitor()); // TODO - make this monitor work better!
+            _sdkState = new AtemSDKComparisonMonitor(_sdkSwitcher);
 
             WaitForHandshake();
         }
+
+        public ComparisonState SdkState => _sdkState.State.Clone();
+        public ComparisonState LibState => _libState.Clone();
 
         private void ConnectLibAtem(string address)
         {
@@ -105,6 +115,7 @@ namespace LibAtem.ComparisonTests
                 _disposeEvent.Set();
             };
             _client.OnReceive += _profile.HandleCommands;
+            _client.OnReceive += (s, commands) => ComparisonStateBuilder.Update(_libState, commands);
             _client.OnReceive += (s, commands) =>
             {
                 lock (_lastReceivedLibAtem)

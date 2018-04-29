@@ -5,24 +5,28 @@ using LibAtem.ComparisonTests.Util;
 using BMDSwitcherAPI;
 using LibAtem.Commands;
 using LibAtem.Common;
+using LibAtem.ComparisonTests.State;
 using Xunit;
+using Xunit.Abstractions;
 
 namespace LibAtem.ComparisonTests
 {
     [Collection("Client")]
     public class TestColorGenerators
     {
+        private readonly ITestOutputHelper _output;
         private readonly AtemClientWrapper _client;
 
-        public TestColorGenerators(AtemClientWrapper client)
+        public TestColorGenerators(ITestOutputHelper output, AtemClientWrapper client)
         {
+            _output = output;
             _client = client;
         }
 
         [Fact]
         public void TestColorGenCount()
         {
-            using (var helper = new AtemComparisonHelper(_client))
+            using (var helper = new AtemComparisonHelper(_client, _output))
             {
                 Dictionary<VideoSource, IBMDSwitcherInputColor> sdkCols = helper.GetSdkInputsOfType<IBMDSwitcherInputColor>();
                 Assert.Equal((int) helper.Profile.ColorGenerators, sdkCols.Count);
@@ -34,12 +38,11 @@ namespace LibAtem.ComparisonTests
         [Fact]
         public void TestColorGenHue()
         {
-            using (var helper = new AtemComparisonHelper(_client))
+            using (var helper = new AtemComparisonHelper(_client, _output))
             {
                 foreach (KeyValuePair<VideoSource, IBMDSwitcherInputColor> c in helper.GetSdkInputsOfType<IBMDSwitcherInputColor>())
                 {
                     ColorGeneratorId colId = GetSourceIdForGen(c.Key);
-                    IBMDSwitcherInputColor sdkCol = c.Value;
                     
                     double[] testValues = {0, 123, 233.4, 359.9};
                     double[] badValues = {360, 360.1, 361, -1, -0.01};
@@ -51,10 +54,15 @@ namespace LibAtem.ComparisonTests
                         Hue = v,
                     };
 
-                    double? Getter() => helper.FindWithMatching(new ColorGeneratorGetCommand {Index = colId})?.Hue;
+                    void UpdateExpectedState(ComparisonState state, double v) => state.Colors[colId].Hue = v;
+                    void UpdateFailedState(ComparisonState state, double v)
+                    {
+                        ushort ui = (ushort) ((ushort) (v * 10) % 3600);
+                        state.Colors[colId].Hue = ui / 10d;
+                    }
 
-                    DoubleValueComparer.Run(helper, Setter, sdkCol.GetHue, Getter, testValues);
-                    DoubleValueComparer.Fail(helper, Setter, sdkCol.GetHue, Getter, badValues);
+                    ValueTypeComparer<double>.Run(helper, Setter, UpdateExpectedState, testValues);
+                    ValueTypeComparer<double>.Fail(helper, Setter, UpdateFailedState, badValues);
                 }
             }
         }
@@ -62,12 +70,11 @@ namespace LibAtem.ComparisonTests
         [Fact]
         public void TestColorGenSaturation()
         {
-            using (var helper = new AtemComparisonHelper(_client))
+            using (var helper = new AtemComparisonHelper(_client, _output))
             {
                 foreach (KeyValuePair<VideoSource, IBMDSwitcherInputColor> c in helper.GetSdkInputsOfType<IBMDSwitcherInputColor>())
                 {
                     ColorGeneratorId colId = GetSourceIdForGen(c.Key);
-                    IBMDSwitcherInputColor sdkCol = c.Value;
 
                     double[] testValues = {0, 100, 23, 87};
                     double[] badValues = {100.1, 101, -0.1, -1};
@@ -79,10 +86,11 @@ namespace LibAtem.ComparisonTests
                         Saturation = v,
                     };
 
-                    double? Getter() => helper.FindWithMatching(new ColorGeneratorGetCommand { Index = colId })?.Saturation;
+                    void UpdateExpectedState(ComparisonState state, double v) => state.Colors[colId].Saturation = v;
+                    void UpdateFailedState(ComparisonState state, double v) => state.Colors[colId].Saturation = v >= 100 ? 100 : 0;
 
-                    DoubleValueComparer.Run(helper, Setter, sdkCol.GetSaturation, Getter, testValues, 100);
-                    DoubleValueComparer.Fail(helper, Setter, sdkCol.GetSaturation, Getter, badValues, 100);
+                    ValueTypeComparer<double>.Run(helper, Setter, UpdateExpectedState, testValues);
+                    ValueTypeComparer<double>.Fail(helper, Setter, UpdateFailedState, badValues);
                 }
             }
         }
@@ -90,12 +98,11 @@ namespace LibAtem.ComparisonTests
         [Fact]
         public void TestColorGenLuma()
         {
-            using (var helper = new AtemComparisonHelper(_client))
+            using (var helper = new AtemComparisonHelper(_client, _output))
             {
                 foreach (KeyValuePair<VideoSource, IBMDSwitcherInputColor> c in helper.GetSdkInputsOfType<IBMDSwitcherInputColor>())
                 {
                     ColorGeneratorId colId = GetSourceIdForGen(c.Key);
-                    IBMDSwitcherInputColor sdkCol = c.Value;
 
                     double[] testValues = { 0, 100, 23, 87 };
                     double[] badValues = { 100.1, 101, -0.1, -1 };
@@ -107,10 +114,11 @@ namespace LibAtem.ComparisonTests
                         Luma = v,
                     };
 
-                    double? Getter() => helper.FindWithMatching(new ColorGeneratorGetCommand { Index = colId })?.Luma;
+                    void UpdateExpectedState(ComparisonState state, double v) => state.Colors[colId].Luma = v;
+                    void UpdateFailedState(ComparisonState state, double v) => state.Colors[colId].Luma = v >= 100 ? 100 : 0;
 
-                    DoubleValueComparer.Run(helper, Setter, sdkCol.GetLuma, Getter, testValues, 100);
-                    DoubleValueComparer.Fail(helper, Setter, sdkCol.GetLuma, Getter, badValues, 100);
+                    ValueTypeComparer<double>.Run(helper, Setter, UpdateExpectedState, testValues);
+                    ValueTypeComparer<double>.Fail(helper, Setter, UpdateFailedState, badValues);
                 }
             }
         }

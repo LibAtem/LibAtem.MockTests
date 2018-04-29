@@ -6,7 +6,9 @@ using System.Threading;
 using BMDSwitcherAPI;
 using LibAtem.Commands;
 using LibAtem.Common;
+using LibAtem.ComparisonTests.State;
 using LibAtem.Util;
+using Xunit.Abstractions;
 
 namespace LibAtem.ComparisonTests
 {
@@ -20,10 +22,11 @@ namespace LibAtem.ComparisonTests
 
         private AutoResetEvent responseWait;
         private CommandQueueKey responseTarget;
-
-        public AtemComparisonHelper(AtemClientWrapper client)
+        
+        public AtemComparisonHelper(AtemClientWrapper client, ITestOutputHelper output = null)
         {
             _client = client;
+            Output = output;
             _receivedCommands = new List<ICommand>();
 
             _client.Client.OnReceive += OnReceive;
@@ -36,6 +39,11 @@ namespace LibAtem.ComparisonTests
                 _receivedCommands.AddRange(commands);
             }
         }
+
+        public ITestOutputHelper Output { get; }
+
+        public ComparisonState SdkState => _client.SdkState;
+        public ComparisonState LibState => _client.LibState;
 
         public IBMDSwitcher SdkSwitcher => _client.SdkSwitcher;
 
@@ -126,7 +134,7 @@ namespace LibAtem.ComparisonTests
             void Handler (object sender, CommandQueueKey queueKey){
                 if (queueKey.Equals(key))
                     responseWait.Set();
-            };
+            }
 
             _client.OnCommandKey += Handler;
 

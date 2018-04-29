@@ -4,6 +4,7 @@ using System.Linq;
 using BMDSwitcherAPI;
 using LibAtem.Commands;
 using LibAtem.Common;
+using LibAtem.ComparisonTests.State;
 using LibAtem.ComparisonTests.Util;
 using LibAtem.DeviceProfile;
 using Xunit;
@@ -26,7 +27,7 @@ namespace LibAtem.ComparisonTests
         [Fact]
         public void TestAuxCount()
         {
-            using (var helper = new AtemComparisonHelper(_client))
+            using (var helper = new AtemComparisonHelper(_client, _output))
             {
                 Dictionary<VideoSource, IBMDSwitcherInputAux> sdkAux = helper.GetSdkInputsOfType<IBMDSwitcherInputAux>();
                 Assert.Equal((int)helper.Profile.Auxiliaries, sdkAux.Count);
@@ -38,7 +39,7 @@ namespace LibAtem.ComparisonTests
         [Fact]
         public void TestAuxSource()
         {
-            using (var helper = new AtemComparisonHelper(_client))
+            using (var helper = new AtemComparisonHelper(_client, _output))
             {
                 foreach (KeyValuePair<VideoSource, IBMDSwitcherInputAux> a in helper.GetSdkInputsOfType<IBMDSwitcherInputAux>())
                 {
@@ -59,10 +60,10 @@ namespace LibAtem.ComparisonTests
                         Source = (VideoSource)v,
                     };
 
-                    long? Getter() => (long?)helper.FindWithMatching(new AuxSourceGetCommand { Id = auxId })?.Source;
+                    void UpdateExpectedState(ComparisonState state, long v) => state.Auxiliaries[auxId].Source = (VideoSource) v;
 
-                    ValueTypeComparer<long>.Run(helper, Setter, aux.GetInputSource, Getter, testValues);
-                    ValueTypeComparer<long>.Fail(helper, Setter, aux.GetInputSource, Getter, badValues);   
+                    ValueTypeComparer<long>.Run(helper, Setter, UpdateExpectedState, testValues);
+                    ValueTypeComparer<long>.Fail(helper, Setter, badValues);   
                 }
             }
         }
@@ -73,23 +74,6 @@ namespace LibAtem.ComparisonTests
                 return (AuxiliaryId)(id - VideoSource.Auxilary1);
 
             throw new Exception("Not an Aux");
-        }
-
-        private static IEnumerable<string> CheckAuxProps(AtemComparisonHelper helper, IBMDSwitcherInputAux sdkProps, AuxiliaryId id, VideoSource? expected=null)
-        {
-            var auxCmd = helper.FindWithMatching(new AuxSourceGetCommand { Id = id });
-            if (auxCmd == null)
-            {
-                yield return string.Format("{0}: Aux missing state props", id);
-                yield break;
-            }
-
-            sdkProps.GetInputSource(out long src);
-            if ((VideoSource)src != auxCmd.Source)
-                yield return string.Format("{0}: Aux source mismatch: {1}, {2}", id, (VideoSource)src, auxCmd.Source);
-
-            if (expected != null && expected.Value != auxCmd.Source)
-                yield return string.Format("{0}: Aux source mismatch: {1}, {2}", id, expected, auxCmd.Source);
         }
     }
 }
