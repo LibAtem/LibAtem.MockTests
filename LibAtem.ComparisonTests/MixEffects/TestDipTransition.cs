@@ -3,6 +3,7 @@ using BMDSwitcherAPI;
 using LibAtem.Commands;
 using LibAtem.Commands.MixEffects.Transition;
 using LibAtem.Common;
+using LibAtem.ComparisonTests.State;
 using LibAtem.ComparisonTests.Util;
 using LibAtem.DeviceProfile;
 using Xunit;
@@ -21,7 +22,7 @@ namespace LibAtem.ComparisonTests.MixEffects
         [Fact]
         public void TestDipRate()
         {
-            using (var helper = new AtemComparisonHelper(Client))
+            using (var helper = new AtemComparisonHelper(Client, Output))
             {
                 foreach (var me in GetMixEffects<IBMDSwitcherTransitionDipParameters>())
                 {
@@ -35,10 +36,11 @@ namespace LibAtem.ComparisonTests.MixEffects
                         Rate = v,
                     };
 
-                    uint? Getter() => helper.FindWithMatching(new TransitionDipGetCommand {Index = me.Item1})?.Rate;
+                    void UpdateExpectedState(ComparisonState state, uint v) => state.MixEffects[me.Item1].Transition.Dip.Rate = v;
+                    void UpdateFailedState(ComparisonState state, uint v) => state.MixEffects[me.Item1].Transition.Dip.Rate = v >= 250 ? 250 : (uint) 1;
 
-                    ValueTypeComparer<uint>.Run(helper, Setter, me.Item2.GetRate, Getter, testValues);
-                    ValueTypeComparer<uint>.Fail(helper, Setter, me.Item2.GetRate, Getter, badValues);
+                    ValueTypeComparer<uint>.Run(helper, Setter, UpdateExpectedState, testValues);
+                    ValueTypeComparer<uint>.Fail(helper, Setter, UpdateFailedState, badValues);
                 }
             }
         }
@@ -46,7 +48,7 @@ namespace LibAtem.ComparisonTests.MixEffects
         [Fact]
         public void TestDipInput()
         {
-            using (var helper = new AtemComparisonHelper(Client))
+            using (var helper = new AtemComparisonHelper(Client, Output))
             {
                 foreach (var me in GetMixEffects<IBMDSwitcherTransitionDipParameters>())
                 {
@@ -60,10 +62,10 @@ namespace LibAtem.ComparisonTests.MixEffects
                         Input = (VideoSource) v,
                     };
 
-                    long? Getter() => (long?) helper.FindWithMatching(new TransitionDipGetCommand {Index = me.Item1})?.Input;
+                    void UpdateExpectedState(ComparisonState state, long v) => state.MixEffects[me.Item1].Transition.Dip.Input = (VideoSource)v;
 
-                    ValueTypeComparer<long>.Run(helper, Setter, me.Item2.GetInputDip, Getter, testValues);
-                    ValueTypeComparer<long>.Fail(helper, Setter, me.Item2.GetInputDip, Getter, badValues);
+                    ValueTypeComparer<long>.Run(helper, Setter, UpdateExpectedState, testValues);
+                    ValueTypeComparer<long>.Fail(helper, Setter, badValues);
                 }
             }
         }

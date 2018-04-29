@@ -1,6 +1,7 @@
 using BMDSwitcherAPI;
 using LibAtem.Commands;
 using LibAtem.Commands.MixEffects.Key;
+using LibAtem.ComparisonTests.State;
 using LibAtem.ComparisonTests.Util;
 using Xunit;
 using Xunit.Abstractions;
@@ -17,7 +18,7 @@ namespace LibAtem.ComparisonTests.MixEffects
         [Fact]
         public void TestChromaKeyerHue()
         {
-            using (var helper = new AtemComparisonHelper(Client))
+            using (var helper = new AtemComparisonHelper(Client, Output))
             {
                 foreach (var key in GetKeyers<IBMDSwitcherKeyChromaParameters>())
                 {
@@ -31,11 +32,16 @@ namespace LibAtem.ComparisonTests.MixEffects
                         Mask = MixEffectKeyChromaSetCommand.MaskFlags.Hue,
                         Hue = v,
                     };
+                    
+                    void UpdateExpectedState(ComparisonState state, double v) => state.MixEffects[key.Item1].Keyers[key.Item2].Chroma.Hue = v;
+                    void UpdateFailedState(ComparisonState state, double v)
+                    {
+                        ushort ui = (ushort)((ushort)(v * 10) % 3600);
+                        state.MixEffects[key.Item1].Keyers[key.Item2].Chroma.Hue = ui / 10d;
+                    }
 
-                    double? Getter() => helper.FindWithMatching(new MixEffectKeyChromaGetCommand { MixEffectIndex = key.Item1, KeyerIndex = key.Item2 })?.Hue;
-
-                    DoubleValueComparer.Run(helper, Setter, key.Item3.GetHue, Getter, testValues);
-                    DoubleValueComparer.Fail(helper, Setter, key.Item3.GetHue, Getter, badValues);
+                    ValueTypeComparer<double>.Run(helper, Setter, UpdateExpectedState, testValues);
+                    ValueTypeComparer<double>.Fail(helper, Setter, UpdateFailedState, badValues);
                 }
             }
         }
@@ -43,7 +49,7 @@ namespace LibAtem.ComparisonTests.MixEffects
         [Fact]
         public void TestChromaKeyerGain()
         {
-            using (var helper = new AtemComparisonHelper(Client))
+            using (var helper = new AtemComparisonHelper(Client, Output))
             {
                 foreach (var key in GetKeyers<IBMDSwitcherKeyChromaParameters>())
                 {
@@ -58,10 +64,11 @@ namespace LibAtem.ComparisonTests.MixEffects
                         Gain = v,
                     };
 
-                    double? Getter() => helper.FindWithMatching(new MixEffectKeyChromaGetCommand { MixEffectIndex = key.Item1, KeyerIndex = key.Item2 })?.Gain;
+                    void UpdateExpectedState(ComparisonState state, double v) => state.MixEffects[key.Item1].Keyers[key.Item2].Chroma.Gain = v;
+                    void UpdateFailedState(ComparisonState state, double v) => state.MixEffects[key.Item1].Keyers[key.Item2].Chroma.Gain = v >= 100 ? 100 : 0;
 
-                    DoubleValueComparer.Run(helper, Setter, key.Item3.GetGain, Getter, testValues, 100);
-                    DoubleValueComparer.Fail(helper, Setter, key.Item3.GetGain, Getter, badValues, 100);
+                    ValueTypeComparer<double>.Run(helper, Setter, UpdateExpectedState, testValues);
+                    ValueTypeComparer<double>.Fail(helper, Setter, UpdateFailedState, badValues);
                 }
             }
         }
@@ -69,7 +76,7 @@ namespace LibAtem.ComparisonTests.MixEffects
         [Fact]
         public void TestChromaKeyerYSuppress()
         {
-            using (var helper = new AtemComparisonHelper(Client))
+            using (var helper = new AtemComparisonHelper(Client, Output))
             {
                 foreach (var key in GetKeyers<IBMDSwitcherKeyChromaParameters>())
                 {
@@ -84,10 +91,11 @@ namespace LibAtem.ComparisonTests.MixEffects
                         YSuppress = v,
                     };
 
-                    double? Getter() => helper.FindWithMatching(new MixEffectKeyChromaGetCommand { MixEffectIndex = key.Item1, KeyerIndex = key.Item2 })?.YSuppress;
+                    void UpdateExpectedState(ComparisonState state, double v) => state.MixEffects[key.Item1].Keyers[key.Item2].Chroma.YSuppress = v;
+                    void UpdateFailedState(ComparisonState state, double v) => state.MixEffects[key.Item1].Keyers[key.Item2].Chroma.YSuppress = v >= 100 ? 100 : 0;
 
-                    DoubleValueComparer.Run(helper, Setter, key.Item3.GetYSuppress, Getter, testValues, 100);
-                    DoubleValueComparer.Fail(helper, Setter, key.Item3.GetYSuppress, Getter, badValues, 100);
+                    ValueTypeComparer<double>.Run(helper, Setter, UpdateExpectedState, testValues);
+                    ValueTypeComparer<double>.Fail(helper, Setter, UpdateFailedState, badValues);
                 }
             }
         }
@@ -95,7 +103,7 @@ namespace LibAtem.ComparisonTests.MixEffects
         [Fact]
         public void TestChromaKeyerLift()
         {
-            using (var helper = new AtemComparisonHelper(Client))
+            using (var helper = new AtemComparisonHelper(Client, Output))
             {
                 foreach (var key in GetKeyers<IBMDSwitcherKeyChromaParameters>())
                 {
@@ -110,10 +118,11 @@ namespace LibAtem.ComparisonTests.MixEffects
                         Lift = v,
                     };
 
-                    double? Getter() => helper.FindWithMatching(new MixEffectKeyChromaGetCommand { MixEffectIndex = key.Item1, KeyerIndex = key.Item2 })?.Lift;
+                    void UpdateExpectedState(ComparisonState state, double v) => state.MixEffects[key.Item1].Keyers[key.Item2].Chroma.Lift = v;
+                    void UpdateFailedState(ComparisonState state, double v) => state.MixEffects[key.Item1].Keyers[key.Item2].Chroma.Lift = v >= 100 ? 100 : 0;
 
-                    DoubleValueComparer.Run(helper, Setter, key.Item3.GetLift, Getter, testValues, 100);
-                    DoubleValueComparer.Fail(helper, Setter, key.Item3.GetLift, Getter, badValues, 100);
+                    ValueTypeComparer<double>.Run(helper, Setter, UpdateExpectedState, testValues);
+                    ValueTypeComparer<double>.Fail(helper, Setter, UpdateFailedState, badValues);
                 }
             }
         }
@@ -121,7 +130,7 @@ namespace LibAtem.ComparisonTests.MixEffects
         [Fact]
         public void TestChromaKeyerNarrow()
         {
-            using (var helper = new AtemComparisonHelper(Client))
+            using (var helper = new AtemComparisonHelper(Client, Output))
             {
                 foreach (var key in GetKeyers<IBMDSwitcherKeyChromaParameters>())
                 {
@@ -135,9 +144,9 @@ namespace LibAtem.ComparisonTests.MixEffects
                         Narrow = v,
                     };
 
-                    bool? Getter() => helper.FindWithMatching(new MixEffectKeyChromaGetCommand { MixEffectIndex = key.Item1, KeyerIndex = key.Item2 })?.Narrow;
+                    void UpdateExpectedState(ComparisonState state, bool v) => state.MixEffects[key.Item1].Keyers[key.Item2].Chroma.Narrow = v;
 
-                    BoolValueComparer.Run(helper, Setter, key.Item3.GetNarrow, Getter, testValues);
+                    ValueTypeComparer<bool>.Run(helper, Setter, UpdateExpectedState, testValues);
                 }
             }
         }

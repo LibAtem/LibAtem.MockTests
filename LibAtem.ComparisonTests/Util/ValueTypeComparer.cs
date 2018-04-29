@@ -24,10 +24,8 @@ namespace LibAtem.ComparisonTests.Util
 
             Assert.True(ComparisonStateComparer.AreEqual(helper.Output, origSdk, origLib));
 
-            helper.Output.WriteLine("Sending command");
             helper.SendCommand(setter(newVal));
             helper.Sleep();
-            helper.Output.WriteLine("Checking results");
 
             Assert.True(ComparisonStateComparer.AreEqual(helper.Output, origSdk, helper.SdkState));
             Assert.True(ComparisonStateComparer.AreEqual(helper.Output, origLib, helper.LibState));

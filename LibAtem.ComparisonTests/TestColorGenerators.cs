@@ -1,4 +1,3 @@
-using System;
 using System.Collections.Generic;
 using System.Linq;
 using LibAtem.ComparisonTests.Util;
@@ -42,7 +41,7 @@ namespace LibAtem.ComparisonTests
             {
                 foreach (KeyValuePair<VideoSource, IBMDSwitcherInputColor> c in helper.GetSdkInputsOfType<IBMDSwitcherInputColor>())
                 {
-                    ColorGeneratorId colId = GetSourceIdForGen(c.Key);
+                    ColorGeneratorId colId = AtemEnumMaps.GetSourceIdForGen(c.Key);
                     
                     double[] testValues = {0, 123, 233.4, 359.9};
                     double[] badValues = {360, 360.1, 361, -1, -0.01};
@@ -74,7 +73,7 @@ namespace LibAtem.ComparisonTests
             {
                 foreach (KeyValuePair<VideoSource, IBMDSwitcherInputColor> c in helper.GetSdkInputsOfType<IBMDSwitcherInputColor>())
                 {
-                    ColorGeneratorId colId = GetSourceIdForGen(c.Key);
+                    ColorGeneratorId colId = AtemEnumMaps.GetSourceIdForGen(c.Key);
 
                     double[] testValues = {0, 100, 23, 87};
                     double[] badValues = {100.1, 101, -0.1, -1};
@@ -102,7 +101,7 @@ namespace LibAtem.ComparisonTests
             {
                 foreach (KeyValuePair<VideoSource, IBMDSwitcherInputColor> c in helper.GetSdkInputsOfType<IBMDSwitcherInputColor>())
                 {
-                    ColorGeneratorId colId = GetSourceIdForGen(c.Key);
+                    ColorGeneratorId colId = AtemEnumMaps.GetSourceIdForGen(c.Key);
 
                     double[] testValues = { 0, 100, 23, 87 };
                     double[] badValues = { 100.1, 101, -0.1, -1 };
@@ -120,19 +119,6 @@ namespace LibAtem.ComparisonTests
                     ValueTypeComparer<double>.Run(helper, Setter, UpdateExpectedState, testValues);
                     ValueTypeComparer<double>.Fail(helper, Setter, UpdateFailedState, badValues);
                 }
-            }
-        }
-
-        private static ColorGeneratorId GetSourceIdForGen(VideoSource id)
-        {
-            switch (id)
-            {
-                case VideoSource.Color1:
-                    return ColorGeneratorId.One;
-                    case VideoSource.Color2:
-                        return ColorGeneratorId.Two;
-                default:
-                    throw new Exception("Not a ColorGen");
             }
         }
     }

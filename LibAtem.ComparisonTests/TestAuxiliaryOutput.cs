@@ -43,7 +43,7 @@ namespace LibAtem.ComparisonTests
             {
                 foreach (KeyValuePair<VideoSource, IBMDSwitcherInputAux> a in helper.GetSdkInputsOfType<IBMDSwitcherInputAux>())
                 {
-                    AuxiliaryId auxId = GetAuxId(a.Key);
+                    AuxiliaryId auxId = AtemEnumMaps.GetAuxId(a.Key);
                     IBMDSwitcherInputAux aux = a.Value;
 
                     // GetInputAvailabilityMask is used when checking if another input can be used for this output.
@@ -66,14 +66,6 @@ namespace LibAtem.ComparisonTests
                     ValueTypeComparer<long>.Fail(helper, Setter, badValues);   
                 }
             }
-        }
-
-        private static AuxiliaryId GetAuxId(VideoSource id)
-        {
-            if (id >= VideoSource.Auxilary1 && id <= VideoSource.Auxilary6)
-                return (AuxiliaryId)(id - VideoSource.Auxilary1);
-
-            throw new Exception("Not an Aux");
         }
     }
 }

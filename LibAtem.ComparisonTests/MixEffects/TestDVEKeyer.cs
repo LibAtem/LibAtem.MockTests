@@ -1,10 +1,10 @@
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using BMDSwitcherAPI;
 using LibAtem.Commands;
 using LibAtem.Commands.MixEffects.Key;
 using LibAtem.Common;
+using LibAtem.ComparisonTests.State;
 using LibAtem.ComparisonTests.Util;
 using Xunit;
 using Xunit.Abstractions;
@@ -14,19 +14,6 @@ namespace LibAtem.ComparisonTests.MixEffects
     [Collection("Client")]
     public class TestDVEKeyer : ComparisonTestBase
     {
-        private static readonly IReadOnlyDictionary<BorderBevel, _BMDSwitcherBorderBevelOption> BevelMap;
-
-        static TestDVEKeyer()
-        {
-            BevelMap = new Dictionary<BorderBevel, _BMDSwitcherBorderBevelOption>()
-            {
-                {BorderBevel.None, _BMDSwitcherBorderBevelOption.bmdSwitcherBorderBevelOptionNone},
-                {BorderBevel.InOut, _BMDSwitcherBorderBevelOption.bmdSwitcherBorderBevelOptionInOut},
-                {BorderBevel.In, _BMDSwitcherBorderBevelOption.bmdSwitcherBorderBevelOptionIn},
-                {BorderBevel.Out, _BMDSwitcherBorderBevelOption.bmdSwitcherBorderBevelOptionOut},
-            };
-        }
-
         public TestDVEKeyer(ITestOutputHelper output, AtemClientWrapper client) : base(output, client)
         {
         }
@@ -34,13 +21,13 @@ namespace LibAtem.ComparisonTests.MixEffects
         [Fact]
         public void EnsureBevelMapIsComplete()
         {
-            EnumMap.EnsureIsComplete(BevelMap);
+            EnumMap.EnsureIsComplete(AtemEnumMaps.BorderBevelMap);
         }
 
         [Fact]
         public void TestDVEKeyerShadowEnabled()
         {
-            using (var helper = new AtemComparisonHelper(Client))
+            using (var helper = new AtemComparisonHelper(Client, Output))
             {
                 foreach (var key in GetKeyers<IBMDSwitcherKeyDVEParameters>())
                 {
@@ -54,9 +41,9 @@ namespace LibAtem.ComparisonTests.MixEffects
                         ShadowEnabled = v,
                     };
 
-                    bool? Getter() => helper.FindWithMatching(new MixEffectKeyDVEGetCommand { MixEffectIndex = key.Item1, KeyerIndex = key.Item2 })?.BorderShadow;
+                    void UpdateExpectedState(ComparisonState state, bool v) => state.MixEffects[key.Item1].Keyers[key.Item2].DVE.BorderShadow = v;
 
-                    BoolValueComparer.Run(helper, Setter, key.Item3.GetShadow, Getter, testValues);
+                    ValueTypeComparer<bool>.Run(helper, Setter, UpdateExpectedState, testValues);
                 }
             }
         }
@@ -64,7 +51,7 @@ namespace LibAtem.ComparisonTests.MixEffects
         [Fact]
         public void TestDVEKeyerLightSourceDirection()
         {
-            using (var helper = new AtemComparisonHelper(Client))
+            using (var helper = new AtemComparisonHelper(Client, Output))
             {
                 foreach (var key in GetKeyers<IBMDSwitcherKeyDVEParameters>())
                 {
@@ -79,10 +66,15 @@ namespace LibAtem.ComparisonTests.MixEffects
                         LightSourceDirection = v,
                     };
 
-                    double? Getter() => helper.FindWithMatching(new MixEffectKeyDVEGetCommand { MixEffectIndex = key.Item1, KeyerIndex = key.Item2 })?.LightSourceDirection;
+                    void UpdateExpectedState(ComparisonState state, double v) => state.MixEffects[key.Item1].Keyers[key.Item2].DVE.LightSourceDirection = v;
+                    void UpdateFailedState(ComparisonState state, double v)
+                    {
+                        ushort ui = (ushort)((ushort)(v * 10) % 3600);
+                        state.MixEffects[key.Item1].Keyers[key.Item2].DVE.LightSourceDirection = ui / 10d;
+                    }
 
-                    DoubleValueComparer.Run(helper, Setter, key.Item3.GetLightSourceDirection, Getter, testValues);
-                    DoubleValueComparer.Fail(helper, Setter, key.Item3.GetLightSourceDirection, Getter, badValues);
+                    ValueTypeComparer<double>.Run(helper, Setter, UpdateExpectedState, testValues);
+                    ValueTypeComparer<double>.Fail(helper, Setter, UpdateFailedState, badValues);
                 }
             }
         }
@@ -90,7 +82,7 @@ namespace LibAtem.ComparisonTests.MixEffects
         [Fact]
         public void TestDVEKeyerLightSourceAltitude()
         {
-            using (var helper = new AtemComparisonHelper(Client))
+            using (var helper = new AtemComparisonHelper(Client, Output))
             {
                 foreach (var key in GetKeyers<IBMDSwitcherKeyDVEParameters>())
                 {
@@ -105,17 +97,11 @@ namespace LibAtem.ComparisonTests.MixEffects
                         LightSourceAltitude = v,
                     };
 
-                    uint? Getter() => helper.FindWithMatching(new MixEffectKeyDVEGetCommand { MixEffectIndex = key.Item1, KeyerIndex = key.Item2 })?.LightSourceAltitude;
-
-                    void SdkGetter(out uint val)
-                    {
-                        key.Item3.GetLightSourceAltitude(out double alt);
-                        val = (uint) (alt * 100);
-                    }
-
-                    ValueTypeComparer<uint>.Run(helper, Setter, SdkGetter, Getter, testValues);
+                    void UpdateExpectedState(ComparisonState state, uint v) => state.MixEffects[key.Item1].Keyers[key.Item2].DVE.LightSourceAltitude = v;
+                    
+                    ValueTypeComparer<uint>.Run(helper, Setter, UpdateExpectedState, testValues);
                     // Note: Limits are not enforced by atem
-                    // ValueTypeComparer<uint>.Fail(helper, Setter, SdkGetter, Getter, badValues);
+                    //ValueTypeComparer<double>.Fail(helper, Setter, UpdateFailedState, badValues);
                 }
             }
         }
@@ -123,7 +109,7 @@ namespace LibAtem.ComparisonTests.MixEffects
         [Fact]
         public void TestDVEKeyerBorderEnabled()
         {
-            using (var helper = new AtemComparisonHelper(Client))
+            using (var helper = new AtemComparisonHelper(Client, Output))
             {
                 foreach (var key in GetKeyers<IBMDSwitcherKeyDVEParameters>())
                 {
@@ -137,9 +123,9 @@ namespace LibAtem.ComparisonTests.MixEffects
                         BorderEnabled = v,
                     };
 
-                    bool? Getter() => helper.FindWithMatching(new MixEffectKeyDVEGetCommand { MixEffectIndex = key.Item1, KeyerIndex = key.Item2 })?.BorderEnabled;
+                    void UpdateExpectedState(ComparisonState state, bool v) => state.MixEffects[key.Item1].Keyers[key.Item2].DVE.BorderEnabled = v;
 
-                    BoolValueComparer.Run(helper, Setter, key.Item3.GetBorderEnabled, Getter, testValues);
+                    ValueTypeComparer<bool>.Run(helper, Setter, UpdateExpectedState, testValues);
                 }
             }
         }
@@ -147,7 +133,7 @@ namespace LibAtem.ComparisonTests.MixEffects
         [Fact]
         public void TestDVEKeyerBorderBevel()
         {
-            using (var helper = new AtemComparisonHelper(Client))
+            using (var helper = new AtemComparisonHelper(Client, Output))
             {
                 foreach (var key in GetKeyers<IBMDSwitcherKeyDVEParameters>())
                 {
@@ -161,9 +147,9 @@ namespace LibAtem.ComparisonTests.MixEffects
                         BorderBevel = v,
                     };
 
-                    BorderBevel? Getter() => helper.FindWithMatching(new MixEffectKeyDVEGetCommand { MixEffectIndex = key.Item1, KeyerIndex = key.Item2 })?.BorderBevel;
+                    void UpdateExpectedState(ComparisonState state, BorderBevel v) => state.MixEffects[key.Item1].Keyers[key.Item2].DVE.BorderBevel = v;
 
-                    EnumValueComparer<BorderBevel, _BMDSwitcherBorderBevelOption>.Run(helper, BevelMap, Setter, key.Item3.GetBorderBevel, Getter, testValues);
+                    ValueTypeComparer<BorderBevel>.Run(helper, Setter, UpdateExpectedState, testValues);
                 }
             }
         }
@@ -171,7 +157,7 @@ namespace LibAtem.ComparisonTests.MixEffects
         [Fact]
         public void TestDVEKeyerBorderWidthIn()
         {
-            using (var helper = new AtemComparisonHelper(Client))
+            using (var helper = new AtemComparisonHelper(Client, Output))
             {
                 Client.SdkSwitcher.SetVideoMode(_BMDSwitcherVideoMode.bmdSwitcherVideoMode720p50);
                 helper.Sleep();
@@ -189,10 +175,15 @@ namespace LibAtem.ComparisonTests.MixEffects
                         InnerWidth = v,
                     };
 
-                    double? Getter() => helper.FindWithMatching(new MixEffectKeyDVEGetCommand { MixEffectIndex = key.Item1, KeyerIndex = key.Item2 })?.InnerWidth;
+                    void UpdateExpectedState(ComparisonState state, double v) => state.MixEffects[key.Item1].Keyers[key.Item2].DVE.InnerWidth = v;
+                    void UpdateFailedState(ComparisonState state, double v)
+                    {
+                        ushort ui = (ushort)(v * 100);
+                        state.MixEffects[key.Item1].Keyers[key.Item2].DVE.InnerWidth = ui > 1600 ? 16 : 0;
+                    }
 
-                    DoubleValueComparer.Run(helper, Setter, key.Item3.GetBorderWidthIn, Getter, testValues);
-                    DoubleValueComparer.Fail(helper, Setter, key.Item3.GetBorderWidthIn, Getter, badValues);
+                    ValueTypeComparer<double>.Run(helper, Setter, UpdateExpectedState, testValues);
+                    ValueTypeComparer<double>.Fail(helper, Setter, UpdateFailedState, badValues);
                 }
 
                 Client.SdkSwitcher.SetVideoMode(_BMDSwitcherVideoMode.bmdSwitcherVideoMode625i50PAL);
@@ -211,10 +202,15 @@ namespace LibAtem.ComparisonTests.MixEffects
                         InnerWidth = v,
                     };
 
-                    double? Getter() => helper.FindWithMatching(new MixEffectKeyDVEGetCommand { MixEffectIndex = key.Item1, KeyerIndex = key.Item2 })?.InnerWidth;
+                    void UpdateExpectedState(ComparisonState state, double v) => state.MixEffects[key.Item1].Keyers[key.Item2].DVE.InnerWidth = v;
+                    void UpdateFailedState(ComparisonState state, double v)
+                    {
+                        ushort ui = (ushort)(v * 100);
+                        state.MixEffects[key.Item1].Keyers[key.Item2].DVE.InnerWidth = ui > 400 ? 4 : 0;
+                    }
 
-                    DoubleValueComparer.Run(helper, Setter, key.Item3.GetBorderWidthIn, Getter, testValues);
-                    DoubleValueComparer.Fail(helper, Setter, key.Item3.GetBorderWidthIn, Getter, badValues);
+                    ValueTypeComparer<double>.Run(helper, Setter, UpdateExpectedState, testValues);
+                    ValueTypeComparer<double>.Fail(helper, Setter, UpdateFailedState, badValues);
                 }
             }
         }
@@ -222,7 +218,7 @@ namespace LibAtem.ComparisonTests.MixEffects
         [Fact]
         public void TestDVEKeyerBorderWidthOuter()
         {
-            using (var helper = new AtemComparisonHelper(Client))
+            using (var helper = new AtemComparisonHelper(Client, Output))
             {
                 Client.SdkSwitcher.SetVideoMode(_BMDSwitcherVideoMode.bmdSwitcherVideoMode720p50);
                 helper.Sleep();
@@ -240,10 +236,15 @@ namespace LibAtem.ComparisonTests.MixEffects
                         OuterWidth = v,
                     };
 
-                    double? Getter() => helper.FindWithMatching(new MixEffectKeyDVEGetCommand { MixEffectIndex = key.Item1, KeyerIndex = key.Item2 })?.OuterWidth;
+                    void UpdateExpectedState(ComparisonState state, double v) => state.MixEffects[key.Item1].Keyers[key.Item2].DVE.OuterWidth = v;
+                    void UpdateFailedState(ComparisonState state, double v)
+                    {
+                        ushort ui = (ushort)(v * 100);
+                        state.MixEffects[key.Item1].Keyers[key.Item2].DVE.OuterWidth = ui > 1600 ? 16 : 0;
+                    }
 
-                    DoubleValueComparer.Run(helper, Setter, key.Item3.GetBorderWidthOut, Getter, testValues);
-                    DoubleValueComparer.Fail(helper, Setter, key.Item3.GetBorderWidthOut, Getter, badValues);
+                    ValueTypeComparer<double>.Run(helper, Setter, UpdateExpectedState, testValues);
+                    ValueTypeComparer<double>.Fail(helper, Setter, UpdateFailedState, badValues);
                 }
 
                 Client.SdkSwitcher.SetVideoMode(_BMDSwitcherVideoMode.bmdSwitcherVideoMode625i50PAL);
@@ -262,10 +263,15 @@ namespace LibAtem.ComparisonTests.MixEffects
                         OuterWidth = v,
                     };
 
-                    double? Getter() => helper.FindWithMatching(new MixEffectKeyDVEGetCommand { MixEffectIndex = key.Item1, KeyerIndex = key.Item2 })?.OuterWidth;
+                    void UpdateExpectedState(ComparisonState state, double v) => state.MixEffects[key.Item1].Keyers[key.Item2].DVE.OuterWidth = v;
+                    void UpdateFailedState(ComparisonState state, double v)
+                    {
+                        ushort ui = (ushort)(v * 100);
+                        state.MixEffects[key.Item1].Keyers[key.Item2].DVE.OuterWidth = ui > 400 ? 4 : 0;
+                    }
 
-                    DoubleValueComparer.Run(helper, Setter, key.Item3.GetBorderWidthOut, Getter, testValues);
-                    DoubleValueComparer.Fail(helper, Setter, key.Item3.GetBorderWidthOut, Getter, badValues);
+                    ValueTypeComparer<double>.Run(helper, Setter, UpdateExpectedState, testValues);
+                    ValueTypeComparer<double>.Fail(helper, Setter, UpdateFailedState, badValues);
                 }
             }
         }
@@ -273,7 +279,7 @@ namespace LibAtem.ComparisonTests.MixEffects
         [Fact]
         public void TestDVEKeyerBorderSoftnessIn()
         {
-            using (var helper = new AtemComparisonHelper(Client))
+            using (var helper = new AtemComparisonHelper(Client, Output))
             {
                 foreach (var key in GetKeyers<IBMDSwitcherKeyDVEParameters>())
                 {
@@ -288,16 +294,11 @@ namespace LibAtem.ComparisonTests.MixEffects
                         InnerSoftness = v,
                     };
 
-                    uint? Getter() => helper.FindWithMatching(new MixEffectKeyDVEGetCommand { MixEffectIndex = key.Item1, KeyerIndex = key.Item2 })?.InnerSoftness;
+                    void UpdateExpectedState(ComparisonState state, uint v) => state.MixEffects[key.Item1].Keyers[key.Item2].DVE.InnerSoftness = v;
+                    void UpdateFailedState(ComparisonState state, uint v) => state.MixEffects[key.Item1].Keyers[key.Item2].DVE.InnerSoftness = v > 100 ? 100 : (uint)0;
 
-                    void SdkGetter(out uint val)
-                    {
-                        key.Item3.GetBorderSoftnessIn(out double alt);
-                        val = (uint) (alt * 100);
-                    }
-
-                    ValueTypeComparer<uint>.Run(helper, Setter, SdkGetter, Getter, testValues);
-                    ValueTypeComparer<uint>.Fail(helper, Setter, SdkGetter, Getter, badValues);
+                    ValueTypeComparer<uint>.Run(helper, Setter, UpdateExpectedState, testValues);
+                    ValueTypeComparer<uint>.Fail(helper, Setter, UpdateFailedState, badValues);
                 }
             }
         }
@@ -305,7 +306,7 @@ namespace LibAtem.ComparisonTests.MixEffects
         [Fact]
         public void TestDVEKeyerBorderSoftnessOut()
         {
-            using (var helper = new AtemComparisonHelper(Client))
+            using (var helper = new AtemComparisonHelper(Client, Output))
             {
                 foreach (var key in GetKeyers<IBMDSwitcherKeyDVEParameters>())
                 {
@@ -320,16 +321,11 @@ namespace LibAtem.ComparisonTests.MixEffects
                         OuterSoftness = v,
                     };
 
-                    uint? Getter() => helper.FindWithMatching(new MixEffectKeyDVEGetCommand { MixEffectIndex = key.Item1, KeyerIndex = key.Item2 })?.OuterSoftness;
+                    void UpdateExpectedState(ComparisonState state, uint v) => state.MixEffects[key.Item1].Keyers[key.Item2].DVE.OuterSoftness = v;
+                    void UpdateFailedState(ComparisonState state, uint v) => state.MixEffects[key.Item1].Keyers[key.Item2].DVE.OuterSoftness = v > 100 ? 100 : (uint)0;
 
-                    void SdkGetter(out uint val)
-                    {
-                        key.Item3.GetBorderSoftnessOut(out double alt);
-                        val = (uint)(alt * 100);
-                    }
-
-                    ValueTypeComparer<uint>.Run(helper, Setter, SdkGetter, Getter, testValues);
-                    ValueTypeComparer<uint>.Fail(helper, Setter, SdkGetter, Getter, badValues);
+                    ValueTypeComparer<uint>.Run(helper, Setter, UpdateExpectedState, testValues);
+                    ValueTypeComparer<uint>.Fail(helper, Setter, UpdateFailedState, badValues);
                 }
             }
         }
@@ -337,7 +333,7 @@ namespace LibAtem.ComparisonTests.MixEffects
         [Fact]
         public void TestDVEKeyerBorderBevelSoftness()
         {
-            using (var helper = new AtemComparisonHelper(Client))
+            using (var helper = new AtemComparisonHelper(Client, Output))
             {
                 foreach (var key in GetKeyers<IBMDSwitcherKeyDVEParameters>())
                 {
@@ -352,16 +348,11 @@ namespace LibAtem.ComparisonTests.MixEffects
                         BevelSoftness = v,
                     };
 
-                    uint? Getter() => helper.FindWithMatching(new MixEffectKeyDVEGetCommand { MixEffectIndex = key.Item1, KeyerIndex = key.Item2 })?.BevelSoftness;
+                    void UpdateExpectedState(ComparisonState state, uint v) => state.MixEffects[key.Item1].Keyers[key.Item2].DVE.BevelSoftness = v;
+                    void UpdateFailedState(ComparisonState state, uint v) => state.MixEffects[key.Item1].Keyers[key.Item2].DVE.BevelSoftness = v > 100 ? 100 : (uint)0;
 
-                    void SdkGetter(out uint val)
-                    {
-                        key.Item3.GetBorderBevelSoftness(out double alt);
-                        val = (uint)(alt * 100);
-                    }
-
-                    ValueTypeComparer<uint>.Run(helper, Setter, SdkGetter, Getter, testValues);
-                    ValueTypeComparer<uint>.Fail(helper, Setter, SdkGetter, Getter, badValues);
+                    ValueTypeComparer<uint>.Run(helper, Setter, UpdateExpectedState, testValues);
+                    ValueTypeComparer<uint>.Fail(helper, Setter, UpdateFailedState, badValues);
                 }
             }
         }
@@ -369,7 +360,7 @@ namespace LibAtem.ComparisonTests.MixEffects
         [Fact]
         public void TestDVEKeyerBorderBevelPosition()
         {
-            using (var helper = new AtemComparisonHelper(Client))
+            using (var helper = new AtemComparisonHelper(Client, Output))
             {
                 foreach (var key in GetKeyers<IBMDSwitcherKeyDVEParameters>())
                 {
@@ -384,16 +375,11 @@ namespace LibAtem.ComparisonTests.MixEffects
                         BevelPosition = v,
                     };
 
-                    uint? Getter() => helper.FindWithMatching(new MixEffectKeyDVEGetCommand { MixEffectIndex = key.Item1, KeyerIndex = key.Item2 })?.BevelPosition;
+                    void UpdateExpectedState(ComparisonState state, uint v) => state.MixEffects[key.Item1].Keyers[key.Item2].DVE.BevelPosition = v;
+                    void UpdateFailedState(ComparisonState state, uint v) => state.MixEffects[key.Item1].Keyers[key.Item2].DVE.BevelPosition = v > 100 ? 100 : (uint)0;
 
-                    void SdkGetter(out uint val)
-                    {
-                        key.Item3.GetBorderBevelPosition(out double alt);
-                        val = (uint)(alt * 100);
-                    }
-
-                    ValueTypeComparer<uint>.Run(helper, Setter, SdkGetter, Getter, testValues);
-                    ValueTypeComparer<uint>.Fail(helper, Setter, SdkGetter, Getter, badValues);
+                    ValueTypeComparer<uint>.Run(helper, Setter, UpdateExpectedState, testValues);
+                    ValueTypeComparer<uint>.Fail(helper, Setter, UpdateFailedState, badValues);
                 }
             }
         }
@@ -401,7 +387,7 @@ namespace LibAtem.ComparisonTests.MixEffects
         [Fact]
         public void TestDVEKeyerBorderOpacity()
         {
-            using (var helper = new AtemComparisonHelper(Client))
+            using (var helper = new AtemComparisonHelper(Client, Output))
             {
                 foreach (var key in GetKeyers<IBMDSwitcherKeyDVEParameters>())
                 {
@@ -416,16 +402,11 @@ namespace LibAtem.ComparisonTests.MixEffects
                         BorderOpacity = v,
                     };
 
-                    uint? Getter() => helper.FindWithMatching(new MixEffectKeyDVEGetCommand { MixEffectIndex = key.Item1, KeyerIndex = key.Item2 })?.BorderOpacity;
+                    void UpdateExpectedState(ComparisonState state, uint v) => state.MixEffects[key.Item1].Keyers[key.Item2].DVE.BorderOpacity = v;
+                    void UpdateFailedState(ComparisonState state, uint v) => state.MixEffects[key.Item1].Keyers[key.Item2].DVE.BorderOpacity = v > 100 ? 100 : (uint)0;
 
-                    void SdkGetter(out uint val)
-                    {
-                        key.Item3.GetBorderOpacity(out double alt);
-                        val = (uint)(alt * 100);
-                    }
-
-                    ValueTypeComparer<uint>.Run(helper, Setter, SdkGetter, Getter, testValues);
-                    ValueTypeComparer<uint>.Fail(helper, Setter, SdkGetter, Getter, badValues);
+                    ValueTypeComparer<uint>.Run(helper, Setter, UpdateExpectedState, testValues);
+                    ValueTypeComparer<uint>.Fail(helper, Setter, UpdateFailedState, badValues);
                 }
             }
         }
@@ -433,7 +414,7 @@ namespace LibAtem.ComparisonTests.MixEffects
         [Fact]
         public void TestDVEKeyerBorderHue()
         {
-            using (var helper = new AtemComparisonHelper(Client))
+            using (var helper = new AtemComparisonHelper(Client, Output))
             {
                 foreach (var key in GetKeyers<IBMDSwitcherKeyDVEParameters>())
                 {
@@ -448,10 +429,15 @@ namespace LibAtem.ComparisonTests.MixEffects
                         BorderHue = v,
                     };
 
-                    double? Getter() => helper.FindWithMatching(new MixEffectKeyDVEGetCommand { MixEffectIndex = key.Item1, KeyerIndex = key.Item2 })?.BorderHue;
+                    void UpdateExpectedState(ComparisonState state, double v) => state.MixEffects[key.Item1].Keyers[key.Item2].DVE.BorderHue = v;
+                    void UpdateFailedState(ComparisonState state, double v)
+                    {
+                        ushort ui = (ushort)((ushort)(v * 10) % 3600);
+                        state.MixEffects[key.Item1].Keyers[key.Item2].DVE.BorderHue = ui / 10d;
+                    }
 
-                    DoubleValueComparer.Run(helper, Setter, key.Item3.GetBorderHue, Getter, testValues);
-                    DoubleValueComparer.Fail(helper, Setter, key.Item3.GetBorderHue, Getter, badValues);
+                    ValueTypeComparer<double>.Run(helper, Setter, UpdateExpectedState, testValues);
+                    ValueTypeComparer<double>.Fail(helper, Setter, UpdateFailedState, badValues);
                 }
             }
         }
@@ -459,7 +445,7 @@ namespace LibAtem.ComparisonTests.MixEffects
         [Fact]
         public void TestDVEKeyerBorderSaturation()
         {
-            using (var helper = new AtemComparisonHelper(Client))
+            using (var helper = new AtemComparisonHelper(Client, Output))
             {
                 foreach (var key in GetKeyers<IBMDSwitcherKeyDVEParameters>())
                 {
@@ -474,10 +460,11 @@ namespace LibAtem.ComparisonTests.MixEffects
                         BorderSaturation = v,
                     };
 
-                    double? Getter() => helper.FindWithMatching(new MixEffectKeyDVEGetCommand { MixEffectIndex = key.Item1, KeyerIndex = key.Item2 })?.BorderSaturation;
+                    void UpdateExpectedState(ComparisonState state, double v) => state.MixEffects[key.Item1].Keyers[key.Item2].DVE.BorderSaturation = v;
+                    void UpdateFailedState(ComparisonState state, double v) => state.MixEffects[key.Item1].Keyers[key.Item2].DVE.BorderSaturation = v >= 100 ? 100 : 0;
 
-                    DoubleValueComparer.Run(helper, Setter, key.Item3.GetBorderSaturation, Getter, testValues, 100);
-                    DoubleValueComparer.Fail(helper, Setter, key.Item3.GetBorderSaturation, Getter, badValues, 100);
+                    ValueTypeComparer<double>.Run(helper, Setter, UpdateExpectedState, testValues);
+                    ValueTypeComparer<double>.Fail(helper, Setter, UpdateFailedState, badValues);
                 }
             }
         }
@@ -485,7 +472,7 @@ namespace LibAtem.ComparisonTests.MixEffects
         [Fact]
         public void TestDVEKeyerBorderLuma()
         {
-            using (var helper = new AtemComparisonHelper(Client))
+            using (var helper = new AtemComparisonHelper(Client, Output))
             {
                 foreach (var key in GetKeyers<IBMDSwitcherKeyDVEParameters>())
                 {
@@ -500,10 +487,11 @@ namespace LibAtem.ComparisonTests.MixEffects
                         BorderLuma = v,
                     };
 
-                    double? Getter() => helper.FindWithMatching(new MixEffectKeyDVEGetCommand { MixEffectIndex = key.Item1, KeyerIndex = key.Item2 })?.BorderLuma;
+                    void UpdateExpectedState(ComparisonState state, double v) => state.MixEffects[key.Item1].Keyers[key.Item2].DVE.BorderLuma = v;
+                    void UpdateFailedState(ComparisonState state, double v) => state.MixEffects[key.Item1].Keyers[key.Item2].DVE.BorderLuma = v >= 100 ? 100 : 0;
 
-                    DoubleValueComparer.Run(helper, Setter, key.Item3.GetBorderLuma, Getter, testValues, 100);
-                    DoubleValueComparer.Fail(helper, Setter, key.Item3.GetBorderLuma, Getter, badValues, 100);
+                    ValueTypeComparer<double>.Run(helper, Setter, UpdateExpectedState, testValues);
+                    ValueTypeComparer<double>.Fail(helper, Setter, UpdateFailedState, badValues);
                 }
             }
         }
@@ -511,7 +499,7 @@ namespace LibAtem.ComparisonTests.MixEffects
         [Fact]
         public void TestDVEKeyerMaskEnabled()
         {
-            using (var helper = new AtemComparisonHelper(Client))
+            using (var helper = new AtemComparisonHelper(Client, Output))
             {
                 foreach (var key in GetKeyers<IBMDSwitcherKeyDVEParameters>())
                 {
@@ -525,9 +513,9 @@ namespace LibAtem.ComparisonTests.MixEffects
                         MaskEnabled = v,
                     };
 
-                    bool? Getter() => helper.FindWithMatching(new MixEffectKeyDVEGetCommand { MixEffectIndex = key.Item1, KeyerIndex = key.Item2 })?.MaskEnabled;
+                    void UpdateExpectedState(ComparisonState state, bool v) => state.MixEffects[key.Item1].Keyers[key.Item2].DVE.MaskEnabled = v;
 
-                    BoolValueComparer.Run(helper, Setter, key.Item3.GetMasked, Getter, testValues);
+                    ValueTypeComparer<bool>.Run(helper, Setter, UpdateExpectedState, testValues);
                 }
             }
         }
@@ -535,10 +523,10 @@ namespace LibAtem.ComparisonTests.MixEffects
         [Fact]
         public void TestKeyerMaskTop()
         {
-            using (var helper = new AtemComparisonHelper(Client))
+            using (var helper = new AtemComparisonHelper(Client, Output))
             {
                 Client.SdkSwitcher.SetVideoMode(_BMDSwitcherVideoMode.bmdSwitcherVideoMode720p50);
-                helper.Sleep(3000); // TODO - reduce this. Currently needs to be this due to the amount of commands received when changing res
+                helper.Sleep(1000); // TODO - reduce this. Currently needs to be this due to the amount of commands received when changing res
 
                 foreach (var key in GetKeyers<IBMDSwitcherKeyDVEParameters>())
                 {
@@ -553,14 +541,19 @@ namespace LibAtem.ComparisonTests.MixEffects
                         MaskTop = v
                     };
 
-                    double? Getter() => helper.FindWithMatching(new MixEffectKeyDVEGetCommand() { MixEffectIndex = key.Item1, KeyerIndex = key.Item2 })?.MaskTop;
+                    void UpdateExpectedState(ComparisonState state, double v) => state.MixEffects[key.Item1].Keyers[key.Item2].DVE.MaskTop = v;
+                    void UpdateFailedState(ComparisonState state, double v)
+                    {
+                        ushort ui = (ushort)(v * 100);
+                        state.MixEffects[key.Item1].Keyers[key.Item2].DVE.MaskTop = ui >= 3800 ? 38 : 0;
+                    }
 
-                    DoubleValueComparer.Run(helper, Setter, key.Item3.GetMaskTop, Getter, testValues, 1, 0.05);
-                    DoubleValueComparer.Fail(helper, Setter, key.Item3.GetMaskTop, Getter, badValues, 1, 0.05);
+                    ValueTypeComparer<double>.Run(helper, Setter, UpdateExpectedState, testValues);
+                    ValueTypeComparer<double>.Fail(helper, Setter, UpdateFailedState, badValues);
                 }
 
                 Client.SdkSwitcher.SetVideoMode(_BMDSwitcherVideoMode.bmdSwitcherVideoMode625i50PAL);
-                helper.Sleep(3000); // TODO - reduce this.
+                helper.Sleep(1000); // TODO - reduce this.
 
                 // Repeat in 4:3
                 foreach (var key in GetKeyers<IBMDSwitcherKeyDVEParameters>())
@@ -576,10 +569,15 @@ namespace LibAtem.ComparisonTests.MixEffects
                         MaskTop = v
                     };
 
-                    double? Getter() => helper.FindWithMatching(new MixEffectKeyDVEGetCommand() { MixEffectIndex = key.Item1, KeyerIndex = key.Item2 })?.MaskTop;
+                    void UpdateExpectedState(ComparisonState state, double v) => state.MixEffects[key.Item1].Keyers[key.Item2].DVE.MaskTop = v;
+                    void UpdateFailedState(ComparisonState state, double v)
+                    {
+                        ushort ui = (ushort)(v * 100);
+                        state.MixEffects[key.Item1].Keyers[key.Item2].DVE.MaskTop = ui >= 1100 ? 11 : 0;
+                    }
 
-                    DoubleValueComparer.Run(helper, Setter, key.Item3.GetMaskTop, Getter, testValues, 1, 0.05);
-                    DoubleValueComparer.Fail(helper, Setter, key.Item3.GetMaskTop, Getter, badValues, 1, 0.05);
+                    ValueTypeComparer<double>.Run(helper, Setter, UpdateExpectedState, testValues);
+                    ValueTypeComparer<double>.Fail(helper, Setter, UpdateFailedState, badValues);
                 }
             }
         }
@@ -587,10 +585,10 @@ namespace LibAtem.ComparisonTests.MixEffects
         [Fact]
         public void TestKeyerMaskBottom()
         {
-            using (var helper = new AtemComparisonHelper(Client))
+            using (var helper = new AtemComparisonHelper(Client, Output))
             {
                 Client.SdkSwitcher.SetVideoMode(_BMDSwitcherVideoMode.bmdSwitcherVideoMode720p50);
-                helper.Sleep(3000); // TODO - reduce this.
+                helper.Sleep(1000); // TODO - reduce this.
 
                 foreach (var key in GetKeyers<IBMDSwitcherKeyDVEParameters>())
                 {
@@ -604,15 +602,20 @@ namespace LibAtem.ComparisonTests.MixEffects
                         Mask = MixEffectKeyDVESetCommand.MaskFlags.MaskBottom,
                         MaskBottom = v
                     };
+                    
+                    void UpdateExpectedState(ComparisonState state, double v) => state.MixEffects[key.Item1].Keyers[key.Item2].DVE.MaskBottom = v;
+                    void UpdateFailedState(ComparisonState state, double v)
+                    {
+                        ushort ui = (ushort)(v * 100);
+                        state.MixEffects[key.Item1].Keyers[key.Item2].DVE.MaskBottom = ui >= 3800 ? 38 : 0;
+                    }
 
-                    double? Getter() => helper.FindWithMatching(new MixEffectKeyDVEGetCommand() { MixEffectIndex = key.Item1, KeyerIndex = key.Item2 })?.MaskBottom;
-
-                    DoubleValueComparer.Run(helper, Setter, key.Item3.GetMaskBottom, Getter, testValues, 1, 0.05);
-                    DoubleValueComparer.Fail(helper, Setter, key.Item3.GetMaskBottom, Getter, badValues, 1, 0.05);
+                    ValueTypeComparer<double>.Run(helper, Setter, UpdateExpectedState, testValues);
+                    ValueTypeComparer<double>.Fail(helper, Setter, UpdateFailedState, badValues);
                 }
 
                 Client.SdkSwitcher.SetVideoMode(_BMDSwitcherVideoMode.bmdSwitcherVideoMode625i50PAL);
-                helper.Sleep(3000); // TODO - reduce this.
+                helper.Sleep(1000); // TODO - reduce this.
 
                 // Repeat in 4:3
                 foreach (var key in GetKeyers<IBMDSwitcherKeyDVEParameters>())
@@ -627,11 +630,16 @@ namespace LibAtem.ComparisonTests.MixEffects
                         Mask = MixEffectKeyDVESetCommand.MaskFlags.MaskBottom,
                         MaskBottom = v
                     };
+                    
+                    void UpdateExpectedState(ComparisonState state, double v) => state.MixEffects[key.Item1].Keyers[key.Item2].DVE.MaskBottom = v;
+                    void UpdateFailedState(ComparisonState state, double v)
+                    {
+                        ushort ui = (ushort)(v * 100);
+                        state.MixEffects[key.Item1].Keyers[key.Item2].DVE.MaskBottom = ui >= 1100 ? 11 : 0;
+                    }
 
-                    double? Getter() => helper.FindWithMatching(new MixEffectKeyDVEGetCommand() { MixEffectIndex = key.Item1, KeyerIndex = key.Item2 })?.MaskBottom;
-
-                    DoubleValueComparer.Run(helper, Setter, key.Item3.GetMaskBottom, Getter, testValues, 1, 0.05);
-                    DoubleValueComparer.Fail(helper, Setter, key.Item3.GetMaskBottom, Getter, badValues, 1, 0.05);
+                    ValueTypeComparer<double>.Run(helper, Setter, UpdateExpectedState, testValues);
+                    ValueTypeComparer<double>.Fail(helper, Setter, UpdateFailedState, badValues);
                 }
             }
         }
@@ -639,10 +647,10 @@ namespace LibAtem.ComparisonTests.MixEffects
         [Fact]
         public void TestKeyerMaskLeft()
         {
-            using (var helper = new AtemComparisonHelper(Client))
+            using (var helper = new AtemComparisonHelper(Client, Output))
             {
                 Client.SdkSwitcher.SetVideoMode(_BMDSwitcherVideoMode.bmdSwitcherVideoMode720p50);
-                helper.Sleep(3000); // TODO - reduce this.
+                helper.Sleep(1000); // TODO - reduce this.
 
                 foreach (var key in GetKeyers<IBMDSwitcherKeyDVEParameters>())
                 {
@@ -657,14 +665,19 @@ namespace LibAtem.ComparisonTests.MixEffects
                         MaskLeft = v
                     };
 
-                    double? Getter() => helper.FindWithMatching(new MixEffectKeyDVEGetCommand() { MixEffectIndex = key.Item1, KeyerIndex = key.Item2 })?.MaskLeft;
+                    void UpdateExpectedState(ComparisonState state, double v) => state.MixEffects[key.Item1].Keyers[key.Item2].DVE.MaskLeft = v;
+                    void UpdateFailedState(ComparisonState state, double v)
+                    {
+                        ushort ui = (ushort)(v * 100);
+                        state.MixEffects[key.Item1].Keyers[key.Item2].DVE.MaskLeft = ui >= 5200 ? 52 : 0;
+                    }
 
-                    DoubleValueComparer.Run(helper, Setter, key.Item3.GetMaskLeft, Getter, testValues, 1, 0.05);
-                    DoubleValueComparer.Fail(helper, Setter, key.Item3.GetMaskLeft, Getter, badValues, 1, 0.05);
+                    ValueTypeComparer<double>.Run(helper, Setter, UpdateExpectedState, testValues);
+                    ValueTypeComparer<double>.Fail(helper, Setter, UpdateFailedState, badValues);
                 }
 
                 Client.SdkSwitcher.SetVideoMode(_BMDSwitcherVideoMode.bmdSwitcherVideoMode625i50PAL);
-                helper.Sleep(3000); // TODO - reduce this.
+                helper.Sleep(1000); // TODO - reduce this.
 
                 // Repeat in 4:3
                 foreach (var key in GetKeyers<IBMDSwitcherKeyDVEParameters>())
@@ -680,10 +693,15 @@ namespace LibAtem.ComparisonTests.MixEffects
                         MaskLeft = v
                     };
 
-                    double? Getter() => helper.FindWithMatching(new MixEffectKeyDVEGetCommand() { MixEffectIndex = key.Item1, KeyerIndex = key.Item2 })?.MaskLeft;
+                    void UpdateExpectedState(ComparisonState state, double v) => state.MixEffects[key.Item1].Keyers[key.Item2].DVE.MaskLeft = v;
+                    void UpdateFailedState(ComparisonState state, double v)
+                    {
+                        ushort ui = (ushort)(v * 100);
+                        state.MixEffects[key.Item1].Keyers[key.Item2].DVE.MaskLeft = ui >= 1300 ? 13 : 0;
+                    }
 
-                    DoubleValueComparer.Run(helper, Setter, key.Item3.GetMaskLeft, Getter, testValues, 1, 0.05);
-                    DoubleValueComparer.Fail(helper, Setter, key.Item3.GetMaskLeft, Getter, badValues, 1, 0.05);
+                    ValueTypeComparer<double>.Run(helper, Setter, UpdateExpectedState, testValues);
+                    ValueTypeComparer<double>.Fail(helper, Setter, UpdateFailedState, badValues);
                 }
             }
         }
@@ -691,10 +709,10 @@ namespace LibAtem.ComparisonTests.MixEffects
         [Fact]
         public void TestKeyerMaskRight()
         {
-            using (var helper = new AtemComparisonHelper(Client))
+            using (var helper = new AtemComparisonHelper(Client, Output))
             {
                 Client.SdkSwitcher.SetVideoMode(_BMDSwitcherVideoMode.bmdSwitcherVideoMode720p50);
-                helper.Sleep(3000); // TODO - reduce this.
+                helper.Sleep(1000); // TODO - reduce this.
 
                 foreach (var key in GetKeyers<IBMDSwitcherKeyDVEParameters>())
                 {
@@ -709,14 +727,19 @@ namespace LibAtem.ComparisonTests.MixEffects
                         MaskRight = v
                     };
 
-                    double? Getter() => helper.FindWithMatching(new MixEffectKeyDVEGetCommand() { MixEffectIndex = key.Item1, KeyerIndex = key.Item2 })?.MaskRight;
+                    void UpdateExpectedState(ComparisonState state, double v) => state.MixEffects[key.Item1].Keyers[key.Item2].DVE.MaskRight = v;
+                    void UpdateFailedState(ComparisonState state, double v)
+                    {
+                        ushort ui = (ushort)(v * 100);
+                        state.MixEffects[key.Item1].Keyers[key.Item2].DVE.MaskRight = ui >= 5200 ? 52 : 0;
+                    }
 
-                    DoubleValueComparer.Run(helper, Setter, key.Item3.GetMaskRight, Getter, testValues, 1, 0.05);
-                    DoubleValueComparer.Fail(helper, Setter, key.Item3.GetMaskRight, Getter, badValues, 1, 0.05);
+                    ValueTypeComparer<double>.Run(helper, Setter, UpdateExpectedState, testValues);
+                    ValueTypeComparer<double>.Fail(helper, Setter, UpdateFailedState, badValues);
                 }
 
                 Client.SdkSwitcher.SetVideoMode(_BMDSwitcherVideoMode.bmdSwitcherVideoMode625i50PAL);
-                helper.Sleep(3000); // TODO - reduce this.
+                helper.Sleep(1000); // TODO - reduce this.
 
                 // Repeat in 4:3
                 foreach (var key in GetKeyers<IBMDSwitcherKeyDVEParameters>())
@@ -732,10 +755,15 @@ namespace LibAtem.ComparisonTests.MixEffects
                         MaskRight = v
                     };
 
-                    double? Getter() => helper.FindWithMatching(new MixEffectKeyDVEGetCommand() { MixEffectIndex = key.Item1, KeyerIndex = key.Item2 })?.MaskRight;
+                    void UpdateExpectedState(ComparisonState state, double v) => state.MixEffects[key.Item1].Keyers[key.Item2].DVE.MaskRight = v;
+                    void UpdateFailedState(ComparisonState state, double v)
+                    {
+                        ushort ui = (ushort)(v * 100);
+                        state.MixEffects[key.Item1].Keyers[key.Item2].DVE.MaskRight = ui >= 1300 ? 13 : 0;
+                    }
 
-                    DoubleValueComparer.Run(helper, Setter, key.Item3.GetMaskRight, Getter, testValues, 1, 0.05);
-                    DoubleValueComparer.Fail(helper, Setter, key.Item3.GetMaskRight, Getter, badValues, 1, 0.05);
+                    ValueTypeComparer<double>.Run(helper, Setter, UpdateExpectedState, testValues);
+                    ValueTypeComparer<double>.Fail(helper, Setter, UpdateFailedState, badValues);
                 }
             }
         }
@@ -744,10 +772,10 @@ namespace LibAtem.ComparisonTests.MixEffects
         public void TestKeyerMaskReset()
         {
             // This uses a client side set
-            using (var helper = new AtemComparisonHelper(Client))
+            using (var helper = new AtemComparisonHelper(Client, Output))
             {
                 Client.SdkSwitcher.SetVideoMode(_BMDSwitcherVideoMode.bmdSwitcherVideoMode720p50);
-                helper.Sleep(3000); // TODO - reduce this.
+                helper.Sleep(1000); // TODO - reduce this.
 
                 foreach (var key in GetKeyers<IBMDSwitcherKeyDVEParameters>())
                 {
@@ -769,7 +797,7 @@ namespace LibAtem.ComparisonTests.MixEffects
                 }
 
                 Client.SdkSwitcher.SetVideoMode(_BMDSwitcherVideoMode.bmdSwitcherVideoMode625i50PAL);
-                helper.Sleep(3000); // TODO - reduce this.
+                helper.Sleep(1000); // TODO - reduce this.
 
                 foreach (var key in GetKeyers<IBMDSwitcherKeyDVEParameters>())
                 {

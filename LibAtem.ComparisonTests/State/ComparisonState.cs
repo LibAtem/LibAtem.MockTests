@@ -37,8 +37,103 @@ namespace LibAtem.ComparisonTests.State
     }
 
     [Serializable]
+    public class ComparisonMixEffectTransitionState
+    {
+        public ComparisonMixEffectTransitionDipState Dip { get; set; } = new ComparisonMixEffectTransitionDipState();
+    }
+
+    [Serializable]
+    public class ComparisonMixEffectTransitionDipState
+    {
+        public VideoSource Input { get; set; }
+        public uint Rate { get; set; }
+    }
+
+    [Serializable]
+    public class ComparisonMixEffectKeyerState
+    {
+        public ComparisonMixEffectKeyerChromaState Chroma { get; set; } = new ComparisonMixEffectKeyerChromaState();
+        public ComparisonMixEffectKeyerDVEState DVE { get; set; } = new ComparisonMixEffectKeyerDVEState();
+        public ComparisonMixEffectKeyerFlyState Fly { get; set; } = new ComparisonMixEffectKeyerFlyState();
+    }
+
+    [Serializable]
+    public class ComparisonMixEffectKeyerChromaState
+    {
+        [Tolerance(0.01)]
+        public double Hue { get; set; }
+        [Tolerance(0.01)]
+        public double Gain { get; set; }
+        [Tolerance(0.01)]
+        public double YSuppress { get; set; }
+        [Tolerance(0.01)]
+        public double Lift { get; set; }
+        public bool Narrow { get; set; }
+    }
+
+    [Serializable]
+    public class ComparisonMixEffectKeyerDVEState
+    {
+        public bool BorderEnabled { get; set; }
+        public bool BorderShadow { get; set; }
+        public BorderBevel BorderBevel { get; set; }
+        public double OuterWidth { get; set; }
+        public double InnerWidth { get; set; }
+        public uint OuterSoftness { get; set; }
+        public uint InnerSoftness { get; set; }
+        public uint BevelSoftness { get; set; }
+        public uint BevelPosition { get; set; }
+
+        public uint BorderOpacity { get; set; }
+        [Tolerance(0.01)]
+        public double BorderHue { get; set; }
+        [Tolerance(0.01)]
+        public double BorderSaturation { get; set; }
+        [Tolerance(0.01)]
+        public double BorderLuma { get; set; }
+
+        [Tolerance(0.01)]
+        public double LightSourceDirection { get; set; }
+        public uint LightSourceAltitude { get; set; }
+
+        public bool MaskEnabled { get; set; }
+        [Tolerance(0.01)]
+        public double MaskTop { get; set; }
+        [Tolerance(0.01)]
+        public double MaskBottom { get; set; }
+        [Tolerance(0.01)]
+        public double MaskLeft { get; set; }
+        [Tolerance(0.01)]
+        public double MaskRight { get; set; }
+    }
+
+
+    [Serializable]
+    public class ComparisonMixEffectKeyerFlyState
+    {
+        [Tolerance(0.01)]
+        public double SizeX { get; set; }
+        [Tolerance(0.01)]
+        public double SizeY { get; set; }
+        [Tolerance(0.01)]
+        public double PositionX { get; set; }
+        [Tolerance(0.01)]
+        public double PositionY { get; set; }
+        [Tolerance(0.01)]
+        public double Rotation { get; set; }
+
+        public uint Rate { get; set; }
+
+        // TODO - keyframes
+    }
+
+    [Serializable]
     public class ComparisonMixEffectState
     {
+        public Dictionary<UpstreamKeyId, ComparisonMixEffectKeyerState> Keyers { get; set; } = new Dictionary<UpstreamKeyId, ComparisonMixEffectKeyerState>();
+
+        public ComparisonMixEffectTransitionState Transition { get; set; } = new ComparisonMixEffectTransitionState();
+
         public VideoSource Program { get; set; }
         public VideoSource Preview { get; set; }
 
