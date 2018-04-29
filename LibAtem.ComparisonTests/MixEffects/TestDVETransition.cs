@@ -233,7 +233,11 @@ namespace LibAtem.ComparisonTests.MixEffects
                         PreMultiplied = v
                     };
 
-                    void UpdateExpectedState(ComparisonState state, bool v) => state.MixEffects[me.Item1].Transition.DVE.PreMultiplied = v;
+                    void UpdateExpectedState(ComparisonState state, bool v)
+                    {
+                        state.MixEffects[me.Item1].Transition.DVE.PreMultiplied = v;
+                        state.MixEffects[me.Item1].Transition.Stinger.PreMultipliedKey = v;
+                    }
 
                     ValueTypeComparer<bool>.Run(helper, Setter, UpdateExpectedState, testValues);
                 }
@@ -257,8 +261,17 @@ namespace LibAtem.ComparisonTests.MixEffects
                         Clip = v
                     };
 
-                    void UpdateExpectedState(ComparisonState state, double v) => state.MixEffects[me.Item1].Transition.DVE.Clip = v;
-                    void UpdateFailedState(ComparisonState state, double v) => state.MixEffects[me.Item1].Transition.DVE.Clip = v > 100 ? 100 : 0;
+                    void UpdateExpectedState(ComparisonState state, double v)
+                    {
+                        state.MixEffects[me.Item1].Transition.DVE.Clip = v;
+                        state.MixEffects[me.Item1].Transition.Stinger.Clip = v;
+                    }
+
+                    void UpdateFailedState(ComparisonState state, double v)
+                    {
+                        state.MixEffects[me.Item1].Transition.DVE.Clip = v > 100 ? 100 : 0;
+                        state.MixEffects[me.Item1].Transition.Stinger.Clip = v > 100 ? 100 : 0;
+                    }
 
                     ValueTypeComparer<double>.Run(helper, Setter, UpdateExpectedState, testValues);
                     ValueTypeComparer<double>.Fail(helper, Setter, UpdateFailedState, badValues);
@@ -283,8 +296,17 @@ namespace LibAtem.ComparisonTests.MixEffects
                         Gain = v
                     };
 
-                    void UpdateExpectedState(ComparisonState state, double v) => state.MixEffects[me.Item1].Transition.DVE.Gain = v;
-                    void UpdateFailedState(ComparisonState state, double v) => state.MixEffects[me.Item1].Transition.DVE.Gain = v > 100 ? 100 : 0;
+                    void UpdateExpectedState(ComparisonState state, double v)
+                    {
+                        state.MixEffects[me.Item1].Transition.DVE.Gain = v;
+                        state.MixEffects[me.Item1].Transition.Stinger.Gain = v;
+                    }
+
+                    void UpdateFailedState(ComparisonState state, double v)
+                    {
+                        state.MixEffects[me.Item1].Transition.DVE.Gain = v > 100 ? 100 : 0;
+                        state.MixEffects[me.Item1].Transition.Stinger.Gain = v > 100 ? 100 : 0;
+                    }
 
                     ValueTypeComparer<double>.Run(helper, Setter, UpdateExpectedState, testValues);
                     ValueTypeComparer<double>.Fail(helper, Setter, UpdateFailedState, badValues);
@@ -308,7 +330,11 @@ namespace LibAtem.ComparisonTests.MixEffects
                         InvertKey = v
                     };
 
-                    void UpdateExpectedState(ComparisonState state, bool v) => state.MixEffects[me.Item1].Transition.DVE.InvertKey = v;
+                    void UpdateExpectedState(ComparisonState state, bool v)
+                    {
+                        state.MixEffects[me.Item1].Transition.DVE.InvertKey = v;
+                        state.MixEffects[me.Item1].Transition.Stinger.Invert = v;
+                    }
 
                     ValueTypeComparer<bool>.Run(helper, Setter, UpdateExpectedState, testValues);
                 }

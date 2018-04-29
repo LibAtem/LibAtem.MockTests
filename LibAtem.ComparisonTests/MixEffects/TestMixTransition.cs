@@ -1,6 +1,7 @@
 using BMDSwitcherAPI;
 using LibAtem.Commands;
 using LibAtem.Commands.MixEffects.Transition;
+using LibAtem.ComparisonTests.State;
 using LibAtem.ComparisonTests.Util;
 using Xunit;
 using Xunit.Abstractions;
@@ -18,7 +19,7 @@ namespace LibAtem.ComparisonTests.MixEffects
         [Fact]
         public void TestMixProps()
         {
-            using (var helper = new AtemComparisonHelper(Client))
+            using (var helper = new AtemComparisonHelper(Client, Output))
             {
                 foreach (var me in GetMixEffects<IBMDSwitcherTransitionMixParameters>())
                 {
@@ -31,10 +32,11 @@ namespace LibAtem.ComparisonTests.MixEffects
                         Rate = v,
                     };
 
-                    uint? Getter() => helper.FindWithMatching(new TransitionMixGetCommand {Index = me.Item1})?.Rate;
+                    void UpdateExpectedState(ComparisonState state, uint v) => state.MixEffects[me.Item1].Transition.Mix.Rate = v;
+                    void UpdateFailedState(ComparisonState state, uint v) => state.MixEffects[me.Item1].Transition.Mix.Rate = v >= 250 ? 250 : (uint)1;
 
-                    ValueTypeComparer<uint>.Run(helper, Setter, me.Item2.GetRate, Getter, testValues);
-                    ValueTypeComparer<uint>.Fail(helper, Setter, me.Item2.GetRate, Getter, badValues);
+                    ValueTypeComparer<uint>.Run(helper, Setter, UpdateExpectedState, testValues);
+                    ValueTypeComparer<uint>.Fail(helper, Setter, UpdateFailedState, badValues);
                 }
             }
         }

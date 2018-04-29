@@ -1,6 +1,7 @@
 using BMDSwitcherAPI;
 using LibAtem.Commands;
 using LibAtem.Commands.MixEffects.Key;
+using LibAtem.ComparisonTests.State;
 using LibAtem.ComparisonTests.Util;
 using Xunit;
 using Xunit.Abstractions;
@@ -17,7 +18,7 @@ namespace LibAtem.ComparisonTests.MixEffects
         [Fact]
         public void TestLumaKeyerPreMultiplied()
         {
-            using (var helper = new AtemComparisonHelper(Client))
+            using (var helper = new AtemComparisonHelper(Client, Output))
             {
                 foreach (var key in GetKeyers<IBMDSwitcherKeyLumaParameters>())
                 {
@@ -31,9 +32,9 @@ namespace LibAtem.ComparisonTests.MixEffects
                         PreMultiplied = v,
                     };
 
-                    bool? Getter() => helper.FindWithMatching(new MixEffectKeyLumaGetCommand { MixEffectIndex = key.Item1, KeyerIndex = key.Item2 })?.PreMultiplied;
+                    void UpdateExpectedState(ComparisonState state, bool v) => state.MixEffects[key.Item1].Keyers[key.Item2].Luma.PreMultiplied = v;
 
-                    BoolValueComparer.Run(helper, Setter, key.Item3.GetPreMultiplied, Getter, testValues);
+                    ValueTypeComparer<bool>.Run(helper, Setter, UpdateExpectedState, testValues);
                 }
             }
         }
@@ -41,7 +42,7 @@ namespace LibAtem.ComparisonTests.MixEffects
         [Fact]
         public void TestLumaKeyerClip()
         {
-            using (var helper = new AtemComparisonHelper(Client))
+            using (var helper = new AtemComparisonHelper(Client, Output))
             {
                 foreach (var key in GetKeyers<IBMDSwitcherKeyLumaParameters>())
                 {
@@ -56,10 +57,11 @@ namespace LibAtem.ComparisonTests.MixEffects
                         Clip = v,
                     };
 
-                    double? Getter() => helper.FindWithMatching(new MixEffectKeyLumaGetCommand { MixEffectIndex = key.Item1, KeyerIndex = key.Item2 })?.Clip;
+                    void UpdateExpectedState(ComparisonState state, double v) => state.MixEffects[key.Item1].Keyers[key.Item2].Luma.Clip = v;
+                    void UpdateFailedState(ComparisonState state, double v) => state.MixEffects[key.Item1].Keyers[key.Item2].Luma.Clip = v >= 100 ? 100 : 0;
 
-                    DoubleValueComparer.Run(helper, Setter, key.Item3.GetClip, Getter, testValues, 100);
-                    DoubleValueComparer.Fail(helper, Setter, key.Item3.GetClip, Getter, badValues, 100);
+                    ValueTypeComparer<double>.Run(helper, Setter, UpdateExpectedState, testValues);
+                    ValueTypeComparer<double>.Fail(helper, Setter, UpdateFailedState, badValues);
                 }
             }
         }
@@ -67,7 +69,7 @@ namespace LibAtem.ComparisonTests.MixEffects
         [Fact]
         public void TestLumaKeyerGain()
         {
-            using (var helper = new AtemComparisonHelper(Client))
+            using (var helper = new AtemComparisonHelper(Client, Output))
             {
                 foreach (var key in GetKeyers<IBMDSwitcherKeyLumaParameters>())
                 {
@@ -82,10 +84,11 @@ namespace LibAtem.ComparisonTests.MixEffects
                         Gain = v,
                     };
 
-                    double? Getter() => helper.FindWithMatching(new MixEffectKeyLumaGetCommand { MixEffectIndex = key.Item1, KeyerIndex = key.Item2 })?.Gain;
+                    void UpdateExpectedState(ComparisonState state, double v) => state.MixEffects[key.Item1].Keyers[key.Item2].Luma.Gain = v;
+                    void UpdateFailedState(ComparisonState state, double v) => state.MixEffects[key.Item1].Keyers[key.Item2].Luma.Gain = v >= 100 ? 100 : 0;
 
-                    DoubleValueComparer.Run(helper, Setter, key.Item3.GetGain, Getter, testValues, 100);
-                    DoubleValueComparer.Fail(helper, Setter, key.Item3.GetGain, Getter, badValues, 100);
+                    ValueTypeComparer<double>.Run(helper, Setter, UpdateExpectedState, testValues);
+                    ValueTypeComparer<double>.Fail(helper, Setter, UpdateFailedState, badValues);
                 }
             }
         }
@@ -93,7 +96,7 @@ namespace LibAtem.ComparisonTests.MixEffects
         [Fact]
         public void TestLumaKeyerInverse()
         {
-            using (var helper = new AtemComparisonHelper(Client))
+            using (var helper = new AtemComparisonHelper(Client, Output))
             {
                 foreach (var key in GetKeyers<IBMDSwitcherKeyLumaParameters>())
                 {
@@ -107,9 +110,9 @@ namespace LibAtem.ComparisonTests.MixEffects
                         Invert = v,
                     };
 
-                    bool? Getter() => helper.FindWithMatching(new MixEffectKeyLumaGetCommand { MixEffectIndex = key.Item1, KeyerIndex = key.Item2 })?.Invert;
+                    void UpdateExpectedState(ComparisonState state, bool v) => state.MixEffects[key.Item1].Keyers[key.Item2].Luma.Invert = v;
 
-                    BoolValueComparer.Run(helper, Setter, key.Item3.GetInverse, Getter, testValues);
+                    ValueTypeComparer<bool>.Run(helper, Setter, UpdateExpectedState, testValues);
                 }
             }
         }

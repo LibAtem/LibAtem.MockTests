@@ -15,42 +15,9 @@ namespace LibAtem.ComparisonTests.MixEffects
     [Collection("Client")]
     public class TestWipeTransition : ComparisonTestBase
     {
-        public static readonly IReadOnlyDictionary<Pattern, _BMDSwitcherPatternStyle> PatternMap;
-
-        static TestWipeTransition()
-        {
-            PatternMap = new Dictionary<Pattern, _BMDSwitcherPatternStyle>
-            {
-                {Pattern.LeftToRightBar, _BMDSwitcherPatternStyle.bmdSwitcherPatternStyleLeftToRightBar},
-                {Pattern.TopToBottomBar, _BMDSwitcherPatternStyle.bmdSwitcherPatternStyleTopToBottomBar},
-                {Pattern.HorizontalBarnDoor, _BMDSwitcherPatternStyle.bmdSwitcherPatternStyleHorizontalBarnDoor},
-                {Pattern.VerticalBarnDoor, _BMDSwitcherPatternStyle.bmdSwitcherPatternStyleVerticalBarnDoor},
-                {Pattern.CornersInFourBox, _BMDSwitcherPatternStyle.bmdSwitcherPatternStyleCornersInFourBox},
-                {Pattern.RectangleIris, _BMDSwitcherPatternStyle.bmdSwitcherPatternStyleRectangleIris},
-                {Pattern.DiamondIris, _BMDSwitcherPatternStyle.bmdSwitcherPatternStyleDiamondIris},
-                {Pattern.CircleIris, _BMDSwitcherPatternStyle.bmdSwitcherPatternStyleCircleIris},
-                {Pattern.TopLeftBox, _BMDSwitcherPatternStyle.bmdSwitcherPatternStyleTopLeftBox},
-                {Pattern.TopRightBox, _BMDSwitcherPatternStyle.bmdSwitcherPatternStyleTopRightBox},
-                {Pattern.BottomRightBox, _BMDSwitcherPatternStyle.bmdSwitcherPatternStyleBottomRightBox},
-                {Pattern.BottomLeftBox, _BMDSwitcherPatternStyle.bmdSwitcherPatternStyleBottomLeftBox},
-                {Pattern.TopCentreBox, _BMDSwitcherPatternStyle.bmdSwitcherPatternStyleTopCentreBox},
-                {Pattern.RightCentreBox, _BMDSwitcherPatternStyle.bmdSwitcherPatternStyleRightCentreBox},
-                {Pattern.BottomCentreBox, _BMDSwitcherPatternStyle.bmdSwitcherPatternStyleBottomCentreBox},
-                {Pattern.LeftCentreBox, _BMDSwitcherPatternStyle.bmdSwitcherPatternStyleLeftCentreBox},
-                {Pattern.TopLeftDiagonal, _BMDSwitcherPatternStyle.bmdSwitcherPatternStyleTopLeftDiagonal},
-                {Pattern.TopRightDiagonal, _BMDSwitcherPatternStyle.bmdSwitcherPatternStyleTopRightDiagonal},
-            };
-        }
-
         public TestWipeTransition(ITestOutputHelper output, AtemClientWrapper client)
             : base(output, client)
         {
-        }
-
-        [Fact]
-        public void EnsurePattarnMapIsComplete()
-        {
-            EnumMap.EnsureIsComplete(PatternMap);
         }
         
         [Fact]
@@ -96,7 +63,7 @@ namespace LibAtem.ComparisonTests.MixEffects
 
                     Pattern? Getter() => helper.FindWithMatching(new TransitionWipeGetCommand {Index = me.Item1})?.Pattern;
 
-                    EnumValueComparer<Pattern, _BMDSwitcherPatternStyle>.Run(helper, PatternMap, Setter, me.Item2.GetPattern, Getter, testValues);
+                    EnumValueComparer<Pattern, _BMDSwitcherPatternStyle>.Run(helper, AtemEnumMaps.PatternMap, Setter, me.Item2.GetPattern, Getter, testValues);
                 }
             }
         }

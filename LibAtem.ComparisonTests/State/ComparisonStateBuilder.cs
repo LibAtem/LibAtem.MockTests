@@ -23,9 +23,16 @@ namespace LibAtem.ComparisonTests.State
                 {typeof(ColorGeneratorGetCommand), UpdateColor},
                 {typeof(ProgramInputGetCommand), UpdateProgramInput},
                 {typeof(PreviewInputGetCommand), UpdatePreviewInput},
+                {typeof(MixEffectKeyOnAirGetCommand), UpdateMixEffectKeyerOnAir},
+                {typeof(MixEffectKeyPropertiesGetCommand), UpdateMixEffectKeyerProperties},
+                {typeof(MixEffectKeyLumaGetCommand), UpdateMixEffectKeyerLuma},
                 {typeof(MixEffectKeyChromaGetCommand), UpdateMixEffectKeyerChroma},
+                {typeof(MixEffectKeyPatternGetCommand), UpdateMixEffectKeyerPattern},
                 {typeof(MixEffectKeyDVEGetCommand), UpdateMixEffectKeyerDVE},
+                {typeof(TransitionPropertiesGetCommand), UpdateMixEffectTransitionProperties},
+                {typeof(TransitionMixGetCommand), UpdateMixEffectTransitionMix},
                 {typeof(TransitionDipGetCommand), UpdateMixEffectTransitionDip},
+                {typeof(TransitionStingerGetCommand), UpdateMixEffectTransitionStinger},
                 {typeof(TransitionDVEGetCommand), UpdateMixEffectTransitionDVE},
             };
         }
@@ -87,6 +94,26 @@ namespace LibAtem.ComparisonTests.State
             col.Luma = cmd.Luma;
         }
 
+        private static void UpdateMixEffectKeyerOnAir(ComparisonState state, ICommand rawCmd)
+        {
+            var cmd = (MixEffectKeyOnAirGetCommand)rawCmd;
+            state.MixEffects[cmd.MixEffectIndex].Keyers[cmd.KeyerIndex].OnAir = cmd.OnAir;
+        }
+        private static void UpdateMixEffectKeyerProperties(ComparisonState state, ICommand rawCmd)
+        {
+            var cmd = (MixEffectKeyPropertiesGetCommand)rawCmd;
+            var props = state.MixEffects[cmd.MixEffectIndex].Keyers[cmd.KeyerIndex];
+
+            props.Type = cmd.Mode;
+            props.FlyEnabled = cmd.FlyEnabled;
+            props.FillSource = cmd.FillSource;
+            props.CutSource = cmd.CutSource;
+            props.MaskEnabled = cmd.MaskEnabled;
+            props.MaskTop = cmd.MaskTop;
+            props.MaskBottom = cmd.MaskBottom;
+            props.MaskLeft = cmd.MaskLeft;
+            props.MaskRight = cmd.MaskRight;
+        }
         private static void UpdateProgramInput(ComparisonState state, ICommand rawCmd)
         {
             var cmd = (ProgramInputGetCommand)rawCmd;
@@ -96,6 +123,16 @@ namespace LibAtem.ComparisonTests.State
         {
             var cmd = (PreviewInputGetCommand)rawCmd;
             state.MixEffects[cmd.Index].Preview = cmd.Source;
+        }
+        private static void UpdateMixEffectKeyerLuma(ComparisonState state, ICommand rawCmd)
+        {
+            var cmd = (MixEffectKeyLumaGetCommand)rawCmd;
+            var props = state.MixEffects[cmd.MixEffectIndex].Keyers[cmd.KeyerIndex].Luma;
+
+            props.PreMultiplied = cmd.PreMultiplied;
+            props.Gain = cmd.Gain;
+            props.Clip = cmd.Clip;
+            props.Invert = cmd.Invert;
         }
         private static void UpdateMixEffectKeyerChroma(ComparisonState state, ICommand rawCmd)
         {
@@ -107,6 +144,19 @@ namespace LibAtem.ComparisonTests.State
             props.YSuppress = cmd.YSuppress;
             props.Lift = cmd.Lift;
             props.Narrow = cmd.Narrow;
+        }
+        private static void UpdateMixEffectKeyerPattern(ComparisonState state, ICommand rawCmd)
+        {
+            var cmd = (MixEffectKeyPatternGetCommand)rawCmd;
+            var props = state.MixEffects[cmd.MixEffectIndex].Keyers[cmd.KeyerIndex].Pattern;
+
+            props.Style = cmd.Style;
+            props.Size = cmd.Size;
+            props.Symmetry = cmd.Symmetry;
+            props.Softness = cmd.Softness;
+            props.XPosition = cmd.XPosition;
+            props.YPosition = cmd.YPosition;
+            props.Inverse = cmd.Inverse;
         }
         private static void UpdateMixEffectKeyerDVE(ComparisonState state, ICommand rawCmd)
         {
@@ -147,6 +197,23 @@ namespace LibAtem.ComparisonTests.State
             props2.Rate = cmd.Rate;
         }
 
+        private static void UpdateMixEffectTransitionProperties(ComparisonState state, ICommand rawCmd)
+        {
+            var cmd = (TransitionPropertiesGetCommand)rawCmd;
+            var props = state.MixEffects[cmd.Index].Transition;
+
+            props.Style = cmd.Style;
+            props.NextStyle = cmd.NextStyle;
+            props.Selection = cmd.Selection;
+            props.NextSelection = cmd.NextSelection;
+        }
+        private static void UpdateMixEffectTransitionMix(ComparisonState state, ICommand rawCmd)
+        {
+            var cmd = (TransitionMixGetCommand)rawCmd;
+            var props = state.MixEffects[cmd.Index].Transition.Mix;
+
+            props.Rate = cmd.Rate;
+        }
         private static void UpdateMixEffectTransitionDip(ComparisonState state, ICommand rawCmd)
         {
             var cmd = (TransitionDipGetCommand)rawCmd;
@@ -154,6 +221,21 @@ namespace LibAtem.ComparisonTests.State
 
             props.Input = cmd.Input;
             props.Rate = cmd.Rate;
+        }
+        private static void UpdateMixEffectTransitionStinger(ComparisonState state, ICommand rawCmd)
+        {
+            var cmd = (TransitionStingerGetCommand)rawCmd;
+            var props = state.MixEffects[cmd.Index].Transition.Stinger;
+
+            props.Source = cmd.Source;
+            props.PreMultipliedKey = cmd.PreMultipliedKey;
+            props.Clip = cmd.Clip;
+            props.Gain = cmd.Gain;
+            props.Invert = cmd.Invert;
+            props.Preroll = cmd.Preroll;
+            props.ClipDuration = cmd.ClipDuration;
+            props.TriggerPoint = cmd.TriggerPoint;
+            props.MixRate = cmd.MixRate;
         }
         private static void UpdateMixEffectTransitionDVE(ComparisonState state, ICommand rawCmd)
         {

@@ -5,6 +5,7 @@ using BMDSwitcherAPI;
 using LibAtem.Commands;
 using LibAtem.Commands.MixEffects.Transition;
 using LibAtem.Common;
+using LibAtem.ComparisonTests.State;
 using LibAtem.ComparisonTests.Util;
 using LibAtem.DeviceProfile;
 using Xunit;
@@ -15,47 +16,22 @@ namespace LibAtem.ComparisonTests.MixEffects
     [Collection("Client")]
     public class TestTransitionProperties : ComparisonTestBase
     {
-        private static readonly IReadOnlyDictionary<TStyle, _BMDSwitcherTransitionStyle> StyleMap;
-
-        static TestTransitionProperties()
-        {
-            StyleMap = new Dictionary<TStyle, _BMDSwitcherTransitionStyle>
-            {
-                {TStyle.Mix, _BMDSwitcherTransitionStyle.bmdSwitcherTransitionStyleMix},
-                {TStyle.Dip, _BMDSwitcherTransitionStyle.bmdSwitcherTransitionStyleDip},
-                {TStyle.DVE, _BMDSwitcherTransitionStyle.bmdSwitcherTransitionStyleDVE},
-                {TStyle.Stinger, _BMDSwitcherTransitionStyle.bmdSwitcherTransitionStyleStinger},
-                {TStyle.Wipe, _BMDSwitcherTransitionStyle.bmdSwitcherTransitionStyleWipe},
-            };
-        }
-
         public TestTransitionProperties(ITestOutputHelper output, AtemClientWrapper client)
             : base(output, client)
         {
         }
 
         [Fact]
-        public void EnsureStyleMapIsComplete()
-        {
-            EnumMap.EnsureIsComplete(StyleMap);
-        }
-
-        [Fact]
-        public void EnsureSelectionIsMapped()
-        {
-            EnumMap.EnsureIsMatching<TransitionLayer, _BMDSwitcherTransitionSelection>();
-        }
-
-        [Fact]
         public void TestTransitionStyle()
         {
-            using (var helper = new AtemComparisonHelper(Client))
+            using (var helper = new AtemComparisonHelper(Client, Output))
             {
                 foreach (Tuple<MixEffectBlockId, UpstreamKeyId, IBMDSwitcherKey> key in GetKeyers<IBMDSwitcherKey>())
                 {
                     key.Item3.SetType(_BMDSwitcherKeyType.bmdSwitcherKeyTypeLuma);
                     key.Item3.SetOnAir(0);
                 }
+                helper.Sleep();
 
                 foreach (var me in GetMixEffects<IBMDSwitcherTransitionParameters>())
                 {
@@ -66,29 +42,19 @@ namespace LibAtem.ComparisonTests.MixEffects
                         Style = v,
                     };
 
-                    TStyle? CurrentGetter() => helper.FindWithMatching(new TransitionPropertiesGetCommand {Index = me.Item1})?.Style;
-                    TStyle? NextGetter() => helper.FindWithMatching(new TransitionPropertiesGetCommand {Index = me.Item1})?.NextStyle;
-
-                    // Check current value
-                    EnumValueComparer<TStyle, _BMDSwitcherTransitionStyle>.Run(helper, StyleMap, Setter, me.Item2.GetTransitionStyle, CurrentGetter);
-                    EnumValueComparer<TStyle, _BMDSwitcherTransitionStyle>.Run(helper, StyleMap, null, me.Item2.GetNextTransitionStyle, NextGetter);
-                    Assert.Equal(CurrentGetter(), NextGetter());
+                    void UpdateBothExpectedState(ComparisonState state, TStyle v)
+                    {
+                        state.MixEffects[me.Item1].Transition.Style = v;
+                        state.MixEffects[me.Item1].Transition.NextStyle = v;
+                    }
 
                     // Try and set each mode in turn
                     foreach (TStyle val in Enum.GetValues(typeof(TStyle)).OfType<TStyle>())
                     {
                         if (val.IsAvailable(helper.Profile))
-                        {
-                            EnumValueComparer<TStyle, _BMDSwitcherTransitionStyle>.Run(helper, StyleMap, Setter, me.Item2.GetTransitionStyle, CurrentGetter, val);
-                            EnumValueComparer<TStyle, _BMDSwitcherTransitionStyle>.Run(helper, StyleMap, null, me.Item2.GetNextTransitionStyle, NextGetter, val);
-                        }
+                            ValueTypeComparer<TStyle>.Run(helper, Setter, UpdateBothExpectedState, val);
                         else
-                        {
-                            EnumValueComparer<TStyle, _BMDSwitcherTransitionStyle>.Fail(helper, StyleMap, Setter, me.Item2.GetTransitionStyle, CurrentGetter, val);
-                            EnumValueComparer<TStyle, _BMDSwitcherTransitionStyle>.Fail(helper, StyleMap, Setter, me.Item2.GetNextTransitionStyle, NextGetter, val);
-                        }
-
-                        Assert.Equal(CurrentGetter(), NextGetter());
+                            ValueTypeComparer<TStyle>.Fail(helper, Setter, val);
                     }
 
                     // Now run a mix transition, and ensure the props line up correctly
@@ -105,8 +71,8 @@ namespace LibAtem.ComparisonTests.MixEffects
 
                     try
                     {
-                        EnumValueComparer<TStyle, _BMDSwitcherTransitionStyle>.Fail(helper, StyleMap, Setter, me.Item2.GetTransitionStyle, CurrentGetter, TStyle.Wipe);
-                        EnumValueComparer<TStyle, _BMDSwitcherTransitionStyle>.Run(helper, StyleMap, null, me.Item2.GetNextTransitionStyle, NextGetter, TStyle.Wipe);
+                        void UpdateNextOnlyExpectedState(ComparisonState state, TStyle v) => state.MixEffects[me.Item1].Transition.NextStyle = v;
+                        ValueTypeComparer<TStyle>.Run(helper, Setter, UpdateNextOnlyExpectedState, TStyle.Wipe);
                     }
                     finally
                     {
@@ -114,7 +80,7 @@ namespace LibAtem.ComparisonTests.MixEffects
                     }
 
                     // Check it updated properly after the timeout
-                    Assert.Equal(CurrentGetter(), NextGetter());
+                    Assert.True(ComparisonStateComparer.AreEqual(Output, helper.LibState, helper.SdkState));
                 }
             }
         }
@@ -122,7 +88,7 @@ namespace LibAtem.ComparisonTests.MixEffects
         [Fact]
         public void TestTransitionSelection()
         {
-            using (var helper = new AtemComparisonHelper(Client))
+            using (var helper = new AtemComparisonHelper(Client, Output))
             {
                 foreach (var me in GetMixEffects<IBMDSwitcherTransitionParameters>())
                 {
@@ -130,6 +96,7 @@ namespace LibAtem.ComparisonTests.MixEffects
                     List<IBMDSwitcherKey> keyers = GetKeyers<IBMDSwitcherKey>().Select(k => k.Item3).ToList();
                     foreach (var key in keyers)
                         key.SetType(_BMDSwitcherKeyType.bmdSwitcherKeyTypeLuma);
+                    helper.Sleep();
 
                     ICommand Setter(TransitionLayer v) => new TransitionPropertiesSetCommand()
                     {
@@ -138,29 +105,19 @@ namespace LibAtem.ComparisonTests.MixEffects
                         Selection = v,
                     };
 
-                    TransitionLayer? CurrentGetter() => helper.FindWithMatching(new TransitionPropertiesGetCommand {Index = me.Item1})?.Selection;
-                    TransitionLayer? NextGetter() => helper.FindWithMatching(new TransitionPropertiesGetCommand {Index =  me.Item1})?.NextSelection;
-
-                    // Check current value
-                    FlagsValueComparer<TransitionLayer, _BMDSwitcherTransitionSelection>.Run(helper, Setter,  me.Item2.GetTransitionSelection, CurrentGetter);
-                    FlagsValueComparer<TransitionLayer, _BMDSwitcherTransitionSelection>.Run(helper, null,  me.Item2.GetNextTransitionSelection, NextGetter);
-                    Assert.Equal(CurrentGetter(), NextGetter());
+                    void UpdateBothExpectedState(ComparisonState state, TransitionLayer v)
+                    {
+                        state.MixEffects[me.Item1].Transition.Selection = v;
+                        state.MixEffects[me.Item1].Transition.NextSelection = v;
+                    }
 
                     // Try and set each mode in turn
                     foreach (TransitionLayer val in EnumUtil.GetAllCombinations<TransitionLayer>())
                     {
                         if (val.IsAvailable(helper.Profile))
-                        {
-                            FlagsValueComparer<TransitionLayer, _BMDSwitcherTransitionSelection>.Run(helper, Setter,  me.Item2.GetTransitionSelection, CurrentGetter, val);
-                            FlagsValueComparer<TransitionLayer, _BMDSwitcherTransitionSelection>.Run(helper, null,  me.Item2.GetNextTransitionSelection, NextGetter, val);
-                        }
+                            ValueTypeComparer<TransitionLayer>.Run(helper, Setter, UpdateBothExpectedState, val);
                         else
-                        {
-                            FlagsValueComparer<TransitionLayer, _BMDSwitcherTransitionSelection>.Fail(helper, Setter,  me.Item2.GetTransitionSelection, CurrentGetter, val);
-                            FlagsValueComparer<TransitionLayer, _BMDSwitcherTransitionSelection>.Fail(helper, Setter,  me.Item2.GetNextTransitionSelection, NextGetter, val);
-                        }
-
-                        Assert.Equal(CurrentGetter(), NextGetter());
+                            ValueTypeComparer<TransitionLayer>.Fail(helper, Setter, val);
                     }
 
                     // Clear the value, to ensure the below will change it
@@ -180,8 +137,8 @@ namespace LibAtem.ComparisonTests.MixEffects
 
                     try
                     {
-                        FlagsValueComparer<TransitionLayer, _BMDSwitcherTransitionSelection>.Fail(helper, Setter,  me.Item2.GetTransitionSelection, CurrentGetter, TransitionLayer.Background);
-                        FlagsValueComparer<TransitionLayer, _BMDSwitcherTransitionSelection>.Run(helper, null,  me.Item2.GetNextTransitionSelection, NextGetter, TransitionLayer.Background);
+                        void UpdateNextOnlyExpectedState(ComparisonState state, TransitionLayer v) => state.MixEffects[me.Item1].Transition.NextSelection = v;
+                        ValueTypeComparer<TransitionLayer>.Run(helper, Setter, UpdateNextOnlyExpectedState, TransitionLayer.Background);
                     }
                     finally
                     {
@@ -189,7 +146,7 @@ namespace LibAtem.ComparisonTests.MixEffects
                     }
 
                     // Check it updated properly after the timeout
-                    Assert.Equal(CurrentGetter(), NextGetter());
+                    Assert.True(ComparisonStateComparer.AreEqual(Output, helper.LibState, helper.SdkState));
                 }
             }
         }

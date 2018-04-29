@@ -60,7 +60,7 @@ namespace LibAtem.ComparisonTests.Util
             newVals.ForEach(v => Fail(helper, setter, updater, v));
         }
 
-        public static void Fail(AtemComparisonHelper helper, Func<T, ICommand> setter, T[] newVals)
+        public static void Fail(AtemComparisonHelper helper, Func<T, ICommand> setter, params T[] newVals)
         {
             newVals.ForEach(v => Fail(helper, setter, null, v));
         }

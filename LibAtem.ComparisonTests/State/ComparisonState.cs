@@ -39,8 +39,21 @@ namespace LibAtem.ComparisonTests.State
     [Serializable]
     public class ComparisonMixEffectTransitionState
     {
+        public ComparisonMixEffectTransitionMixState Mix { get; set; } = new ComparisonMixEffectTransitionMixState();
         public ComparisonMixEffectTransitionDipState Dip { get; set; } = new ComparisonMixEffectTransitionDipState();
+        public ComparisonMixEffectTransitionStingerState Stinger { get; set; } = new ComparisonMixEffectTransitionStingerState();
         public ComparisonMixEffectTransitionDVEState DVE { get; set; } = new ComparisonMixEffectTransitionDVEState();
+
+        public TStyle Style { get; set; }
+        public TStyle NextStyle { get; set; }
+        public TransitionLayer Selection { get; set; }
+        public TransitionLayer NextSelection { get; set; }
+    }
+
+    [Serializable]
+    public class ComparisonMixEffectTransitionMixState
+    {
+        public uint Rate { get; set; }
     }
 
     [Serializable]
@@ -48,6 +61,24 @@ namespace LibAtem.ComparisonTests.State
     {
         public VideoSource Input { get; set; }
         public uint Rate { get; set; }
+    }
+
+    [Serializable]
+    public class ComparisonMixEffectTransitionStingerState
+    {
+        public StingerSource Source { get; set; }
+        public bool PreMultipliedKey { get; set; }
+
+        [Tolerance(0.01)]
+        public double Clip { get; set; }
+        [Tolerance(0.01)]
+        public double Gain { get; set; }
+        public bool Invert { get; set; }
+
+        public uint Preroll { get; set; }
+        public uint ClipDuration { get; set; }
+        public uint TriggerPoint { get; set; }
+        public uint MixRate { get; set; }
     }
 
     [Serializable]
@@ -74,9 +105,41 @@ namespace LibAtem.ComparisonTests.State
     [Serializable]
     public class ComparisonMixEffectKeyerState
     {
+        public ComparisonMixEffectKeyerLumaState Luma { get; set; } = new ComparisonMixEffectKeyerLumaState();
         public ComparisonMixEffectKeyerChromaState Chroma { get; set; } = new ComparisonMixEffectKeyerChromaState();
+        public ComparisonMixEffectKeyerPatternState Pattern { get; set; } = new ComparisonMixEffectKeyerPatternState();
         public ComparisonMixEffectKeyerDVEState DVE { get; set; } = new ComparisonMixEffectKeyerDVEState();
         public ComparisonMixEffectKeyerFlyState Fly { get; set; } = new ComparisonMixEffectKeyerFlyState();
+
+        public bool OnAir { get; set; }
+
+        public MixEffectKeyType Type { get; set; }
+        public bool FlyEnabled { get; set; }
+        public VideoSource FillSource { get; set; }
+        public VideoSource CutSource { get; set; }
+
+        public bool MaskEnabled { get; set; }
+        [Tolerance(0.01)]
+        public double MaskTop { get; set; }
+        [Tolerance(0.01)]
+        public double MaskBottom { get; set; }
+        [Tolerance(0.01)]
+        public double MaskLeft { get; set; }
+        [Tolerance(0.01)]
+        public double MaskRight { get; set; }
+    }
+
+    [Serializable]
+    public class ComparisonMixEffectKeyerLumaState
+    {
+        public bool PreMultiplied { get; set; }
+
+        [Tolerance(0.01)]
+        public double Clip { get; set; }
+        [Tolerance(0.01)]
+        public double Gain { get; set; }
+
+        public bool Invert { get; set; }
     }
 
     [Serializable]
@@ -91,6 +154,23 @@ namespace LibAtem.ComparisonTests.State
         [Tolerance(0.01)]
         public double Lift { get; set; }
         public bool Narrow { get; set; }
+    }
+
+    [Serializable]
+    public class ComparisonMixEffectKeyerPatternState
+    {
+        public Pattern Style { get; set; }
+        [Tolerance(0.01)]
+        public double Size { get; set; }
+        [Tolerance(0.01)]
+        public double Symmetry { get; set; }
+        [Tolerance(0.01)]
+        public double Softness { get; set; }
+        [Tolerance(0.01)]
+        public double XPosition { get; set; }
+        [Tolerance(0.01)]
+        public double YPosition { get; set; }
+        public bool Inverse { get; set; }
     }
 
     [Serializable]

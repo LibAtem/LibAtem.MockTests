@@ -60,7 +60,13 @@ namespace LibAtem.ComparisonTests.State.SDK
                     Preview = (VideoSource) pvw,
                     Program = (VideoSource) pgm,
                 };
-                
+
+                var cb = new MixEffectPropertiesCallback(State.MixEffects[(MixEffectBlockId)id], me);
+                me.AddCallback(cb);
+                _cleanupCallbacks.Add(() => me.RemoveCallback(cb));
+
+                TriggerAllChanged(cb);
+
                 SetupMixEffectKeyer(me, id);
 
                 SetupMixEffectTransition(me, id);
@@ -71,12 +77,38 @@ namespace LibAtem.ComparisonTests.State.SDK
 
         private void SetupMixEffectTransition(IBMDSwitcherMixEffectBlock me, MixEffectBlockId id)
         {
-            var dip = me as IBMDSwitcherTransitionDipParameters;
-            if (dip != null)
+            if (me is IBMDSwitcherTransitionParameters trans)
+                SetupMixEffectTransitionProperties(trans, id);
+            if (me is IBMDSwitcherTransitionMixParameters mix)
+                SetupMixEffectTransitionMix(mix, id);
+            if (me is IBMDSwitcherTransitionDipParameters dip)
                 SetupMixEffectTransitionDip(dip, id);
-            var dve = me as IBMDSwitcherTransitionDVEParameters;
-            if (dve != null)
+            if (me is IBMDSwitcherTransitionStingerParameters stinger)
+                SetupMixEffectTransitionStinger(stinger, id);
+            if (me is IBMDSwitcherTransitionDVEParameters dve)
                 SetupMixEffectTransitionDVE(dve, id);
+        }
+
+        private void SetupMixEffectTransitionProperties(IBMDSwitcherTransitionParameters trans, MixEffectBlockId id)
+        {
+            ComparisonMixEffectTransitionState st = State.MixEffects[id].Transition;
+
+            var cb = new MixEffectTransitionPropertiesCallback(st, trans);
+            trans.AddCallback(cb);
+            _cleanupCallbacks.Add(() => trans.RemoveCallback(cb));
+
+            TriggerAllChanged(cb);
+        }
+
+        private void SetupMixEffectTransitionMix(IBMDSwitcherTransitionMixParameters dip, MixEffectBlockId id)
+        {
+            ComparisonMixEffectTransitionMixState st = State.MixEffects[id].Transition.Mix;
+
+            var cb = new MixEffectTransitionMixCallback(st, dip);
+            dip.AddCallback(cb);
+            _cleanupCallbacks.Add(() => dip.RemoveCallback(cb));
+
+            TriggerAllChanged(cb);
         }
 
         private void SetupMixEffectTransitionDip(IBMDSwitcherTransitionDipParameters dip, MixEffectBlockId id)
@@ -86,6 +118,17 @@ namespace LibAtem.ComparisonTests.State.SDK
             var cb = new MixEffectTransitionDipCallback(st, dip);
             dip.AddCallback(cb);
             _cleanupCallbacks.Add(() => dip.RemoveCallback(cb));
+
+            TriggerAllChanged(cb);
+        }
+
+        private void SetupMixEffectTransitionStinger(IBMDSwitcherTransitionStingerParameters stinger, MixEffectBlockId id)
+        {
+            ComparisonMixEffectTransitionStingerState st = State.MixEffects[id].Transition.Stinger;
+
+            var cb = new MixEffectTransitionStingerCallback(st, stinger);
+            stinger.AddCallback(cb);
+            _cleanupCallbacks.Add(() => stinger.RemoveCallback(cb));
 
             TriggerAllChanged(cb);
         }
@@ -111,25 +154,49 @@ namespace LibAtem.ComparisonTests.State.SDK
             for (iterator.Next(out IBMDSwitcherKey keyer); keyer != null; iterator.Next(out keyer))
             {
                 State.MixEffects[id].Keyers[keyId] = new ComparisonMixEffectKeyerState();
+                SetupMixEffectKeyerProps(keyer, id, keyId);
 
-                var chroma = keyer as IBMDSwitcherKeyChromaParameters;
-                if (chroma != null)
+                if (keyer is IBMDSwitcherKeyLumaParameters luma)
+                    SetupMixEffectLumaKeyer(luma, id, keyId);
+                if (keyer is IBMDSwitcherKeyChromaParameters chroma)
                     SetupMixEffectChromaKeyer(chroma, id, keyId);
-                var dve = keyer as IBMDSwitcherKeyDVEParameters;
-                if (dve != null)
+                if (keyer is IBMDSwitcherKeyPatternParameters pattern)
+                    SetupMixEffectPatternKeyer(pattern, id, keyId);
+                if (keyer is IBMDSwitcherKeyDVEParameters dve)
                     SetupMixEffectDVEKeyer(dve, id, keyId);
-                var fly = keyer as IBMDSwitcherKeyFlyParameters;
-                if (fly != null)
+                if (keyer is IBMDSwitcherKeyFlyParameters fly)
                     SetupMixEffectFlyKeyer(fly, id, keyId);
-
+                
                 keyId++;
             }
+        }
+
+        private void SetupMixEffectKeyerProps(IBMDSwitcherKey props, MixEffectBlockId id, UpstreamKeyId keyId)
+        {
+            ComparisonMixEffectKeyerState keyer = State.MixEffects[id].Keyers[keyId];
+
+            var cb = new MixEffectKeyerCallback(keyer, props);
+            props.AddCallback(cb);
+            _cleanupCallbacks.Add(() => props.RemoveCallback(cb));
+
+            TriggerAllChanged(cb, _BMDSwitcherKeyEventType.bmdSwitcherKeyEventTypeCanBeDVEKeyChanged);
+        }
+
+        private void SetupMixEffectLumaKeyer(IBMDSwitcherKeyLumaParameters props, MixEffectBlockId meId, UpstreamKeyId keyId)
+        {
+            ComparisonMixEffectKeyerLumaState luma = State.MixEffects[meId].Keyers[keyId].Luma;
+
+            var cb = new MixEffectKeyerLumaCallback(luma, props);
+            props.AddCallback(cb);
+            _cleanupCallbacks.Add(() => props.RemoveCallback(cb));
+
+            TriggerAllChanged(cb);
         }
 
         private void SetupMixEffectChromaKeyer(IBMDSwitcherKeyChromaParameters props, MixEffectBlockId meId, UpstreamKeyId keyId)
         {
             ComparisonMixEffectKeyerChromaState chroma = State.MixEffects[meId].Keyers[keyId].Chroma;
-            
+
             var cb = new MixEffectKeyerChromaCallback(chroma, props);
             props.AddCallback(cb);
             _cleanupCallbacks.Add(() => props.RemoveCallback(cb));
@@ -137,6 +204,16 @@ namespace LibAtem.ComparisonTests.State.SDK
             TriggerAllChanged(cb);
         }
 
+        private void SetupMixEffectPatternKeyer(IBMDSwitcherKeyPatternParameters props, MixEffectBlockId meId, UpstreamKeyId keyId)
+        {
+            ComparisonMixEffectKeyerPatternState pattern = State.MixEffects[meId].Keyers[keyId].Pattern;
+
+            var cb = new MixEffectKeyerPatternCallback(pattern, props);
+            props.AddCallback(cb);
+            _cleanupCallbacks.Add(() => props.RemoveCallback(cb));
+
+            TriggerAllChanged(cb);
+        }
 
         private void SetupMixEffectDVEKeyer(IBMDSwitcherKeyDVEParameters props, MixEffectBlockId meId, UpstreamKeyId keyId)
         {
@@ -148,7 +225,6 @@ namespace LibAtem.ComparisonTests.State.SDK
 
             TriggerAllChanged(cb);
         }
-
 
         private void SetupMixEffectFlyKeyer(IBMDSwitcherKeyFlyParameters props, MixEffectBlockId meId, UpstreamKeyId keyId)
         {

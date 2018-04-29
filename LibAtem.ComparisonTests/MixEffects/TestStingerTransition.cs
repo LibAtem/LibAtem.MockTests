@@ -1,10 +1,10 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
 using BMDSwitcherAPI;
 using LibAtem.Commands;
 using LibAtem.Commands.MixEffects.Transition;
 using LibAtem.Common;
+using LibAtem.ComparisonTests.State;
 using LibAtem.ComparisonTests.Util;
 using LibAtem.DeviceProfile;
 using Xunit;
@@ -15,20 +15,6 @@ namespace LibAtem.ComparisonTests.MixEffects
     [Collection("Client")]
     public class TestStingerTransition : ComparisonTestBase
     {
-        private static readonly IReadOnlyDictionary<StingerSource, _BMDSwitcherStingerTransitionSource> SourceMap;
-
-        static TestStingerTransition()
-        {
-            SourceMap = new Dictionary<StingerSource, _BMDSwitcherStingerTransitionSource>
-            {
-                {StingerSource.None, _BMDSwitcherStingerTransitionSource.bmdSwitcherStingerTransitionSourceNone},
-                {StingerSource.MediaPlayer1, _BMDSwitcherStingerTransitionSource.bmdSwitcherStingerTransitionSourceMediaPlayer1},
-                {StingerSource.MediaPlayer2, _BMDSwitcherStingerTransitionSource.bmdSwitcherStingerTransitionSourceMediaPlayer2},
-                {StingerSource.MediaPlayer3, _BMDSwitcherStingerTransitionSource.bmdSwitcherStingerTransitionSourceMediaPlayer3},
-                {StingerSource.MediaPlayer4, _BMDSwitcherStingerTransitionSource.bmdSwitcherStingerTransitionSourceMediaPlayer4},
-            };
-        }
-
         public TestStingerTransition(ITestOutputHelper output, AtemClientWrapper client)
             : base(output, client)
         {
@@ -43,19 +29,12 @@ namespace LibAtem.ComparisonTests.MixEffects
             props.SetTriggerPoint(10);
             props.SetPreroll(5);
             props.SetMixRate(15);
-
-        }
-
-        [Fact]
-        public void EnsureSourceMapIsComplete()
-        {
-            EnumMap.EnsureIsComplete(SourceMap);
         }
 
         [Fact]
         public void TestStingerSource()
         {
-            using (var helper = new AtemComparisonHelper(Client))
+            using (var helper = new AtemComparisonHelper(Client, Output))
             {
                 foreach (var me in GetMixEffects<IBMDSwitcherTransitionStingerParameters>())
                 {
@@ -69,10 +48,10 @@ namespace LibAtem.ComparisonTests.MixEffects
                         Source = v,
                     };
 
-                    StingerSource? Getter() => helper.FindWithMatching(new TransitionStingerGetCommand {Index = me.Item1})?.Source;
+                    void UpdateExpectedState(ComparisonState state, StingerSource v) => state.MixEffects[me.Item1].Transition.Stinger.Source = v;
 
-                    EnumValueComparer<StingerSource, _BMDSwitcherStingerTransitionSource>.Run(helper, SourceMap, Setter, me.Item2.GetSource, Getter, testValues);
-                    EnumValueComparer<StingerSource, _BMDSwitcherStingerTransitionSource>.Fail(helper, SourceMap, Setter, me.Item2.GetSource, Getter, badValues);
+                    ValueTypeComparer<StingerSource>.Run(helper, Setter, UpdateExpectedState, testValues);
+                    ValueTypeComparer<StingerSource>.Fail(helper, Setter, badValues);
                 }
             }
         }
@@ -80,7 +59,7 @@ namespace LibAtem.ComparisonTests.MixEffects
         [Fact]
         public void TestStingerPreMultiplied()
         {
-            using (var helper = new AtemComparisonHelper(Client))
+            using (var helper = new AtemComparisonHelper(Client, Output))
             {
                 foreach (var me in GetMixEffects<IBMDSwitcherTransitionStingerParameters>())
                 {
@@ -93,9 +72,13 @@ namespace LibAtem.ComparisonTests.MixEffects
                         PreMultipliedKey = v
                     };
 
-                    bool? Getter() => helper.FindWithMatching(new TransitionStingerGetCommand {Index = me.Item1})?.PreMultipliedKey;
+                    void UpdateExpectedState(ComparisonState state, bool v)
+                    {
+                        state.MixEffects[me.Item1].Transition.Stinger.PreMultipliedKey = v;
+                        state.MixEffects[me.Item1].Transition.DVE.PreMultiplied = v;
+                    }
 
-                    BoolValueComparer.Run(helper, Setter, me.Item2.GetPreMultiplied, Getter, testValues);
+                    ValueTypeComparer<bool>.Run(helper, Setter, UpdateExpectedState, testValues);
                 }
             }
         }
@@ -103,7 +86,7 @@ namespace LibAtem.ComparisonTests.MixEffects
         [Fact]
         public void TestStingerClip()
         {
-            using (var helper = new AtemComparisonHelper(Client))
+            using (var helper = new AtemComparisonHelper(Client, Output))
             {
                 foreach (var me in GetMixEffects<IBMDSwitcherTransitionStingerParameters>())
                 {
@@ -117,10 +100,20 @@ namespace LibAtem.ComparisonTests.MixEffects
                         Clip = v
                     };
 
-                    double? Getter() => helper.FindWithMatching(new TransitionStingerGetCommand {Index = me.Item1})?.Clip;
+                    void UpdateExpectedState(ComparisonState state, double v)
+                    {
+                        state.MixEffects[me.Item1].Transition.Stinger.Clip = v;
+                        state.MixEffects[me.Item1].Transition.DVE.Clip = v;
+                    }
 
-                    DoubleValueComparer.Run(helper, Setter, me.Item2.GetClip, Getter, testValues, 100);
-                    DoubleValueComparer.Fail(helper, Setter, me.Item2.GetClip, Getter, badValues, 100);
+                    void UpdateFailedState(ComparisonState state, double v)
+                    {
+                        state.MixEffects[me.Item1].Transition.Stinger.Clip = v >= 100 ? 100 : 0;
+                        state.MixEffects[me.Item1].Transition.DVE.Clip = v >= 100 ? 100 : 0;
+                    }
+
+                    ValueTypeComparer<double>.Run(helper, Setter, UpdateExpectedState, testValues);
+                    ValueTypeComparer<double>.Fail(helper, Setter, UpdateFailedState, badValues);
                 }
             }
         }
@@ -128,7 +121,7 @@ namespace LibAtem.ComparisonTests.MixEffects
         [Fact]
         public void TestStingerGain()
         {
-            using (var helper = new AtemComparisonHelper(Client))
+            using (var helper = new AtemComparisonHelper(Client, Output))
             {
                 foreach (var me in GetMixEffects<IBMDSwitcherTransitionStingerParameters>())
                 {
@@ -142,10 +135,20 @@ namespace LibAtem.ComparisonTests.MixEffects
                         Gain = v
                     };
 
-                    double? Getter() => helper.FindWithMatching(new TransitionStingerGetCommand {Index = me.Item1})?.Gain;
+                    void UpdateExpectedState(ComparisonState state, double v)
+                    {
+                        state.MixEffects[me.Item1].Transition.Stinger.Gain = v;
+                        state.MixEffects[me.Item1].Transition.DVE.Gain = v;
+                    }
 
-                    DoubleValueComparer.Run(helper, Setter, me.Item2.GetGain, Getter, testValues, 100);
-                    DoubleValueComparer.Fail(helper, Setter, me.Item2.GetGain, Getter, badValues, 100);
+                    void UpdateFailedState(ComparisonState state, double v)
+                    {
+                        state.MixEffects[me.Item1].Transition.Stinger.Gain = v >= 100 ? 100 : 0;
+                        state.MixEffects[me.Item1].Transition.DVE.Gain = v >= 100 ? 100 : 0;
+                    }
+
+                    ValueTypeComparer<double>.Run(helper, Setter, UpdateExpectedState, testValues);
+                    ValueTypeComparer<double>.Fail(helper, Setter, UpdateFailedState, badValues);
                 }
             }
         }
@@ -153,7 +156,7 @@ namespace LibAtem.ComparisonTests.MixEffects
         [Fact]
         public void TestStingerInverse()
         {
-            using (var helper = new AtemComparisonHelper(Client))
+            using (var helper = new AtemComparisonHelper(Client, Output))
             {
                 foreach (var me in GetMixEffects<IBMDSwitcherTransitionStingerParameters>())
                 {
@@ -166,9 +169,13 @@ namespace LibAtem.ComparisonTests.MixEffects
                         Invert = v
                     };
 
-                    bool? Getter() => helper.FindWithMatching(new TransitionStingerGetCommand {Index = me.Item1})?.Invert;
+                    void UpdateExpectedState(ComparisonState state, bool v)
+                    {
+                        state.MixEffects[me.Item1].Transition.Stinger.Invert = v;
+                        state.MixEffects[me.Item1].Transition.DVE.InvertKey = v;
+                    }
 
-                    BoolValueComparer.Run(helper, Setter, me.Item2.GetInverse, Getter, testValues);
+                    ValueTypeComparer<bool>.Run(helper, Setter, UpdateExpectedState, testValues);
                 }
             }
         }
@@ -176,7 +183,7 @@ namespace LibAtem.ComparisonTests.MixEffects
         [Fact]
         public void TestStingerPreRoll()
         {
-            using (var helper = new AtemComparisonHelper(Client))
+            using (var helper = new AtemComparisonHelper(Client, Output))
             {
                 foreach (var me in GetMixEffects<IBMDSwitcherTransitionStingerParameters>())
                 {
@@ -190,10 +197,13 @@ namespace LibAtem.ComparisonTests.MixEffects
                         Preroll = v,
                     };
 
-                    uint? Getter() => helper.FindWithMatching(new TransitionStingerGetCommand {Index = me.Item1})?.Preroll;
+                    uint clipMaxFrames = 90; // TODO - dynamic based on me selected
 
-                    ValueTypeComparer<uint>.Run(helper, Setter, me.Item2.GetPreroll, Getter, testValues);
-                    ValueTypeComparer<uint>.Fail(helper, Setter, me.Item2.GetPreroll, Getter, badValues);
+                    void UpdateExpectedState(ComparisonState state, uint v) => state.MixEffects[me.Item1].Transition.Stinger.Preroll = v;
+                    void UpdateFailedState(ComparisonState state, uint v) => state.MixEffects[me.Item1].Transition.Stinger.Preroll = v >= clipMaxFrames ? clipMaxFrames : 0;
+
+                    ValueTypeComparer<uint>.Run(helper, Setter, UpdateExpectedState, testValues);
+                    ValueTypeComparer<uint>.Fail(helper, Setter, UpdateFailedState, badValues);
                 }
             }
         }
@@ -201,7 +211,7 @@ namespace LibAtem.ComparisonTests.MixEffects
         [Fact]
         public void TestStingerClipDuration()
         {
-            using (var helper = new AtemComparisonHelper(Client))
+            using (var helper = new AtemComparisonHelper(Client, Output))
             {
                 foreach (var me in GetMixEffects<IBMDSwitcherTransitionStingerParameters>())
                 {
@@ -222,19 +232,24 @@ namespace LibAtem.ComparisonTests.MixEffects
                         ClipDuration = v,
                     };
 
-                    uint? Getter() => helper.FindWithMatching(new TransitionStingerGetCommand {Index = me.Item1})?.ClipDuration;
+                    void UpdateExpectedState(ComparisonState state, uint v) => state.MixEffects[me.Item1].Transition.Stinger.ClipDuration = v;
+                    void UpdateFailedState(ComparisonState state, uint v) => state.MixEffects[me.Item1].Transition.Stinger.ClipDuration = v <= 30 ? 30 : (uint) 0;
 
-                    ValueTypeComparer<uint>.Run(helper, Setter, me.Item2.GetClipDuration, Getter, testValues);
-                    ValueTypeComparer<uint>.Fail(helper, Setter, me.Item2.GetClipDuration, Getter, badValues);
+                    ValueTypeComparer<uint>.Run(helper, Setter, UpdateExpectedState, testValues);
+                    ValueTypeComparer<uint>.Fail(helper, Setter, UpdateFailedState, badValues);
 
                     me.Item2.SetTriggerPoint(4);
                     me.Item2.SetMixRate(6);
+                    helper.Sleep();
 
                     uint[] testValues2 = {11, 30, 10};
                     uint[] badValues2 = {9, 1};
 
-                    ValueTypeComparer<uint>.Run(helper, Setter, me.Item2.GetClipDuration, Getter, testValues2);
-                    ValueTypeComparer<uint>.Fail(helper, Setter, me.Item2.GetClipDuration, Getter, badValues2);
+                    void UpdateExpectedState2(ComparisonState state, uint v) => state.MixEffects[me.Item1].Transition.Stinger.ClipDuration = v;
+                    void UpdateFailedState2(ComparisonState state, uint v) => state.MixEffects[me.Item1].Transition.Stinger.ClipDuration = v <= 10 ? 10 : (uint) 0;
+
+                    ValueTypeComparer<uint>.Run(helper, Setter, UpdateExpectedState2, testValues2);
+                    ValueTypeComparer<uint>.Fail(helper, Setter, UpdateFailedState2, badValues2);
                 }
             }
         }
@@ -242,13 +257,14 @@ namespace LibAtem.ComparisonTests.MixEffects
         [Fact]
         public void TestStingerTriggerPoint()
         {
-            using (var helper = new AtemComparisonHelper(Client))
+            using (var helper = new AtemComparisonHelper(Client, Output))
             {
                 foreach (var me in GetMixEffects<IBMDSwitcherTransitionStingerParameters>())
                 {
                     // These props all have various relations, that need better testing
                     ResetProps(me.Item2);
                     me.Item2.SetMixRate(15);
+                    helper.Sleep();
 
                     uint[] testValues = {1, 18, 28, 39};
                     uint[] badValues = {40, 41, 50};
@@ -260,19 +276,30 @@ namespace LibAtem.ComparisonTests.MixEffects
                         TriggerPoint = v,
                     };
 
-                    uint? Getter() => helper.FindWithMatching(new TransitionStingerGetCommand {Index = me.Item1})?.TriggerPoint;
+                    void UpdateExpectedState(ComparisonState state, uint v)
+                    {
+                        var props = state.MixEffects[me.Item1].Transition.Stinger;
+                        props.TriggerPoint = v;
+                        if (props.ClipDuration - props.TriggerPoint < props.MixRate)
+                            props.MixRate = props.ClipDuration - props.TriggerPoint;
+                    }
 
-                    ValueTypeComparer<uint>.Run(helper, Setter, me.Item2.GetTriggerPoint, Getter, testValues);
-                    ValueTypeComparer<uint>.Fail(helper, Setter, me.Item2.GetTriggerPoint, Getter, badValues);
+                    void UpdateFailedState(ComparisonState state, uint v) => state.MixEffects[me.Item1].Transition.Stinger.TriggerPoint = v >= 39 ? 39 : (uint) 0;
+
+                    ValueTypeComparer<uint>.Run(helper, Setter, UpdateExpectedState, testValues);
+                    ValueTypeComparer<uint>.Fail(helper, Setter, UpdateFailedState, badValues);
 
                     me.Item2.SetTriggerPoint(1);
                     me.Item2.SetClipDuration(25);
+                    helper.Sleep();
 
                     uint[] testValues2 = {11, 24, 10};
                     uint[] badValues2 = {25, 26, 30};
 
-                    ValueTypeComparer<uint>.Run(helper, Setter, me.Item2.GetTriggerPoint, Getter, testValues2);
-                    ValueTypeComparer<uint>.Fail(helper, Setter, me.Item2.GetTriggerPoint, Getter, badValues2);
+                    void UpdateFailedState2(ComparisonState state, uint v) => state.MixEffects[me.Item1].Transition.Stinger.TriggerPoint = v >= 24 ? 24 : (uint) 0;
+
+                    ValueTypeComparer<uint>.Run(helper, Setter, UpdateExpectedState, testValues2);
+                    ValueTypeComparer<uint>.Fail(helper, Setter, UpdateFailedState2, badValues2);
                 }
             }
         }
@@ -280,12 +307,13 @@ namespace LibAtem.ComparisonTests.MixEffects
         [Fact]
         public void TestStingerMixRate()
         {
-            using (var helper = new AtemComparisonHelper(Client))
+            using (var helper = new AtemComparisonHelper(Client, Output))
             {
                 foreach (var me in GetMixEffects<IBMDSwitcherTransitionStingerParameters>())
                 {
                     // These props all have various relations, that need better testing
                     ResetProps(me.Item2);
+                    helper.Sleep();
 
                     uint[] testValues = {1, 18, 28, 30};
                     uint[] badValues = {31, 32, 40};
@@ -297,19 +325,23 @@ namespace LibAtem.ComparisonTests.MixEffects
                         MixRate = v,
                     };
 
-                    uint? Getter() => helper.FindWithMatching(new TransitionStingerGetCommand {Index = me.Item1})?.MixRate;
+                    void UpdateExpectedState(ComparisonState state, uint v) => state.MixEffects[me.Item1].Transition.Stinger.MixRate = v;
+                    void UpdateFailedState(ComparisonState state, uint v) => state.MixEffects[me.Item1].Transition.Stinger.MixRate = v >= 30 ? 30 : (uint)0;
 
-                    ValueTypeComparer<uint>.Run(helper, Setter, me.Item2.GetMixRate, Getter, testValues);
-                    ValueTypeComparer<uint>.Fail(helper, Setter, me.Item2.GetMixRate, Getter, badValues);
+                    ValueTypeComparer<uint>.Run(helper, Setter, UpdateExpectedState, testValues);
+                    ValueTypeComparer<uint>.Fail(helper, Setter, UpdateFailedState, badValues);
 
                     me.Item2.SetMixRate(5);
                     me.Item2.SetClipDuration(20);
+                    helper.Sleep();
 
                     uint[] testValues2 = {9, 1, 10};
                     uint[] badValues2 = {11, 12, 20};
 
-                    ValueTypeComparer<uint>.Run(helper, Setter, me.Item2.GetMixRate, Getter, testValues2);
-                    ValueTypeComparer<uint>.Fail(helper, Setter, me.Item2.GetMixRate, Getter, badValues2);
+                    void UpdateFailedState2(ComparisonState state, uint v) => state.MixEffects[me.Item1].Transition.Stinger.MixRate = v >= 10 ? 10 : (uint)0;
+
+                    ValueTypeComparer<uint>.Run(helper, Setter, UpdateExpectedState, testValues2);
+                    ValueTypeComparer<uint>.Fail(helper, Setter, UpdateFailedState2, badValues2);
                 }
             }
         }
