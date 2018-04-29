@@ -19,12 +19,6 @@ namespace LibAtem.ComparisonTests.MixEffects
         }
 
         [Fact]
-        public void EnsureBevelMapIsComplete()
-        {
-            EnumMap.EnsureIsComplete(AtemEnumMaps.BorderBevelMap);
-        }
-
-        [Fact]
         public void TestDVEKeyerShadowEnabled()
         {
             using (var helper = new AtemComparisonHelper(Client, Output))

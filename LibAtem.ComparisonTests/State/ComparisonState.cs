@@ -40,6 +40,7 @@ namespace LibAtem.ComparisonTests.State
     public class ComparisonMixEffectTransitionState
     {
         public ComparisonMixEffectTransitionDipState Dip { get; set; } = new ComparisonMixEffectTransitionDipState();
+        public ComparisonMixEffectTransitionDVEState DVE { get; set; } = new ComparisonMixEffectTransitionDVEState();
     }
 
     [Serializable]
@@ -47,6 +48,27 @@ namespace LibAtem.ComparisonTests.State
     {
         public VideoSource Input { get; set; }
         public uint Rate { get; set; }
+    }
+
+    [Serializable]
+    public class ComparisonMixEffectTransitionDVEState
+    {
+        public uint Rate { get; set; }
+        public uint LogoRate { get; set; }
+        public DVEEffect Style { get; set; }
+
+        public VideoSource FillSource { get; set; }
+        public VideoSource KeySource { get; set; }
+
+        public bool EnableKey { get; set; }
+        public bool PreMultiplied { get; set; }
+        [Tolerance(0.01)]
+        public double Clip { get; set; }
+        [Tolerance(0.01)]
+        public double Gain { get; set; }
+        public bool InvertKey { get; set; }
+        public bool Reverse { get; set; }
+        public bool FlipFlop { get; set; }
     }
 
     [Serializable]

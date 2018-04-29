@@ -10,6 +10,7 @@ using log4net;
 using log4net.Config;
 using LibAtem.Commands;
 using LibAtem.ComparisonTests.State;
+using LibAtem.ComparisonTests.State.SDK;
 using LibAtem.DeviceProfile;
 using LibAtem.Net;
 using Xunit;

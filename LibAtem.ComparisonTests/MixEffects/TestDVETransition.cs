@@ -3,6 +3,7 @@ using BMDSwitcherAPI;
 using LibAtem.Commands;
 using LibAtem.Commands.MixEffects.Transition;
 using LibAtem.Common;
+using LibAtem.ComparisonTests.State;
 using LibAtem.ComparisonTests.Util;
 using LibAtem.DeviceProfile;
 using Xunit;
@@ -21,7 +22,7 @@ namespace LibAtem.ComparisonTests.MixEffects
         [Fact]
         public void TestDveRate()
         {
-            using (var helper = new AtemComparisonHelper(Client))
+            using (var helper = new AtemComparisonHelper(Client, Output))
             {
                 foreach (var me in GetMixEffects<IBMDSwitcherTransitionDVEParameters>())
                 {
@@ -35,10 +36,11 @@ namespace LibAtem.ComparisonTests.MixEffects
                         Rate = v,
                     };
 
-                    uint? Getter() => helper.FindWithMatching(new TransitionDVEGetCommand {Index = me.Item1})?.Rate;
+                    void UpdateExpectedState(ComparisonState state, uint v) => state.MixEffects[me.Item1].Transition.DVE.Rate = v;
+                    void UpdateFailedState(ComparisonState state, uint v) => state.MixEffects[me.Item1].Transition.DVE.Rate = v >= 250 ? 250 : (uint)1;
 
-                    ValueTypeComparer<uint>.Run(helper, Setter, me.Item2.GetRate, Getter, testValues);
-                    ValueTypeComparer<uint>.Fail(helper, Setter, me.Item2.GetRate, Getter, badValues);
+                    ValueTypeComparer<uint>.Run(helper, Setter, UpdateExpectedState, testValues);
+                    ValueTypeComparer<uint>.Fail(helper, Setter, UpdateFailedState, badValues);
                 }
             }
         }
@@ -46,7 +48,7 @@ namespace LibAtem.ComparisonTests.MixEffects
         [Fact]
         public void TestDveLogoRate()
         {
-            using (var helper = new AtemComparisonHelper(Client))
+            using (var helper = new AtemComparisonHelper(Client, Output))
             {
                 foreach (var me in GetMixEffects<IBMDSwitcherTransitionDVEParameters>())
                 {
@@ -60,10 +62,11 @@ namespace LibAtem.ComparisonTests.MixEffects
                         LogoRate = v,
                     };
 
-                    uint? Getter() => helper.FindWithMatching(new TransitionDVEGetCommand {Index = me.Item1})?.LogoRate;
+                    void UpdateExpectedState(ComparisonState state, uint v) => state.MixEffects[me.Item1].Transition.DVE.LogoRate = v;
+                    void UpdateFailedState(ComparisonState state, uint v) => state.MixEffects[me.Item1].Transition.DVE.LogoRate = v >= 250 ? 250 : (uint)1;
 
-                    ValueTypeComparer<uint>.Run(helper, Setter, me.Item2.GetLogoRate, Getter, testValues);
-                    ValueTypeComparer<uint>.Fail(helper, Setter, me.Item2.GetLogoRate, Getter, badValues);
+                    ValueTypeComparer<uint>.Run(helper, Setter, UpdateExpectedState, testValues);
+                    ValueTypeComparer<uint>.Fail(helper, Setter, UpdateFailedState, badValues);
                 }
             }
         }
@@ -71,7 +74,7 @@ namespace LibAtem.ComparisonTests.MixEffects
         [Fact]
         public void TestDveReverse()
         {
-            using (var helper = new AtemComparisonHelper(Client))
+            using (var helper = new AtemComparisonHelper(Client, Output))
             {
                 foreach (var me in GetMixEffects<IBMDSwitcherTransitionDVEParameters>())
                 {
@@ -84,9 +87,9 @@ namespace LibAtem.ComparisonTests.MixEffects
                         Reverse = v
                     };
 
-                    bool? Getter() => helper.FindWithMatching(new TransitionDVEGetCommand {Index = me.Item1})?.Reverse;
+                    void UpdateExpectedState(ComparisonState state, bool v) => state.MixEffects[me.Item1].Transition.DVE.Reverse = v;
 
-                    BoolValueComparer.Run(helper, Setter, me.Item2.GetReverse, Getter, testValues);
+                    ValueTypeComparer<bool>.Run(helper, Setter, UpdateExpectedState, testValues);
                 }
             }
         }
@@ -94,7 +97,7 @@ namespace LibAtem.ComparisonTests.MixEffects
         [Fact]
         public void TestDveFlipFlop()
         {
-            using (var helper = new AtemComparisonHelper(Client))
+            using (var helper = new AtemComparisonHelper(Client, Output))
             {
                 foreach (var me in GetMixEffects<IBMDSwitcherTransitionDVEParameters>())
                 {
@@ -107,9 +110,9 @@ namespace LibAtem.ComparisonTests.MixEffects
                         FlipFlop = v
                     };
 
-                    bool? Getter() => helper.FindWithMatching(new TransitionDVEGetCommand {Index = me.Item1})?.FlipFlop;
+                    void UpdateExpectedState(ComparisonState state, bool v) => state.MixEffects[me.Item1].Transition.DVE.FlipFlop = v;
 
-                    BoolValueComparer.Run(helper, Setter, me.Item2.GetFlipFlop, Getter, testValues);
+                    ValueTypeComparer<bool>.Run(helper, Setter, UpdateExpectedState, testValues);
                 }
             }
         }
@@ -119,7 +122,7 @@ namespace LibAtem.ComparisonTests.MixEffects
         [Fact]
         public void TestDveInputFill()
         {
-            using (var helper = new AtemComparisonHelper(Client))
+            using (var helper = new AtemComparisonHelper(Client, Output))
             {
                 foreach (var me in GetMixEffects<IBMDSwitcherTransitionDVEParameters>())
                 {
@@ -143,10 +146,15 @@ namespace LibAtem.ComparisonTests.MixEffects
                         FillSource = (VideoSource) v,
                     };
 
-                    long? Getter() => (long?) helper.FindWithMatching(new TransitionDVEGetCommand {Index = me.Item1})?.FillSource;
+                    void UpdateExpectedState(ComparisonState state, long v)
+                    {
+                        state.MixEffects[me.Item1].Transition.DVE.FillSource = (VideoSource) v;
+                        if (VideoSourceLists.MediaPlayers.Contains((VideoSource) v))
+                            state.MixEffects[me.Item1].Transition.DVE.KeySource = (VideoSource) v + 1;
+                    }
 
-                    ValueTypeComparer<long>.Run(helper, Setter, me.Item2.GetInputFill, Getter, testValues);
-                    ValueTypeComparer<long>.Fail(helper, Setter, me.Item2.GetInputFill, Getter, badValues);
+                    ValueTypeComparer<long>.Run(helper, Setter, UpdateExpectedState, testValues);
+                    ValueTypeComparer<long>.Fail(helper, Setter, badValues);
                 }
             }
         }
@@ -154,7 +162,7 @@ namespace LibAtem.ComparisonTests.MixEffects
         [Fact]
         public void TestDveInputKey()
         {
-            using (var helper = new AtemComparisonHelper(Client))
+            using (var helper = new AtemComparisonHelper(Client, Output))
             {
                 foreach (var me in GetMixEffects<IBMDSwitcherTransitionDVEParameters>())
                 {
@@ -178,10 +186,10 @@ namespace LibAtem.ComparisonTests.MixEffects
                         KeySource = (VideoSource) v,
                     };
 
-                    long? Getter() => (long?) helper.FindWithMatching(new TransitionDVEGetCommand {Index = me.Item1})?.KeySource;
+                    void UpdateExpectedState(ComparisonState state, long v) => state.MixEffects[me.Item1].Transition.DVE.KeySource = (VideoSource)v;
 
-                    ValueTypeComparer<long>.Run(helper, Setter, me.Item2.GetInputCut, Getter, testValues);
-                    ValueTypeComparer<long>.Fail(helper, Setter, me.Item2.GetInputCut, Getter, badValues);
+                    ValueTypeComparer<long>.Run(helper, Setter, UpdateExpectedState, testValues);
+                    ValueTypeComparer<long>.Fail(helper, Setter, badValues);
                 }
             }
         }
@@ -189,7 +197,7 @@ namespace LibAtem.ComparisonTests.MixEffects
         [Fact]
         public void TestDveEnableKey()
         {
-            using (var helper = new AtemComparisonHelper(Client))
+            using (var helper = new AtemComparisonHelper(Client, Output))
             {
                 foreach (var me in GetMixEffects<IBMDSwitcherTransitionDVEParameters>())
                 {
@@ -202,9 +210,9 @@ namespace LibAtem.ComparisonTests.MixEffects
                         EnableKey = v
                     };
 
-                    bool? Getter() => helper.FindWithMatching(new TransitionDVEGetCommand {Index = me.Item1})?.EnableKey;
+                    void UpdateExpectedState(ComparisonState state, bool v) => state.MixEffects[me.Item1].Transition.DVE.EnableKey = v;
 
-                    BoolValueComparer.Run(helper, Setter, me.Item2.GetEnableKey, Getter, testValues);
+                    ValueTypeComparer<bool>.Run(helper, Setter, UpdateExpectedState, testValues);
                 }
             }
         }
@@ -212,7 +220,7 @@ namespace LibAtem.ComparisonTests.MixEffects
         [Fact]
         public void TestDvePreMultiplied()
         {
-            using (var helper = new AtemComparisonHelper(Client))
+            using (var helper = new AtemComparisonHelper(Client, Output))
             {
                 foreach (var me in GetMixEffects<IBMDSwitcherTransitionDVEParameters>())
                 {
@@ -225,9 +233,9 @@ namespace LibAtem.ComparisonTests.MixEffects
                         PreMultiplied = v
                     };
 
-                    bool? Getter() => helper.FindWithMatching(new TransitionDVEGetCommand {Index = me.Item1})?.PreMultiplied;
+                    void UpdateExpectedState(ComparisonState state, bool v) => state.MixEffects[me.Item1].Transition.DVE.PreMultiplied = v;
 
-                    BoolValueComparer.Run(helper, Setter, me.Item2.GetPreMultiplied, Getter, testValues);
+                    ValueTypeComparer<bool>.Run(helper, Setter, UpdateExpectedState, testValues);
                 }
             }
         }
@@ -235,7 +243,7 @@ namespace LibAtem.ComparisonTests.MixEffects
         [Fact]
         public void TestDveClip()
         {
-            using (var helper = new AtemComparisonHelper(Client))
+            using (var helper = new AtemComparisonHelper(Client, Output))
             {
                 foreach (var me in GetMixEffects<IBMDSwitcherTransitionDVEParameters>())
                 {
@@ -249,10 +257,11 @@ namespace LibAtem.ComparisonTests.MixEffects
                         Clip = v
                     };
 
-                    double? Getter() => helper.FindWithMatching(new TransitionDVEGetCommand {Index = me.Item1})?.Clip;
+                    void UpdateExpectedState(ComparisonState state, double v) => state.MixEffects[me.Item1].Transition.DVE.Clip = v;
+                    void UpdateFailedState(ComparisonState state, double v) => state.MixEffects[me.Item1].Transition.DVE.Clip = v > 100 ? 100 : 0;
 
-                    DoubleValueComparer.Run(helper, Setter, me.Item2.GetClip, Getter, testValues, 100);
-                    DoubleValueComparer.Fail(helper, Setter, me.Item2.GetClip, Getter, badValues, 100);
+                    ValueTypeComparer<double>.Run(helper, Setter, UpdateExpectedState, testValues);
+                    ValueTypeComparer<double>.Fail(helper, Setter, UpdateFailedState, badValues);
                 }
             }
         }
@@ -260,7 +269,7 @@ namespace LibAtem.ComparisonTests.MixEffects
         [Fact]
         public void TestDveGain()
         {
-            using (var helper = new AtemComparisonHelper(Client))
+            using (var helper = new AtemComparisonHelper(Client, Output))
             {
                 foreach (var me in GetMixEffects<IBMDSwitcherTransitionDVEParameters>())
                 {
@@ -274,10 +283,11 @@ namespace LibAtem.ComparisonTests.MixEffects
                         Gain = v
                     };
 
-                    double? Getter() => helper.FindWithMatching(new TransitionDVEGetCommand {Index = me.Item1})?.Gain;
+                    void UpdateExpectedState(ComparisonState state, double v) => state.MixEffects[me.Item1].Transition.DVE.Gain = v;
+                    void UpdateFailedState(ComparisonState state, double v) => state.MixEffects[me.Item1].Transition.DVE.Gain = v > 100 ? 100 : 0;
 
-                    DoubleValueComparer.Run(helper, Setter, me.Item2.GetGain, Getter, testValues, 100);
-                    DoubleValueComparer.Fail(helper, Setter, me.Item2.GetGain, Getter, badValues, 100);
+                    ValueTypeComparer<double>.Run(helper, Setter, UpdateExpectedState, testValues);
+                    ValueTypeComparer<double>.Fail(helper, Setter, UpdateFailedState, badValues);
                 }
             }
         }
@@ -285,7 +295,7 @@ namespace LibAtem.ComparisonTests.MixEffects
         [Fact]
         public void TestDveInvertKey()
         {
-            using (var helper = new AtemComparisonHelper(Client))
+            using (var helper = new AtemComparisonHelper(Client, Output))
             {
                 foreach (var me in GetMixEffects<IBMDSwitcherTransitionDVEParameters>())
                 {
@@ -298,9 +308,9 @@ namespace LibAtem.ComparisonTests.MixEffects
                         InvertKey = v
                     };
 
-                    bool? Getter() => helper.FindWithMatching(new TransitionDVEGetCommand {Index = me.Item1})?.InvertKey;
+                    void UpdateExpectedState(ComparisonState state, bool v) => state.MixEffects[me.Item1].Transition.DVE.InvertKey = v;
 
-                    BoolValueComparer.Run(helper, Setter, me.Item2.GetInverse, Getter, testValues);
+                    ValueTypeComparer<bool>.Run(helper, Setter, UpdateExpectedState, testValues);
                 }
             }
         }

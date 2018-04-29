@@ -26,6 +26,7 @@ namespace LibAtem.ComparisonTests.State
                 {typeof(MixEffectKeyChromaGetCommand), UpdateMixEffectKeyerChroma},
                 {typeof(MixEffectKeyDVEGetCommand), UpdateMixEffectKeyerDVE},
                 {typeof(TransitionDipGetCommand), UpdateMixEffectTransitionDip},
+                {typeof(TransitionDVEGetCommand), UpdateMixEffectTransitionDVE},
             };
         }
 
@@ -153,6 +154,26 @@ namespace LibAtem.ComparisonTests.State
 
             props.Input = cmd.Input;
             props.Rate = cmd.Rate;
+        }
+        private static void UpdateMixEffectTransitionDVE(ComparisonState state, ICommand rawCmd)
+        {
+            var cmd = (TransitionDVEGetCommand)rawCmd;
+            var props = state.MixEffects[cmd.Index].Transition.DVE;
+
+            props.Rate = cmd.Rate;
+            props.LogoRate = cmd.LogoRate;
+            props.Style = cmd.Style;
+
+            props.FillSource = cmd.FillSource;
+            props.KeySource = cmd.KeySource;
+
+            props.EnableKey = cmd.EnableKey;
+            props.PreMultiplied = cmd.PreMultiplied;
+            props.Clip = cmd.Clip;
+            props.Gain = cmd.Gain;
+            props.InvertKey = cmd.InvertKey;
+            props.Reverse = cmd.Reverse;
+            props.FlipFlop = cmd.FlipFlop;
         }
     }
 }
