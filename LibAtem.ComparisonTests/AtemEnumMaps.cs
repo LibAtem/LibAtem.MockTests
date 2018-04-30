@@ -144,6 +144,36 @@ namespace LibAtem.ComparisonTests
                     throw new Exception("Not a ColorGen");
             }
         }
+
+        public static double GetDefaultPatternSymmetry(this Pattern pattern)
+        {
+            switch (pattern)
+            {
+                case Pattern.HorizontalBarnDoor:
+                case Pattern.VerticalBarnDoor:
+                case Pattern.TopCentreBox:
+                case Pattern.RightCentreBox:
+                case Pattern.BottomCentreBox:
+                case Pattern.LeftCentreBox:
+                    return 100;
+                case Pattern.LeftToRightBar:
+                case Pattern.TopToBottomBar:
+                case Pattern.CornersInFourBox:
+                case Pattern.RectangleIris:
+                case Pattern.DiamondIris:
+                case Pattern.TopLeftBox:
+                case Pattern.TopRightBox:
+                case Pattern.BottomRightBox:
+                case Pattern.BottomLeftBox:
+                case Pattern.TopLeftDiagonal:
+                case Pattern.TopRightDiagonal:
+                    return 50;
+                case Pattern.CircleIris:
+                    return 65.5;
+                default:
+                    return 50;
+            }
+        }
     }
 
     public class TestAtemEnumMaps

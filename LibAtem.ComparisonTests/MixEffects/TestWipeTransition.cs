@@ -1,10 +1,10 @@
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using BMDSwitcherAPI;
 using LibAtem.Commands;
 using LibAtem.Commands.MixEffects.Transition;
 using LibAtem.Common;
+using LibAtem.ComparisonTests.State;
 using LibAtem.ComparisonTests.Util;
 using LibAtem.DeviceProfile;
 using Xunit;
@@ -23,7 +23,7 @@ namespace LibAtem.ComparisonTests.MixEffects
         [Fact]
         public void TestWipeRate()
         {
-            using (var helper = new AtemComparisonHelper(Client))
+            using (var helper = new AtemComparisonHelper(Client, Output))
             {
                 foreach (var me in GetMixEffects<IBMDSwitcherTransitionWipeParameters>())
                 {
@@ -37,10 +37,11 @@ namespace LibAtem.ComparisonTests.MixEffects
                         Rate = v,
                     };
 
-                    uint? Getter() => helper.FindWithMatching(new TransitionWipeGetCommand {Index = me.Item1})?.Rate;
+                    void UpdateExpectedState(ComparisonState state, uint v) => state.MixEffects[me.Item1].Transition.Wipe.Rate = v;
+                    void UpdateFailedState(ComparisonState state, uint v) => state.MixEffects[me.Item1].Transition.Wipe.Rate = v >= 250 ? 250 : (uint)1;
 
-                    ValueTypeComparer<uint>.Run(helper, Setter, me.Item2.GetRate, Getter, testValues);
-                    ValueTypeComparer<uint>.Fail(helper, Setter, me.Item2.GetRate, Getter, badValues);
+                    ValueTypeComparer<uint>.Run(helper, Setter, UpdateExpectedState, testValues);
+                    ValueTypeComparer<uint>.Fail(helper, Setter, UpdateFailedState, badValues);
                 }
             }
         }
@@ -48,7 +49,7 @@ namespace LibAtem.ComparisonTests.MixEffects
         [Fact]
         public void TestWipePattern()
         {
-            using (var helper = new AtemComparisonHelper(Client))
+            using (var helper = new AtemComparisonHelper(Client, Output))
             {
                 foreach (var me in GetMixEffects<IBMDSwitcherTransitionWipeParameters>())
                 {
@@ -61,9 +62,16 @@ namespace LibAtem.ComparisonTests.MixEffects
                         Pattern = v,
                     };
 
-                    Pattern? Getter() => helper.FindWithMatching(new TransitionWipeGetCommand {Index = me.Item1})?.Pattern;
+                    void UpdateExpectedState(ComparisonState state, Pattern v)
+                    {
+                        var props = state.MixEffects[me.Item1].Transition.Wipe;
+                        props.Pattern = v;
+                        props.XPosition = 0.5;
+                        props.YPosition = 0.5;
+                        props.Symmetry = v.GetDefaultPatternSymmetry();
+                    }
 
-                    EnumValueComparer<Pattern, _BMDSwitcherPatternStyle>.Run(helper, AtemEnumMaps.PatternMap, Setter, me.Item2.GetPattern, Getter, testValues);
+                    ValueTypeComparer<Pattern>.Run(helper, Setter, UpdateExpectedState, testValues);
                 }
             }
         }
@@ -71,7 +79,7 @@ namespace LibAtem.ComparisonTests.MixEffects
         [Fact]
         public void TestWipeBorderSize()
         {
-            using (var helper = new AtemComparisonHelper(Client))
+            using (var helper = new AtemComparisonHelper(Client, Output))
             {
                 foreach (var me in GetMixEffects<IBMDSwitcherTransitionWipeParameters>())
                 {
@@ -85,10 +93,11 @@ namespace LibAtem.ComparisonTests.MixEffects
                         BorderWidth = v
                     };
 
-                    double? Getter() => helper.FindWithMatching(new TransitionWipeGetCommand {Index = me.Item1})?.BorderWidth;
+                    void UpdateExpectedState(ComparisonState state, double v) => state.MixEffects[me.Item1].Transition.Wipe.BorderWidth = v;
+                    void UpdateFailedState(ComparisonState state, double v) => state.MixEffects[me.Item1].Transition.Wipe.BorderWidth = v >= 100 ? 100 : 0;
 
-                    DoubleValueComparer.Run(helper, Setter, me.Item2.GetBorderSize, Getter, testValues, 100);
-                    DoubleValueComparer.Fail(helper, Setter, me.Item2.GetBorderSize, Getter, badValues, 100);
+                    ValueTypeComparer<double>.Run(helper, Setter, UpdateExpectedState, testValues);
+                    ValueTypeComparer<double>.Fail(helper, Setter, UpdateFailedState, badValues);
                 }
             }
         }
@@ -96,24 +105,24 @@ namespace LibAtem.ComparisonTests.MixEffects
         [Fact]
         public void TestWipeBorderInput()
         {
-            using (var helper = new AtemComparisonHelper(Client))
+            using (var helper = new AtemComparisonHelper(Client, Output))
             {
                 foreach (var me in GetMixEffects<IBMDSwitcherTransitionWipeParameters>())
                 {
-                    long[] testValues = VideoSourceLists.All.Where(s => s.IsAvailable(Client.Profile) && s.IsAvailable(me.Item1)).Select(s => (long)s).ToArray();
-                    long[] badValues = VideoSourceLists.All.Select(s => (long)s).Where(s => !testValues.Contains(s)).ToArray();
+                    VideoSource[] testValues = VideoSourceLists.All.Where(s => s.IsAvailable(Client.Profile) && s.IsAvailable(me.Item1)).ToArray();
+                    VideoSource[] badValues = VideoSourceLists.All.Where(s => !testValues.Contains(s)).ToArray();
 
-                    ICommand Setter(long v) => new TransitionWipeSetCommand
+                    ICommand Setter(VideoSource v) => new TransitionWipeSetCommand
                     {
                         Index = me.Item1,
                         Mask = TransitionWipeSetCommand.MaskFlags.BorderInput,
-                        BorderInput = (VideoSource) v,
+                        BorderInput = v,
                     };
 
-                    long? Getter() => (long?) helper.FindWithMatching(new TransitionWipeGetCommand {Index = me.Item1})?.BorderInput;
+                    void UpdateExpectedState(ComparisonState state, VideoSource v) => state.MixEffects[me.Item1].Transition.Wipe.BorderInput = v;
 
-                    ValueTypeComparer<long>.Run(helper, Setter, me.Item2.GetInputBorder, Getter, testValues);
-                    ValueTypeComparer<long>.Fail(helper, Setter, me.Item2.GetInputBorder, Getter, badValues);
+                    ValueTypeComparer<VideoSource>.Run(helper, Setter, UpdateExpectedState, testValues);
+                    ValueTypeComparer<VideoSource>.Fail(helper, Setter, badValues);
                 }
             }
         }
@@ -121,12 +130,13 @@ namespace LibAtem.ComparisonTests.MixEffects
         [Fact]
         public void TestWipeSymmetry()
         {
-            using (var helper = new AtemComparisonHelper(Client))
+            using (var helper = new AtemComparisonHelper(Client, Output))
             {
                 foreach (var me in GetMixEffects<IBMDSwitcherTransitionWipeParameters>())
                 {
                     // Not all props support symmetry
                     me.Item2.SetPattern(_BMDSwitcherPatternStyle.bmdSwitcherPatternStyleCircleIris);
+                    helper.Sleep();
 
                     double[] testValues = {0, 87.4, 14.7, 99.9, 100, 0.01};
                     double[] badValues = {100.1, 110, 101, -0.01, -1, -10};
@@ -138,10 +148,11 @@ namespace LibAtem.ComparisonTests.MixEffects
                         Symmetry = v
                     };
 
-                    double? Getter() => helper.FindWithMatching(new TransitionWipeGetCommand {Index = me.Item1})?.Symmetry;
+                    void UpdateExpectedState(ComparisonState state, double v) => state.MixEffects[me.Item1].Transition.Wipe.Symmetry = v;
+                    void UpdateFailedState(ComparisonState state, double v) => state.MixEffects[me.Item1].Transition.Wipe.Symmetry = v >= 100 ? 100 : 0;
 
-                    DoubleValueComparer.Run(helper, Setter, me.Item2.GetSymmetry, Getter, testValues, 100);
-                    DoubleValueComparer.Fail(helper, Setter, me.Item2.GetSymmetry, Getter, badValues, 100);
+                    ValueTypeComparer<double>.Run(helper, Setter, UpdateExpectedState, testValues);
+                    ValueTypeComparer<double>.Fail(helper, Setter, UpdateFailedState, badValues);
                 }
             }
         }
@@ -149,7 +160,7 @@ namespace LibAtem.ComparisonTests.MixEffects
         [Fact]
         public void TestWipeBorderSoftness()
         {
-            using (var helper = new AtemComparisonHelper(Client))
+            using (var helper = new AtemComparisonHelper(Client, Output))
             {
                 foreach (var me in GetMixEffects<IBMDSwitcherTransitionWipeParameters>())
                 {
@@ -163,10 +174,11 @@ namespace LibAtem.ComparisonTests.MixEffects
                         BorderSoftness = v
                     };
 
-                    double? Getter() => helper.FindWithMatching(new TransitionWipeGetCommand {Index = me.Item1 })?.BorderSoftness;
+                    void UpdateExpectedState(ComparisonState state, double v) => state.MixEffects[me.Item1].Transition.Wipe.BorderSoftness = v;
+                    void UpdateFailedState(ComparisonState state, double v) => state.MixEffects[me.Item1].Transition.Wipe.BorderSoftness = v >= 100 ? 100 : 0;
 
-                    DoubleValueComparer.Run(helper, Setter, me.Item2.GetSoftness, Getter, testValues, 100);
-                    DoubleValueComparer.Fail(helper, Setter, me.Item2.GetSoftness, Getter, badValues, 100);
+                    ValueTypeComparer<double>.Run(helper, Setter, UpdateExpectedState, testValues);
+                    ValueTypeComparer<double>.Fail(helper, Setter, UpdateFailedState, badValues);
                 }
             }
         }
@@ -174,12 +186,13 @@ namespace LibAtem.ComparisonTests.MixEffects
         [Fact]
         public void TestWipeHorizontalOffset()
         {
-            using (var helper = new AtemComparisonHelper(Client))
+            using (var helper = new AtemComparisonHelper(Client, Output))
             {
                 foreach (var me in GetMixEffects<IBMDSwitcherTransitionWipeParameters>())
                 {
                     // Not all props support XPosition
                     me.Item2.SetPattern(_BMDSwitcherPatternStyle.bmdSwitcherPatternStyleCircleIris);
+                    helper.Sleep();
 
                     double[] testValues = { 0, 0.874, 0.147, 0.999, 1.00, 0.01 };
                     double[] badValues = { 1.001, 1.1, 1.01, -0.01, -1, -0.10 };
@@ -191,10 +204,11 @@ namespace LibAtem.ComparisonTests.MixEffects
                         XPosition = v
                     };
 
-                    double? Getter() => helper.FindWithMatching(new TransitionWipeGetCommand {Index = me.Item1})?.XPosition;
+                    void UpdateExpectedState(ComparisonState state, double v) => state.MixEffects[me.Item1].Transition.Wipe.XPosition = v;
+                    void UpdateFailedState(ComparisonState state, double v) => state.MixEffects[me.Item1].Transition.Wipe.XPosition = v >= 1 ? 1 : 0;
 
-                    DoubleValueComparer.Run(helper, Setter, me.Item2.GetHorizontalOffset, Getter, testValues);
-                    DoubleValueComparer.Fail(helper, Setter, me.Item2.GetHorizontalOffset, Getter, badValues);
+                    ValueTypeComparer<double>.Run(helper, Setter, UpdateExpectedState, testValues);
+                    ValueTypeComparer<double>.Fail(helper, Setter, UpdateFailedState, badValues);
                 }
             }
         }
@@ -202,12 +216,13 @@ namespace LibAtem.ComparisonTests.MixEffects
         [Fact]
         public void TestWipeVerticalOffset()
         {
-            using (var helper = new AtemComparisonHelper(Client))
+            using (var helper = new AtemComparisonHelper(Client, Output))
             {
                 foreach (var me in GetMixEffects<IBMDSwitcherTransitionWipeParameters>())
                 {
                     // Not all props support YPosition
                     me.Item2.SetPattern(_BMDSwitcherPatternStyle.bmdSwitcherPatternStyleCircleIris);
+                    helper.Sleep();
 
                     double[] testValues = {0, 0.874, 0.147, 0.999, 1.00, 0.01};
                     double[] badValues = {1.001, 1.1, 1.01, -0.01, -1, -0.10};
@@ -219,10 +234,11 @@ namespace LibAtem.ComparisonTests.MixEffects
                         YPosition = v
                     };
 
-                    double? Getter() => helper.FindWithMatching(new TransitionWipeGetCommand {Index = MixEffectBlockId.One})?.YPosition;
+                    void UpdateExpectedState(ComparisonState state, double v) => state.MixEffects[me.Item1].Transition.Wipe.YPosition = v;
+                    void UpdateFailedState(ComparisonState state, double v) => state.MixEffects[me.Item1].Transition.Wipe.YPosition = v >= 1 ? 1 : 0;
 
-                    DoubleValueComparer.Run(helper, Setter, me.Item2.GetVerticalOffset, Getter, testValues);
-                    DoubleValueComparer.Fail(helper, Setter, me.Item2.GetVerticalOffset, Getter, badValues);
+                    ValueTypeComparer<double>.Run(helper, Setter, UpdateExpectedState, testValues);
+                    ValueTypeComparer<double>.Fail(helper, Setter, UpdateFailedState, badValues);
                 }
             }
         }
@@ -230,7 +246,7 @@ namespace LibAtem.ComparisonTests.MixEffects
         [Fact]
         public void TestWipeReverse()
         {
-            using (var helper = new AtemComparisonHelper(Client))
+            using (var helper = new AtemComparisonHelper(Client, Output))
             {
                 foreach (var me in GetMixEffects<IBMDSwitcherTransitionWipeParameters>())
                 {
@@ -243,9 +259,13 @@ namespace LibAtem.ComparisonTests.MixEffects
                         ReverseDirection = v
                     };
 
-                    bool? Getter() => helper.FindWithMatching(new TransitionWipeGetCommand {Index = me.Item1})?.ReverseDirection;
+                    void UpdateExpectedState(ComparisonState state, bool v)
+                    {
+                        state.MixEffects[me.Item1].Transition.Wipe.ReverseDirection = v;
+                        state.MixEffects[me.Item1].Transition.DVE.Reverse = v;
+                    }
 
-                    BoolValueComparer.Run(helper, Setter, me.Item2.GetReverse, Getter, testValues);
+                    ValueTypeComparer<bool>.Run(helper, Setter, UpdateExpectedState, testValues);
                 }
             }
         }
@@ -253,7 +273,7 @@ namespace LibAtem.ComparisonTests.MixEffects
         [Fact]
         public void TestWipeFlipFlop()
         {
-            using (var helper = new AtemComparisonHelper(Client))
+            using (var helper = new AtemComparisonHelper(Client, Output))
             {
                 foreach (var me in GetMixEffects<IBMDSwitcherTransitionWipeParameters>())
                 {
@@ -266,9 +286,13 @@ namespace LibAtem.ComparisonTests.MixEffects
                         FlipFlop = v
                     };
 
-                    bool? Getter() => helper.FindWithMatching(new TransitionWipeGetCommand {Index = me.Item1})?.FlipFlop;
+                    void UpdateExpectedState(ComparisonState state, bool v)
+                    {
+                        state.MixEffects[me.Item1].Transition.Wipe.FlipFlop = v;
+                        state.MixEffects[me.Item1].Transition.DVE.FlipFlop = v;
+                    }
 
-                    BoolValueComparer.Run(helper, Setter, me.Item2.GetFlipFlop, Getter, testValues);
+                    ValueTypeComparer<bool>.Run(helper, Setter, UpdateExpectedState, testValues);
                 }
             }
         }

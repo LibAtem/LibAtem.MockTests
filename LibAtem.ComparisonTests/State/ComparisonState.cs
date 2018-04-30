@@ -41,6 +41,7 @@ namespace LibAtem.ComparisonTests.State
     {
         public ComparisonMixEffectTransitionMixState Mix { get; set; } = new ComparisonMixEffectTransitionMixState();
         public ComparisonMixEffectTransitionDipState Dip { get; set; } = new ComparisonMixEffectTransitionDipState();
+        public ComparisonMixEffectTransitionWipeState Wipe { get; set; } = new ComparisonMixEffectTransitionWipeState();
         public ComparisonMixEffectTransitionStingerState Stinger { get; set; } = new ComparisonMixEffectTransitionStingerState();
         public ComparisonMixEffectTransitionDVEState DVE { get; set; } = new ComparisonMixEffectTransitionDVEState();
 
@@ -61,6 +62,26 @@ namespace LibAtem.ComparisonTests.State
     {
         public VideoSource Input { get; set; }
         public uint Rate { get; set; }
+    }
+
+    [Serializable]
+    public class ComparisonMixEffectTransitionWipeState
+    {
+        public uint Rate { get; set; }
+        public Pattern Pattern { get; set; }
+        [Tolerance(0.01)]
+        public double BorderWidth { get; set; }
+        public VideoSource BorderInput { get; set; }
+        [Tolerance(0.01)]
+        public double Symmetry { get; set; }
+        [Tolerance(0.01)]
+        public double BorderSoftness { get; set; }
+        [Tolerance(0.01)]
+        public double XPosition { get; set; }
+        [Tolerance(0.01)]
+        public double YPosition { get; set; }
+        public bool ReverseDirection { get; set; }
+        public bool FlipFlop { get; set; }
     }
 
     [Serializable]

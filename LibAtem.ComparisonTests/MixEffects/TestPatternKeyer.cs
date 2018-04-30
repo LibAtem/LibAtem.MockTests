@@ -41,33 +41,7 @@ namespace LibAtem.ComparisonTests.MixEffects
                         props.Style = v;
                         props.XPosition = 0.5;
                         props.YPosition = 0.5;
-                        switch (v)
-                        {
-                            case Pattern.HorizontalBarnDoor:
-                            case Pattern.VerticalBarnDoor:
-                            case Pattern.TopCentreBox:
-                            case Pattern.RightCentreBox:
-                            case Pattern.BottomCentreBox:
-                            case Pattern.LeftCentreBox:
-                                props.Symmetry = 100;
-                                break;
-                            case Pattern.LeftToRightBar:
-                            case Pattern.TopToBottomBar:
-                            case Pattern.CornersInFourBox:
-                            case Pattern.RectangleIris:
-                            case Pattern.DiamondIris:
-                            case Pattern.TopLeftBox:
-                            case Pattern.TopRightBox:
-                            case Pattern.BottomRightBox:
-                            case Pattern.BottomLeftBox:
-                            case Pattern.TopLeftDiagonal:
-                            case Pattern.TopRightDiagonal:
-                                props.Symmetry = 50;
-                                break;
-                            case Pattern.CircleIris:
-                                props.Symmetry = 65.5;
-                                break;
-                        }
+                        props.Symmetry = v.GetDefaultPatternSymmetry();
                     }
 
                     ValueTypeComparer<Pattern>.Run(helper, Setter, UpdateExpectedState, testValues);

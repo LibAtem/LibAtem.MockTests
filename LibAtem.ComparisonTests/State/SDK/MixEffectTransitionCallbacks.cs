@@ -65,6 +65,7 @@ namespace LibAtem.ComparisonTests.State.SDK
             }
         }
     }
+
     public sealed class MixEffectTransitionDipCallback : IBMDSwitcherTransitionDipParametersCallback, INotify<_BMDSwitcherTransitionDipParametersEventType>
     {
         private readonly ComparisonMixEffectTransitionDipState _state;
@@ -86,7 +87,68 @@ namespace LibAtem.ComparisonTests.State.SDK
                     break;
                 case _BMDSwitcherTransitionDipParametersEventType.bmdSwitcherTransitionDipParametersEventTypeInputDipChanged:
                     _props.GetInputDip(out long input);
-                    _state.Input = (VideoSource)input;
+                    _state.Input = (VideoSource) input;
+                    break;
+                default:
+                    throw new ArgumentOutOfRangeException(nameof(eventType), eventType, null);
+            }
+        }
+    }
+
+    public sealed class MixEffectTransitionWipeCallback : IBMDSwitcherTransitionWipeParametersCallback, INotify<_BMDSwitcherTransitionWipeParametersEventType>
+    {
+        private readonly ComparisonMixEffectTransitionWipeState _state;
+        private readonly IBMDSwitcherTransitionWipeParameters _props;
+
+        public MixEffectTransitionWipeCallback(ComparisonMixEffectTransitionWipeState state, IBMDSwitcherTransitionWipeParameters props)
+        {
+            _state = state;
+            _props = props;
+        }
+
+        public void Notify(_BMDSwitcherTransitionWipeParametersEventType eventType)
+        {
+            switch (eventType)
+            {
+                case _BMDSwitcherTransitionWipeParametersEventType.bmdSwitcherTransitionWipeParametersEventTypeRateChanged:
+                    _props.GetRate(out uint rate);
+                    _state.Rate = rate;
+                    break;
+                case _BMDSwitcherTransitionWipeParametersEventType.bmdSwitcherTransitionWipeParametersEventTypePatternChanged:
+                    _props.GetPattern(out _BMDSwitcherPatternStyle pattern);
+                    _state.Pattern = AtemEnumMaps.PatternMap.FindByValue(pattern);
+                    break;
+                case _BMDSwitcherTransitionWipeParametersEventType.bmdSwitcherTransitionWipeParametersEventTypeBorderSizeChanged:
+                    _props.GetBorderSize(out double size);
+                    _state.BorderWidth = size * 100;
+                    break;
+                case _BMDSwitcherTransitionWipeParametersEventType.bmdSwitcherTransitionWipeParametersEventTypeInputBorderChanged:
+                    _props.GetInputBorder(out long input);
+                    _state.BorderInput = (VideoSource) input;
+                    break;
+                case _BMDSwitcherTransitionWipeParametersEventType.bmdSwitcherTransitionWipeParametersEventTypeSymmetryChanged:
+                    _props.GetSymmetry(out double symmetry);
+                    _state.Symmetry = symmetry * 100;
+                    break;
+                case _BMDSwitcherTransitionWipeParametersEventType.bmdSwitcherTransitionWipeParametersEventTypeSoftnessChanged:
+                    _props.GetSoftness(out double soft);
+                    _state.BorderSoftness = soft * 100;
+                    break;
+                case _BMDSwitcherTransitionWipeParametersEventType.bmdSwitcherTransitionWipeParametersEventTypeHorizontalOffsetChanged:
+                    _props.GetHorizontalOffset(out double xPos);
+                    _state.XPosition = xPos;
+                    break;
+                case _BMDSwitcherTransitionWipeParametersEventType.bmdSwitcherTransitionWipeParametersEventTypeVerticalOffsetChanged:
+                    _props.GetVerticalOffset(out double yPos);
+                    _state.YPosition = yPos;
+                    break;
+                case _BMDSwitcherTransitionWipeParametersEventType.bmdSwitcherTransitionWipeParametersEventTypeReverseChanged:
+                    _props.GetReverse(out int reverse);
+                    _state.ReverseDirection = reverse != 0;
+                    break;
+                case _BMDSwitcherTransitionWipeParametersEventType.bmdSwitcherTransitionWipeParametersEventTypeFlipFlopChanged:
+                    _props.GetFlipFlop(out int flipflop);
+                    _state.FlipFlop = flipflop != 0;
                     break;
                 default:
                     throw new ArgumentOutOfRangeException(nameof(eventType), eventType, null);

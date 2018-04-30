@@ -87,7 +87,11 @@ namespace LibAtem.ComparisonTests.MixEffects
                         Reverse = v
                     };
 
-                    void UpdateExpectedState(ComparisonState state, bool v) => state.MixEffects[me.Item1].Transition.DVE.Reverse = v;
+                    void UpdateExpectedState(ComparisonState state, bool v)
+                    {
+                        state.MixEffects[me.Item1].Transition.DVE.Reverse = v;
+                        state.MixEffects[me.Item1].Transition.Wipe.ReverseDirection = v;
+                    }
 
                     ValueTypeComparer<bool>.Run(helper, Setter, UpdateExpectedState, testValues);
                 }
@@ -110,7 +114,11 @@ namespace LibAtem.ComparisonTests.MixEffects
                         FlipFlop = v
                     };
 
-                    void UpdateExpectedState(ComparisonState state, bool v) => state.MixEffects[me.Item1].Transition.DVE.FlipFlop = v;
+                    void UpdateExpectedState(ComparisonState state, bool v)
+                    {
+                        state.MixEffects[me.Item1].Transition.DVE.FlipFlop = v;
+                        state.MixEffects[me.Item1].Transition.Wipe.FlipFlop = v;
+                    }
 
                     ValueTypeComparer<bool>.Run(helper, Setter, UpdateExpectedState, testValues);
                 }

@@ -83,6 +83,8 @@ namespace LibAtem.ComparisonTests.State.SDK
                 SetupMixEffectTransitionMix(mix, id);
             if (me is IBMDSwitcherTransitionDipParameters dip)
                 SetupMixEffectTransitionDip(dip, id);
+            if (me is IBMDSwitcherTransitionWipeParameters wipe)
+                SetupMixEffectTransitionWipe(wipe, id);
             if (me is IBMDSwitcherTransitionStingerParameters stinger)
                 SetupMixEffectTransitionStinger(stinger, id);
             if (me is IBMDSwitcherTransitionDVEParameters dve)
@@ -118,6 +120,17 @@ namespace LibAtem.ComparisonTests.State.SDK
             var cb = new MixEffectTransitionDipCallback(st, dip);
             dip.AddCallback(cb);
             _cleanupCallbacks.Add(() => dip.RemoveCallback(cb));
+
+            TriggerAllChanged(cb);
+        }
+
+        private void SetupMixEffectTransitionWipe(IBMDSwitcherTransitionWipeParameters wipe, MixEffectBlockId id)
+        {
+            ComparisonMixEffectTransitionWipeState st = State.MixEffects[id].Transition.Wipe;
+
+            var cb = new MixEffectTransitionWipeCallback(st, wipe);
+            wipe.AddCallback(cb);
+            _cleanupCallbacks.Add(() => wipe.RemoveCallback(cb));
 
             TriggerAllChanged(cb);
         }

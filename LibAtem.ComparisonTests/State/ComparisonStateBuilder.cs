@@ -32,6 +32,7 @@ namespace LibAtem.ComparisonTests.State
                 {typeof(TransitionPropertiesGetCommand), UpdateMixEffectTransitionProperties},
                 {typeof(TransitionMixGetCommand), UpdateMixEffectTransitionMix},
                 {typeof(TransitionDipGetCommand), UpdateMixEffectTransitionDip},
+                {typeof(TransitionWipeGetCommand), UpdateMixEffectTransitionWipe},
                 {typeof(TransitionStingerGetCommand), UpdateMixEffectTransitionStinger},
                 {typeof(TransitionDVEGetCommand), UpdateMixEffectTransitionDVE},
             };
@@ -221,6 +222,22 @@ namespace LibAtem.ComparisonTests.State
 
             props.Input = cmd.Input;
             props.Rate = cmd.Rate;
+        }
+        private static void UpdateMixEffectTransitionWipe(ComparisonState state, ICommand rawCmd)
+        {
+            var cmd = (TransitionWipeGetCommand)rawCmd;
+            var props = state.MixEffects[cmd.Index].Transition.Wipe;
+
+            props.Rate = cmd.Rate;
+            props.Pattern = cmd.Pattern;
+            props.BorderWidth = cmd.BorderWidth;
+            props.BorderInput = cmd.BorderInput;
+            props.Symmetry = cmd.Symmetry;
+            props.BorderSoftness = cmd.BorderSoftness;
+            props.XPosition = cmd.XPosition;
+            props.YPosition = cmd.YPosition;
+            props.ReverseDirection = cmd.ReverseDirection;
+            props.FlipFlop = cmd.FlipFlop;
         }
         private static void UpdateMixEffectTransitionStinger(ComparisonState state, ICommand rawCmd)
         {
