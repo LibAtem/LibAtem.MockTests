@@ -101,7 +101,15 @@ namespace LibAtem.ComparisonTests.Settings
                         ProgramPreviewSwapped = v,
                     };
 
-                    void UpdateExpectedState(ComparisonState state, bool v) => state.Settings.MultiViews[sdkProps.Item1].ProgramPreviewSwapped = v;
+                    void UpdateExpectedState(ComparisonState state, bool v)
+                    {
+                        var props = state.Settings.MultiViews[sdkProps.Item1];
+                        props.ProgramPreviewSwapped = v;
+
+                        var tmp = props.Windows[0].Source;
+                        props.Windows[0].Source = props.Windows[1].Source;
+                        props.Windows[1].Source = tmp;
+                    }
 
                     bool[] newVals = { true, false };
                     ValueTypeComparer<bool>.Run(helper, Setter, UpdateExpectedState, newVals);
@@ -144,6 +152,7 @@ namespace LibAtem.ComparisonTests.Settings
                 foreach (Tuple<uint, IBMDSwitcherMultiView> sdkProps in GetMultiviewers())
                 {
                     VideoSource[] badValuesPvwPgm = VideoSourceLists.All.ToArray();
+                    // TODO - 2me4k can route mask types to multiviewer
                     VideoSource[] testValues = VideoSourceLists.All.Where(s => s.IsAvailable(_client.Profile, InternalPortType.Mask) && s.IsAvailable(SourceAvailability.Multiviewer)).ToArray();
                     VideoSource[] badValues = VideoSourceLists.All.Where(s => !testValues.Contains(s)).ToArray();
 

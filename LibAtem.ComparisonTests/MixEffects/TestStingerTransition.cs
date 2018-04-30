@@ -7,6 +7,7 @@ using LibAtem.Common;
 using LibAtem.ComparisonTests.State;
 using LibAtem.ComparisonTests.Util;
 using LibAtem.DeviceProfile;
+using LibAtem.Util;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -36,8 +37,12 @@ namespace LibAtem.ComparisonTests.MixEffects
         {
             using (var helper = new AtemComparisonHelper(Client, Output))
             {
-                foreach (var me in GetMixEffects<IBMDSwitcherTransitionStingerParameters>())
+                var stingers = GetMixEffects<IBMDSwitcherTransitionStingerParameters>();
+                foreach (var me in stingers)
                 {
+                    stingers.ForEach(s => s.Item2.SetSource(_BMDSwitcherStingerTransitionSource.bmdSwitcherStingerTransitionSourceMediaPlayer1));
+                    helper.Sleep();
+
                     StingerSource[] testValues = Enum.GetValues(typeof(StingerSource)).OfType<StingerSource>().Where(s => s.IsAvailable(helper.Profile)).ToArray();
                     StingerSource[] badValues = Enum.GetValues(typeof(StingerSource)).OfType<StingerSource>().Where(s => !testValues.Contains(s)).ToArray();
 
@@ -48,7 +53,18 @@ namespace LibAtem.ComparisonTests.MixEffects
                         Source = v,
                     };
 
-                    void UpdateExpectedState(ComparisonState state, StingerSource v) => state.MixEffects[me.Item1].Transition.Stinger.Source = v;
+                    void UpdateExpectedState(ComparisonState state, StingerSource v)
+                    {
+                        state.MixEffects[me.Item1].Transition.Stinger.Source = v;
+                        switch (v)
+                        {
+                            // Behaviour going to or from none changes them all
+                            case StingerSource.None:
+                            case StingerSource.MediaPlayer1:
+                                state.MixEffects.ForEach(m => m.Value.Transition.Stinger.Source = v);
+                                break;
+                        }
+                    }
 
                     ValueTypeComparer<StingerSource>.Run(helper, Setter, UpdateExpectedState, testValues);
                     ValueTypeComparer<StingerSource>.Fail(helper, Setter, badValues);

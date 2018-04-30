@@ -60,8 +60,9 @@ namespace LibAtem.ComparisonTests.Settings
                     state.Settings.VideoMode = v;
                     
                     uint rate = (uint)Math.Round(v.GetRate());
-                    if (rate > 30)
-                        rate /= 2;
+                    if (rate > 30) rate /= 2;
+                    if (rate == 24) rate = 25;
+
                     state.MixEffects.SelectMany(me => me.Value.Keyers).ForEach(k => { k.Value.Fly.Rate = rate; });
                     state.MixEffects.ForEach(k =>
                     {

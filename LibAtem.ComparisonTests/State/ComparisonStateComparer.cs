@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Reflection;
 using Xunit;
 using Xunit.Abstractions;
@@ -8,23 +9,31 @@ namespace LibAtem.ComparisonTests.State
 {
     public static class ComparisonStateComparer
     {
+        public static List<string> AreEqual(ComparisonState state1, ComparisonState state2)
+        {
+            return CompareObject("", state1, state2).ToList();
+        }
         public static bool AreEqual(ITestOutputHelper output, ComparisonState state1, ComparisonState state2)
         {
-            return CompareObject(output, "", state1, state2);
+            List<string> res = CompareObject("", state1, state2).ToList();
+
+            foreach (string r in res)
+                output.WriteLine(r);
+
+            return res.Count == 0;
         }
 
-        private static bool CompareObject(ITestOutputHelper output, string name, object state1, object state2)
+        private static IEnumerable<string> CompareObject( string name, object state1, object state2)
         {
             if (state1 == null || state2 == null)
             {
-                output.WriteLine("IsNull: " + name);
-                return false;
+                yield return "IsNull: " + name;
+                yield break;
             }
 
             if (state1.GetType() != state2.GetType())
                 Assert.True(false, "Mismatched types: " + state1.GetType().Name + ", " + state2.GetType().Name);
 
-            bool res = true;
             foreach (PropertyInfo prop in state1.GetType().GetProperties())
             {
                 object newVal = prop.GetValue(state2);
@@ -45,22 +54,19 @@ namespace LibAtem.ComparisonTests.State
 
                         if (Math.Abs(oldDbl-newDbl) > attr.Tolerance)
                         {
-                            output.WriteLine("Value: " + name + prop.Name + " Expected: " + oldVal + " Actual: " + newVal);
-                            res = false;
+                            yield return "Value: " + name + prop.Name + " Expected: " + oldVal + " Actual: " + newVal;
                         }
                     }
                     else if (!oldVal.Equals(newVal))
                     {
-                        output.WriteLine("Value: " + name + prop.Name + " Expected: " + oldVal + " Actual: " + newVal);
-                        res = false;
+                        yield return "Value: " + name + prop.Name + " Expected: " + oldVal + " Actual: " + newVal;
                     }
                 } 
                 else if (!prop.PropertyType.IsClass)
                 {
                     if (!oldVal.Equals(newVal))
                     {
-                        output.WriteLine("Value: " + name + prop.Name + " Expected: " + oldVal + " Actual: " + newVal);
-                        res = false;
+                        yield return "Value: " + name + prop.Name + " Expected: " + oldVal + " Actual: " + newVal;
                     }
                 }
                 else if (isDictionary)
@@ -73,7 +79,9 @@ namespace LibAtem.ComparisonTests.State
                     {
                         dynamic oldInner = oldDict[newInner.Key];
 
-                        res = res && CompareObject(output, newName, oldInner, newInner.Value);
+                        IEnumerable<string> res = CompareObject(newName, oldInner, newInner.Value);
+                        foreach (string r in res)
+                            yield return r;
                     }
                 }
                 else if (isList)
@@ -84,17 +92,20 @@ namespace LibAtem.ComparisonTests.State
                     string newName = name + prop.Name + ".";
                     for (int i=0; i < newList.Count; i++)
                     {
-                        res = res && CompareObject(output, newName, oldList[i], newList[i]);
+                        IEnumerable<string> res = CompareObject(newName, oldList[i], newList[i]);
+                        foreach (string r in res)
+                            yield return r;
                     }
                 }
                 else
                 {
                     string newName = name + prop.Name + ".";
-                    res = res && CompareObject(output, newName, oldVal, newVal);
+                    IEnumerable<string> res = CompareObject(newName, oldVal, newVal);
+                    foreach (string r in res)
+                        yield return r;
                 }
             }
 
-            return res;
         }
     }
 }

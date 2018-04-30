@@ -68,11 +68,5 @@ namespace LibAtem.ComparisonTests.MixEffects
 
             return result;
         }
-
-        protected bool WriteAndFail(string s)
-        {
-            Output.WriteLine(s);
-            return true;
-        }
     }
 }

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using LibAtem.Commands;
 using LibAtem.ComparisonTests.State;
 using LibAtem.Util;
@@ -20,15 +21,34 @@ namespace LibAtem.ComparisonTests.Util
             updater(origSdk, newVal);
             updater(origLib, newVal);
 
-            bool res = ComparisonStateComparer.AreEqual(helper.Output, origSdk, origLib);
+            List<string> before = ComparisonStateComparer.AreEqual(origSdk, origLib);
 
             helper.SendCommand(setter(newVal));
             helper.Sleep();
 
-            res = res && ComparisonStateComparer.AreEqual(helper.Output, origSdk, helper.SdkState) && ComparisonStateComparer.AreEqual(helper.Output, origLib, helper.LibState);
-            if (!res)
+            List<string> sdk = ComparisonStateComparer.AreEqual(origSdk, helper.SdkState);
+            List<string> lib = ComparisonStateComparer.AreEqual(origLib, helper.LibState);
+            if (before.Count > 0 || sdk.Count > 0 || lib.Count > 0)
             {
                 helper.Output.WriteLine("Setting value: " + newVal);
+                if (before.Count > 0)
+                {
+                    helper.Output.WriteLine("Before wrong");
+                    before.ForEach(helper.Output.WriteLine);
+                }
+
+                if (sdk.Count > 0)
+                {
+                    helper.Output.WriteLine("SDK wrong");
+                    sdk.ForEach(helper.Output.WriteLine);
+                }
+
+                if (lib.Count > 0)
+                {
+                    helper.Output.WriteLine("Lib wrong");
+                    lib.ForEach(helper.Output.WriteLine);
+                }
+
                 helper.TestResult = false;
             }
         }
@@ -54,15 +74,34 @@ namespace LibAtem.ComparisonTests.Util
                 updater(origLib, newVal);
             }
 
-            bool res = ComparisonStateComparer.AreEqual(helper.Output, origSdk, origLib);
+            List<string> before = ComparisonStateComparer.AreEqual(origSdk, origLib);
 
             helper.SendCommand(setter(newVal));
             helper.Sleep();
 
-            res = res && ComparisonStateComparer.AreEqual(helper.Output, origSdk, helper.SdkState) && ComparisonStateComparer.AreEqual(helper.Output, origLib, helper.LibState);
-            if (!res)
+            List<string> sdk = ComparisonStateComparer.AreEqual(origSdk, helper.SdkState);
+            List<string> lib = ComparisonStateComparer.AreEqual(origLib, helper.LibState);
+            if (before.Count > 0 || sdk.Count > 0 || lib.Count > 0)
             {
                 helper.Output.WriteLine("Setting bad value: " + newVal);
+                if (before.Count > 0)
+                {
+                    helper.Output.WriteLine("Before wrong");
+                    before.ForEach(helper.Output.WriteLine);
+                }
+
+                if (sdk.Count > 0)
+                {
+                    helper.Output.WriteLine("SDK wrong");
+                    sdk.ForEach(helper.Output.WriteLine);
+                }
+
+                if (lib.Count > 0)
+                {
+                    helper.Output.WriteLine("Lib wrong");
+                    lib.ForEach(helper.Output.WriteLine);
+                }
+
                 helper.TestResult = false;
             }
         }

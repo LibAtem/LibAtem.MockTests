@@ -51,6 +51,7 @@ namespace LibAtem.ComparisonTests
                     aux.GetInputAvailabilityMask(out _BMDSwitcherInputAvailability availabilityMask);
                     Assert.Equal(availabilityMask, (_BMDSwitcherInputAvailability) ((int) SourceAvailability.Auxiliary << 2));
 
+                    // TODO - 2me4k can route mask types to multiviewer
                     long[] testValues = VideoSourceLists.All.Where(s => s.IsAvailable(_client.Profile, InternalPortType.Mask) && s.IsAvailable(SourceAvailability.Auxiliary)).Select(s => (long)s).ToArray();
                     long[] badValues = VideoSourceLists.All.Select(s => (long)s).Where(s => !testValues.Contains(s)).ToArray();
 

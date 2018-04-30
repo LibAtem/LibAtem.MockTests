@@ -136,7 +136,7 @@ namespace LibAtem.ComparisonTests.MixEffects
                 {
                     _BMDSwitcherInputAvailability availability = 0;
                     me.Item2.GetFillInputAvailabilityMask(ref availability);
-                    Assert.Equal(_BMDSwitcherInputAvailability.bmdSwitcherInputAvailabilityMixEffectBlock0, availability);
+                    Assert.Equal((_BMDSwitcherInputAvailability) me.Item1 + 1, availability);
 
                     long[] testValues = VideoSourceLists.All
                         .Where(s => s.IsAvailable(helper.Profile, InternalPortType.Mask))
@@ -176,7 +176,7 @@ namespace LibAtem.ComparisonTests.MixEffects
                 {
                     _BMDSwitcherInputAvailability availability = 0;
                     me.Item2.GetFillInputAvailabilityMask(ref availability);
-                    Assert.Equal(_BMDSwitcherInputAvailability.bmdSwitcherInputAvailabilityMixEffectBlock0, availability);
+                    Assert.Equal((_BMDSwitcherInputAvailability)me.Item1 + 1, availability);
 
                     long[] testValues = VideoSourceLists.All
                         .Where(s => s.IsAvailable(helper.Profile, InternalPortType.Mask))

@@ -58,9 +58,9 @@ namespace LibAtem.ComparisonTests.MixEffects
                     }
 
                     // Now run a mix transition, and ensure the props line up correctly
-                    var sdkMix = GetMixEffect<IBMDSwitcherTransitionMixParameters>();
+                    var sdkMix = me.Item2 as IBMDSwitcherTransitionMixParameters;
                     Assert.NotNull(sdkMix);
-                    var sdkMe = GetMixEffect<IBMDSwitcherMixEffectBlock>();
+                    var sdkMe = me.Item2 as IBMDSwitcherMixEffectBlock;
                     Assert.NotNull(sdkMe);
 
                     me.Item2.SetNextTransitionStyle(_BMDSwitcherTransitionStyle.bmdSwitcherTransitionStyleMix);
@@ -110,6 +110,19 @@ namespace LibAtem.ComparisonTests.MixEffects
                         state.MixEffects[me.Item1].Transition.Selection = v;
                         state.MixEffects[me.Item1].Transition.NextSelection = v;
                     }
+                    void UpdateBothFailedState(ComparisonState state, TransitionLayer v)
+                    {
+                        TransitionLayer v2 = v;
+                        List<TransitionLayer> unavailableLayers = Enum.GetValues(typeof(UpstreamKeyId)).OfType<UpstreamKeyId>().Where(i => !i.IsAvailable(helper.Profile)).Select(i => i.ToTransitionLayerKey()).ToList();
+                        foreach (TransitionLayer i in unavailableLayers)
+                            v &= ~i;
+
+                        if (v != 0)
+                        {
+                            state.MixEffects[me.Item1].Transition.Selection = v;
+                            state.MixEffects[me.Item1].Transition.NextSelection = v;
+                        }
+                    }
 
                     // Try and set each mode in turn
                     foreach (TransitionLayer val in EnumUtil.GetAllCombinations<TransitionLayer>())
@@ -117,16 +130,16 @@ namespace LibAtem.ComparisonTests.MixEffects
                         if (val.IsAvailable(helper.Profile))
                             ValueTypeComparer<TransitionLayer>.Run(helper, Setter, UpdateBothExpectedState, val);
                         else
-                            ValueTypeComparer<TransitionLayer>.Fail(helper, Setter, val);
+                            ValueTypeComparer<TransitionLayer>.Fail(helper, Setter, UpdateBothFailedState, val);
                     }
 
                     // Clear the value, to ensure the below will change it
                     helper.SendCommand(Setter(TransitionLayer.Key1));
 
                     // Now run a mix transition, and ensure the props line up correctly
-                    var sdkMix = GetMixEffect<IBMDSwitcherTransitionMixParameters>();
+                    var sdkMix = me.Item2 as IBMDSwitcherTransitionMixParameters;
                     Assert.NotNull(sdkMix);
-                    var sdkMe = GetMixEffect<IBMDSwitcherMixEffectBlock>();
+                    var sdkMe = me.Item2 as IBMDSwitcherMixEffectBlock;
                     Assert.NotNull(sdkMe);
 
                      me.Item2.SetNextTransitionStyle(_BMDSwitcherTransitionStyle.bmdSwitcherTransitionStyleMix);
