@@ -6,6 +6,7 @@ using BMDSwitcherAPI;
 using LibAtem.Commands;
 using LibAtem.Commands.Settings.Multiview;
 using LibAtem.Common;
+using LibAtem.ComparisonTests.State;
 using LibAtem.ComparisonTests.Util;
 using LibAtem.DeviceProfile;
 using Xunit;
@@ -16,19 +17,6 @@ namespace LibAtem.ComparisonTests.Settings
     [Collection("Client")]
     public class TestMultiView
     {
-        private static readonly IReadOnlyDictionary<MultiViewLayout, _BMDSwitcherMultiViewLayout> LayoutMap;
-
-        static TestMultiView()
-        {
-            LayoutMap = new Dictionary<MultiViewLayout, _BMDSwitcherMultiViewLayout>
-            {
-                {MultiViewLayout.ProgramBottom, _BMDSwitcherMultiViewLayout.bmdSwitcherMultiViewLayoutProgramBottom},
-                {MultiViewLayout.ProgramLeft, _BMDSwitcherMultiViewLayout.bmdSwitcherMultiViewLayoutProgramLeft},
-                {MultiViewLayout.ProgramRight, _BMDSwitcherMultiViewLayout.bmdSwitcherMultiViewLayoutProgramRight},
-                {MultiViewLayout.ProgramTop, _BMDSwitcherMultiViewLayout.bmdSwitcherMultiViewLayoutProgramTop},
-            };
-        }
-
         private readonly ITestOutputHelper _output;
         private readonly AtemClientWrapper _client;
 
@@ -36,12 +24,6 @@ namespace LibAtem.ComparisonTests.Settings
         {
             _client = client;
             _output = output;
-        }
-
-        [Fact]
-        public void EnsureLayoutMapIsComplete()
-        {
-            EnumMap.EnsureIsComplete(LayoutMap);
         }
 
         private List<Tuple<uint, IBMDSwitcherMultiView>> GetMultiviewers()
@@ -82,12 +64,10 @@ namespace LibAtem.ComparisonTests.Settings
         [Fact]
         public void TestMultiviewLayout()
         {
-            using (var helper = new AtemComparisonHelper(_client))
+            using (var helper = new AtemComparisonHelper(_client, _output))
             {
                 foreach (Tuple<uint, IBMDSwitcherMultiView> sdkProps in GetMultiviewers())
                 {
-                    MultiViewLayout? Getter() => helper.FindWithMatching(new MultiviewPropertiesGetCommand {MultiviewIndex = sdkProps.Item1})?.Layout;
-
                     ICommand Setter(MultiViewLayout v) => new MultiviewPropertiesSetCommand
                     {
                         MultiviewIndex = sdkProps.Item1,
@@ -95,9 +75,10 @@ namespace LibAtem.ComparisonTests.Settings
                         Layout = v,
                     };
 
-                    MultiViewLayout[] newVals = Enum.GetValues(typeof(MultiViewLayout)).OfType<MultiViewLayout>().ToArray();
+                    void UpdateExpectedState(ComparisonState state, MultiViewLayout v) => state.Settings.MultiViews[sdkProps.Item1].Layout = v;
 
-                    EnumValueComparer<MultiViewLayout, _BMDSwitcherMultiViewLayout>.Run(helper, LayoutMap, Setter, sdkProps.Item2.GetLayout, Getter, newVals);
+                    MultiViewLayout[] newVals = Enum.GetValues(typeof(MultiViewLayout)).OfType<MultiViewLayout>().ToArray();
+                    ValueTypeComparer<MultiViewLayout>.Run(helper, Setter, UpdateExpectedState, newVals);
                 }
             }
         }
@@ -105,15 +86,13 @@ namespace LibAtem.ComparisonTests.Settings
         [Fact]
         public void TestMultiviewProgramPreviewSwapped()
         {
-            using (var helper = new AtemComparisonHelper(_client))
+            using (var helper = new AtemComparisonHelper(_client, _output))
             {
                 foreach (Tuple<uint, IBMDSwitcherMultiView> sdkProps in GetMultiviewers())
                 {
                     sdkProps.Item2.SupportsProgramPreviewSwap(out int canTest);
                     if (canTest == 0)
                         continue;
-
-                    bool? Getter() => helper.FindWithMatching(new MultiviewPropertiesGetCommand { MultiviewIndex = sdkProps.Item1 })?.ProgramPreviewSwapped;
 
                     ICommand Setter(bool v) => new MultiviewPropertiesSetCommand
                     {
@@ -122,9 +101,10 @@ namespace LibAtem.ComparisonTests.Settings
                         ProgramPreviewSwapped = v,
                     };
 
-                    bool[] newVals = {true, false};
+                    void UpdateExpectedState(ComparisonState state, bool v) => state.Settings.MultiViews[sdkProps.Item1].ProgramPreviewSwapped = v;
 
-                    BoolValueComparer.Run(helper, Setter, sdkProps.Item2.GetProgramPreviewSwapped, Getter, newVals);
+                    bool[] newVals = { true, false };
+                    ValueTypeComparer<bool>.Run(helper, Setter, UpdateExpectedState, newVals);
                 }
             }
         }
@@ -132,15 +112,14 @@ namespace LibAtem.ComparisonTests.Settings
         [Fact]
         public void TestMultiviewToggleSafeArea()
         {
-            using (var helper = new AtemComparisonHelper(_client))
+            using (var helper = new AtemComparisonHelper(_client, _output))
             {
                 foreach (Tuple<uint, IBMDSwitcherMultiView> sdkProps in GetMultiviewers())
                 {
                     sdkProps.Item2.CanToggleSafeAreaEnabled(out int canTest);
+                    Assert.Equal(helper.Profile.MultiView.CanToggleSafeArea, (canTest != 0));
                     if (canTest == 0)
                         continue;
-
-                    bool? Getter() => helper.FindWithMatching(new MultiviewPropertiesGetCommand { MultiviewIndex = sdkProps.Item1 })?.SafeAreaEnabled;
 
                     ICommand Setter(bool v) => new MultiviewPropertiesSetCommand
                     {
@@ -149,9 +128,10 @@ namespace LibAtem.ComparisonTests.Settings
                         SafeAreaEnabled = v,
                     };
 
-                    bool[] newVals = { true, false };
+                    void UpdateExpectedState(ComparisonState state, bool v) => state.Settings.MultiViews[sdkProps.Item1].SafeAreaEnabled = v;
 
-                    BoolValueComparer.Run(helper, Setter, sdkProps.Item2.GetSafeAreaEnabled, Getter, newVals);
+                    bool[] newVals = { true, false };
+                    ValueTypeComparer<bool>.Run(helper, Setter, UpdateExpectedState, newVals);
                 }
             }
         }
@@ -159,51 +139,42 @@ namespace LibAtem.ComparisonTests.Settings
         [Fact]
         public void TestMultiviewSources()
         {
-            using (var helper = new AtemComparisonHelper(_client))
+            using (var helper = new AtemComparisonHelper(_client, _output))
             {
                 foreach (Tuple<uint, IBMDSwitcherMultiView> sdkProps in GetMultiviewers())
                 {
-                    long[] badValuesPvwPgm = VideoSourceLists.All.Select(s => (long)s).ToArray();
-                    long[] testValues = VideoSourceLists.All.Where(s => s.IsAvailable(_client.Profile, InternalPortType.Mask) && s.IsAvailable(SourceAvailability.Multiviewer)).Select(s => (long)s).ToArray();
-                    long[] badValues = VideoSourceLists.All.Select(s => (long)s).Where(s => !testValues.Contains(s)).ToArray();
+                    VideoSource[] badValuesPvwPgm = VideoSourceLists.All.ToArray();
+                    VideoSource[] testValues = VideoSourceLists.All.Where(s => s.IsAvailable(_client.Profile, InternalPortType.Mask) && s.IsAvailable(SourceAvailability.Multiviewer)).ToArray();
+                    VideoSource[] badValues = VideoSourceLists.All.Where(s => !testValues.Contains(s)).ToArray();
 
                     uint unroutableWindows = _client.Profile.MultiView.CanRouteInputs ? 2 : Constants.MultiViewWindowCount;
                     // Pvw/Pgm/unroutable windows
                     for (uint i = 0; i < unroutableWindows; i++)
                     {
-                        ICommand Setter(long v) => new MultiviewWindowInputSetCommand()
+                        ICommand Setter(VideoSource v) => new MultiviewWindowInputSetCommand()
                         {
                             MultiviewIndex = sdkProps.Item1,
                             WindowIndex = i,
-                            Source = (VideoSource)v,
+                            Source = v,
                         };
 
-                        long? Getter() => (long?)helper.FindWithMatching(new MultiviewWindowInputGetCommand { MultiviewIndex = sdkProps.Item1, WindowIndex = i })?.Source;
-
-                        void SdkGetter(out long src) => sdkProps.Item2.GetWindowInput(i, out src);
-
-                        ValueTypeComparer<long>.Fail(helper, Setter, SdkGetter, Getter, badValuesPvwPgm);
+                        ValueTypeComparer<VideoSource>.Fail(helper, Setter, badValuesPvwPgm);
                     }
                     
                     // Routable windows
                     for (uint i = unroutableWindows; i < Constants.MultiViewWindowCount; i++)
                     {
-                        ICommand Setter(long v) => new MultiviewWindowInputSetCommand()
+                        ICommand Setter(VideoSource v) => new MultiviewWindowInputSetCommand()
                         {
                             MultiviewIndex = sdkProps.Item1,
                             WindowIndex = i,
-                            Source = (VideoSource) v,
+                            Source = v,
                         };
 
-                        long? Getter() => (long?) helper.FindWithMatching(new MultiviewWindowInputGetCommand {MultiviewIndex = sdkProps.Item1, WindowIndex = i})?.Source;
+                        void UpdateExpectedState(ComparisonState state, VideoSource v) => state.Settings.MultiViews[sdkProps.Item1].Windows[(int)i].Source = v;
 
-                        void SdkGetter(out long src)
-                        {
-                            sdkProps.Item2.GetWindowInput(i, out src);
-                        }
-
-                        ValueTypeComparer<long>.Run(helper, Setter, SdkGetter, Getter, testValues);
-                        ValueTypeComparer<long>.Fail(helper, Setter, SdkGetter, Getter, badValues);
+                        ValueTypeComparer<VideoSource>.Run(helper, Setter, UpdateExpectedState, testValues);
+                        ValueTypeComparer<VideoSource>.Fail(helper, Setter, badValues);
                     }
                 }
             }
@@ -212,7 +183,7 @@ namespace LibAtem.ComparisonTests.Settings
         [Fact]
         public void TestMultiviewVuMeter()
         {
-            using (var helper = new AtemComparisonHelper(_client))
+            using (var helper = new AtemComparisonHelper(_client, _output))
             {
                 foreach (Tuple<uint, IBMDSwitcherMultiView> sdkProps in GetMultiviewers())
                 {

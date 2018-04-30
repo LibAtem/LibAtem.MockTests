@@ -5,6 +5,7 @@ using System.Runtime.InteropServices;
 using BMDSwitcherAPI;
 using LibAtem.Common;
 using LibAtem.Util;
+using Xunit;
 
 namespace LibAtem.ComparisonTests.State.SDK
 {
@@ -30,6 +31,13 @@ namespace LibAtem.ComparisonTests.State.SDK
             
             SetupInputs(switcher);
             SetupMixEffects(switcher);
+            SetupSerialPorts(switcher);
+            SetupMultiViews(switcher);
+
+            var cb = new SwitcherPropertiesCallback(State, switcher);
+            switcher.AddCallback(cb);
+            _cleanupCallbacks.Add(() => switcher.RemoveCallback(cb));
+            TriggerAllChanged(cb);
 
         }
 
@@ -43,6 +51,45 @@ namespace LibAtem.ComparisonTests.State.SDK
             Enum.GetValues(typeof(T)).OfType<T>().Where(v => !skip.Contains(v)).ForEach(cb.Notify);
         }
 
+        private void SetupSerialPorts(IBMDSwitcher switcher)
+        {
+            Guid itId = typeof(IBMDSwitcherSerialPortIterator).GUID;
+            switcher.CreateIterator(ref itId, out var itPtr);
+            IBMDSwitcherSerialPortIterator iterator = (IBMDSwitcherSerialPortIterator)Marshal.GetObjectForIUnknown(itPtr);
+
+            int id = 0;
+            for (iterator.Next(out IBMDSwitcherSerialPort port); port != null; iterator.Next(out port))
+            {
+                Assert.Equal(0, id);
+                
+                var cb = new SerialPortPropertiesCallback(State.Settings, port);
+                port.AddCallback(cb);
+                _cleanupCallbacks.Add(() => port.RemoveCallback(cb));
+                TriggerAllChanged(cb);
+
+                id++;
+            }
+        }
+
+        private void SetupMultiViews(IBMDSwitcher switcher)
+        {
+            Guid itId = typeof(IBMDSwitcherMultiViewIterator).GUID;
+            switcher.CreateIterator(ref itId, out var itPtr);
+            IBMDSwitcherMultiViewIterator iterator = (IBMDSwitcherMultiViewIterator)Marshal.GetObjectForIUnknown(itPtr);
+
+            uint id = 0;
+            for (iterator.Next(out IBMDSwitcherMultiView mv); mv != null; iterator.Next(out mv))
+            {
+                State.Settings.MultiViews[id] = new ComparisonSettingsMultiViewState();
+                var cb = new MultiViewPropertiesCallback(State.Settings.MultiViews[id], mv);
+                mv.AddCallback(cb);
+                _cleanupCallbacks.Add(() => mv.RemoveCallback(cb));
+                TriggerAllChanged(cb);
+
+                id++;
+            }
+        }
+
         private void SetupMixEffects(IBMDSwitcher switcher)
         {
             Guid itId = typeof(IBMDSwitcherMixEffectBlockIterator).GUID;
@@ -52,19 +99,11 @@ namespace LibAtem.ComparisonTests.State.SDK
             var id = MixEffectBlockId.One;
             for (iterator.Next(out IBMDSwitcherMixEffectBlock me); me != null; iterator.Next(out me))
             {
-                me.GetInt(_BMDSwitcherMixEffectBlockPropertyId.bmdSwitcherMixEffectBlockPropertyIdProgramInput, out long pgm);
-                me.GetInt(_BMDSwitcherMixEffectBlockPropertyId.bmdSwitcherMixEffectBlockPropertyIdPreviewInput, out long pvw);
+                State.MixEffects[id] = new ComparisonMixEffectState();
 
-                State.MixEffects[id] = new ComparisonMixEffectState()
-                {
-                    Preview = (VideoSource) pvw,
-                    Program = (VideoSource) pgm,
-                };
-
-                var cb = new MixEffectPropertiesCallback(State.MixEffects[(MixEffectBlockId)id], me);
+                var cb = new MixEffectPropertiesCallback(State.MixEffects[id], me);
                 me.AddCallback(cb);
                 _cleanupCallbacks.Add(() => me.RemoveCallback(cb));
-
                 TriggerAllChanged(cb);
 
                 SetupMixEffectKeyer(me, id);

@@ -11,48 +11,11 @@ namespace LibAtem.ComparisonTests.Settings
     [Collection("Client")]
     public class TestInputs
     {
-        private static readonly IReadOnlyDictionary<InternalPortType, _BMDSwitcherPortType> PortTypeMap;
-        private static readonly IReadOnlyDictionary<ExternalPortType, _BMDSwitcherExternalPortType> ExternalPortTypeMap;
-
-        static TestInputs()
-        {
-            PortTypeMap = new Dictionary<InternalPortType, _BMDSwitcherPortType>
-            {
-                {InternalPortType.Auxiliary, _BMDSwitcherPortType.bmdSwitcherPortTypeAuxOutput},
-                {InternalPortType.Black, _BMDSwitcherPortType.bmdSwitcherPortTypeBlack},
-                {InternalPortType.ColorBars, _BMDSwitcherPortType.bmdSwitcherPortTypeColorBars},
-                {InternalPortType.ColorGenerator, _BMDSwitcherPortType.bmdSwitcherPortTypeColorGenerator},
-                {InternalPortType.External, _BMDSwitcherPortType.bmdSwitcherPortTypeExternal},
-                {InternalPortType.Mask, _BMDSwitcherPortType.bmdSwitcherPortTypeKeyCutOutput},
-                {InternalPortType.MEOutput, _BMDSwitcherPortType.bmdSwitcherPortTypeMixEffectBlockOutput},
-                {InternalPortType.MediaPlayerKey, _BMDSwitcherPortType.bmdSwitcherPortTypeMediaPlayerCut},
-                {InternalPortType.MediaPlayerFill, _BMDSwitcherPortType.bmdSwitcherPortTypeMediaPlayerFill},
-                {InternalPortType.SuperSource, _BMDSwitcherPortType.bmdSwitcherPortTypeSuperSource},
-            };
-
-            // Note: This map is expected to be incomplete, as bm include audio in it
-            ExternalPortTypeMap = new Dictionary<ExternalPortType, _BMDSwitcherExternalPortType>
-            {
-                {ExternalPortType.Internal, _BMDSwitcherExternalPortType.bmdSwitcherExternalPortTypeInternal},
-                {ExternalPortType.SDI, _BMDSwitcherExternalPortType.bmdSwitcherExternalPortTypeSDI},
-                {ExternalPortType.HDMI, _BMDSwitcherExternalPortType.bmdSwitcherExternalPortTypeHDMI},
-                {ExternalPortType.Composite, _BMDSwitcherExternalPortType.bmdSwitcherExternalPortTypeComposite},
-                {ExternalPortType.Component, _BMDSwitcherExternalPortType.bmdSwitcherExternalPortTypeComponent},
-                {ExternalPortType.SVideo, _BMDSwitcherExternalPortType.bmdSwitcherExternalPortTypeSVideo},
-            };
-        }
-
         private readonly AtemClientWrapper _client;
 
         public TestInputs(AtemClientWrapper client)
         {
             _client = client;
-        }
-
-        [Fact]
-        public void EnsureInternalPortMapIsComplete()
-        {
-            EnumMap.EnsureIsComplete(PortTypeMap);
         }
 
         // TODO - test LibAtem setters
@@ -95,19 +58,19 @@ namespace LibAtem.ComparisonTests.Settings
                         failures.Add(string.Format("{0}: Short name mismatch: {1}, {2}", libAtemInput.Id, shortName, libAtemInput.ShortName));
 
                     sdkInput.GetCurrentExternalPortType(out _BMDSwitcherExternalPortType sdkPortType);
-                    if (sdkPortType != ExternalPortTypeMap[libAtemInput.ExternalPortType])
+                    if (sdkPortType != AtemEnumMaps.ExternalPortTypeMap[libAtemInput.ExternalPortType])
                         failures.Add(string.Format("{0}: ExternalPortType mismatch: {1}, {2}", libAtemInput.Id, sdkPortType, libAtemInput.ExternalPortType));
 
                     sdkInput.GetAvailableExternalPortTypes(out _BMDSwitcherExternalPortType types);
                     _BMDSwitcherExternalPortType thisTypes = libAtemInput.ExternalPorts != null
                         ? (_BMDSwitcherExternalPortType) libAtemInput.ExternalPorts
-                            .Select(p => (int) ExternalPortTypeMap[p]).Sum()
+                            .Select(p => (int)AtemEnumMaps.ExternalPortTypeMap[p]).Sum()
                         : _BMDSwitcherExternalPortType.bmdSwitcherExternalPortTypeInternal;
                     if (types != thisTypes)
                         failures.Add(string.Format("{0}: ExternalPortType mismatch: {1}, {2}", libAtemInput.Id, types, thisTypes));
 
                     sdkInput.GetPortType(out _BMDSwitcherPortType portType);
-                    InternalPortType[] expectedLibAtem = PortTypeMap.Where(i => i.Value == portType).Select(i => i.Key).ToArray();
+                    InternalPortType[] expectedLibAtem = AtemEnumMaps.InternalPortTypeMap.Where(i => i.Value == portType).Select(i => i.Key).ToArray();
                     if (expectedLibAtem.Length == 0 || expectedLibAtem[0] != libAtemInput.InternalPortType)
                     {
                         var current = expectedLibAtem.Length == 0 ? "" : expectedLibAtem[0].ToString();

@@ -5,6 +5,8 @@ using LibAtem.Commands.DeviceProfile;
 using LibAtem.Commands.MixEffects;
 using LibAtem.Commands.MixEffects.Key;
 using LibAtem.Commands.MixEffects.Transition;
+using LibAtem.Commands.Settings;
+using LibAtem.Commands.Settings.Multiview;
 using LibAtem.Common;
 
 namespace LibAtem.ComparisonTests.State
@@ -35,6 +37,11 @@ namespace LibAtem.ComparisonTests.State
                 {typeof(TransitionWipeGetCommand), UpdateMixEffectTransitionWipe},
                 {typeof(TransitionStingerGetCommand), UpdateMixEffectTransitionStinger},
                 {typeof(TransitionDVEGetCommand), UpdateMixEffectTransitionDVE},
+                {typeof(SerialPortModeCommand), UpdateSettingsSerialMode},
+                {typeof(VideoModeGetCommand), UpdateSettingsVideoMode},
+                {typeof(MultiviewerConfigCommand), UpdateSettingsMultiviewerConfig},
+                {typeof(MultiviewPropertiesGetCommand), UpdateSettingsMultiviewerProperties},
+                {typeof(MultiviewWindowInputGetCommand), UpdateSettingsMultiviewerWindowInputProperties}
             };
         }
 
@@ -273,6 +280,43 @@ namespace LibAtem.ComparisonTests.State
             props.InvertKey = cmd.InvertKey;
             props.Reverse = cmd.Reverse;
             props.FlipFlop = cmd.FlipFlop;
+        }
+
+        private static void UpdateSettingsSerialMode(ComparisonState state, ICommand rawCmd)
+        {
+            var cmd = (SerialPortModeCommand) rawCmd;
+            state.Settings.SerialMode = cmd.SerialMode;
+        }
+        private static void UpdateSettingsVideoMode(ComparisonState state, ICommand rawCmd)
+        {
+            var cmd = (VideoModeGetCommand)rawCmd;
+            state.Settings.VideoMode = cmd.VideoMode;
+        }
+        private static void UpdateSettingsMultiviewerConfig(ComparisonState state, ICommand rawCmd)
+        {
+            var cmd = (MultiviewerConfigCommand)rawCmd;
+            state.Settings.MultiViews = new Dictionary<uint, ComparisonSettingsMultiViewState>();
+            for (uint i = 0; i < cmd.Count; i++)
+                state.Settings.MultiViews[i] = new ComparisonSettingsMultiViewState();
+
+            // TODO - remainder
+        }
+        private static void UpdateSettingsMultiviewerProperties(ComparisonState state, ICommand rawCmd)
+        {
+            var cmd = (MultiviewPropertiesGetCommand)rawCmd;
+            var props = state.Settings.MultiViews[cmd.MultiviewIndex];
+
+            props.Layout = cmd.Layout;
+            props.SafeAreaEnabled = cmd.SafeAreaEnabled;
+            props.ProgramPreviewSwapped = cmd.ProgramPreviewSwapped;
+        }
+
+        private static void UpdateSettingsMultiviewerWindowInputProperties(ComparisonState state, ICommand rawCmd)
+        {
+            var cmd = (MultiviewWindowInputGetCommand) rawCmd;
+            var props = state.Settings.MultiViews[cmd.MultiviewIndex];
+
+            props.Windows[(int) cmd.WindowIndex].Source = cmd.Source;
         }
     }
 }

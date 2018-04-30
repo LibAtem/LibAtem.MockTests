@@ -8,6 +8,7 @@ using LibAtem.Commands;
 using LibAtem.Common;
 using LibAtem.ComparisonTests.State;
 using LibAtem.Util;
+using Xunit;
 using Xunit.Abstractions;
 
 namespace LibAtem.ComparisonTests
@@ -22,6 +23,8 @@ namespace LibAtem.ComparisonTests
 
         private AutoResetEvent responseWait;
         private CommandQueueKey responseTarget;
+
+        public bool TestResult { get; set; } = true;
         
         public AtemComparisonHelper(AtemClientWrapper client, ITestOutputHelper output = null)
         {
@@ -95,6 +98,8 @@ namespace LibAtem.ComparisonTests
         public void Dispose()
         {
             _client.Client.OnReceive -= OnReceive;
+
+            Assert.True(TestResult);
         }
 
         public void Sleep(int sleep = -1)

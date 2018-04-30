@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Runtime.Serialization.Formatters.Binary;
 using LibAtem.Common;
 
@@ -23,6 +24,8 @@ namespace LibAtem.ComparisonTests.State
         public Dictionary<AuxiliaryId, ComparisonAuxiliaryState> Auxiliaries { get; set; }
         public Dictionary<ColorGeneratorId, ComparisonColorState> Colors { get; set; }
 
+        public ComparisonSettingsState Settings { get; set; } = new ComparisonSettingsState();
+
         public ComparisonState Clone()
         {
             using (var ms = new MemoryStream())
@@ -34,6 +37,31 @@ namespace LibAtem.ComparisonTests.State
                 return (ComparisonState)formatter.Deserialize(ms);
             }
         }
+    }
+
+    [Serializable]
+    public class ComparisonSettingsState
+    {
+        public Dictionary<uint, ComparisonSettingsMultiViewState> MultiViews { get; set; } = new Dictionary<uint, ComparisonSettingsMultiViewState>();
+
+        public VideoMode VideoMode { get; set; }
+        public SerialMode SerialMode { get; set; }
+    }
+
+    [Serializable]
+    public class ComparisonSettingsMultiViewState
+    {
+        public MultiViewLayout Layout { get; set; }
+        public bool ProgramPreviewSwapped { get; set; }
+        public bool SafeAreaEnabled { get; set; }
+
+        public List<ComparisonSettingsMultiViewWindowState> Windows { get; set; } = Enumerable.Range(0, (int)Constants.MultiViewWindowCount).Select(c => new ComparisonSettingsMultiViewWindowState()).ToList();
+    }
+
+    [Serializable]
+    public class ComparisonSettingsMultiViewWindowState
+    {
+        public VideoSource Source { get; set; }
     }
 
     [Serializable]

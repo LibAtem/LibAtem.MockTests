@@ -3,8 +3,10 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.InteropServices;
 using BMDSwitcherAPI;
+using LibAtem.Commands;
 using LibAtem.Commands.Settings;
 using LibAtem.Common;
+using LibAtem.ComparisonTests.State;
 using LibAtem.ComparisonTests.Util;
 using Xunit;
 using Xunit.Abstractions;
@@ -14,18 +16,6 @@ namespace LibAtem.ComparisonTests.Settings
     [Collection("Client")]
     public class TestSerialPort
     {
-        private static readonly IReadOnlyDictionary<SerialMode, _BMDSwitcherSerialPortFunction> FunctionMap;
-
-        static TestSerialPort()
-        {
-            FunctionMap = new Dictionary<SerialMode, _BMDSwitcherSerialPortFunction>
-            {
-                {SerialMode.None, _BMDSwitcherSerialPortFunction.bmdSwitcherSerialPortFunctionNone},
-                {SerialMode.Gvg100, _BMDSwitcherSerialPortFunction.bmdSwitcherSerialPortFunctionGvg100},
-                {SerialMode.PtzVisca, _BMDSwitcherSerialPortFunction.bmdSwitcherSerialPortFunctionPtzVisca},
-            };
-        }
-
         private readonly ITestOutputHelper _output;
         private readonly AtemClientWrapper _client;
 
@@ -33,12 +23,6 @@ namespace LibAtem.ComparisonTests.Settings
         {
             _client = client;
             _output = output;
-        }
-        
-        [Fact]
-        public void EnsureFunctionMapIsComplete()
-        {
-            EnumMap.EnsureIsComplete(FunctionMap);
         }
 
         private static List<IBMDSwitcherSerialPort> GetPorts(AtemComparisonHelper helper)
@@ -82,49 +66,20 @@ namespace LibAtem.ComparisonTests.Settings
                     return;
                 }
 
-                bool fail = false;
-
-                // Ensure all modes are supported before continuing
-                foreach (KeyValuePair<SerialMode, _BMDSwitcherSerialPortFunction> func in FunctionMap)
+                foreach (KeyValuePair<SerialMode, _BMDSwitcherSerialPortFunction> func in AtemEnumMaps.SerialModeMap)
                 {
                     port.DoesSupportFunction(func.Value, out int supported);
-                    if (supported == 0)
-                        fail = fail || WriteAndFail(String.Format("Unsupported serial mode: {0}. Unsure how to handle", func.Key));
-                }
-                Assert.False(fail);
-
-                fail = CheckSerialPortMatches(helper, port);
-
-                // Now try and set each one in turn
-                foreach (KeyValuePair<SerialMode, _BMDSwitcherSerialPortFunction> func in FunctionMap)
-                {
-                    helper.SendCommand(new SerialPortModeCommand {SerialMode = func.Key});
-                    helper.Sleep();
-
-                    fail = fail || CheckSerialPortMatches(helper, port, func.Key);
+                    Assert.NotEqual(0, supported);
                 }
 
-                Assert.False(fail);
+                ICommand Setter(SerialMode v) => new SerialPortModeCommand { SerialMode = v };
+
+                void UpdateExpectedState(ComparisonState state, SerialMode v) => state.Settings.SerialMode = v;
+
+                SerialMode[] newVals = AtemEnumMaps.SerialModeMap.Keys.ToArray();
+
+                ValueTypeComparer<SerialMode>.Run(helper, Setter, UpdateExpectedState, newVals);
             }
-        }
-
-        private bool CheckSerialPortMatches(AtemComparisonHelper helper, IBMDSwitcherSerialPort sdkProps, SerialMode? expected=null)
-        {
-            sdkProps.GetFunction(out _BMDSwitcherSerialPortFunction func);
-            var cmd = helper.FindWithMatching(new SerialPortModeCommand());
-            if (cmd == null || FunctionMap[cmd.SerialMode] != func)
-                return WriteAndFail(string.Format("Mismatched serial mode. {0}, {1}", cmd?.SerialMode, func));
-
-            if (expected != null && expected.Value != cmd.SerialMode)
-                return WriteAndFail(string.Format("Mismatched serial mode. {0}, {1}", cmd.SerialMode, expected));
-
-            return false;
-        }
-
-        private bool WriteAndFail(string s)
-        {
-            _output.WriteLine(s);
-            return true;
         }
     }
 }

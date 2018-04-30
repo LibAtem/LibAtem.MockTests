@@ -8,8 +8,6 @@ namespace LibAtem.ComparisonTests.Util
 {
     internal static class ValueTypeComparer<T> where T : struct
     {
-        public delegate void SdkGetter(out T val);
-
         public static void Run(AtemComparisonHelper helper, Func<T, ICommand> setter, Action<ComparisonState, T> updater, T[] newVals)
         {
             newVals.ForEach(v => Run(helper, setter, updater, v));
@@ -22,37 +20,17 @@ namespace LibAtem.ComparisonTests.Util
             updater(origSdk, newVal);
             updater(origLib, newVal);
 
-            Assert.True(ComparisonStateComparer.AreEqual(helper.Output, origSdk, origLib));
+            bool res = ComparisonStateComparer.AreEqual(helper.Output, origSdk, origLib);
 
             helper.SendCommand(setter(newVal));
             helper.Sleep();
 
-            Assert.True(ComparisonStateComparer.AreEqual(helper.Output, origSdk, helper.SdkState));
-            Assert.True(ComparisonStateComparer.AreEqual(helper.Output, origLib, helper.LibState));
-        }
-
-        public static void Run(AtemComparisonHelper helper,  Func<T, ICommand> setter, SdkGetter getter, Func<T?> libget, T[] newVals)
-        {
-            Run(helper, setter, getter, libget, (T?)null);
-            newVals.ForEach(v => Run(helper, setter, getter, libget, (T?) v));
-        }
-
-        public static void Run(AtemComparisonHelper helper, Func<T, ICommand> setter, SdkGetter getter, Func<T?> libget, T? newVal)
-        {
-            if (newVal.HasValue)
+            res = res && ComparisonStateComparer.AreEqual(helper.Output, origSdk, helper.SdkState) && ComparisonStateComparer.AreEqual(helper.Output, origLib, helper.LibState);
+            if (!res)
             {
-                helper.SendCommand(setter(newVal.Value));
-                helper.Sleep();
+                helper.Output.WriteLine("Setting value: " + newVal);
+                helper.TestResult = false;
             }
-
-            getter(out T val);
-            T? libVal = libget();
-
-            Assert.NotNull(libVal);
-            Assert.Equal(val, libVal.Value);
-
-            if (newVal.HasValue)
-                Assert.Equal(newVal.Value, libVal.Value);
         }
 
         public static void Fail(AtemComparisonHelper helper, Func<T, ICommand> setter, Action<ComparisonState, T> updater, T[] newVals)
@@ -76,35 +54,17 @@ namespace LibAtem.ComparisonTests.Util
                 updater(origLib, newVal);
             }
 
-            Assert.True(ComparisonStateComparer.AreEqual(helper.Output, origSdk, origLib));
+            bool res = ComparisonStateComparer.AreEqual(helper.Output, origSdk, origLib);
 
             helper.SendCommand(setter(newVal));
             helper.Sleep();
 
-            Assert.True(ComparisonStateComparer.AreEqual(helper.Output, origSdk, helper.SdkState));
-            Assert.True(ComparisonStateComparer.AreEqual(helper.Output, origLib, helper.LibState));
-        }
-
-        public static void Fail(AtemComparisonHelper helper, Func<T, ICommand> setter, SdkGetter getter, Func<T?> libget, T[] newVals)
-        {
-            newVals.ForEach(v => Fail(helper, setter, getter, libget, v));
-        }
-
-        public static void Fail(AtemComparisonHelper helper, Func<T, ICommand> setter, SdkGetter getter, Func<T?> libget, T newVal)
-        {
-            getter(out T val);
-            if (val.Equals(newVal))
-                return;
-
-            helper.SendCommand(setter(newVal));
-            helper.Sleep();
-
-            getter(out val);
-            T? libVal = libget();
-
-            Assert.NotNull(libVal);
-            Assert.Equal(val, libVal.Value);
-            Assert.NotEqual(newVal, libVal.Value);
+            res = res && ComparisonStateComparer.AreEqual(helper.Output, origSdk, helper.SdkState) && ComparisonStateComparer.AreEqual(helper.Output, origLib, helper.LibState);
+            if (!res)
+            {
+                helper.Output.WriteLine("Setting bad value: " + newVal);
+                helper.TestResult = false;
+            }
         }
     }
 }

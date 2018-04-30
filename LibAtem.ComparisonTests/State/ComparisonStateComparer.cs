@@ -34,6 +34,7 @@ namespace LibAtem.ComparisonTests.State
                 object oldVal = prop.GetValue(state1);
 
                 bool isDictionary = prop.PropertyType.IsGenericType && prop.PropertyType.GetGenericTypeDefinition() == typeof(Dictionary<,>);
+                bool isList = prop.PropertyType.IsGenericType && prop.PropertyType.GetGenericTypeDefinition() == typeof(List<>);
                 if (prop.PropertyType == typeof(double))
                 {
                     ToleranceAttribute attr = prop.GetCustomAttribute<ToleranceAttribute>();
@@ -75,16 +76,17 @@ namespace LibAtem.ComparisonTests.State
                         res = res && CompareObject(output, newName, oldInner, newInner.Value);
                     }
                 }
-                /*else if (isList)
+                else if (isList)
                 {
-                    var oldList = (IEnumerable)oldVal;
-                    var newList = (IEnumerable)newVal;
+                    dynamic oldList = Convert.ChangeType(oldVal, prop.PropertyType);
+                    dynamic newList = Convert.ChangeType(newVal, prop.PropertyType);
 
-                    var oldEnum = oldList.GetEnumerator();
-                    var newEnum = newList.GetEnumerator();
-
-
-                }*/
+                    string newName = name + prop.Name + ".";
+                    for (int i=0; i < newList.Count; i++)
+                    {
+                        res = res && CompareObject(output, newName, oldList[i], newList[i]);
+                    }
+                }
                 else
                 {
                     string newName = name + prop.Name + ".";
