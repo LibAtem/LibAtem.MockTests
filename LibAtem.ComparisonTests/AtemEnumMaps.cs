@@ -22,6 +22,7 @@ namespace LibAtem.ComparisonTests
         public static readonly IReadOnlyDictionary<MultiViewLayout, _BMDSwitcherMultiViewLayout> MultiViewLayoutMap;
         public static readonly IReadOnlyDictionary<InternalPortType, _BMDSwitcherPortType> InternalPortTypeMap;
         public static readonly IReadOnlyDictionary<ExternalPortType, _BMDSwitcherExternalPortType> ExternalPortTypeMap;
+        public static readonly IReadOnlyDictionary<SuperSourceArtOption, _BMDSwitcherSuperSourceArtOption> SuperSourceArtOptionMap;
 
         static AtemEnumMaps()
         {
@@ -194,6 +195,12 @@ namespace LibAtem.ComparisonTests
                 {ExternalPortType.Component, _BMDSwitcherExternalPortType.bmdSwitcherExternalPortTypeComponent},
                 {ExternalPortType.SVideo, _BMDSwitcherExternalPortType.bmdSwitcherExternalPortTypeSVideo},
             };
+
+            SuperSourceArtOptionMap = new Dictionary<SuperSourceArtOption, _BMDSwitcherSuperSourceArtOption>
+            {
+                {SuperSourceArtOption.Background, _BMDSwitcherSuperSourceArtOption.bmdSwitcherSuperSourceArtOptionBackground},
+                {SuperSourceArtOption.Foreground, _BMDSwitcherSuperSourceArtOption.bmdSwitcherSuperSourceArtOptionForeground},
+            };
         }
 
         public static Tk FindByValue<Tk, Tv>(this IReadOnlyDictionary<Tk, Tv> dict, Tv value)
@@ -325,6 +332,12 @@ namespace LibAtem.ComparisonTests
         public void EnsureInternalPortMapIsComplete()
         {
             EnumMap.EnsureIsComplete(AtemEnumMaps.InternalPortTypeMap);
+        }
+
+        [Fact]
+        public void EnsureSuperSourceArtOptionMapIsComplete()
+        {
+            EnumMap.EnsureIsComplete(AtemEnumMaps.SuperSourceArtOptionMap);
         }
     }
 }

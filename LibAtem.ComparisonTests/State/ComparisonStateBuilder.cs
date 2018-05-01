@@ -7,6 +7,7 @@ using LibAtem.Commands.MixEffects.Key;
 using LibAtem.Commands.MixEffects.Transition;
 using LibAtem.Commands.Settings;
 using LibAtem.Commands.Settings.Multiview;
+using LibAtem.Commands.SuperSource;
 using LibAtem.Common;
 
 namespace LibAtem.ComparisonTests.State
@@ -41,7 +42,9 @@ namespace LibAtem.ComparisonTests.State
                 {typeof(VideoModeGetCommand), UpdateSettingsVideoMode},
                 {typeof(MultiviewerConfigCommand), UpdateSettingsMultiviewerConfig},
                 {typeof(MultiviewPropertiesGetCommand), UpdateSettingsMultiviewerProperties},
-                {typeof(MultiviewWindowInputGetCommand), UpdateSettingsMultiviewerWindowInputProperties}
+                {typeof(MultiviewWindowInputGetCommand), UpdateSettingsMultiviewerWindowInputProperties},
+                {typeof(SuperSourcePropertiesGetCommand), UpdateSuperSourceProperties},
+                {typeof(SuperSourceBoxGetCommand), UpdateSuperSourceBoxProperties},
             };
         }
 
@@ -317,6 +320,50 @@ namespace LibAtem.ComparisonTests.State
             var props = state.Settings.MultiViews[cmd.MultiviewIndex];
 
             props.Windows[(int) cmd.WindowIndex].Source = cmd.Source;
+        }
+
+        private static void UpdateSuperSourceProperties(ComparisonState state, ICommand rawCmd)
+        {
+            var cmd = (SuperSourcePropertiesGetCommand)rawCmd;
+            var props = state.SuperSource;
+
+            props.ArtFillInput = cmd.ArtFillInput;
+            props.ArtKeyInput = cmd.ArtKeyInput;
+            props.ArtOption = cmd.ArtOption;
+            props.ArtPreMultiplied = cmd.ArtPreMultiplied;
+            props.ArtClip = cmd.ArtClip;
+            props.ArtGain = cmd.ArtGain;
+            props.ArtInvertKey = cmd.ArtInvertKey;
+
+            props.BorderEnabled = cmd.BorderEnabled;
+            props.BorderBevel = cmd.BorderBevel;
+            props.BorderWidthOut = cmd.BorderWidthOut;
+            props.BorderWidthIn = cmd.BorderWidthIn;
+            props.BorderSoftnessOut = cmd.BorderSoftnessOut;
+            props.BorderSoftnessIn = cmd.BorderSoftnessIn;
+            props.BorderBevelSoftness = cmd.BorderBevelSoftness;
+            props.BorderBevelPosition = cmd.BorderBevelPosition;
+            props.BorderHue = cmd.BorderHue;
+            props.BorderSaturation = cmd.BorderSaturation;
+            props.BorderLuma = cmd.BorderLuma;
+            props.BorderLightSourceDirection = cmd.BorderLightSourceDirection;
+            props.BorderLightSourceAltitude = cmd.BorderLightSourceAltitude;
+        }
+        private static void UpdateSuperSourceBoxProperties(ComparisonState state, ICommand rawCmd)
+        {
+            var cmd = (SuperSourceBoxGetCommand)rawCmd;
+            var props = state.SuperSource.Boxes[cmd.Index] = new ComparisonSuperSourceBoxState();
+
+            props.Enabled = cmd.Enabled;
+            props.InputSource = cmd.InputSource;
+            props.PositionX = cmd.PositionX;
+            props.PositionY = cmd.PositionY;
+            props.Size = cmd.Size;
+            props.Cropped = cmd.Cropped;
+            props.CropTop = cmd.CropTop;
+            props.CropBottom = cmd.CropBottom;
+            props.CropLeft = cmd.CropLeft;
+            props.CropRight = cmd.CropRight;
         }
     }
 }

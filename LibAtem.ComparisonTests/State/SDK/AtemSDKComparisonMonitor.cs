@@ -310,13 +310,12 @@ namespace LibAtem.ComparisonTests.State.SDK
 
                 // TODO - normal input stuff
 
-                var aux = input as IBMDSwitcherInputAux;
-                if (aux != null)
+                if (input is IBMDSwitcherInputAux aux)
                     SetupAuxiliary(src, aux);
-
-                var col = input as IBMDSwitcherInputColor;
-                if (col != null)
+                if (input is IBMDSwitcherInputColor col)
                     SetupColor(src, col);
+                if (input is IBMDSwitcherInputSuperSource ssrc)
+                    SetupSuperSource(ssrc);
             }
         }
 
@@ -341,6 +340,33 @@ namespace LibAtem.ComparisonTests.State.SDK
             
             TriggerAllChanged(cb);
         }
-        
+
+        private void SetupSuperSource(IBMDSwitcherInputSuperSource ssrc)
+        {
+            State.SuperSource = new ComparisonSuperSourceState();
+            var cb = new SuperSourceCallback(State.SuperSource, ssrc);
+            ssrc.AddCallback(cb);
+            _cleanupCallbacks.Add(() => ssrc.RemoveCallback(cb));
+
+            TriggerAllChanged(cb);
+
+            Guid itId = typeof(IBMDSwitcherSuperSourceBoxIterator).GUID;
+            ssrc.CreateIterator(ref itId, out var itPtr);
+            IBMDSwitcherSuperSourceBoxIterator iterator = (IBMDSwitcherSuperSourceBoxIterator)Marshal.GetObjectForIUnknown(itPtr);
+
+            SuperSourceBoxId id = 0;
+            for (iterator.Next(out IBMDSwitcherSuperSourceBox box); box != null; iterator.Next(out box))
+            {
+                State.SuperSource.Boxes[id] = new ComparisonSuperSourceBoxState();
+                var cb2 = new SuperSourceBoxCallback(State.SuperSource.Boxes[id], box);
+                box.AddCallback(cb2);
+                _cleanupCallbacks.Add(() => box.RemoveCallback(cb2));
+
+                TriggerAllChanged(cb2);
+
+                id++;
+            }
+        }
+
     }
 }

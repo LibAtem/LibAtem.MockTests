@@ -24,6 +24,7 @@ namespace LibAtem.ComparisonTests.State
         public Dictionary<AuxiliaryId, ComparisonAuxiliaryState> Auxiliaries { get; set; }
         public Dictionary<ColorGeneratorId, ComparisonColorState> Colors { get; set; }
 
+        public ComparisonSuperSourceState SuperSource { get; set; } = new ComparisonSuperSourceState();
         public ComparisonSettingsState Settings { get; set; } = new ComparisonSettingsState();
 
         public ComparisonState Clone()
@@ -40,6 +41,67 @@ namespace LibAtem.ComparisonTests.State
     }
 
     [Serializable]
+    public class ComparisonSuperSourceState
+    {
+        public Dictionary<SuperSourceBoxId, ComparisonSuperSourceBoxState> Boxes { get; set; } = new Dictionary<SuperSourceBoxId, ComparisonSuperSourceBoxState>();
+
+        public VideoSource ArtFillInput { get; set; }
+        public VideoSource ArtKeyInput { get; set; }
+        public SuperSourceArtOption ArtOption { get; set; }
+        public bool ArtPreMultiplied { get; set; }
+        [Tolerance(0.01)]
+        public double ArtClip { get; set; }
+        [Tolerance(0.01)]
+        public double ArtGain { get; set; }
+        public bool ArtInvertKey { get; set; }
+
+        public bool BorderEnabled { get; set; }
+        public BorderBevel BorderBevel { get; set; }
+        [Tolerance(0.01)]
+        public double BorderWidthOut { get; set; }
+        [Tolerance(0.01)]
+        public double BorderWidthIn { get; set; }
+        public uint BorderSoftnessOut { get; set; }
+        public uint BorderSoftnessIn { get; set; }
+        public uint BorderBevelSoftness { get; set; }
+        public uint BorderBevelPosition { get; set; }
+        [Tolerance(0.01)]
+        public double BorderHue { get; set; }
+        [Tolerance(0.01)]
+        public double BorderSaturation { get; set; }
+        [Tolerance(0.01)]
+        public double BorderLuma { get; set; }
+        [Tolerance(0.01)]
+        public double BorderLightSourceDirection { get; set; }
+        [Tolerance(0.01)]
+        public double BorderLightSourceAltitude { get; set; }
+    }
+
+
+    [Serializable]
+    public class ComparisonSuperSourceBoxState
+    {
+        public bool Enabled { get; set; }
+        public VideoSource InputSource { get; set; }
+        [Tolerance(0.01)]
+        public double PositionX { get; set; }
+        [Tolerance(0.01)]
+        public double PositionY { get; set; }
+        [Tolerance(0.01)]
+        public double Size { get; set; }
+
+        public bool Cropped { get; set; }
+        [Tolerance(0.01)]
+        public double CropTop { get; set; }
+        [Tolerance(0.01)]
+        public double CropBottom { get; set; }
+        [Tolerance(0.01)]
+        public double CropLeft { get; set; }
+        [Tolerance(0.01)]
+        public double CropRight { get; set; }
+    }
+
+    [Serializable]
     public class ComparisonSettingsState
     {
         public Dictionary<uint, ComparisonSettingsMultiViewState> MultiViews { get; set; } = new Dictionary<uint, ComparisonSettingsMultiViewState>();
@@ -47,6 +109,7 @@ namespace LibAtem.ComparisonTests.State
         public VideoMode VideoMode { get; set; }
         public SerialMode SerialMode { get; set; }
     }
+
 
     [Serializable]
     public class ComparisonSettingsMultiViewState
