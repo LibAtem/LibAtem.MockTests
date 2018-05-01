@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using LibAtem.Commands;
 using LibAtem.Commands.DeviceProfile;
+using LibAtem.Commands.DownstreamKey;
 using LibAtem.Commands.MixEffects;
 using LibAtem.Commands.MixEffects.Key;
 using LibAtem.Commands.MixEffects.Transition;
@@ -45,6 +46,9 @@ namespace LibAtem.ComparisonTests.State
                 {typeof(MultiviewWindowInputGetCommand), UpdateSettingsMultiviewerWindowInputProperties},
                 {typeof(SuperSourcePropertiesGetCommand), UpdateSuperSourceProperties},
                 {typeof(SuperSourceBoxGetCommand), UpdateSuperSourceBoxProperties},
+                {typeof(DownstreamKeyPropertiesGetCommand), UpdateDownstreamKeyerProperties},
+                {typeof(DownstreamKeySourceGetCommand), UpdateDownstreamKeyerSource},
+                {typeof(DownstreamKeyStateGetCommand), UpdateDownstreamKeyerState},
             };
         }
 
@@ -364,6 +368,46 @@ namespace LibAtem.ComparisonTests.State
             props.CropBottom = cmd.CropBottom;
             props.CropLeft = cmd.CropLeft;
             props.CropRight = cmd.CropRight;
+        }
+
+        private static void UpdateDownstreamKeyerProperties(ComparisonState state, ICommand rawCmd)
+        {
+            var cmd = (DownstreamKeyPropertiesGetCommand) rawCmd;
+            var props = state.DownstreamKeyers[cmd.Index];
+
+            props.Tie = cmd.Tie;
+            props.Rate = cmd.Rate;
+            props.PreMultipliedKey = cmd.PreMultipliedKey;
+            props.Clip = cmd.Clip;
+            props.Gain = cmd.Gain;
+            props.Invert = cmd.Invert;
+
+            props.MaskEnabled = cmd.MaskEnabled;
+            props.MaskTop = cmd.MaskTop;
+            props.MaskBottom = cmd.MaskBottom;
+            props.MaskLeft = cmd.MaskLeft;
+            props.MaskRight = cmd.MaskRight;
+        }
+        private static void UpdateDownstreamKeyerSource(ComparisonState state, ICommand rawCmd)
+        {
+            var cmd = (DownstreamKeySourceGetCommand)rawCmd;
+            if (!state.DownstreamKeyers.ContainsKey(cmd.Index))
+                state.DownstreamKeyers[cmd.Index] = new ComparisonDownstreamKeyerState();
+
+            var props = state.DownstreamKeyers[cmd.Index];
+
+            props.CutSource = cmd.CutSource;
+            props.FillSource = cmd.FillSource;
+        }
+        private static void UpdateDownstreamKeyerState(ComparisonState state, ICommand rawCmd)
+        {
+            var cmd = (DownstreamKeyStateGetCommand)rawCmd;
+            var props = state.DownstreamKeyers[cmd.Index];
+
+            props.OnAir = cmd.OnAir;
+            props.InTransition = cmd.InTransition;
+            props.IsAuto = cmd.IsAuto;
+            props.RemainingFrames = cmd.RemainingFrames;
         }
     }
 }

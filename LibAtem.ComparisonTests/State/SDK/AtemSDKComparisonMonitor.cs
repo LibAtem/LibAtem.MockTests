@@ -33,6 +33,7 @@ namespace LibAtem.ComparisonTests.State.SDK
             SetupMixEffects(switcher);
             SetupSerialPorts(switcher);
             SetupMultiViews(switcher);
+            SetupDownstreamKeyers(switcher);
 
             var cb = new SwitcherPropertiesCallback(State, switcher);
             switcher.AddCallback(cb);
@@ -84,6 +85,25 @@ namespace LibAtem.ComparisonTests.State.SDK
                 var cb = new MultiViewPropertiesCallback(State.Settings.MultiViews[id], mv);
                 mv.AddCallback(cb);
                 _cleanupCallbacks.Add(() => mv.RemoveCallback(cb));
+                TriggerAllChanged(cb);
+
+                id++;
+            }
+        }
+
+        private void SetupDownstreamKeyers(IBMDSwitcher switcher)
+        {
+            Guid itId = typeof(IBMDSwitcherDownstreamKeyIterator).GUID;
+            switcher.CreateIterator(ref itId, out var itPtr);
+            IBMDSwitcherDownstreamKeyIterator iterator = (IBMDSwitcherDownstreamKeyIterator)Marshal.GetObjectForIUnknown(itPtr);
+
+            DownstreamKeyId id = 0;
+            for (iterator.Next(out IBMDSwitcherDownstreamKey key); key != null; iterator.Next(out key))
+            {
+                State.DownstreamKeyers[id] = new ComparisonDownstreamKeyerState();
+                var cb = new DownstreamKeyerPropertiesCallback(State.DownstreamKeyers[id], key);
+                key.AddCallback(cb);
+                _cleanupCallbacks.Add(() => key.RemoveCallback(cb));
                 TriggerAllChanged(cb);
 
                 id++;

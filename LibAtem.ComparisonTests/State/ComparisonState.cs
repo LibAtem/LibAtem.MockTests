@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Runtime.Serialization.Formatters.Binary;
 using LibAtem.Common;
+using LibAtem.Serialization;
 
 namespace LibAtem.ComparisonTests.State
 {
@@ -23,6 +24,7 @@ namespace LibAtem.ComparisonTests.State
         public Dictionary<MixEffectBlockId, ComparisonMixEffectState> MixEffects { get; set; }
         public Dictionary<AuxiliaryId, ComparisonAuxiliaryState> Auxiliaries { get; set; }
         public Dictionary<ColorGeneratorId, ComparisonColorState> Colors { get; set; }
+        public Dictionary<DownstreamKeyId, ComparisonDownstreamKeyerState> DownstreamKeyers { get; set; } = new Dictionary<DownstreamKeyId, ComparisonDownstreamKeyerState>();
 
         public ComparisonSuperSourceState SuperSource { get; set; } = new ComparisonSuperSourceState();
         public ComparisonSettingsState Settings { get; set; } = new ComparisonSettingsState();
@@ -38,6 +40,38 @@ namespace LibAtem.ComparisonTests.State
                 return (ComparisonState)formatter.Deserialize(ms);
             }
         }
+    }
+
+    [Serializable]
+    public class ComparisonDownstreamKeyerState
+    {
+        public VideoSource FillSource { get; set; }
+        public VideoSource CutSource { get; set; }
+
+        public bool Tie { get; set; }
+        public uint Rate { get; set; }
+
+        public bool PreMultipliedKey { get; set; }
+        [Tolerance(0.01)]
+        public double Clip { get; set; }
+        [Tolerance(0.01)]
+        public double Gain { get; set; }
+        public bool Invert { get; set; }
+
+        public bool MaskEnabled { get; set; }
+        [Tolerance(0.01)]
+        public double MaskTop { get; set; }
+        [Tolerance(0.01)]
+        public double MaskBottom { get; set; }
+        [Tolerance(0.01)]
+        public double MaskLeft { get; set; }
+        [Tolerance(0.01)]
+        public double MaskRight { get; set; }
+
+        public bool OnAir { get; set; }
+        public bool InTransition { get; set; }
+        public bool IsAuto { get; set; }
+        public uint RemainingFrames { get; set; }
     }
 
     [Serializable]
