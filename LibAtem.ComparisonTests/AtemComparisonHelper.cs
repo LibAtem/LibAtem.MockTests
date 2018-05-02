@@ -33,6 +33,14 @@ namespace LibAtem.ComparisonTests
             _receivedCommands = new List<ICommand>();
 
             _client.Client.OnReceive += OnReceive;
+
+            List<string> before = ComparisonStateComparer.AreEqual(SdkState, LibState);
+            if (before.Count != 0 && output != null)
+            {
+                output.WriteLine("Initial state wrong:");
+                before.ForEach(output.WriteLine);
+            }
+            Assert.Empty(before);
         }
 
         private void OnReceive(object sender, IReadOnlyList<ICommand> commands)

@@ -328,7 +328,7 @@ namespace LibAtem.ComparisonTests.State.SDK
                 input.GetInputId(out long id);
                 var src = (VideoSource) id;
 
-                // TODO - normal input stuff
+                SetInputProperties(src, input);
 
                 if (input is IBMDSwitcherInputAux aux)
                     SetupAuxiliary(src, aux);
@@ -337,6 +337,17 @@ namespace LibAtem.ComparisonTests.State.SDK
                 if (input is IBMDSwitcherInputSuperSource ssrc)
                     SetupSuperSource(ssrc);
             }
+        }
+
+        private void SetInputProperties(VideoSource id, IBMDSwitcherInput inp)
+        {
+            var c = new ComparisonInputState();
+            State.Inputs[id] = c;
+            var cb = new InputCallback(c, inp);
+            inp.AddCallback(cb);
+            _cleanupCallbacks.Add(() => inp.RemoveCallback(cb));
+
+            TriggerAllChanged(cb);
         }
 
         private void SetupAuxiliary(VideoSource id, IBMDSwitcherInputAux aux)

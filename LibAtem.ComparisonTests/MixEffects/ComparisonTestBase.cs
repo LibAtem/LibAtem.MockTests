@@ -27,7 +27,7 @@ namespace LibAtem.ComparisonTests.MixEffects
             iterator.Next(out IBMDSwitcherMixEffectBlock meBlock);
             return meBlock as T;
         }
-
+        
         protected List<Tuple<MixEffectBlockId, T>> GetMixEffects<T>() where T : class
         {
             Guid itId = typeof(IBMDSwitcherMixEffectBlockIterator).GUID;

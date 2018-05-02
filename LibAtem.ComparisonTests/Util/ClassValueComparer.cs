@@ -5,6 +5,7 @@ using Xunit;
 
 namespace LibAtem.ComparisonTests.Util
 {
+    // TODO - remove this
     internal static class ClassValueComparer<T> where T : class
     {
         public static void Run(AtemComparisonHelper helper, Func<T, ICommand> setter, Func<T> getter, Func<T> libget, T[] newVals)

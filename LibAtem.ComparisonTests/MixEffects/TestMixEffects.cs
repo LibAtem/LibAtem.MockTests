@@ -38,7 +38,7 @@ namespace LibAtem.ComparisonTests.MixEffects
                 for (iterator.Next(out IBMDSwitcherMixEffectBlock meBlock); meBlock != null; iterator.Next(out meBlock))
                     sdkMeBlocks.Add(meBlock);
 
-                Assert.Equal(sdkMeBlocks.Count, helper.Profile.MixEffectBlocks.Count);
+                Assert.Equal(sdkMeBlocks.Count, (int) helper.Profile.MixEffectBlocks);
 
                 var failures = new List<string>();
 

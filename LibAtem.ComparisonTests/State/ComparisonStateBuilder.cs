@@ -10,16 +10,17 @@ using LibAtem.Commands.Settings;
 using LibAtem.Commands.Settings.Multiview;
 using LibAtem.Commands.SuperSource;
 using LibAtem.Common;
+using LibAtem.DeviceProfile;
 
 namespace LibAtem.ComparisonTests.State
 {
     public static class ComparisonStateBuilder
     {
-        private static readonly IReadOnlyDictionary<Type, Action<ComparisonState, ICommand>> updaters;
+        private static readonly IReadOnlyDictionary<Type, Action<LibAtem.DeviceProfile.DeviceProfile, ComparisonState, ICommand>> updaters;
 
         static ComparisonStateBuilder()
         {
-            updaters = new Dictionary<Type, Action<ComparisonState, ICommand>>()
+            updaters = new Dictionary<Type, Action<LibAtem.DeviceProfile.DeviceProfile, ComparisonState, ICommand>>()
             {
                 {typeof(TopologyCommand), UpdateTopology},
                 {typeof(MixEffectBlockConfigCommand), UpdateMixEffectTopology},
@@ -49,24 +50,27 @@ namespace LibAtem.ComparisonTests.State
                 {typeof(DownstreamKeyPropertiesGetCommand), UpdateDownstreamKeyerProperties},
                 {typeof(DownstreamKeySourceGetCommand), UpdateDownstreamKeyerSource},
                 {typeof(DownstreamKeyStateGetCommand), UpdateDownstreamKeyerState},
+
+                {typeof(InputPropertiesGetCommand), UpdateInputProperties},
+                {typeof(TallyBySourceCommand), UpdateSourceTally},
             };
         }
 
-        public static void Update(ComparisonState state, IReadOnlyList<ICommand> commands)
+        public static void Update(LibAtem.DeviceProfile.DeviceProfile profile, ComparisonState state, IReadOnlyList<ICommand> commands)
         {
             foreach (ICommand cmd in commands)
-                Update(state, cmd);
+                Update(profile, state, cmd);
         }
 
-        private static void Update(ComparisonState state, ICommand cmd)
+        private static void Update(LibAtem.DeviceProfile.DeviceProfile profile, ComparisonState state, ICommand cmd)
         {
             if (updaters.TryGetValue(cmd.GetType(), out var updater))
-                updater(state, cmd);
+                updater(profile, state, cmd);
             else
                 Console.WriteLine("ComparisonState: Missing LibAtem handling of " + cmd.GetType().Name);
         }
 
-        private static void UpdateTopology(ComparisonState state, ICommand rawCmd)
+        private static void UpdateTopology(LibAtem.DeviceProfile.DeviceProfile profile, ComparisonState state, ICommand rawCmd)
         {
             var cmd = (TopologyCommand)rawCmd;
             
@@ -85,7 +89,7 @@ namespace LibAtem.ComparisonTests.State
             // TODO others
         }
 
-        private static void UpdateMixEffectTopology(ComparisonState state, ICommand rawCmd)
+        private static void UpdateMixEffectTopology(LibAtem.DeviceProfile.DeviceProfile profile, ComparisonState state, ICommand rawCmd)
         {
             var cmd = (MixEffectBlockConfigCommand)rawCmd;
 
@@ -94,13 +98,13 @@ namespace LibAtem.ComparisonTests.State
                 me.Keyers[(UpstreamKeyId)i] = new ComparisonMixEffectKeyerState();
         }
 
-        private static void UpdateAux(ComparisonState state, ICommand rawCmd)
+        private static void UpdateAux(LibAtem.DeviceProfile.DeviceProfile profile, ComparisonState state, ICommand rawCmd)
         {
             var cmd = (AuxSourceGetCommand)rawCmd;
             state.Auxiliaries[cmd.Id].Source = cmd.Source;
         }
 
-        private static void UpdateColor(ComparisonState state, ICommand rawCmd)
+        private static void UpdateColor(LibAtem.DeviceProfile.DeviceProfile profile, ComparisonState state, ICommand rawCmd)
         {
             var cmd = (ColorGeneratorGetCommand)rawCmd;
             var col = state.Colors[cmd.Index];
@@ -109,12 +113,12 @@ namespace LibAtem.ComparisonTests.State
             col.Luma = cmd.Luma;
         }
 
-        private static void UpdateMixEffectKeyerOnAir(ComparisonState state, ICommand rawCmd)
+        private static void UpdateMixEffectKeyerOnAir(LibAtem.DeviceProfile.DeviceProfile profile, ComparisonState state, ICommand rawCmd)
         {
             var cmd = (MixEffectKeyOnAirGetCommand)rawCmd;
             state.MixEffects[cmd.MixEffectIndex].Keyers[cmd.KeyerIndex].OnAir = cmd.OnAir;
         }
-        private static void UpdateMixEffectKeyerProperties(ComparisonState state, ICommand rawCmd)
+        private static void UpdateMixEffectKeyerProperties(LibAtem.DeviceProfile.DeviceProfile profile, ComparisonState state, ICommand rawCmd)
         {
             var cmd = (MixEffectKeyPropertiesGetCommand)rawCmd;
             var props = state.MixEffects[cmd.MixEffectIndex].Keyers[cmd.KeyerIndex];
@@ -129,17 +133,17 @@ namespace LibAtem.ComparisonTests.State
             props.MaskLeft = cmd.MaskLeft;
             props.MaskRight = cmd.MaskRight;
         }
-        private static void UpdateProgramInput(ComparisonState state, ICommand rawCmd)
+        private static void UpdateProgramInput(LibAtem.DeviceProfile.DeviceProfile profile, ComparisonState state, ICommand rawCmd)
         {
             var cmd = (ProgramInputGetCommand)rawCmd;
             state.MixEffects[cmd.Index].Program = cmd.Source;
         }
-        private static void UpdatePreviewInput(ComparisonState state, ICommand rawCmd)
+        private static void UpdatePreviewInput(LibAtem.DeviceProfile.DeviceProfile profile, ComparisonState state, ICommand rawCmd)
         {
             var cmd = (PreviewInputGetCommand)rawCmd;
             state.MixEffects[cmd.Index].Preview = cmd.Source;
         }
-        private static void UpdateMixEffectKeyerLuma(ComparisonState state, ICommand rawCmd)
+        private static void UpdateMixEffectKeyerLuma(LibAtem.DeviceProfile.DeviceProfile profile, ComparisonState state, ICommand rawCmd)
         {
             var cmd = (MixEffectKeyLumaGetCommand)rawCmd;
             var props = state.MixEffects[cmd.MixEffectIndex].Keyers[cmd.KeyerIndex].Luma;
@@ -149,7 +153,7 @@ namespace LibAtem.ComparisonTests.State
             props.Clip = cmd.Clip;
             props.Invert = cmd.Invert;
         }
-        private static void UpdateMixEffectKeyerChroma(ComparisonState state, ICommand rawCmd)
+        private static void UpdateMixEffectKeyerChroma(LibAtem.DeviceProfile.DeviceProfile profile, ComparisonState state, ICommand rawCmd)
         {
             var cmd = (MixEffectKeyChromaGetCommand)rawCmd;
             var props = state.MixEffects[cmd.MixEffectIndex].Keyers[cmd.KeyerIndex].Chroma;
@@ -160,7 +164,7 @@ namespace LibAtem.ComparisonTests.State
             props.Lift = cmd.Lift;
             props.Narrow = cmd.Narrow;
         }
-        private static void UpdateMixEffectKeyerPattern(ComparisonState state, ICommand rawCmd)
+        private static void UpdateMixEffectKeyerPattern(LibAtem.DeviceProfile.DeviceProfile profile, ComparisonState state, ICommand rawCmd)
         {
             var cmd = (MixEffectKeyPatternGetCommand)rawCmd;
             var props = state.MixEffects[cmd.MixEffectIndex].Keyers[cmd.KeyerIndex].Pattern;
@@ -173,7 +177,7 @@ namespace LibAtem.ComparisonTests.State
             props.YPosition = cmd.YPosition;
             props.Inverse = cmd.Inverse;
         }
-        private static void UpdateMixEffectKeyerDVE(ComparisonState state, ICommand rawCmd)
+        private static void UpdateMixEffectKeyerDVE(LibAtem.DeviceProfile.DeviceProfile profile, ComparisonState state, ICommand rawCmd)
         {
             var cmd = (MixEffectKeyDVEGetCommand)rawCmd;
             var props = state.MixEffects[cmd.MixEffectIndex].Keyers[cmd.KeyerIndex].DVE;
@@ -212,7 +216,7 @@ namespace LibAtem.ComparisonTests.State
             props2.Rate = cmd.Rate;
         }
 
-        private static void UpdateMixEffectTransitionProperties(ComparisonState state, ICommand rawCmd)
+        private static void UpdateMixEffectTransitionProperties(LibAtem.DeviceProfile.DeviceProfile profile, ComparisonState state, ICommand rawCmd)
         {
             var cmd = (TransitionPropertiesGetCommand)rawCmd;
             var props = state.MixEffects[cmd.Index].Transition;
@@ -222,14 +226,14 @@ namespace LibAtem.ComparisonTests.State
             props.Selection = cmd.Selection;
             props.NextSelection = cmd.NextSelection;
         }
-        private static void UpdateMixEffectTransitionMix(ComparisonState state, ICommand rawCmd)
+        private static void UpdateMixEffectTransitionMix(LibAtem.DeviceProfile.DeviceProfile profile, ComparisonState state, ICommand rawCmd)
         {
             var cmd = (TransitionMixGetCommand)rawCmd;
             var props = state.MixEffects[cmd.Index].Transition.Mix;
 
             props.Rate = cmd.Rate;
         }
-        private static void UpdateMixEffectTransitionDip(ComparisonState state, ICommand rawCmd)
+        private static void UpdateMixEffectTransitionDip(LibAtem.DeviceProfile.DeviceProfile profile, ComparisonState state, ICommand rawCmd)
         {
             var cmd = (TransitionDipGetCommand)rawCmd;
             var props = state.MixEffects[cmd.Index].Transition.Dip;
@@ -237,7 +241,7 @@ namespace LibAtem.ComparisonTests.State
             props.Input = cmd.Input;
             props.Rate = cmd.Rate;
         }
-        private static void UpdateMixEffectTransitionWipe(ComparisonState state, ICommand rawCmd)
+        private static void UpdateMixEffectTransitionWipe(LibAtem.DeviceProfile.DeviceProfile profile, ComparisonState state, ICommand rawCmd)
         {
             var cmd = (TransitionWipeGetCommand)rawCmd;
             var props = state.MixEffects[cmd.Index].Transition.Wipe;
@@ -253,7 +257,7 @@ namespace LibAtem.ComparisonTests.State
             props.ReverseDirection = cmd.ReverseDirection;
             props.FlipFlop = cmd.FlipFlop;
         }
-        private static void UpdateMixEffectTransitionStinger(ComparisonState state, ICommand rawCmd)
+        private static void UpdateMixEffectTransitionStinger(LibAtem.DeviceProfile.DeviceProfile profile, ComparisonState state, ICommand rawCmd)
         {
             var cmd = (TransitionStingerGetCommand)rawCmd;
             var props = state.MixEffects[cmd.Index].Transition.Stinger;
@@ -268,7 +272,7 @@ namespace LibAtem.ComparisonTests.State
             props.TriggerPoint = cmd.TriggerPoint;
             props.MixRate = cmd.MixRate;
         }
-        private static void UpdateMixEffectTransitionDVE(ComparisonState state, ICommand rawCmd)
+        private static void UpdateMixEffectTransitionDVE(LibAtem.DeviceProfile.DeviceProfile profile, ComparisonState state, ICommand rawCmd)
         {
             var cmd = (TransitionDVEGetCommand)rawCmd;
             var props = state.MixEffects[cmd.Index].Transition.DVE;
@@ -289,17 +293,17 @@ namespace LibAtem.ComparisonTests.State
             props.FlipFlop = cmd.FlipFlop;
         }
 
-        private static void UpdateSettingsSerialMode(ComparisonState state, ICommand rawCmd)
+        private static void UpdateSettingsSerialMode(LibAtem.DeviceProfile.DeviceProfile profile, ComparisonState state, ICommand rawCmd)
         {
             var cmd = (SerialPortModeCommand) rawCmd;
             state.Settings.SerialMode = cmd.SerialMode;
         }
-        private static void UpdateSettingsVideoMode(ComparisonState state, ICommand rawCmd)
+        private static void UpdateSettingsVideoMode(LibAtem.DeviceProfile.DeviceProfile profile, ComparisonState state, ICommand rawCmd)
         {
             var cmd = (VideoModeGetCommand)rawCmd;
             state.Settings.VideoMode = cmd.VideoMode;
         }
-        private static void UpdateSettingsMultiviewerConfig(ComparisonState state, ICommand rawCmd)
+        private static void UpdateSettingsMultiviewerConfig(LibAtem.DeviceProfile.DeviceProfile profile, ComparisonState state, ICommand rawCmd)
         {
             var cmd = (MultiviewerConfigCommand)rawCmd;
             state.Settings.MultiViews = new Dictionary<uint, ComparisonSettingsMultiViewState>();
@@ -308,7 +312,7 @@ namespace LibAtem.ComparisonTests.State
 
             // TODO - remainder
         }
-        private static void UpdateSettingsMultiviewerProperties(ComparisonState state, ICommand rawCmd)
+        private static void UpdateSettingsMultiviewerProperties(LibAtem.DeviceProfile.DeviceProfile profile, ComparisonState state, ICommand rawCmd)
         {
             var cmd = (MultiviewPropertiesGetCommand)rawCmd;
             var props = state.Settings.MultiViews[cmd.MultiviewIndex];
@@ -318,7 +322,7 @@ namespace LibAtem.ComparisonTests.State
             props.ProgramPreviewSwapped = cmd.ProgramPreviewSwapped;
         }
 
-        private static void UpdateSettingsMultiviewerWindowInputProperties(ComparisonState state, ICommand rawCmd)
+        private static void UpdateSettingsMultiviewerWindowInputProperties(LibAtem.DeviceProfile.DeviceProfile profile, ComparisonState state, ICommand rawCmd)
         {
             var cmd = (MultiviewWindowInputGetCommand) rawCmd;
             var props = state.Settings.MultiViews[cmd.MultiviewIndex];
@@ -326,7 +330,7 @@ namespace LibAtem.ComparisonTests.State
             props.Windows[(int) cmd.WindowIndex].Source = cmd.Source;
         }
 
-        private static void UpdateSuperSourceProperties(ComparisonState state, ICommand rawCmd)
+        private static void UpdateSuperSourceProperties(LibAtem.DeviceProfile.DeviceProfile profile, ComparisonState state, ICommand rawCmd)
         {
             var cmd = (SuperSourcePropertiesGetCommand)rawCmd;
             var props = state.SuperSource;
@@ -353,7 +357,7 @@ namespace LibAtem.ComparisonTests.State
             props.BorderLightSourceDirection = cmd.BorderLightSourceDirection;
             props.BorderLightSourceAltitude = cmd.BorderLightSourceAltitude;
         }
-        private static void UpdateSuperSourceBoxProperties(ComparisonState state, ICommand rawCmd)
+        private static void UpdateSuperSourceBoxProperties(LibAtem.DeviceProfile.DeviceProfile profile, ComparisonState state, ICommand rawCmd)
         {
             var cmd = (SuperSourceBoxGetCommand)rawCmd;
             var props = state.SuperSource.Boxes[cmd.Index] = new ComparisonSuperSourceBoxState();
@@ -370,7 +374,7 @@ namespace LibAtem.ComparisonTests.State
             props.CropRight = cmd.CropRight;
         }
 
-        private static void UpdateDownstreamKeyerProperties(ComparisonState state, ICommand rawCmd)
+        private static void UpdateDownstreamKeyerProperties(LibAtem.DeviceProfile.DeviceProfile profile, ComparisonState state, ICommand rawCmd)
         {
             var cmd = (DownstreamKeyPropertiesGetCommand) rawCmd;
             var props = state.DownstreamKeyers[cmd.Index];
@@ -388,7 +392,7 @@ namespace LibAtem.ComparisonTests.State
             props.MaskLeft = cmd.MaskLeft;
             props.MaskRight = cmd.MaskRight;
         }
-        private static void UpdateDownstreamKeyerSource(ComparisonState state, ICommand rawCmd)
+        private static void UpdateDownstreamKeyerSource(LibAtem.DeviceProfile.DeviceProfile profile, ComparisonState state, ICommand rawCmd)
         {
             var cmd = (DownstreamKeySourceGetCommand)rawCmd;
             if (!state.DownstreamKeyers.ContainsKey(cmd.Index))
@@ -399,7 +403,7 @@ namespace LibAtem.ComparisonTests.State
             props.CutSource = cmd.CutSource;
             props.FillSource = cmd.FillSource;
         }
-        private static void UpdateDownstreamKeyerState(ComparisonState state, ICommand rawCmd)
+        private static void UpdateDownstreamKeyerState(LibAtem.DeviceProfile.DeviceProfile profile, ComparisonState state, ICommand rawCmd)
         {
             var cmd = (DownstreamKeyStateGetCommand)rawCmd;
             var props = state.DownstreamKeyers[cmd.Index];
@@ -408,6 +412,43 @@ namespace LibAtem.ComparisonTests.State
             props.InTransition = cmd.InTransition;
             props.IsAuto = cmd.IsAuto;
             props.RemainingFrames = cmd.RemainingFrames;
+        }
+
+        private static void UpdateInputProperties(LibAtem.DeviceProfile.DeviceProfile profile, ComparisonState state, ICommand rawCmd)
+        {
+            var cmd = (InputPropertiesGetCommand)rawCmd;
+            if (!state.Inputs.ContainsKey(cmd.Id))
+                state.Inputs[cmd.Id] = new ComparisonInputState();
+            var props = state.Inputs[cmd.Id];
+            
+            props.LongName = cmd.LongName;
+            props.ShortName = cmd.ShortName;
+
+            Tuple<string, string> defaultName = cmd.Id.GetDefaultName(profile);
+            props.AreNamesDefault = cmd.LongName == defaultName.Item1 && cmd.ShortName == defaultName.Item2;
+
+            //props.IsExternal = cmd.IsExternal;
+            ExternalPortType availablePorts = 0;
+            if (cmd.ExternalPorts != null)
+            {
+                foreach (ExternalPortType p in cmd.ExternalPorts)
+                    availablePorts |= p;
+            }
+
+            props.AvailableExternalPortTypes = availablePorts;
+            props.CurrentExternalPortType = cmd.ExternalPortType;
+            //props.InternalPortType = cmd.InternalPortType;
+            //props.SourceAvailability = cmd.SourceAvailability;
+            //props.MeAvailability = cmd.MeAvailability;
+        }
+        private static void UpdateSourceTally(LibAtem.DeviceProfile.DeviceProfile profile, ComparisonState state, ICommand rawCmd)
+        {
+            var cmd = (TallyBySourceCommand)rawCmd;
+            foreach (var inp in cmd.Tally)
+            {
+                state.Inputs[inp.Key].ProgramTally = inp.Value.Item1;
+                state.Inputs[inp.Key].PreviewTally = inp.Value.Item2;
+            }
         }
     }
 }

@@ -116,7 +116,7 @@ namespace LibAtem.ComparisonTests
                 _disposeEvent.Set();
             };
             _client.OnReceive += _profile.HandleCommands;
-            _client.OnReceive += (s, commands) => ComparisonStateBuilder.Update(_libState, commands);
+            _client.OnReceive += (s, commands) => ComparisonStateBuilder.Update(Profile, _libState, commands);
             _client.OnReceive += (s, commands) =>
             {
                 lock (_lastReceivedLibAtem)

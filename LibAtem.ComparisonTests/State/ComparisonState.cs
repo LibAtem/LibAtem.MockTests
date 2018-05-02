@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Runtime.Serialization.Formatters.Binary;
+using BMDSwitcherAPI;
 using LibAtem.Common;
 using LibAtem.Serialization;
 
@@ -21,9 +22,10 @@ namespace LibAtem.ComparisonTests.State
     [Serializable]
     public class ComparisonState
     {
-        public Dictionary<MixEffectBlockId, ComparisonMixEffectState> MixEffects { get; set; }
-        public Dictionary<AuxiliaryId, ComparisonAuxiliaryState> Auxiliaries { get; set; }
-        public Dictionary<ColorGeneratorId, ComparisonColorState> Colors { get; set; }
+        public Dictionary<MixEffectBlockId, ComparisonMixEffectState> MixEffects { get; set; } = new Dictionary<MixEffectBlockId, ComparisonMixEffectState>();
+        public Dictionary<AuxiliaryId, ComparisonAuxiliaryState> Auxiliaries { get; set; } = new Dictionary<AuxiliaryId, ComparisonAuxiliaryState>();
+        public Dictionary<VideoSource, ComparisonInputState> Inputs { get; set; } = new Dictionary<VideoSource, ComparisonInputState>();
+        public Dictionary<ColorGeneratorId, ComparisonColorState> Colors { get; set; } = new Dictionary<ColorGeneratorId, ComparisonColorState>();
         public Dictionary<DownstreamKeyId, ComparisonDownstreamKeyerState> DownstreamKeyers { get; set; } = new Dictionary<DownstreamKeyId, ComparisonDownstreamKeyerState>();
 
         public ComparisonSuperSourceState SuperSource { get; set; } = new ComparisonSuperSourceState();
@@ -40,6 +42,18 @@ namespace LibAtem.ComparisonTests.State
                 return (ComparisonState)formatter.Deserialize(ms);
             }
         }
+    }
+
+    [Serializable]
+    public class ComparisonInputState
+    {
+        public string ShortName { get; set; }
+        public string LongName { get; set; }
+        public bool AreNamesDefault { get; set; }
+        public bool ProgramTally { get; set; }
+        public bool PreviewTally { get; set; }
+        public ExternalPortType AvailableExternalPortTypes { get; set; }
+        public ExternalPortType CurrentExternalPortType { get; set; }
     }
 
     [Serializable]

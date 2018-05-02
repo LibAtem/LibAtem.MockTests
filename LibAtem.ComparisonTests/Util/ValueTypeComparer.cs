@@ -3,11 +3,10 @@ using System.Collections.Generic;
 using LibAtem.Commands;
 using LibAtem.ComparisonTests.State;
 using LibAtem.Util;
-using Xunit;
 
 namespace LibAtem.ComparisonTests.Util
 {
-    internal static class ValueTypeComparer<T> where T : struct
+    internal static class ValueTypeComparer<T>
     {
         public static void Run(AtemComparisonHelper helper, Func<T, ICommand> setter, Action<ComparisonState, T> updater, T[] newVals)
         {

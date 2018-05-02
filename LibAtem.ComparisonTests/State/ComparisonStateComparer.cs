@@ -62,7 +62,7 @@ namespace LibAtem.ComparisonTests.State
                         yield return "Value: " + name + prop.Name + " Expected: " + oldVal + " Actual: " + newVal;
                     }
                 } 
-                else if (!prop.PropertyType.IsClass)
+                else if (!prop.PropertyType.IsClass || prop.PropertyType == typeof(string))
                 {
                     if (!oldVal.Equals(newVal))
                     {

@@ -38,7 +38,7 @@ namespace LibAtem.ComparisonTests.MixEffects
         public void TestKeyerCount()
         {
             int keyers = GetKeyers<IBMDSwitcherKey>().Select(k => k.Item3).Count();
-            Assert.Equal((int) (Client.Profile.UpstreamKeys * Client.Profile.MixEffectBlocks.Count), keyers);
+            Assert.Equal((int) (Client.Profile.UpstreamKeys * Client.Profile.MixEffectBlocks), keyers);
         }
 
         [Fact]

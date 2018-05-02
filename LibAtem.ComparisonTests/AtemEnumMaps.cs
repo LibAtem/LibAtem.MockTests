@@ -208,6 +208,18 @@ namespace LibAtem.ComparisonTests
             return dict.First(v => Equals(v.Value, value)).Key;
         }
 
+        public static List<T> FindFlagComponents<T>(this T value)
+        {
+            dynamic val2 = value;
+            return Enum.GetValues(typeof(T)).OfType<T>().Where(v => val2.HasFlag(v)).ToList();
+        }
+
+        public static Tk FindFlagsByValue<Tk, Tv>(this IReadOnlyDictionary<Tk, Tv> dict, Tv value)
+        {
+            int res = value.FindFlagComponents().Select(v => Convert.ToInt32(dict.FindByValue(v))).Sum();
+            return (Tk) Enum.ToObject(typeof(Tk), res);
+        }
+
         public static AuxiliaryId GetAuxId(VideoSource id)
         {
             if (id >= VideoSource.Auxilary1 && id <= VideoSource.Auxilary6)
