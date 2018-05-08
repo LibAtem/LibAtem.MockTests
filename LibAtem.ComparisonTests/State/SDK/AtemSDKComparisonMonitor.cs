@@ -34,6 +34,7 @@ namespace LibAtem.ComparisonTests.State.SDK
             SetupSerialPorts(switcher);
             SetupMultiViews(switcher);
             SetupDownstreamKeyers(switcher);
+            SetupMediaPlayers(switcher);
 
             var cb = new SwitcherPropertiesCallback(State, switcher);
             switcher.AddCallback(cb);
@@ -86,6 +87,25 @@ namespace LibAtem.ComparisonTests.State.SDK
                 mv.AddCallback(cb);
                 _cleanupCallbacks.Add(() => mv.RemoveCallback(cb));
                 TriggerAllChanged(cb);
+
+                id++;
+            }
+        }
+
+        private void SetupMediaPlayers(IBMDSwitcher switcher)
+        {
+            Guid itId = typeof(IBMDSwitcherMediaPlayerIterator).GUID;
+            switcher.CreateIterator(ref itId, out var itPtr);
+            IBMDSwitcherMediaPlayerIterator iterator = (IBMDSwitcherMediaPlayerIterator)Marshal.GetObjectForIUnknown(itPtr);
+
+            MediaPlayerId id = 0;
+            for (iterator.Next(out IBMDSwitcherMediaPlayer media); media != null; iterator.Next(out media))
+            {
+                State.MediaPlayers[id] = new ComparisonMediaPlayerState();
+                var cb = new MediaPlayerCallback(State.MediaPlayers[id], media);
+                media.AddCallback(cb);
+                _cleanupCallbacks.Add(() => media.RemoveCallback(cb));
+                cb.Notify();
 
                 id++;
             }

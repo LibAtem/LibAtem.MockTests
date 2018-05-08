@@ -19,6 +19,13 @@ namespace LibAtem.ComparisonTests.State
         }
     }
 
+    public enum LockOwner
+    {
+        None,
+        This,
+        Other,
+    }
+
     [Serializable]
     public class ComparisonState
     {
@@ -27,6 +34,7 @@ namespace LibAtem.ComparisonTests.State
         public Dictionary<VideoSource, ComparisonInputState> Inputs { get; set; } = new Dictionary<VideoSource, ComparisonInputState>();
         public Dictionary<ColorGeneratorId, ComparisonColorState> Colors { get; set; } = new Dictionary<ColorGeneratorId, ComparisonColorState>();
         public Dictionary<DownstreamKeyId, ComparisonDownstreamKeyerState> DownstreamKeyers { get; set; } = new Dictionary<DownstreamKeyId, ComparisonDownstreamKeyerState>();
+        public Dictionary<MediaPlayerId, ComparisonMediaPlayerState> MediaPlayers { get; set; } = new Dictionary<MediaPlayerId, ComparisonMediaPlayerState>();
 
         public ComparisonSuperSourceState SuperSource { get; set; } = new ComparisonSuperSourceState();
         public ComparisonSettingsState Settings { get; set; } = new ComparisonSettingsState();
@@ -42,6 +50,17 @@ namespace LibAtem.ComparisonTests.State
                 return (ComparisonState)formatter.Deserialize(ms);
             }
         }
+    }
+
+    [Serializable]
+    public class ComparisonMediaPlayerState
+    {
+        public MediaPlayerSource SourceType { get; set; }
+        public uint SourceIndex { get; set; }
+        public bool IsPlaying { get; set; }
+        public bool IsLooped { get; set; }
+        public bool AtBeginning { get; set; }
+        public uint ClipFrame { get; set; }
     }
 
     [Serializable]

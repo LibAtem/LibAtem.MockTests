@@ -58,7 +58,7 @@ namespace LibAtem.ComparisonTests
             if (!logRepository.Configured) // Default to all on the console
                 BasicConfigurator.Configure(logRepository);
 
-            const string address = "10.42.13.98";
+            const string address = "10.42.13.99";
 
             _lastReceivedLibAtem = new Dictionary<CommandQueueKey, ICommand>();
 

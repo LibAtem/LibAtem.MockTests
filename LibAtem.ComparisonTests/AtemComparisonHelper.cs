@@ -115,6 +115,12 @@ namespace LibAtem.ComparisonTests
             Thread.Sleep(sleep == -1 ? CommandWaitTime : sleep);
         }
 
+        public void EnsureVideoMode(VideoMode mode)
+        {
+            SdkSwitcher.SetVideoMode(AtemEnumMaps.VideoModesMap[mode]);
+            Sleep();
+        }
+
         public Dictionary<VideoSource, T> GetSdkInputsOfType<T>() where T : class
         {
             Guid itId = typeof(IBMDSwitcherInputIterator).GUID;
@@ -151,7 +157,8 @@ namespace LibAtem.ComparisonTests
 
             _client.OnCommandKey += Handler;
 
-            SendCommand(toSend);
+            if (toSend != null)
+                SendCommand(toSend);
 
             // Wait for the expected time. If no response, then go with last data
             responseWait.WaitOne(timeout == -1 ? CommandWaitTime : timeout);

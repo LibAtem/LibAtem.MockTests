@@ -1,8 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 using LibAtem.Commands;
+using LibAtem.Commands.DataTransfer;
 using LibAtem.Commands.DeviceProfile;
 using LibAtem.Commands.DownstreamKey;
+using LibAtem.Commands.Media;
 using LibAtem.Commands.MixEffects;
 using LibAtem.Commands.MixEffects.Key;
 using LibAtem.Commands.MixEffects.Transition;
@@ -50,9 +52,10 @@ namespace LibAtem.ComparisonTests.State
                 {typeof(DownstreamKeyPropertiesGetCommand), UpdateDownstreamKeyerProperties},
                 {typeof(DownstreamKeySourceGetCommand), UpdateDownstreamKeyerSource},
                 {typeof(DownstreamKeyStateGetCommand), UpdateDownstreamKeyerState},
-
                 {typeof(InputPropertiesGetCommand), UpdateInputProperties},
                 {typeof(TallyBySourceCommand), UpdateSourceTally},
+                {typeof(MediaPlayerSourceGetCommand), UpdateMediaPlayerSource},
+                {typeof(MediaPlayerClipStatusGetCommand), UpdateMediaPlayerState},
             };
         }
 
@@ -450,5 +453,29 @@ namespace LibAtem.ComparisonTests.State
                 state.Inputs[inp.Key].PreviewTally = inp.Value.Item2;
             }
         }
+
+        private static void UpdateMediaPlayerSource(LibAtem.DeviceProfile.DeviceProfile profile, ComparisonState state, ICommand rawCmd)
+        {
+            var cmd = (MediaPlayerSourceGetCommand)rawCmd;
+            if (!state.MediaPlayers.ContainsKey(cmd.Index))
+                state.MediaPlayers[cmd.Index] = new ComparisonMediaPlayerState();
+            ComparisonMediaPlayerState props = state.MediaPlayers[cmd.Index];
+
+            props.SourceType = cmd.SourceType;
+            props.SourceIndex = cmd.SourceIndex;
+        }
+        private static void UpdateMediaPlayerState(LibAtem.DeviceProfile.DeviceProfile profile, ComparisonState state, ICommand rawCmd)
+        {
+            var cmd = (MediaPlayerClipStatusGetCommand)rawCmd;
+            if (!state.MediaPlayers.ContainsKey(cmd.Index))
+                state.MediaPlayers[cmd.Index] = new ComparisonMediaPlayerState();
+            ComparisonMediaPlayerState props = state.MediaPlayers[cmd.Index];
+
+            props.IsPlaying = cmd.Playing;
+            props.IsLooped = cmd.Loop;
+            props.AtBeginning = cmd.AtBeginning;
+            props.ClipFrame = cmd.ClipFrame;
+        }
+
     }
 }

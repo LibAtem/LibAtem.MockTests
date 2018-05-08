@@ -6,6 +6,7 @@ using BMDSwitcherAPI;
 using LibAtem.Commands;
 using LibAtem.Commands.Media;
 using LibAtem.Common;
+using LibAtem.ComparisonTests.State;
 using LibAtem.ComparisonTests.Util;
 using Xunit;
 using Xunit.Abstractions;
@@ -15,78 +16,74 @@ namespace LibAtem.ComparisonTests.Media
     [Collection("Client")]
     public class TestMediaPlayers
     {
-        private static readonly IReadOnlyDictionary<MediaPlayerSource, _BMDSwitcherMediaPlayerSourceType> SourceMap;
-
-        static TestMediaPlayers()
-        {
-            SourceMap = new Dictionary<MediaPlayerSource, _BMDSwitcherMediaPlayerSourceType>
-            {
-                {MediaPlayerSource.Clip, _BMDSwitcherMediaPlayerSourceType.bmdSwitcherMediaPlayerSourceTypeClip},
-                {MediaPlayerSource.Still, _BMDSwitcherMediaPlayerSourceType.bmdSwitcherMediaPlayerSourceTypeStill},
-            };
-        }
-
         private readonly ITestOutputHelper _output;
         private readonly AtemClientWrapper _client;
-
+        
         public TestMediaPlayers(ITestOutputHelper output, AtemClientWrapper client)
         {
             _client = client;
             _output = output;
         }
 
-        // TODO GetPlaying, GetAtBeginning, GetClipFrame, GetLoop
-
-        [Fact]
-        public void EnsureSourceMapIsComplete()
-        {
-            EnumMap.EnsureIsComplete(SourceMap);
-        }
-
-        private List<IBMDSwitcherMediaPlayer> GetMediaPlayers()
+        private List<Tuple<MediaPlayerId, IBMDSwitcherMediaPlayer>> GetMediaPlayers()
         {
             Guid itId = typeof(IBMDSwitcherMediaPlayerIterator).GUID;
             _client.SdkSwitcher.CreateIterator(ref itId, out IntPtr itPtr);
             IBMDSwitcherMediaPlayerIterator iterator = (IBMDSwitcherMediaPlayerIterator)Marshal.GetObjectForIUnknown(itPtr);
 
-            List<IBMDSwitcherMediaPlayer> result = new List<IBMDSwitcherMediaPlayer>();
+            var result = new List<Tuple<MediaPlayerId, IBMDSwitcherMediaPlayer>>();
+            MediaPlayerId id = 0;
             for (iterator.Next(out IBMDSwitcherMediaPlayer r); r != null; iterator.Next(out r))
-                result.Add(r);
+                result.Add(Tuple.Create(id++, r));
 
             return result;
-        }
-
-        private IBMDSwitcherMediaPlayer GetPlayer()
-        {
-            return GetMediaPlayers().First();
         }
 
         [Fact]
         public void TestMediaPlayerCount()
         {
-            List<IBMDSwitcherMediaPlayer> players = GetMediaPlayers();
+            List<Tuple<MediaPlayerId, IBMDSwitcherMediaPlayer>> players = GetMediaPlayers();
             Assert.Equal((uint) players.Count, _client.Profile.MediaPlayers);
         }
 
-        #region Source
-
         [Fact]
-        public void TestMediaPlayerSource()
+        public void TestSource()
         {
-            using (var helper = new AtemComparisonHelper(_client))
+            using (var helper = new AtemComparisonHelper(_client, _output))
             {
-                List<IBMDSwitcherMediaPlayer> players = GetMediaPlayers();
+                Tuple<MediaPlayerSource, uint>[] testValues = GetAllPossibleSources().ToArray();
+                Tuple<MediaPlayerSource, uint>[] badValues = GetBadSources().ToArray();
 
-                foreach (Tuple<MediaPlayerSource, uint> src in GetAllPossibleSources())
+                foreach (Tuple<MediaPlayerId, IBMDSwitcherMediaPlayer> player in GetMediaPlayers())
                 {
-                    for (int i = 0; i < players.Count; i++)
-                        SetAndCheckSource(helper, players[i], (MediaPlayerId) i, ClassValueComparer<Tuple<MediaPlayerSource, uint>>.Run, src);
-                }
+                    ICommand Setter(Tuple<MediaPlayerSource, uint> v)
+                    {
+                        MediaPlayerSourceSetCommand.MaskFlags mask = v.Item1 == MediaPlayerSource.Clip ? MediaPlayerSourceSetCommand.MaskFlags.ClipIndex : MediaPlayerSourceSetCommand.MaskFlags.StillIndex;
+                        return new MediaPlayerSourceSetCommand
+                        {
+                            Index = player.Item1,
+                            Mask = MediaPlayerSourceSetCommand.MaskFlags.SourceType | mask,
+                            SourceType = v.Item1,
+                            ClipIndex = v.Item2,
+                            StillIndex = v.Item2,
+                        };
+                    }
 
-                foreach (Tuple<MediaPlayerSource, uint> src in GetBadSources())
-                {
-                    for (int i = 0; i < players.Count; i++)
-                        SetAndCheckSource(helper, players[i], (MediaPlayerId)i, ClassValueComparer<Tuple<MediaPlayerSource, uint>>.Fail, src);
+                    void UpdateExpectedState(ComparisonState state, Tuple<MediaPlayerSource, uint> v)
+                    {
+                        state.MediaPlayers[player.Item1].SourceType = v.Item1;
+                        state.MediaPlayers[player.Item1].SourceIndex = v.Item2;
+                    }
+                    void UpdateFailedState(ComparisonState state, Tuple<MediaPlayerSource, uint> v)
+                    {
+                        state.MediaPlayers[player.Item1].SourceType = v.Item1;
+                        state.MediaPlayers[player.Item1].SourceIndex = v.Item1 == MediaPlayerSource.Clip
+                            ? _client.Profile.MediaPoolClips - 1
+                            : _client.Profile.MediaPoolStills - 1;
+                    }
+
+                    ValueTypeComparer<Tuple<MediaPlayerSource, uint>>.Run(helper, Setter, UpdateExpectedState, testValues);
+                    ValueTypeComparer<Tuple<MediaPlayerSource, uint>>.Fail(helper, Setter, UpdateFailedState, badValues);
                 }
             }
         }
@@ -105,43 +102,143 @@ namespace LibAtem.ComparisonTests.Media
             yield return Tuple.Create(MediaPlayerSource.Still, _client.Profile.MediaPoolStills);
         }
 
-        private delegate void SourceRun(AtemComparisonHelper helper, Func<Tuple<MediaPlayerSource, uint>, ICommand> setter, Func<Tuple<MediaPlayerSource, uint>> getter, Func<Tuple<MediaPlayerSource, uint>> libget, Tuple<MediaPlayerSource, uint> newVal = null);
-
-        private void SetAndCheckSource(AtemComparisonHelper helper, IBMDSwitcherMediaPlayer sdkProps, MediaPlayerId id, SourceRun run, Tuple<MediaPlayerSource, uint> newVal)
+        private void EnsureMediaPlayerHasClip()
         {
-            ICommand Setter(Tuple<MediaPlayerSource, uint> v)
+            // TODO - ensure something loaded
+
+            foreach (Tuple<MediaPlayerId, IBMDSwitcherMediaPlayer> player in GetMediaPlayers())
             {
-                MediaPlayerSourceSetCommand.MaskFlags mask = v.Item1 == MediaPlayerSource.Clip ? MediaPlayerSourceSetCommand.MaskFlags.ClipIndex : MediaPlayerSourceSetCommand.MaskFlags.StillIndex;
-                return new MediaPlayerSourceSetCommand
+                player.Item2.SetSource(_BMDSwitcherMediaPlayerSourceType.bmdSwitcherMediaPlayerSourceTypeClip, 0);
+            }
+        }
+        
+        [Fact]
+        public void TestLoop()
+        {
+            using (var helper = new AtemComparisonHelper(_client, _output))
+            {
+                if (_client.Profile.MediaPoolClips == 0)
+                    return;
+                EnsureMediaPlayerHasClip();
+                helper.Sleep();
+
+                foreach (Tuple<MediaPlayerId, IBMDSwitcherMediaPlayer> player in GetMediaPlayers())
                 {
-                    Index = id,
-                    Mask = MediaPlayerSourceSetCommand.MaskFlags.SourceType | mask,
-                    SourceType = v.Item1,
-                    ClipIndex = v.Item2,
-                    StillIndex = v.Item2,
-                };
-            }
+                    ICommand Setter(bool v)
+                    {
+                        return new MediaPlayerClipStatusSetCommand()
+                        {
+                            Index = player.Item1,
+                            Mask = MediaPlayerClipStatusSetCommand.MaskFlags.Loop,
+                            Loop = v,
+                        };
+                    }
 
-            Tuple<MediaPlayerSource, uint> SdkGetter()
-            {
-                sdkProps.GetSource(out _BMDSwitcherMediaPlayerSourceType type, out uint index);
-                MediaPlayerSource src = SourceMap.First(v => v.Value == type).Key;
-                return Tuple.Create(src, index);
-            }
+                    void UpdateExpectedState(ComparisonState state, bool v)
+                    {
+                        state.MediaPlayers[player.Item1].IsLooped = v;
+                    }
 
-            Tuple<MediaPlayerSource, uint> Getter()
-            {
-                var res = helper.FindWithMatching(new MediaPlayerSourceGetCommand {Index = id});
-                if (res == null)
-                    return null;
-                return Tuple.Create(res.SourceType, res.SourceIndex);
+                    bool[] testValues = {true, false};
+                    ValueTypeComparer<bool>.Run(helper, Setter, UpdateExpectedState, testValues);
+                }
             }
-
-            run(helper, Setter, SdkGetter, Getter, newVal);
         }
 
-        #endregion Source
-        
+        [Fact]
+        public void TestClipFrame()
+        {
+            using (var helper = new AtemComparisonHelper(_client, _output))
+            {
+                if (_client.Profile.MediaPoolClips == 0)
+                    return;
+                EnsureMediaPlayerHasClip();
+                helper.Sleep();
 
+                foreach (Tuple<MediaPlayerId, IBMDSwitcherMediaPlayer> player in GetMediaPlayers())
+                {
+                    ICommand Setter(uint v)
+                    {
+                        return new MediaPlayerClipStatusSetCommand()
+                        {
+                            Index = player.Item1,
+                            Mask = MediaPlayerClipStatusSetCommand.MaskFlags.ClipFrame,
+                            ClipFrame = v,
+                        };
+                    }
+
+                    void UpdateExpectedState(ComparisonState state, uint v)
+                    {
+                        var props = state.MediaPlayers[player.Item1];
+                        props.AtBeginning = v == 0;
+                        props.ClipFrame = v;
+                    }
+
+                    void UpdateFailedState(ComparisonState state, uint v)
+                    {
+                        var props = state.MediaPlayers[player.Item1];
+                        props.AtBeginning = false;
+                        props.ClipFrame = 51; // TODO - dynamic length of clip
+                    }
+
+                    uint[] testValues = {0, 1, 5};
+                    ValueTypeComparer<uint>.Run(helper, Setter, UpdateExpectedState, testValues);
+                    ValueTypeComparer<uint>.Fail(helper, Setter, UpdateFailedState, 999);
+                }
+            }
+        }
+
+        [Fact]
+        public void TestAtBeginning()
+        {
+            using (var helper = new AtemComparisonHelper(_client, _output))
+            {
+                if (_client.Profile.MediaPoolClips == 0)
+                    return;
+                EnsureMediaPlayerHasClip();
+                helper.Sleep();
+
+                foreach (Tuple<MediaPlayerId, IBMDSwitcherMediaPlayer> player in GetMediaPlayers())
+                {
+                    ICommand Setter(bool v)
+                    {
+                        if (!v)
+                        {
+                            return new MediaPlayerClipStatusSetCommand()
+                            {
+                                Index = player.Item1,
+                                Mask = MediaPlayerClipStatusSetCommand.MaskFlags.ClipFrame,
+                                ClipFrame = 1,
+                            };
+                        }
+
+                        return new MediaPlayerClipStatusSetCommand()
+                        {
+                            Index = player.Item1,
+                            Mask = MediaPlayerClipStatusSetCommand.MaskFlags.AtBeginning,
+                            AtBeginning = true,
+                        };
+                    }
+
+                    void UpdateExpectedState(ComparisonState state, bool v)
+                    {
+                        var props = state.MediaPlayers[player.Item1];
+                        props.AtBeginning = v;
+                        props.ClipFrame = (uint) (v ? 0 : 1);
+                    }
+
+                    ICommand FailSetter(bool v) => new MediaPlayerClipStatusSetCommand()
+                    {
+                        Index = player.Item1,
+                        Mask = MediaPlayerClipStatusSetCommand.MaskFlags.AtBeginning,
+                        AtBeginning = v,
+                    };
+
+                    bool[] testValues = { false, true };
+                    ValueTypeComparer<bool>.Run(helper, Setter, UpdateExpectedState, testValues);
+                    ValueTypeComparer<bool>.Fail(helper, FailSetter, false);
+                }
+            }
+        }
     }
 }
