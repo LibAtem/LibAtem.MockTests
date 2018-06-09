@@ -46,8 +46,10 @@ namespace LibAtem.ComparisonTests.State
                 {typeof(SerialPortModeCommand), UpdateSettingsSerialMode},
                 {typeof(VideoModeGetCommand), UpdateSettingsVideoMode},
                 {typeof(MultiviewerConfigCommand), UpdateSettingsMultiviewerConfig},
+                {typeof(MultiviewVuOpacityCommand), UpdateSettingsMultiviewerVUOpacity},
                 {typeof(MultiviewPropertiesGetCommand), UpdateSettingsMultiviewerProperties},
                 {typeof(MultiviewWindowInputGetCommand), UpdateSettingsMultiviewerWindowInputProperties},
+                {typeof(MultiviewWindowVuMeterGetCommand), UpdateSettingsMultiviewerWindowVuMeterProperties},
                 {typeof(SuperSourcePropertiesGetCommand), UpdateSuperSourceProperties},
                 {typeof(SuperSourceBoxGetCommand), UpdateSuperSourceBoxProperties},
                 {typeof(DownstreamKeyPropertiesGetCommand), UpdateDownstreamKeyerProperties},
@@ -328,6 +330,13 @@ namespace LibAtem.ComparisonTests.State
 
             // TODO - remainder
         }
+        private static void UpdateSettingsMultiviewerVUOpacity(LibAtem.DeviceProfile.DeviceProfile profile, ComparisonState state, ICommand rawCmd)
+        {
+            var cmd = (MultiviewVuOpacityCommand)rawCmd;
+            var props = state.Settings.MultiViews[cmd.MultiviewIndex];
+
+            props.VuMeterOpacity = cmd.Opacity;
+        }
         private static void UpdateSettingsMultiviewerProperties(LibAtem.DeviceProfile.DeviceProfile profile, ComparisonState state, ICommand rawCmd)
         {
             var cmd = (MultiviewPropertiesGetCommand)rawCmd;
@@ -336,14 +345,32 @@ namespace LibAtem.ComparisonTests.State
             props.Layout = cmd.Layout;
             props.SafeAreaEnabled = cmd.SafeAreaEnabled;
             props.ProgramPreviewSwapped = cmd.ProgramPreviewSwapped;
+
+            props.Windows[0].SupportsVuMeter = props.ProgramPreviewSwapped;
+            props.Windows[1].SupportsVuMeter = !props.ProgramPreviewSwapped;
         }
 
         private static void UpdateSettingsMultiviewerWindowInputProperties(LibAtem.DeviceProfile.DeviceProfile profile, ComparisonState state, ICommand rawCmd)
         {
             var cmd = (MultiviewWindowInputGetCommand) rawCmd;
             var props = state.Settings.MultiViews[cmd.MultiviewIndex];
+            var win = props.Windows[(int)cmd.WindowIndex];
 
-            props.Windows[(int) cmd.WindowIndex].Source = cmd.Source;
+            win.Source = cmd.Source;
+            win.SupportsVuMeter = cmd.Source.SupportsVuMeter();
+            
+            // Preview never supports it
+            if (cmd.WindowIndex == 0)
+                win.SupportsVuMeter = props.ProgramPreviewSwapped;
+            if (cmd.WindowIndex == 1)
+                win.SupportsVuMeter = !props.ProgramPreviewSwapped;
+        }
+        private static void UpdateSettingsMultiviewerWindowVuMeterProperties(LibAtem.DeviceProfile.DeviceProfile profile, ComparisonState state, ICommand rawCmd)
+        {
+            var cmd = (MultiviewWindowVuMeterGetCommand)rawCmd;
+            var props = state.Settings.MultiViews[cmd.MultiviewIndex];
+
+            props.Windows[(int)cmd.WindowIndex].VuMeter = cmd.VuEnabled;
         }
 
         private static void UpdateSuperSourceProperties(LibAtem.DeviceProfile.DeviceProfile profile, ComparisonState state, ICommand rawCmd)

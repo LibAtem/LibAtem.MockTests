@@ -215,6 +215,8 @@ namespace LibAtem.ComparisonTests.State
         public MultiViewLayout Layout { get; set; }
         public bool ProgramPreviewSwapped { get; set; }
         public bool SafeAreaEnabled { get; set; }
+        [Tolerance(1)]
+        public double VuMeterOpacity { get; set; }
 
         public List<ComparisonSettingsMultiViewWindowState> Windows { get; set; } = Enumerable.Range(0, (int)Constants.MultiViewWindowCount).Select(c => new ComparisonSettingsMultiViewWindowState()).ToList();
     }
@@ -222,6 +224,8 @@ namespace LibAtem.ComparisonTests.State
     [Serializable]
     public class ComparisonSettingsMultiViewWindowState
     {
+        public bool VuMeter { get; set; }
+        public bool SupportsVuMeter { get; set; }
         public VideoSource Source { get; set; }
     }
 
