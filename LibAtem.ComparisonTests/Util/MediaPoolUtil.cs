@@ -69,6 +69,19 @@ namespace LibAtem.ComparisonTests.Util
             return b;
         }
 
+        public static byte[] SolidColour(VideoModeResolution size, byte r, byte g, byte b, byte a)
+        {
+            byte[] res = new byte[size.GetByteCount()];
+            for (int i = 0; i < res.Length; i += 4)
+            {
+                res[i] = r;
+                res[i + 1] = g;
+                res[i + 2] = b;
+                res[i + 3] = a;
+            }
+            return res;
+        }
+
         public static void UploadStillSdk(AtemClientWrapper client, uint index, string name, byte[] data, _BMDSwitcherPixelFormat mode = _BMDSwitcherPixelFormat.bmdSwitcherPixelFormat10BitYUVA)
         {
             var pool = client.SdkSwitcher as IBMDSwitcherMediaPool;

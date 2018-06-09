@@ -25,6 +25,7 @@ namespace LibAtem.ComparisonTests.State
             updaters = new Dictionary<Type, Action<LibAtem.DeviceProfile.DeviceProfile, ComparisonState, ICommand>>()
             {
                 {typeof(TopologyCommand), UpdateTopology},
+                {typeof(MediaPoolConfigCommand), UpdateMediaPoolTopology},
                 {typeof(MixEffectBlockConfigCommand), UpdateMixEffectTopology},
                 {typeof(AuxSourceGetCommand), UpdateAux},
                 {typeof(ColorGeneratorGetCommand), UpdateColor},
@@ -56,6 +57,7 @@ namespace LibAtem.ComparisonTests.State
                 {typeof(TallyBySourceCommand), UpdateSourceTally},
                 {typeof(MediaPlayerSourceGetCommand), UpdateMediaPlayerSource},
                 {typeof(MediaPlayerClipStatusGetCommand), UpdateMediaPlayerState},
+                {typeof(MediaPoolFrameDescriptionCommand), UpdateMediaPoolStill},
             };
         }
 
@@ -90,6 +92,17 @@ namespace LibAtem.ComparisonTests.State
                 state.MixEffects[(MixEffectBlockId)i] = new ComparisonMixEffectState();
 
             // TODO others
+        }
+        private static void UpdateMediaPoolTopology(LibAtem.DeviceProfile.DeviceProfile profile, ComparisonState state, ICommand rawCmd)
+        {
+            var cmd = (MediaPoolConfigCommand)rawCmd;
+
+            var pool = state.MediaPool;
+
+            for (uint i = 0; i < cmd.StillCount; i++)
+                pool.Stills[i] = new ComparisonMediaPoolStillState();
+
+            // TODO clips
         }
 
         private static void UpdateMixEffectTopology(LibAtem.DeviceProfile.DeviceProfile profile, ComparisonState state, ICommand rawCmd)
@@ -475,6 +488,24 @@ namespace LibAtem.ComparisonTests.State
             props.IsLooped = cmd.Loop;
             props.AtBeginning = cmd.AtBeginning;
             props.ClipFrame = cmd.ClipFrame;
+        }
+
+        private static void UpdateMediaPoolStill(LibAtem.DeviceProfile.DeviceProfile profile, ComparisonState state, ICommand rawCmd)
+        {
+            var cmd = (MediaPoolFrameDescriptionCommand)rawCmd;
+
+            switch (cmd.Bank)
+            {
+                case MediaPoolFileType.Still:
+                    ComparisonMediaPoolStillState still = state.MediaPool.Stills[cmd.Index];
+
+                    still.IsUsed = cmd.IsUsed;
+                    still.Hash = cmd.Hash;
+                    still.Name = cmd.Filename;
+
+                    break;
+            }
+
         }
 
     }

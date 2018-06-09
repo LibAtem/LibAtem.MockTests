@@ -35,6 +35,7 @@ namespace LibAtem.ComparisonTests.State.SDK
             SetupMultiViews(switcher);
             SetupDownstreamKeyers(switcher);
             SetupMediaPlayers(switcher);
+            SetupMediaPool(switcher);
 
             var cb = new SwitcherPropertiesCallback(State, switcher);
             switcher.AddCallback(cb);
@@ -108,6 +109,45 @@ namespace LibAtem.ComparisonTests.State.SDK
                 cb.Notify();
 
                 id++;
+            }
+        }
+        
+        private void SetupMediaPool(IBMDSwitcher switcher)
+        {
+            var pool = switcher as IBMDSwitcherMediaPool;
+
+            // General
+            // TODO
+
+            // Stills
+            pool.GetStills(out IBMDSwitcherStills stills);
+
+            var cbs = new MediaPoolStillsCallback(State.MediaPool, stills);
+            stills.AddCallback(cbs);
+            _cleanupCallbacks.Add(() => stills.RemoveCallback(cbs));
+
+            cbs.Init();
+            var skipStills = new[]
+            {
+                _BMDSwitcherMediaPoolEventType.bmdSwitcherMediaPoolEventTypeAudioValidChanged,
+                _BMDSwitcherMediaPoolEventType.bmdSwitcherMediaPoolEventTypeAudioNameChanged,
+                _BMDSwitcherMediaPoolEventType.bmdSwitcherMediaPoolEventTypeAudioHashChanged
+            };
+            TriggerAllChanged(cbs, skipStills);
+
+            // Clips
+            pool.GetClipCount(out uint clipCount);
+            for (uint i = 0; i < clipCount; i++)
+            {
+                pool.GetClip(i, out IBMDSwitcherClip clip);
+
+                State.MediaPool.Clips[i] = new ComparisonMediaPoolClipState();
+                var cbc = new MediaPoolClipCallback(State.MediaPool.Clips[i], clip);
+                clip.AddCallback(cbc);
+                _cleanupCallbacks.Add(() => clip.RemoveCallback(cbc));
+
+                cbc.Init();
+                TriggerAllChanged(cbc);
             }
         }
 

@@ -3,9 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Runtime.Serialization.Formatters.Binary;
-using BMDSwitcherAPI;
 using LibAtem.Common;
-using LibAtem.Serialization;
 
 namespace LibAtem.ComparisonTests.State
 {
@@ -36,6 +34,7 @@ namespace LibAtem.ComparisonTests.State
         public Dictionary<DownstreamKeyId, ComparisonDownstreamKeyerState> DownstreamKeyers { get; set; } = new Dictionary<DownstreamKeyId, ComparisonDownstreamKeyerState>();
         public Dictionary<MediaPlayerId, ComparisonMediaPlayerState> MediaPlayers { get; set; } = new Dictionary<MediaPlayerId, ComparisonMediaPlayerState>();
 
+        public ComparisonMediaPoolState MediaPool { get; set; } = new ComparisonMediaPoolState();
         public ComparisonSuperSourceState SuperSource { get; set; } = new ComparisonSuperSourceState();
         public ComparisonSettingsState Settings { get; set; } = new ComparisonSettingsState();
 
@@ -50,6 +49,38 @@ namespace LibAtem.ComparisonTests.State
                 return (ComparisonState)formatter.Deserialize(ms);
             }
         }
+    }
+
+    [Serializable]
+    public class ComparisonMediaPoolStillState
+    {
+        public bool IsUsed { get; set; }
+        public byte[] Hash { get; set; }
+        public string Name { get; set; }
+    }
+
+    [Serializable]
+    public class ComparisonMediaPoolFrameState
+    {
+        public bool IsUsed { get; set; }
+        public byte[] Hash { get; set; }
+    }
+
+    [Serializable]
+    public class ComparisonMediaPoolClipState
+    {
+        public bool IsUsed { get; set; }
+        public string Name { get; set; }
+
+        public Dictionary<uint, ComparisonMediaPoolFrameState> Frames { get; set; } = new Dictionary<uint, ComparisonMediaPoolFrameState>();
+    }
+
+    [Serializable]
+    public class ComparisonMediaPoolState
+    {
+        public Dictionary<uint, ComparisonMediaPoolStillState> Stills { get; set; } = new Dictionary<uint, ComparisonMediaPoolStillState>();
+        public Dictionary<uint, ComparisonMediaPoolClipState> Clips { get; set; } = new Dictionary<uint, ComparisonMediaPoolClipState>();
+
     }
 
     [Serializable]

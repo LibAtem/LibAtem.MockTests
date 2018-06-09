@@ -34,11 +34,16 @@ namespace LibAtem.ComparisonTests
 
             _client.Client.OnReceive += OnReceive;
 
+            AssertStatesMatch();
+        }
+
+        public void AssertStatesMatch()
+        {
             List<string> before = ComparisonStateComparer.AreEqual(SdkState, LibState);
-            if (before.Count != 0 && output != null)
+            if (before.Count != 0 && Output != null)
             {
-                output.WriteLine("Initial state wrong:");
-                before.ForEach(output.WriteLine);
+                Output.WriteLine("state mismatch:");
+                before.ForEach(Output.WriteLine);
             }
             Assert.Empty(before);
         }
@@ -117,6 +122,7 @@ namespace LibAtem.ComparisonTests
 
         public void EnsureVideoMode(VideoMode mode)
         {
+            // TODO - dont do if already on this mode, as it clears some data that would be good to keep
             SdkSwitcher.SetVideoMode(AtemEnumMaps.VideoModesMap[mode]);
             Sleep();
         }

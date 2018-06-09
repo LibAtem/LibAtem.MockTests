@@ -61,7 +61,16 @@ namespace LibAtem.ComparisonTests.State
                     {
                         yield return "Value: " + name + prop.Name + " Expected: " + oldVal + " Actual: " + newVal;
                     }
-                } 
+                }
+                else if (prop.PropertyType == typeof(byte[]))
+                {
+                    byte[] oldVal2 = (byte[]) oldVal;
+                    byte[] newVal2 = (byte[]) newVal;
+                    if (!oldVal2.SequenceEqual(newVal2))
+                    {
+                        yield return "Value: " + name + prop.Name + " Expected: " + oldVal + " Actual: " + newVal;
+                    }
+                }
                 else if (!prop.PropertyType.IsClass || prop.PropertyType == typeof(string))
                 {
                     if (!oldVal.Equals(newVal))

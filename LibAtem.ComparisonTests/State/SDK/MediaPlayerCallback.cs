@@ -1,5 +1,4 @@
-﻿using System;
-using BMDSwitcherAPI;
+﻿using BMDSwitcherAPI;
 
 namespace LibAtem.ComparisonTests.State.SDK
 {
