@@ -35,6 +35,7 @@ namespace LibAtem.ComparisonTests.State
         public Dictionary<MediaPlayerId, ComparisonMediaPlayerState> MediaPlayers { get; set; } = new Dictionary<MediaPlayerId, ComparisonMediaPlayerState>();
 
         public ComparisonMediaPoolState MediaPool { get; set; } = new ComparisonMediaPoolState();
+        public ComparisonMacroState Macros { get; set; } = new ComparisonMacroState();
         public ComparisonSuperSourceState SuperSource { get; set; } = new ComparisonSuperSourceState();
         public ComparisonSettingsState Settings { get; set; } = new ComparisonSettingsState();
 
@@ -80,7 +81,6 @@ namespace LibAtem.ComparisonTests.State
     {
         public Dictionary<uint, ComparisonMediaPoolStillState> Stills { get; set; } = new Dictionary<uint, ComparisonMediaPoolStillState>();
         public Dictionary<uint, ComparisonMediaPoolClipState> Clips { get; set; } = new Dictionary<uint, ComparisonMediaPoolClipState>();
-
     }
 
     [Serializable]
@@ -92,6 +92,34 @@ namespace LibAtem.ComparisonTests.State
         public bool IsLooped { get; set; }
         public bool AtBeginning { get; set; }
         public uint ClipFrame { get; set; }
+    }
+
+    [Serializable]
+    public class ComparisonMacroItemState
+    {
+        public bool IsUsed { get; set; }
+        public string Name { get; set; }
+        public string Description { get; set; }
+    }
+
+    public enum MacroRunStatus
+    {
+        Idle,
+        Running,
+        UserWait,
+    }
+
+    [Serializable]
+    public class ComparisonMacroState
+    {
+        public Dictionary<uint, ComparisonMacroItemState> Pool { get; set; } = new Dictionary<uint, ComparisonMacroItemState>();
+
+        public bool IsRecording { get; set; }
+        public uint RecordIndex { get; set; }
+        
+        public MacroRunStatus RunStatus { get; set; }
+        public uint RunIndex { get; set; }
+        public bool Loop { get; set; }
     }
 
     [Serializable]

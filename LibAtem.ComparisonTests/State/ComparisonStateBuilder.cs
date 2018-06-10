@@ -4,6 +4,7 @@ using LibAtem.Commands;
 using LibAtem.Commands.DataTransfer;
 using LibAtem.Commands.DeviceProfile;
 using LibAtem.Commands.DownstreamKey;
+using LibAtem.Commands.Macro;
 using LibAtem.Commands.Media;
 using LibAtem.Commands.MixEffects;
 using LibAtem.Commands.MixEffects.Key;
@@ -26,6 +27,7 @@ namespace LibAtem.ComparisonTests.State
             {
                 {typeof(TopologyCommand), UpdateTopology},
                 {typeof(MediaPoolConfigCommand), UpdateMediaPoolTopology},
+                {typeof(MacroPoolConfigCommand), UpdateMacroPoolTopology},
                 {typeof(MixEffectBlockConfigCommand), UpdateMixEffectTopology},
                 {typeof(AuxSourceGetCommand), UpdateAux},
                 {typeof(ColorGeneratorGetCommand), UpdateColor},
@@ -60,6 +62,9 @@ namespace LibAtem.ComparisonTests.State
                 {typeof(MediaPlayerSourceGetCommand), UpdateMediaPlayerSource},
                 {typeof(MediaPlayerClipStatusGetCommand), UpdateMediaPlayerState},
                 {typeof(MediaPoolFrameDescriptionCommand), UpdateMediaPoolStill},
+                {typeof(MacroPropertiesGetCommand), UpdateMacroPropertiesState},
+                {typeof(MacroRunStatusGetCommand), UpdateMacroRunState},
+                {typeof(MacroRecordingStatusGetCommand), UpdateMacroRecordState},
             };
         }
 
@@ -105,6 +110,16 @@ namespace LibAtem.ComparisonTests.State
                 pool.Stills[i] = new ComparisonMediaPoolStillState();
 
             // TODO clips
+        }
+
+        private static void UpdateMacroPoolTopology(LibAtem.DeviceProfile.DeviceProfile profile, ComparisonState state, ICommand rawCmd)
+        {
+            var cmd = (MacroPoolConfigCommand)rawCmd;
+
+            var macros = state.Macros;
+
+            for (uint i = 0; i < cmd.MacroCount; i++)
+                macros.Pool[i] = new ComparisonMacroItemState();
         }
 
         private static void UpdateMixEffectTopology(LibAtem.DeviceProfile.DeviceProfile profile, ComparisonState state, ICommand rawCmd)
@@ -532,7 +547,40 @@ namespace LibAtem.ComparisonTests.State
 
                     break;
             }
+        }
 
+        private static void UpdateMacroPropertiesState(LibAtem.DeviceProfile.DeviceProfile profile, ComparisonState state, ICommand rawCmd)
+        {
+            var cmd = (MacroPropertiesGetCommand)rawCmd;
+
+            var props = state.Macros.Pool[cmd.Index];
+            props.IsUsed = cmd.IsUsed;
+            props.Name = cmd.Name;
+            props.Description = cmd.Description;
+        }
+
+        private static void UpdateMacroRunState(LibAtem.DeviceProfile.DeviceProfile profile, ComparisonState state, ICommand rawCmd)
+        {
+            var cmd = (MacroRunStatusGetCommand)rawCmd;
+
+            var props = state.Macros;
+            props.Loop = cmd.Loop;
+            props.RunIndex = cmd.Index;
+
+            if (cmd.IsWaiting)
+                props.RunStatus = MacroRunStatus.UserWait;
+            else if (cmd.IsRunning)
+                props.RunStatus = MacroRunStatus.Running;
+            else
+                props.RunStatus = MacroRunStatus.Idle;
+        }
+        private static void UpdateMacroRecordState(LibAtem.DeviceProfile.DeviceProfile profile, ComparisonState state, ICommand rawCmd)
+        {
+            var cmd = (MacroRecordingStatusGetCommand)rawCmd;
+
+            var props = state.Macros;
+            props.IsRecording = cmd.IsRecording;
+            props.RecordIndex = cmd.Index;
         }
 
     }

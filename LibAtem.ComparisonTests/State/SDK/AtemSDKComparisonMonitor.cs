@@ -36,6 +36,7 @@ namespace LibAtem.ComparisonTests.State.SDK
             SetupDownstreamKeyers(switcher);
             SetupMediaPlayers(switcher);
             SetupMediaPool(switcher);
+            SetupMacroPool(switcher);
 
             var cb = new SwitcherPropertiesCallback(State, switcher);
             switcher.AddCallback(cb);
@@ -149,6 +150,30 @@ namespace LibAtem.ComparisonTests.State.SDK
                 cbc.Init();
                 TriggerAllChanged(cbc);
             }
+        }
+
+        private void SetupMacroPool(IBMDSwitcher switcher)
+        {
+            var pool = switcher as IBMDSwitcherMacroPool;
+            
+            var cbs = new MacroPoolCallback(State.Macros, pool);
+            pool.AddCallback(cbs);
+            _cleanupCallbacks.Add(() => pool.RemoveCallback(cbs));
+
+            pool.GetMaxCount(out uint count);
+            for (uint i = 0; i < count; i++)
+            {
+                State.Macros.Pool[i] = new ComparisonMacroItemState();
+                Enum.GetValues(typeof(_BMDSwitcherMacroPoolEventType)).OfType<_BMDSwitcherMacroPoolEventType>().ForEach(e => cbs.Notify(e, i, null));
+            }
+
+            var ctrl = switcher as IBMDSwitcherMacroControl;
+
+            var cbs2 = new MacroControlCallback(State.Macros, ctrl);
+            ctrl.AddCallback(cbs2);
+            _cleanupCallbacks.Add(() => ctrl.RemoveCallback(cbs2));
+
+            TriggerAllChanged(cbs2);
         }
 
         private void SetupDownstreamKeyers(IBMDSwitcher switcher)
