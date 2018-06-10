@@ -149,6 +149,7 @@ namespace LibAtem.ComparisonTests.Media
         public void TestClipFrame()
         {
             using (var helper = new AtemComparisonHelper(_client, _output))
+            using (new SettingEnabler(v => ComparisonStateSettings.TrackMediaClipFrames = v))
             {
                 if (_client.Profile.MediaPoolClips == 0)
                     return;
@@ -192,6 +193,7 @@ namespace LibAtem.ComparisonTests.Media
         public void TestAtBeginning()
         {
             using (var helper = new AtemComparisonHelper(_client, _output))
+            using (new SettingEnabler(v => ComparisonStateSettings.TrackMediaClipFrames = v))
             {
                 if (_client.Profile.MediaPoolClips == 0)
                     return;
@@ -224,7 +226,7 @@ namespace LibAtem.ComparisonTests.Media
                     {
                         var props = state.MediaPlayers[player.Item1];
                         props.AtBeginning = v;
-                        props.ClipFrame = (uint) (v ? 0 : 1);
+                        props.ClipFrame = (uint)(v ? 0 : 1);
                     }
 
                     ICommand FailSetter(bool v) => new MediaPlayerClipStatusSetCommand()

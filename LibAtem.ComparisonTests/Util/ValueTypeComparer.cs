@@ -105,4 +105,39 @@ namespace LibAtem.ComparisonTests.Util
             }
         }
     }
+    
+    internal sealed class ValueDefaults : IDisposable
+    {
+        private readonly AtemComparisonHelper _helper;
+        private readonly ICommand _cmd;
+
+        public ValueDefaults(AtemComparisonHelper helper, ICommand cmd)
+        {
+            _helper = helper;
+            _cmd = cmd;
+
+            _helper.SendCommand(_cmd);
+        }
+
+        public void Dispose()
+        {
+            _helper.SendCommand(_cmd);
+        }
+    }
+
+    internal sealed class SettingEnabler : IDisposable
+    {
+        private readonly Action<bool> _act;
+        public SettingEnabler(Action<bool> act)
+        {
+            _act = act;
+            _act(true);
+        }
+
+        public void Dispose()
+        {
+            _act(false);
+        }
+    }
+
 }

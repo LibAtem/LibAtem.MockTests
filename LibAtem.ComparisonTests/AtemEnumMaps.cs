@@ -24,6 +24,7 @@ namespace LibAtem.ComparisonTests
         public static readonly IReadOnlyDictionary<ExternalPortType, _BMDSwitcherExternalPortType> ExternalPortTypeMap;
         public static readonly IReadOnlyDictionary<SuperSourceArtOption, _BMDSwitcherSuperSourceArtOption> SuperSourceArtOptionMap;
         public static readonly IReadOnlyDictionary<MediaPlayerSource, _BMDSwitcherMediaPlayerSourceType> MediaPlayerSourceMap;
+        public static readonly IReadOnlyDictionary<AudioMixOption, _BMDSwitcherAudioMixOption> AudioMixOptionMap;
 
         static AtemEnumMaps()
         {
@@ -186,7 +187,6 @@ namespace LibAtem.ComparisonTests
                 {InternalPortType.SuperSource, _BMDSwitcherPortType.bmdSwitcherPortTypeSuperSource},
             };
 
-            // Note: This map is expected to be incomplete, as bm include audio in it
             ExternalPortTypeMap = new Dictionary<ExternalPortType, _BMDSwitcherExternalPortType>
             {
                 {ExternalPortType.Internal, _BMDSwitcherExternalPortType.bmdSwitcherExternalPortTypeInternal},
@@ -195,6 +195,11 @@ namespace LibAtem.ComparisonTests
                 {ExternalPortType.Composite, _BMDSwitcherExternalPortType.bmdSwitcherExternalPortTypeComposite},
                 {ExternalPortType.Component, _BMDSwitcherExternalPortType.bmdSwitcherExternalPortTypeComponent},
                 {ExternalPortType.SVideo, _BMDSwitcherExternalPortType.bmdSwitcherExternalPortTypeSVideo},
+
+                {ExternalPortType.XLR, _BMDSwitcherExternalPortType.bmdSwitcherExternalPortTypeXLR},
+                {ExternalPortType.AESEBU, _BMDSwitcherExternalPortType.bmdSwitcherExternalPortTypeAESEBU},
+                {ExternalPortType.RCA, _BMDSwitcherExternalPortType.bmdSwitcherExternalPortTypeRCA},
+                {ExternalPortType.TSJack, _BMDSwitcherExternalPortType.bmdSwitcherExternalPortTypeTSJack},
             };
 
             SuperSourceArtOptionMap = new Dictionary<SuperSourceArtOption, _BMDSwitcherSuperSourceArtOption>
@@ -207,6 +212,13 @@ namespace LibAtem.ComparisonTests
             {
                 {MediaPlayerSource.Clip, _BMDSwitcherMediaPlayerSourceType.bmdSwitcherMediaPlayerSourceTypeClip},
                 {MediaPlayerSource.Still, _BMDSwitcherMediaPlayerSourceType.bmdSwitcherMediaPlayerSourceTypeStill},
+            };
+
+            AudioMixOptionMap = new Dictionary<AudioMixOption, _BMDSwitcherAudioMixOption>
+            {
+                {AudioMixOption.Off, _BMDSwitcherAudioMixOption.bmdSwitcherAudioMixOptionOff},
+                {AudioMixOption.On, _BMDSwitcherAudioMixOption.bmdSwitcherAudioMixOptionOn},
+                {AudioMixOption.AudioFollowVideo, _BMDSwitcherAudioMixOption.bmdSwitcherAudioMixOptionAudioFollowVideo},
             };
         }
 
@@ -354,6 +366,12 @@ namespace LibAtem.ComparisonTests
         }
 
         [Fact]
+        public void EnsureExternalPortMapIsComplete()
+        {
+            EnumMap.EnsureIsComplete(AtemEnumMaps.ExternalPortTypeMap);
+        }
+
+        [Fact]
         public void EnsureSuperSourceArtOptionMapIsComplete()
         {
             EnumMap.EnsureIsComplete(AtemEnumMaps.SuperSourceArtOptionMap);
@@ -363,6 +381,12 @@ namespace LibAtem.ComparisonTests
         public void EnsureMediaPlayerSourceMapIsComplete()
         {
             EnumMap.EnsureIsComplete(AtemEnumMaps.MediaPlayerSourceMap);
+        }
+
+        [Fact]
+        public void EnsureAudioMixOptionMapIsComplete()
+        {
+            EnumMap.EnsureIsComplete(AtemEnumMaps.AudioMixOptionMap);
         }
     }
 }

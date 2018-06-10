@@ -37,6 +37,7 @@ namespace LibAtem.ComparisonTests.State.SDK
             SetupMediaPlayers(switcher);
             SetupMediaPool(switcher);
             SetupMacroPool(switcher);
+            SetupAudio(switcher);
 
             var cb = new SwitcherPropertiesCallback(State, switcher);
             switcher.AddCallback(cb);
@@ -53,6 +54,35 @@ namespace LibAtem.ComparisonTests.State.SDK
         private void TriggerAllChanged<T>(INotify<T> cb, params T[] skip)
         {
             Enum.GetValues(typeof(T)).OfType<T>().Where(v => !skip.Contains(v)).ForEach(cb.Notify);
+        }
+
+        private void SetupAudio(IBMDSwitcher switcher)
+        {
+            var mixer = switcher as IBMDSwitcherAudioMixer;
+
+            var cb = new AudioMixerCallback(State.Audio, mixer);
+            mixer.AddCallback(cb);
+            _cleanupCallbacks.Add(() => mixer.RemoveCallback(cb));
+            TriggerAllChanged(cb);
+
+            // TODO others
+            Guid itId = typeof(IBMDSwitcherAudioInputIterator).GUID;
+            mixer.CreateIterator(ref itId, out var itPtr);
+            IBMDSwitcherAudioInputIterator iterator = (IBMDSwitcherAudioInputIterator)Marshal.GetObjectForIUnknown(itPtr);
+
+            int id = 0;
+            for (iterator.Next(out IBMDSwitcherAudioInput port); port != null; iterator.Next(out port))
+            {
+                port.GetAudioInputId(out long inputId);
+                State.Audio.Inputs[inputId] = new ComparisonAudioInputState();
+
+                var cbi = new AudioMixerInputCallback(State.Audio.Inputs[inputId], port);
+                port.AddCallback(cbi);
+                _cleanupCallbacks.Add(() => port.RemoveCallback(cbi));
+                TriggerAllChanged(cbi);
+
+                id++;
+            }
         }
 
         private void SetupSerialPorts(IBMDSwitcher switcher)

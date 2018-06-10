@@ -43,12 +43,18 @@ namespace LibAtem.ComparisonTests.State.SDK
 
         public void AtBeginningChanged()
         {
+            if (!ComparisonStateSettings.TrackMediaClipFrames)
+                return;
+
             _props.GetAtBeginning(out int atBegining);
             _state.AtBeginning = atBegining != 0;
         }
 
         public void ClipFrameChanged()
         {
+            if (!ComparisonStateSettings.TrackMediaClipFrames)
+                return;
+
             _props.GetClipFrame(out uint clipFrame);
             _state.ClipFrame = clipFrame;
         }

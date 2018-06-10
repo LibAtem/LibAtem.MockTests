@@ -38,6 +38,7 @@ namespace LibAtem.ComparisonTests.State
         public ComparisonMacroState Macros { get; set; } = new ComparisonMacroState();
         public ComparisonSuperSourceState SuperSource { get; set; } = new ComparisonSuperSourceState();
         public ComparisonSettingsState Settings { get; set; } = new ComparisonSettingsState();
+        public ComparisonAudioState Audio { get; set; } = new ComparisonAudioState();
 
         public ComparisonState Clone()
         {
@@ -236,6 +237,33 @@ namespace LibAtem.ComparisonTests.State
         public SerialMode SerialMode { get; set; }
     }
 
+    [Serializable]
+    public class ComparisonAudioState
+    {
+        [Tolerance(0.5)]
+        public double ProgramOutGain { get; set; }
+        [Tolerance(0.01)]
+        public double ProgramOutBalance { get; set; }
+        public bool ProgramOutFollowFadeToBlack { get; set; }
+
+        // TODO level peaks
+
+        public Dictionary<long, ComparisonAudioInputState> Inputs { get; set; } = new Dictionary<long, ComparisonAudioInputState>();
+
+        // TODO monitor
+    }
+
+    [Serializable]
+    public class ComparisonAudioInputState
+    {
+        public ExternalPortType ExternalPortType { get; set; }
+        public AudioMixOption MixOption { get; set; }
+        [Tolerance(0.5)]
+        public double Gain { get; set; }
+        [Tolerance(0.01)]
+        public double Balance { get; set; }
+        public bool IsMixedIn { get; set; } // TODO - disable this field except for when needed?
+    }
 
     [Serializable]
     public class ComparisonSettingsMultiViewState

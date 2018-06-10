@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using LibAtem.Commands;
-using LibAtem.Commands.DataTransfer;
+using LibAtem.Commands.Audio;
 using LibAtem.Commands.DeviceProfile;
 using LibAtem.Commands.DownstreamKey;
 using LibAtem.Commands.Macro;
@@ -28,6 +28,7 @@ namespace LibAtem.ComparisonTests.State
                 {typeof(TopologyCommand), UpdateTopology},
                 {typeof(MediaPoolConfigCommand), UpdateMediaPoolTopology},
                 {typeof(MacroPoolConfigCommand), UpdateMacroPoolTopology},
+                {typeof(AudioMixerConfigCommand), UpdateAudioMixerTopology},
                 {typeof(MixEffectBlockConfigCommand), UpdateMixEffectTopology},
                 {typeof(AuxSourceGetCommand), UpdateAux},
                 {typeof(ColorGeneratorGetCommand), UpdateColor},
@@ -65,6 +66,10 @@ namespace LibAtem.ComparisonTests.State
                 {typeof(MacroPropertiesGetCommand), UpdateMacroPropertiesState},
                 {typeof(MacroRunStatusGetCommand), UpdateMacroRunState},
                 {typeof(MacroRecordingStatusGetCommand), UpdateMacroRecordState},
+                {typeof(AudioMixerPropertiesGetCommand), UpdateAudioMixerPropertiesState},
+                {typeof(AudioMixerMasterGetCommand), UpdateAudioMixerMasterState},
+                {typeof(AudioMixerInputGetCommand), UpdateAudioMixerInputState},
+                {typeof(AudioMixerTallyCommand), UpdateAudioMixerTallyState},
             };
         }
 
@@ -528,6 +533,10 @@ namespace LibAtem.ComparisonTests.State
 
             props.IsPlaying = cmd.Playing;
             props.IsLooped = cmd.Loop;
+
+            if (!ComparisonStateSettings.TrackMediaClipFrames)
+                return;
+
             props.AtBeginning = cmd.AtBeginning;
             props.ClipFrame = cmd.ClipFrame;
         }
@@ -582,6 +591,58 @@ namespace LibAtem.ComparisonTests.State
             props.IsRecording = cmd.IsRecording;
             props.RecordIndex = cmd.Index;
         }
+
+        private static void UpdateAudioMixerTopology(LibAtem.DeviceProfile.DeviceProfile profile, ComparisonState state, ICommand rawCmd)
+        {
+            var cmd = (AudioMixerConfigCommand)rawCmd;
+            
+            // TODO
+        }
+
+        private static void UpdateAudioMixerPropertiesState(LibAtem.DeviceProfile.DeviceProfile profile, ComparisonState state, ICommand rawCmd)
+        {
+            var cmd = (AudioMixerPropertiesGetCommand)rawCmd;
+
+            var props = state.Audio;
+            // TODO
+        }
+        private static void UpdateAudioMixerMasterState(LibAtem.DeviceProfile.DeviceProfile profile, ComparisonState state, ICommand rawCmd)
+        {
+            var cmd = (AudioMixerMasterGetCommand)rawCmd;
+
+            var props = state.Audio;
+            props.ProgramOutFollowFadeToBlack = cmd.ProgramOutFollowFadeToBlack;
+            props.ProgramOutGain = cmd.Gain;
+            props.ProgramOutBalance = cmd.Balance;
+        }
+        private static void UpdateAudioMixerInputState(LibAtem.DeviceProfile.DeviceProfile profile, ComparisonState state, ICommand rawCmd)
+        {
+            var cmd = (AudioMixerInputGetCommand)rawCmd;
+            
+            ComparisonAudioInputState props;
+            if (!state.Audio.Inputs.TryGetValue((long)cmd.Index, out props))
+                props = state.Audio.Inputs[(long)cmd.Index] = new ComparisonAudioInputState();
+            
+            props.ExternalPortType = cmd.PortType;
+            props.Gain = cmd.Gain;
+            props.Balance = cmd.Balance;
+            props.MixOption = cmd.MixOption;
+        }
+        private static void UpdateAudioMixerTallyState(LibAtem.DeviceProfile.DeviceProfile profile, ComparisonState state, ICommand rawCmd)
+        {
+            var cmd = (AudioMixerTallyCommand)rawCmd;
+
+            foreach (KeyValuePair<AudioSource, bool> inp in cmd.Inputs)
+            {
+                ComparisonAudioInputState props;
+                if (!state.Audio.Inputs.TryGetValue((long)inp.Key, out props))
+                    continue;
+
+                props.IsMixedIn = inp.Value;
+            }
+        }
+
+        
 
     }
 }
