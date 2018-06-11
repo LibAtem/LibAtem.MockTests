@@ -249,8 +249,22 @@ namespace LibAtem.ComparisonTests.State
         // TODO level peaks
 
         public Dictionary<long, ComparisonAudioInputState> Inputs { get; set; } = new Dictionary<long, ComparisonAudioInputState>();
+        public Dictionary<uint, ComparisonAudioMonitorOutputState> Monitors { get; set; } = new Dictionary<uint, ComparisonAudioMonitorOutputState>();
+    }
 
-        // TODO monitor
+    [Serializable]
+    public class ComparisonAudioMonitorOutputState
+    {
+        public bool Enabled { get; set; }
+        [Tolerance(0.5)]
+        public double Gain { get; set; }
+
+        public bool Mute { get; set; }
+
+        public bool Solo { get; set; }
+        public AudioSource SoloInput { get; set; }
+
+        public bool Dim { get; set; }
     }
 
     [Serializable]

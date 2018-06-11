@@ -70,6 +70,7 @@ namespace LibAtem.ComparisonTests.State
                 {typeof(AudioMixerMasterGetCommand), UpdateAudioMixerMasterState},
                 {typeof(AudioMixerInputGetCommand), UpdateAudioMixerInputState},
                 {typeof(AudioMixerTallyCommand), UpdateAudioMixerTallyState},
+                {typeof(AudioMixerMonitorGetCommand), UpdateAudioMonitorState},
             };
         }
 
@@ -641,8 +642,23 @@ namespace LibAtem.ComparisonTests.State
                 props.IsMixedIn = inp.Value;
             }
         }
+        private static void UpdateAudioMonitorState(LibAtem.DeviceProfile.DeviceProfile profile, ComparisonState state, ICommand rawCmd)
+        {
+            var cmd = (AudioMixerMonitorGetCommand)rawCmd;
 
-        
+            ComparisonAudioMonitorOutputState props;
+            if (!state.Audio.Monitors.TryGetValue(0, out props))
+                props = state.Audio.Monitors[0] = new ComparisonAudioMonitorOutputState();
+
+            props.Enabled = cmd.Enabled;
+            props.Gain = cmd.Gain;
+            props.Mute = cmd.Mute;
+            props.Solo = cmd.Solo;
+            props.SoloInput = cmd.SoloSource;
+            props.Dim = cmd.Dim;
+        }
+
+
 
     }
 }

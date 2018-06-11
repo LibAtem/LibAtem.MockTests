@@ -65,7 +65,6 @@ namespace LibAtem.ComparisonTests.State.SDK
             _cleanupCallbacks.Add(() => mixer.RemoveCallback(cb));
             TriggerAllChanged(cb);
 
-            // TODO others
             Guid itId = typeof(IBMDSwitcherAudioInputIterator).GUID;
             mixer.CreateIterator(ref itId, out var itPtr);
             IBMDSwitcherAudioInputIterator iterator = (IBMDSwitcherAudioInputIterator)Marshal.GetObjectForIUnknown(itPtr);
@@ -83,6 +82,26 @@ namespace LibAtem.ComparisonTests.State.SDK
 
                 id++;
             }
+
+            itId = typeof(IBMDSwitcherAudioMonitorOutputIterator).GUID;
+            mixer.CreateIterator(ref itId, out itPtr);
+            IBMDSwitcherAudioMonitorOutputIterator monIt = (IBMDSwitcherAudioMonitorOutputIterator)Marshal.GetObjectForIUnknown(itPtr);
+
+            var result = new List<IBMDSwitcherAudioMonitorOutput>();
+            uint id2 = 0;
+            for (monIt.Next(out IBMDSwitcherAudioMonitorOutput r); r != null; monIt.Next(out r))
+            {
+                State.Audio.Monitors[id2] = new ComparisonAudioMonitorOutputState();
+
+                var cbi = new AudioMixerMonitorOutputCallback(State.Audio.Monitors[id2], r);
+                r.AddCallback(cbi);
+                _cleanupCallbacks.Add(() => r.RemoveCallback(cbi));
+                TriggerAllChanged(cbi);
+
+                id2++;
+            }
+
+            // TODO others
         }
 
         private void SetupSerialPorts(IBMDSwitcher switcher)

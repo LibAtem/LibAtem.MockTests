@@ -41,19 +41,6 @@ namespace LibAtem.ComparisonTests.Audio
             return result;
         }
 
-        // TODO verify input ids match
-
-            /*
-        [Fact]
-        public void TestType()
-        {
-            foreach (var i in GetInputs())
-            {
-                var id = i.Item1;
-                i.Item2.
-            }
-        }*/
-
         [Fact]
         public void TestIdsValid()
         {
@@ -61,6 +48,10 @@ namespace LibAtem.ComparisonTests.Audio
             {
                 Assert.True(inp.Item1.IsValid());
             }
+
+            long[] sdkIds = GetInputs().Select(i => (long)i.Item1).OrderBy(i => i).ToArray();
+            long[] libIds = Client.LibState.Audio.Inputs.Keys.OrderBy(i => i).ToArray();
+            Assert.True(sdkIds.SequenceEqual(libIds));
         }
 
         [Fact]
