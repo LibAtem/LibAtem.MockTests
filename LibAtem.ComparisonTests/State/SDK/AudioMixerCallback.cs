@@ -37,6 +37,13 @@ namespace LibAtem.ComparisonTests.State.SDK
 
         public void ProgramOutLevelNotification(double left, double right, double peakLeft, double peakRight)
         {
+            if (!ComparisonStateSettings.TrackAudioLevels)
+                return;
+
+            _state.ProgramLeft = left;
+            _state.ProgramRight = right;
+            _state.ProgramPeakLeft = peakLeft;
+            _state.ProgramPeakRight = peakRight;
             // TODO
         }
     }

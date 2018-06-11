@@ -246,12 +246,28 @@ namespace LibAtem.ComparisonTests.State
         public double ProgramOutBalance { get; set; }
         public bool ProgramOutFollowFadeToBlack { get; set; }
 
-        // TODO level peaks
+        public ComparisonTalkbackState Talkback { get; set; } = new ComparisonTalkbackState();
+
+        [Tolerance(0.1)]
+        public double ProgramLeft { get; set; }
+        [Tolerance(0.1)]
+        public double ProgramRight { get; set; }
+        [Tolerance(0.1)]
+        public double ProgramPeakLeft { get; set; }
+        [Tolerance(0.1)]
+        public double ProgramPeakRight { get; set; }
 
         public Dictionary<long, ComparisonAudioInputState> Inputs { get; set; } = new Dictionary<long, ComparisonAudioInputState>();
         public Dictionary<uint, ComparisonAudioMonitorOutputState> Monitors { get; set; } = new Dictionary<uint, ComparisonAudioMonitorOutputState>();
     }
 
+    [Serializable]
+    public class ComparisonTalkbackState
+    {
+        public bool MuteSDI { get; set; }
+        public Dictionary<long, bool> Inputs { get; set; } = new Dictionary<long, bool>();
+    }
+    
     [Serializable]
     public class ComparisonAudioMonitorOutputState
     {

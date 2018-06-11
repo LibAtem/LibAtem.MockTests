@@ -101,6 +101,12 @@ namespace LibAtem.ComparisonTests.State.SDK
                 id2++;
             }
 
+            var talkback = switcher as IBMDSwitcherTalkback;
+            var cbt = new TalkbackCallback(State.Audio.Talkback, talkback);
+            talkback.AddCallback(cbt);
+            _cleanupCallbacks.Add(() => talkback.RemoveCallback(cbt));
+            cbt.NotifyAll(State.Audio.Inputs.Keys);
+
             // TODO others
         }
 

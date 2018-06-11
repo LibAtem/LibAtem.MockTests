@@ -71,6 +71,7 @@ namespace LibAtem.ComparisonTests.State
                 {typeof(AudioMixerInputGetCommand), UpdateAudioMixerInputState},
                 {typeof(AudioMixerTallyCommand), UpdateAudioMixerTallyState},
                 {typeof(AudioMixerMonitorGetCommand), UpdateAudioMonitorState},
+                {typeof(AudioMixerTalkbackPropertiesGetCommand), UpdateAudioTalkbackState},
             };
         }
 
@@ -656,6 +657,13 @@ namespace LibAtem.ComparisonTests.State
             props.Solo = cmd.Solo;
             props.SoloInput = cmd.SoloSource;
             props.Dim = cmd.Dim;
+        }
+        private static void UpdateAudioTalkbackState(LibAtem.DeviceProfile.DeviceProfile profile, ComparisonState state, ICommand rawCmd)
+        {
+            var cmd = (AudioMixerTalkbackPropertiesGetCommand)rawCmd;
+
+            var props = state.Audio.Talkback;
+            props.MuteSDI = cmd.MuteSDI;
         }
 
 
