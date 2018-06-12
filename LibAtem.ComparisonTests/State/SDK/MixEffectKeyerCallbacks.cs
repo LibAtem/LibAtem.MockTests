@@ -350,4 +350,103 @@ namespace LibAtem.ComparisonTests.State.SDK
             }
         }
     }
+
+    public sealed class MixEffectKeyerFlyKeyFrameCallback : IBMDSwitcherKeyFlyKeyFrameParametersCallback, INotify<_BMDSwitcherKeyFlyKeyFrameParametersEventType>
+    {
+        private readonly ComparisonMixEffectKeyerFlyFrameState _state;
+        private readonly IBMDSwitcherKeyFlyKeyFrameParameters _props;
+
+        public MixEffectKeyerFlyKeyFrameCallback(ComparisonMixEffectKeyerFlyFrameState state, IBMDSwitcherKeyFlyKeyFrameParameters props)
+        {
+            _state = state;
+            _props = props;
+        }
+
+        public void Notify(_BMDSwitcherKeyFlyKeyFrameParametersEventType eventType)
+        {
+            // TODO - these have no eventType enum value...
+            _props.GetBorderOpacity(out double opacity);
+            _state.BorderOpacity = (uint)(opacity * 100);
+
+            // TODO MaskEnabled?
+            _props.GetMaskTop(out double maskTop);
+            _state.MaskTop = maskTop;
+            _props.GetMaskBottom(out double maskBottom);
+            _state.MaskBottom = maskBottom;
+            _props.GetMaskLeft(out double maskLeft);
+            _state.MaskLeft = maskLeft;
+            _props.GetMaskRight(out double maskRight);
+            _state.MaskRight = maskRight;
+
+            switch (eventType)
+            {
+                case _BMDSwitcherKeyFlyKeyFrameParametersEventType.bmdSwitcherKeyFlyKeyFrameParametersEventTypeSizeXChanged:
+                    _props.GetSizeX(out double sizeX);
+                    _state.SizeX = sizeX;
+                    break;
+                case _BMDSwitcherKeyFlyKeyFrameParametersEventType.bmdSwitcherKeyFlyKeyFrameParametersEventTypeSizeYChanged:
+                    _props.GetSizeY(out double sizeY);
+                    _state.SizeY = sizeY;
+                    break;
+                case _BMDSwitcherKeyFlyKeyFrameParametersEventType.bmdSwitcherKeyFlyKeyFrameParametersEventTypePositionXChanged:
+                    _props.GetPositionX(out double positionX);
+                    _state.PositionX = positionX;
+                    break;
+                case _BMDSwitcherKeyFlyKeyFrameParametersEventType.bmdSwitcherKeyFlyKeyFrameParametersEventTypePositionYChanged:
+                    _props.GetPositionY(out double positionY);
+                    _state.PositionY = positionY;
+                    break;
+                case _BMDSwitcherKeyFlyKeyFrameParametersEventType.bmdSwitcherKeyFlyKeyFrameParametersEventTypeRotationChanged:
+                    _props.GetRotation(out double rotation);
+                    _state.Rotation = rotation;
+                    break;
+                case _BMDSwitcherKeyFlyKeyFrameParametersEventType.bmdSwitcherKeyFlyKeyFrameParametersEventTypeBorderWidthOutChanged:
+                    _props.GetBorderWidthOut(out double widthOut);
+                    _state.OuterWidth = widthOut;
+                    break;
+                case _BMDSwitcherKeyFlyKeyFrameParametersEventType.bmdSwitcherKeyFlyKeyFrameParametersEventTypeBorderWidthInChanged:
+                    _props.GetBorderWidthIn(out double widthIn);
+                    _state.InnerWidth = widthIn;
+                    break;
+                case _BMDSwitcherKeyFlyKeyFrameParametersEventType.bmdSwitcherKeyFlyKeyFrameParametersEventTypeBorderSoftnessOutChanged:
+                    _props.GetBorderSoftnessOut(out double borderSoftnessOut);
+                    _state.OuterSoftness = (uint)(borderSoftnessOut * 100);
+                    break;
+                case _BMDSwitcherKeyFlyKeyFrameParametersEventType.bmdSwitcherKeyFlyKeyFrameParametersEventTypeBorderSoftnessInChanged:
+                    _props.GetBorderSoftnessIn(out double borderSoftnessIn);
+                    _state.InnerSoftness = (uint)(borderSoftnessIn * 100);
+                    break;
+                case _BMDSwitcherKeyFlyKeyFrameParametersEventType.bmdSwitcherKeyFlyKeyFrameParametersEventTypeBorderBevelSoftnessChanged:
+                    _props.GetBorderBevelSoftness(out double borderBevelSoftness);
+                    _state.BevelSoftness = (uint)(borderBevelSoftness * 100);
+                    break;
+                case _BMDSwitcherKeyFlyKeyFrameParametersEventType.bmdSwitcherKeyFlyKeyFrameParametersEventTypeBorderBevelPositionChanged:
+                    _props.GetBorderBevelPosition(out double borderBevelPosition);
+                    _state.BevelPosition = (uint)(borderBevelPosition * 100);
+                    break;
+                case _BMDSwitcherKeyFlyKeyFrameParametersEventType.bmdSwitcherKeyFlyKeyFrameParametersEventTypeBorderHueChanged:
+                    _props.GetBorderHue(out double hue);
+                    _state.BorderHue = hue;
+                    break;
+                case _BMDSwitcherKeyFlyKeyFrameParametersEventType.bmdSwitcherKeyFlyKeyFrameParametersEventTypeBorderSaturationChanged:
+                    _props.GetBorderSaturation(out double sat);
+                    _state.BorderSaturation = sat * 100;
+                    break;
+                case _BMDSwitcherKeyFlyKeyFrameParametersEventType.bmdSwitcherKeyFlyKeyFrameParametersEventTypeBorderLumaChanged:
+                    _props.GetBorderLuma(out double luma);
+                    _state.BorderLuma = luma * 100;
+                    break;
+                case _BMDSwitcherKeyFlyKeyFrameParametersEventType.bmdSwitcherKeyFlyKeyFrameParametersEventTypeBorderLightSourceDirectionChanged:
+                    _props.GetBorderLightSourceDirection(out double deg);
+                    _state.LightSourceDirection = deg;
+                    break;
+                case _BMDSwitcherKeyFlyKeyFrameParametersEventType.bmdSwitcherKeyFlyKeyFrameParametersEventTypeBorderLightSourceAltitudeChanged:
+                    _props.GetBorderLightSourceAltitude(out double alt);
+                    _state.LightSourceAltitude = (uint)(alt * 100);
+                    break;
+                default:
+                    throw new ArgumentOutOfRangeException(nameof(eventType), eventType, null);
+            }
+        }
+    }
 }

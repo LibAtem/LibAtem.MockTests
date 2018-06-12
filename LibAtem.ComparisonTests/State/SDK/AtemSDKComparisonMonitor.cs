@@ -455,6 +455,19 @@ namespace LibAtem.ComparisonTests.State.SDK
                 _BMDSwitcherKeyFlyParametersEventType.bmdSwitcherKeyFlyParametersEventTypeIsRunningChanged
             };
             TriggerAllChanged(cb, ignore);
+
+            props.GetKeyFrameParameters(_BMDSwitcherFlyKeyFrame.bmdSwitcherFlyKeyFrameA, out IBMDSwitcherKeyFlyKeyFrameParameters keyframeA);
+            props.GetKeyFrameParameters(_BMDSwitcherFlyKeyFrame.bmdSwitcherFlyKeyFrameB, out IBMDSwitcherKeyFlyKeyFrameParameters keyframeB);
+
+            var cb2 = new MixEffectKeyerFlyKeyFrameCallback(fly.Frames[FlyKeyKeyFrameId.One], keyframeA);
+            keyframeA.AddCallback(cb2);
+            _cleanupCallbacks.Add(() => keyframeA.RemoveCallback(cb2));
+            TriggerAllChanged(cb2);
+
+            var cb3 = new MixEffectKeyerFlyKeyFrameCallback(fly.Frames[FlyKeyKeyFrameId.Two], keyframeB);
+            keyframeB.AddCallback(cb3);
+            _cleanupCallbacks.Add(() => keyframeB.RemoveCallback(cb3));
+            TriggerAllChanged(cb3);
         }
 
         private void SetupInputs(IBMDSwitcher switcher)

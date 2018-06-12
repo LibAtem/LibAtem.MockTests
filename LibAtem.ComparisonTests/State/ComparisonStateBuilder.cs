@@ -40,6 +40,7 @@ namespace LibAtem.ComparisonTests.State
                 {typeof(MixEffectKeyChromaGetCommand), UpdateMixEffectKeyerChroma},
                 {typeof(MixEffectKeyPatternGetCommand), UpdateMixEffectKeyerPattern},
                 {typeof(MixEffectKeyDVEGetCommand), UpdateMixEffectKeyerDVE},
+                {typeof(MixEffectKeyFlyKeyframeGetCommand), UpdateMixEffectKeyerFlyFrame},
                 {typeof(TransitionPropertiesGetCommand), UpdateMixEffectTransitionProperties},
                 {typeof(TransitionMixGetCommand), UpdateMixEffectTransitionMix},
                 {typeof(TransitionDipGetCommand), UpdateMixEffectTransitionDip},
@@ -255,6 +256,38 @@ namespace LibAtem.ComparisonTests.State
             props.MaskRight = cmd.MaskRight;
 
             props2.Rate = cmd.Rate;
+        }
+        private static void UpdateMixEffectKeyerFlyFrame(LibAtem.DeviceProfile.DeviceProfile profile, ComparisonState state, ICommand rawCmd)
+        {
+            var cmd = (MixEffectKeyFlyKeyframeGetCommand)rawCmd;
+            var props = state.MixEffects[cmd.MixEffectIndex].Keyers[cmd.KeyerIndex].Fly.Frames[cmd.KeyFrame];
+
+            props.SizeX = cmd.XSize;
+            props.SizeY = cmd.YSize;
+            props.PositionX = cmd.XPosition;
+            props.PositionY = cmd.YPosition;
+            props.Rotation = cmd.Rotation;
+
+            props.OuterWidth = cmd.OuterWidth;
+            props.InnerWidth = cmd.InnerWidth;
+            props.OuterSoftness = cmd.OuterSoftness;
+            props.InnerSoftness = cmd.InnerSoftness;
+            props.BevelSoftness = cmd.BevelSoftness;
+            props.BevelPosition = cmd.BevelPosition;
+
+            props.BorderOpacity = cmd.BorderOpacity;
+            props.BorderHue = cmd.BorderHue;
+            props.BorderSaturation = cmd.BorderSaturation;
+            props.BorderLuma = cmd.BorderLuma;
+
+            props.LightSourceDirection = cmd.LightSourceDirection;
+            props.LightSourceAltitude = cmd.LightSourceAltitude;
+
+            // public bool MaskEnabled { get; set; }
+            props.MaskTop = cmd.MaskTop;
+            props.MaskBottom = cmd.MaskBottom;
+            props.MaskLeft = cmd.MaskLeft;
+            props.MaskRight = cmd.MaskRight;
         }
 
         private static void UpdateMixEffectTransitionProperties(LibAtem.DeviceProfile.DeviceProfile profile, ComparisonState state, ICommand rawCmd)

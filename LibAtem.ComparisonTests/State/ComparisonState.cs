@@ -509,7 +509,9 @@ namespace LibAtem.ComparisonTests.State
         public bool BorderEnabled { get; set; }
         public bool BorderShadow { get; set; }
         public BorderBevel BorderBevel { get; set; }
+        [Tolerance(0.01)]
         public double OuterWidth { get; set; }
+        [Tolerance(0.01)]
         public double InnerWidth { get; set; }
         public uint OuterSoftness { get; set; }
         public uint InnerSoftness { get; set; }
@@ -556,7 +558,55 @@ namespace LibAtem.ComparisonTests.State
 
         public uint Rate { get; set; }
 
-        // TODO - keyframes
+        public Dictionary<FlyKeyKeyFrameId, ComparisonMixEffectKeyerFlyFrameState> Frames { get; set; } = new Dictionary<FlyKeyKeyFrameId, ComparisonMixEffectKeyerFlyFrameState> {
+            {FlyKeyKeyFrameId.One, new ComparisonMixEffectKeyerFlyFrameState()},
+            {FlyKeyKeyFrameId.Two, new ComparisonMixEffectKeyerFlyFrameState()},
+        };
+    }
+
+    [Serializable]
+    public class ComparisonMixEffectKeyerFlyFrameState
+    {
+        [Tolerance(0.01)]
+        public double SizeX { get; set; }
+        [Tolerance(0.01)]
+        public double SizeY { get; set; }
+        [Tolerance(0.01)]
+        public double PositionX { get; set; }
+        [Tolerance(0.01)]
+        public double PositionY { get; set; }
+        [Tolerance(0.01)]
+        public double Rotation { get; set; }
+
+        [Tolerance(0.01)]
+        public double OuterWidth { get; set; }
+        [Tolerance(0.01)]
+        public double InnerWidth { get; set; }
+        public uint OuterSoftness { get; set; }
+        public uint InnerSoftness { get; set; }
+        public uint BevelSoftness { get; set; }
+        public uint BevelPosition { get; set; }
+
+        public uint BorderOpacity { get; set; }
+        [Tolerance(0.01)]
+        public double BorderHue { get; set; }
+        [Tolerance(0.01)]
+        public double BorderSaturation { get; set; }
+        [Tolerance(0.01)]
+        public double BorderLuma { get; set; }
+
+        [Tolerance(0.01)]
+        public double LightSourceDirection { get; set; }
+        public uint LightSourceAltitude { get; set; }
+
+        [Tolerance(0.01)]
+        public double MaskTop { get; set; }
+        [Tolerance(0.01)]
+        public double MaskBottom { get; set; }
+        [Tolerance(0.01)]
+        public double MaskLeft { get; set; }
+        [Tolerance(0.01)]
+        public double MaskRight { get; set; }
     }
 
     [Serializable]
