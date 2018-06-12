@@ -4,16 +4,37 @@ using System.IO;
 using System.Linq;
 using System.Runtime.Serialization.Formatters.Binary;
 using LibAtem.Common;
+using LibAtem.Serialization;
 
 namespace LibAtem.ComparisonTests.State
 {
-    public sealed class ToleranceAttribute : Attribute
+    public class ToleranceAttribute : Attribute
     {
         public double Tolerance { get; }
 
         public ToleranceAttribute(double tolerance)
         {
             Tolerance = tolerance;
+        }
+
+        public virtual bool AreEqual(double a, double b)
+        {
+            return Math.Abs(a - b) <= Tolerance;
+        }
+    }
+
+    public sealed class DecibelToleranceAttribute : ToleranceAttribute
+    {
+        public DecibelToleranceAttribute(double tolerance) : base(tolerance)
+        {
+        }
+
+        public override bool AreEqual(double a, double b)
+        {
+            var a2 = (double)DecibelsAttribute.DecibelToUInt(a);
+            var b2 = (double)DecibelsAttribute.DecibelToUInt(b);
+
+            return Math.Abs(a2 - b2) <= Tolerance;
         }
     }
 
@@ -240,7 +261,7 @@ namespace LibAtem.ComparisonTests.State
     [Serializable]
     public class ComparisonAudioState
     {
-        [Tolerance(0.5)]
+        [DecibelTolerance(5)]
         public double ProgramOutGain { get; set; }
         [Tolerance(0.01)]
         public double ProgramOutBalance { get; set; }
@@ -248,14 +269,14 @@ namespace LibAtem.ComparisonTests.State
 
         public ComparisonTalkbackState Talkback { get; set; } = new ComparisonTalkbackState();
 
-        [Tolerance(0.1)]
-        public double ProgramLeft { get; set; }
-        [Tolerance(0.1)]
-        public double ProgramRight { get; set; }
-        [Tolerance(0.1)]
-        public double ProgramPeakLeft { get; set; }
-        [Tolerance(0.1)]
-        public double ProgramPeakRight { get; set; }
+        [DecibelTolerance(5)]
+        public double ProgramLeft { get; set; } = double.NegativeInfinity;
+        [DecibelTolerance(5)]
+        public double ProgramRight { get; set; } = double.NegativeInfinity;
+        [DecibelTolerance(5)]
+        public double ProgramPeakLeft { get; set; } = double.NegativeInfinity;
+        [DecibelTolerance(5)]
+        public double ProgramPeakRight { get; set; } = double.NegativeInfinity;
 
         public Dictionary<long, ComparisonAudioInputState> Inputs { get; set; } = new Dictionary<long, ComparisonAudioInputState>();
         public Dictionary<uint, ComparisonAudioMonitorOutputState> Monitors { get; set; } = new Dictionary<uint, ComparisonAudioMonitorOutputState>();
@@ -272,7 +293,7 @@ namespace LibAtem.ComparisonTests.State
     public class ComparisonAudioMonitorOutputState
     {
         public bool Enabled { get; set; }
-        [Tolerance(0.5)]
+        [DecibelTolerance(5)]
         public double Gain { get; set; }
 
         public bool Mute { get; set; }
@@ -288,11 +309,20 @@ namespace LibAtem.ComparisonTests.State
     {
         public ExternalPortType ExternalPortType { get; set; }
         public AudioMixOption MixOption { get; set; }
-        [Tolerance(0.5)]
+        [DecibelTolerance(5)]
         public double Gain { get; set; }
         [Tolerance(0.01)]
         public double Balance { get; set; }
         public bool IsMixedIn { get; set; } // TODO - disable this field except for when needed?
+
+        [DecibelTolerance(5)]
+        public double LevelLeft { get; set; } = double.NegativeInfinity;
+        [DecibelTolerance(5)]
+        public double LevelRight { get; set; } = double.NegativeInfinity;
+        [DecibelTolerance(5)]
+        public double PeakLeft { get; set; } = double.NegativeInfinity;
+        [DecibelTolerance(5)]
+        public double PeakRight { get; set; } = double.NegativeInfinity;
     }
 
     [Serializable]

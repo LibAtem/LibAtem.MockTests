@@ -52,7 +52,7 @@ namespace LibAtem.ComparisonTests.State
                         var oldDbl = (double) oldVal;
                         var newDbl = (double) newVal;
 
-                        if (Math.Abs(oldDbl-newDbl) > attr.Tolerance)
+                        if (!attr.AreEqual(oldDbl, newDbl))
                         {
                             yield return "Value: " + name + prop.Name + " Expected: " + oldVal + " Actual: " + newVal;
                         }

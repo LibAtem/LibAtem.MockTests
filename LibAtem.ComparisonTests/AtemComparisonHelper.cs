@@ -18,6 +18,7 @@ namespace LibAtem.ComparisonTests
         public const int CommandWaitTime = 80;
 
         private readonly AtemClientWrapper _client;
+        public AtemClientWrapper Client => _client;
 
         private readonly List<ICommand> _receivedCommands;
 

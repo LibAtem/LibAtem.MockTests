@@ -53,7 +53,7 @@ namespace LibAtem.ComparisonTests
 
         public AtemClientWrapper()
         {
-            var logRepository = LogManager.GetRepository(Assembly.GetEntryAssembly());
+            var logRepository = LogManager.GetRepository(Assembly.GetExecutingAssembly());
             XmlConfigurator.Configure(logRepository, new FileInfo("log4net.config"));
             if (!logRepository.Configured) // Default to all on the console
                 BasicConfigurator.Configure(logRepository);

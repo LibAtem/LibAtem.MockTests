@@ -1,11 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Runtime.InteropServices;
 using BMDSwitcherAPI;
 using LibAtem.Commands;
 using LibAtem.Commands.Media;
 using LibAtem.Common;
+using LibAtem.ComparisonTests.MixEffects;
 using LibAtem.ComparisonTests.State;
 using LibAtem.ComparisonTests.Util;
 using Xunit;
@@ -24,25 +24,11 @@ namespace LibAtem.ComparisonTests.Media
             _client = client;
             _output = output;
         }
-
-        private List<Tuple<MediaPlayerId, IBMDSwitcherMediaPlayer>> GetMediaPlayers()
-        {
-            Guid itId = typeof(IBMDSwitcherMediaPlayerIterator).GUID;
-            _client.SdkSwitcher.CreateIterator(ref itId, out IntPtr itPtr);
-            IBMDSwitcherMediaPlayerIterator iterator = (IBMDSwitcherMediaPlayerIterator)Marshal.GetObjectForIUnknown(itPtr);
-
-            var result = new List<Tuple<MediaPlayerId, IBMDSwitcherMediaPlayer>>();
-            MediaPlayerId id = 0;
-            for (iterator.Next(out IBMDSwitcherMediaPlayer r); r != null; iterator.Next(out r))
-                result.Add(Tuple.Create(id++, r));
-
-            return result;
-        }
-
+        
         [Fact]
         public void TestMediaPlayerCount()
         {
-            List<Tuple<MediaPlayerId, IBMDSwitcherMediaPlayer>> players = GetMediaPlayers();
+            List<Tuple<MediaPlayerId, IBMDSwitcherMediaPlayer>> players = _client.GetMediaPlayers();
             Assert.Equal((uint) players.Count, _client.Profile.MediaPlayers);
         }
 
@@ -54,7 +40,7 @@ namespace LibAtem.ComparisonTests.Media
                 Tuple<MediaPlayerSource, uint>[] testValues = GetAllPossibleSources().ToArray();
                 Tuple<MediaPlayerSource, uint>[] badValues = GetBadSources().ToArray();
 
-                foreach (Tuple<MediaPlayerId, IBMDSwitcherMediaPlayer> player in GetMediaPlayers())
+                foreach (Tuple<MediaPlayerId, IBMDSwitcherMediaPlayer> player in _client.GetMediaPlayers())
                 {
                     ICommand Setter(Tuple<MediaPlayerSource, uint> v)
                     {
@@ -106,7 +92,7 @@ namespace LibAtem.ComparisonTests.Media
         {
             // TODO - ensure something loaded
 
-            foreach (Tuple<MediaPlayerId, IBMDSwitcherMediaPlayer> player in GetMediaPlayers())
+            foreach (Tuple<MediaPlayerId, IBMDSwitcherMediaPlayer> player in _client.GetMediaPlayers())
             {
                 player.Item2.SetSource(_BMDSwitcherMediaPlayerSourceType.bmdSwitcherMediaPlayerSourceTypeClip, 0);
             }
@@ -122,7 +108,7 @@ namespace LibAtem.ComparisonTests.Media
                 EnsureMediaPlayerHasClip();
                 helper.Sleep();
 
-                foreach (Tuple<MediaPlayerId, IBMDSwitcherMediaPlayer> player in GetMediaPlayers())
+                foreach (Tuple<MediaPlayerId, IBMDSwitcherMediaPlayer> player in _client.GetMediaPlayers())
                 {
                     ICommand Setter(bool v)
                     {
@@ -156,7 +142,7 @@ namespace LibAtem.ComparisonTests.Media
                 EnsureMediaPlayerHasClip();
                 helper.Sleep();
 
-                foreach (Tuple<MediaPlayerId, IBMDSwitcherMediaPlayer> player in GetMediaPlayers())
+                foreach (Tuple<MediaPlayerId, IBMDSwitcherMediaPlayer> player in _client.GetMediaPlayers())
                 {
                     ICommand Setter(uint v)
                     {
@@ -200,7 +186,7 @@ namespace LibAtem.ComparisonTests.Media
                 EnsureMediaPlayerHasClip();
                 helper.Sleep();
 
-                foreach (Tuple<MediaPlayerId, IBMDSwitcherMediaPlayer> player in GetMediaPlayers())
+                foreach (Tuple<MediaPlayerId, IBMDSwitcherMediaPlayer> player in _client.GetMediaPlayers())
                 {
                     ICommand Setter(bool v)
                     {

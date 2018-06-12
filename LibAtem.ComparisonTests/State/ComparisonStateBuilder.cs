@@ -72,6 +72,7 @@ namespace LibAtem.ComparisonTests.State
                 {typeof(AudioMixerTallyCommand), UpdateAudioMixerTallyState},
                 {typeof(AudioMixerMonitorGetCommand), UpdateAudioMonitorState},
                 {typeof(AudioMixerTalkbackPropertiesGetCommand), UpdateAudioTalkbackState},
+                {typeof(AudioMixerLevelsCommand), UpdateAudioLevels},
             };
         }
 
@@ -664,6 +665,29 @@ namespace LibAtem.ComparisonTests.State
 
             var props = state.Audio.Talkback;
             props.MuteSDI = cmd.MuteSDI;
+        }
+        private static void UpdateAudioLevels(LibAtem.DeviceProfile.DeviceProfile profile, ComparisonState state, ICommand rawCmd)
+        {
+            var cmd = (AudioMixerLevelsCommand)rawCmd;
+
+            var props = state.Audio;
+            props.ProgramLeft = cmd.MasterLeftLevel;
+            props.ProgramRight = cmd.MasterRightLevel;
+            props.ProgramPeakLeft = cmd.MasterLeftPeak;
+            props.ProgramPeakRight = cmd.MasterRightPeak;
+
+            // TODO more
+            foreach (AudioMixerLevelInput inp in cmd.Inputs)
+            {
+                if (!props.Inputs.TryGetValue((long)inp.Source, out ComparisonAudioInputState inProps))
+                    inProps = props.Inputs[(long)inp.Source];
+
+                inProps.LevelLeft = inp.LeftLevel;
+                inProps.LevelRight = inp.RightLevel;
+                inProps.PeakLeft = inp.LeftPeak;
+                inProps.PeakRight = inp.RightPeak;
+            }
+
         }
 
 

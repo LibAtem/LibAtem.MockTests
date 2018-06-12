@@ -27,6 +27,9 @@
   </ItemGroup>
 
   <ItemGroup>
+    <None Update="TestFiles\tone24bit.wav">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
     <None Update="TestFiles\wipe24bit.wav">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>

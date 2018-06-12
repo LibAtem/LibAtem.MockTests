@@ -45,7 +45,10 @@ namespace LibAtem.ComparisonTests.State.SDK
 
         public void LevelNotification(double left, double right, double peakLeft, double peakRight)
         {
-            // TODO
+            _state.LevelLeft = left;
+            _state.LevelRight = right;
+            _state.PeakLeft = peakLeft;
+            _state.PeakRight = peakRight;
         }
     }
 }

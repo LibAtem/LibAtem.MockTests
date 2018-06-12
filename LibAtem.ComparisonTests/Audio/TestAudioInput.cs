@@ -12,6 +12,7 @@ using System.Linq;
 using System.Runtime.InteropServices;
 using Xunit;
 using Xunit.Abstractions;
+using static LibAtem.ComparisonTests.Util.MediaPoolUtil;
 
 namespace LibAtem.ComparisonTests.Audio
 {
@@ -167,6 +168,84 @@ namespace LibAtem.ComparisonTests.Audio
                     ValueTypeComparer<double>.Run(helper, Setter, UpdateExpectedState, testValues);
                     ValueTypeComparer<double>.Fail(helper, Setter, UpdateBadState, badValues);
                 }
+            }
+        }
+
+        [Fact]
+        public void TestLevels()
+        {
+            using (var helper = new AtemComparisonHelper(Client, Output))
+            using (new MediaPlayingHelper(helper))
+            using (new SendAudioLevelsHelper(helper))
+            {
+                var levelsKey = new CommandQueueKey(new AudioMixerLevelsCommand());
+                helper.Sleep(240);
+                helper.SendAndWaitForMatching(levelsKey, null);
+
+                ComparisonAudioInputState mixer = helper.SdkState.Audio.Inputs[(long)AudioSource.MP1];
+                Assert.False(double.IsNegativeInfinity(mixer.LevelLeft));
+                Assert.False(double.IsNegativeInfinity(mixer.LevelRight));
+                Assert.False(double.IsNegativeInfinity(mixer.PeakLeft));
+                Assert.False(double.IsNegativeInfinity(mixer.PeakRight));
+                Assert.Equal(-1.9, mixer.LevelLeft, 1);
+                Assert.Equal(mixer.LevelLeft, mixer.LevelRight, 1);
+                Assert.Equal(mixer.PeakLeft, mixer.PeakRight, 1);
+                helper.AssertStatesMatch();
+
+                // Drop the volume, and check it got quieter
+                helper.SendAndWaitForMatching(levelsKey, new AudioMixerInputSetCommand
+                {
+                    Index = Common.AudioSource.MP1,
+                    Mask = AudioMixerInputSetCommand.MaskFlags.Gain,
+                    Gain = -10
+                });
+                helper.Sleep(240);
+                helper.SendAndWaitForMatching(levelsKey, null);
+
+                ComparisonAudioInputState mixer2 = helper.SdkState.Audio.Inputs[(long)AudioSource.MP1];
+                Assert.Equal(-11.9, mixer2.LevelLeft, 1);
+                Assert.Equal(mixer2.LevelLeft, mixer2.LevelRight, 1);
+                Assert.Equal(mixer2.PeakLeft, mixer2.PeakRight, 1);
+                Assert.Equal(mixer.PeakLeft, mixer2.PeakLeft, 1); // Shouldnt have changed
+                helper.AssertStatesMatch();
+
+                // Reset peaks and ensure they changed
+                helper.SendAndWaitForMatching(levelsKey, new AudioMixerResetPeaksCommand
+                {
+                    Mask = AudioMixerResetPeaksCommand.MaskFlags.Input,
+                    Source = AudioSource.MP1
+                });
+                helper.Sleep(240);
+                helper.SendAndWaitForMatching(levelsKey, null);
+
+                ComparisonAudioInputState mixer3 = helper.SdkState.Audio.Inputs[(long)AudioSource.MP1];
+                Assert.Equal(mixer2.LevelLeft, mixer3.LevelLeft, 1); // Shouldnt have changed
+                Assert.Equal(mixer3.LevelLeft, mixer3.LevelRight, 1);
+                Assert.Equal(-11.9, mixer3.PeakLeft, 1);
+                Assert.Equal(mixer3.PeakLeft, mixer3.PeakRight, 1);
+                // helper.AssertStatesMatch();
+
+                // Mute the media player
+                helper.SendAndWaitForMatching(levelsKey, new AudioMixerInputSetCommand
+                {
+                    Index = Common.AudioSource.MP1,
+                    Mask = AudioMixerInputSetCommand.MaskFlags.MixOption,
+                    MixOption = Common.AudioMixOption.Off
+                });
+                helper.Sleep(240);
+                helper.SendAndWaitForMatching(levelsKey, new AudioMixerResetPeaksCommand
+                {
+                    Mask = AudioMixerResetPeaksCommand.MaskFlags.Input,
+                    Source = AudioSource.MP1
+                });
+                helper.Sleep(240);
+                helper.SendAndWaitForMatching(levelsKey, null);
+
+                ComparisonAudioInputState mixer4 = helper.SdkState.Audio.Inputs[(long)AudioSource.MP1];
+                Assert.Equal(mixer3.LevelLeft, mixer4.LevelLeft, 1);
+                Assert.Equal(mixer3.LevelRight, mixer4.LevelRight, 1);
+                Assert.Equal(mixer3.PeakLeft, mixer4.PeakLeft, 1);
+                Assert.Equal(mixer3.PeakRight, mixer4.PeakRight, 1);
             }
         }
     }
