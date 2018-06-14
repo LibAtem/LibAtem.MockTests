@@ -213,7 +213,7 @@ namespace LibAtem.ComparisonTests.Audio
                 helper.SendAndWaitForMatching(levelsKey, new AudioMixerResetPeaksCommand
                 {
                     Mask = AudioMixerResetPeaksCommand.MaskFlags.Input,
-                    Source = AudioSource.MP1
+                    Input = AudioSource.MP1
                 });
                 helper.Sleep(240);
                 helper.SendAndWaitForMatching(levelsKey, null);
@@ -236,7 +236,7 @@ namespace LibAtem.ComparisonTests.Audio
                 helper.SendAndWaitForMatching(levelsKey, new AudioMixerResetPeaksCommand
                 {
                     Mask = AudioMixerResetPeaksCommand.MaskFlags.Input,
-                    Source = AudioSource.MP1
+                    Input = AudioSource.MP1
                 });
                 helper.Sleep(240);
                 helper.SendAndWaitForMatching(levelsKey, null);

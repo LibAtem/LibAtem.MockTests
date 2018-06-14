@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using LibAtem.Commands;
 using LibAtem.ComparisonTests.State;
+using LibAtem.DeviceProfile;
 using LibAtem.Util;
 
 namespace LibAtem.ComparisonTests.Util
@@ -22,7 +23,8 @@ namespace LibAtem.ComparisonTests.Util
 
             List<string> before = ComparisonStateComparer.AreEqual(origSdk, origLib);
 
-            helper.SendCommand(setter(newVal));
+            ICommand cmd = setter(newVal);
+            helper.SendCommand(cmd);
             helper.Sleep();
 
             List<string> sdk = ComparisonStateComparer.AreEqual(origSdk, helper.SdkState);
@@ -48,6 +50,13 @@ namespace LibAtem.ComparisonTests.Util
                     lib.ForEach(helper.Output.WriteLine);
                 }
 
+                helper.TestResult = false;
+            }
+
+            IReadOnlyList<string> cmdIssues = CommandValidator.Validate(helper.Profile, cmd);
+            if (cmdIssues.Count > 0)
+            {
+                cmdIssues.ForEach(helper.Output.WriteLine);
                 helper.TestResult = false;
             }
         }

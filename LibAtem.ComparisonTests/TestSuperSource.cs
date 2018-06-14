@@ -84,8 +84,8 @@ namespace LibAtem.ComparisonTests
 
                 ICommand Setter(VideoSource v) => new SuperSourcePropertiesSetCommand
                 {
-                    Mask = SuperSourcePropertiesSetCommand.MaskFlags.CutSource,
-                    ArtKeyInput = v,
+                    Mask = SuperSourcePropertiesSetCommand.MaskFlags.ArtCutSource,
+                    ArtCutSource = v,
                 };
 
                 void UpdateExpectedState(ComparisonState state, VideoSource v) => state.SuperSource.ArtKeyInput = v;
@@ -116,8 +116,8 @@ namespace LibAtem.ComparisonTests
 
                 ICommand Setter(VideoSource v) => new SuperSourcePropertiesSetCommand
                 {
-                    Mask = SuperSourcePropertiesSetCommand.MaskFlags.FillSource,
-                    ArtFillInput = v,
+                    Mask = SuperSourcePropertiesSetCommand.MaskFlags.ArtFillSource,
+                    ArtFillSource = v,
                 };
 
                 void UpdateExpectedState(ComparisonState state, VideoSource v)
@@ -144,7 +144,7 @@ namespace LibAtem.ComparisonTests
 
                 ICommand Setter(SuperSourceArtOption v) => new SuperSourcePropertiesSetCommand
                 {
-                    Mask = SuperSourcePropertiesSetCommand.MaskFlags.ArtForeground,
+                    Mask = SuperSourcePropertiesSetCommand.MaskFlags.ArtOption,
                     ArtOption = v,
                 };
 
@@ -166,7 +166,7 @@ namespace LibAtem.ComparisonTests
 
                 ICommand Setter(bool v) => new SuperSourcePropertiesSetCommand
                 {
-                    Mask = SuperSourcePropertiesSetCommand.MaskFlags.PreMultiplied,
+                    Mask = SuperSourcePropertiesSetCommand.MaskFlags.ArtPreMultiplied,
                     ArtPreMultiplied = v,
                 };
 
@@ -191,7 +191,7 @@ namespace LibAtem.ComparisonTests
 
                 ICommand Setter(double v) => new SuperSourcePropertiesSetCommand
                 {
-                    Mask = SuperSourcePropertiesSetCommand.MaskFlags.Clip,
+                    Mask = SuperSourcePropertiesSetCommand.MaskFlags.ArtClip,
                     ArtClip = v,
                 };
 
@@ -217,7 +217,7 @@ namespace LibAtem.ComparisonTests
 
                 ICommand Setter(double v) => new SuperSourcePropertiesSetCommand
                 {
-                    Mask = SuperSourcePropertiesSetCommand.MaskFlags.Gain,
+                    Mask = SuperSourcePropertiesSetCommand.MaskFlags.ArtGain,
                     ArtGain = v,
                 };
 
@@ -240,7 +240,7 @@ namespace LibAtem.ComparisonTests
 
                 ICommand Setter(bool v) => new SuperSourcePropertiesSetCommand
                 {
-                    Mask = SuperSourcePropertiesSetCommand.MaskFlags.InvertKey,
+                    Mask = SuperSourcePropertiesSetCommand.MaskFlags.ArtInvertKey,
                     ArtInvertKey = v,
                 };
 
@@ -315,7 +315,7 @@ namespace LibAtem.ComparisonTests
                     ICommand Setter(double v) => new SuperSourcePropertiesSetCommand
                     {
                         Mask = SuperSourcePropertiesSetCommand.MaskFlags.BorderInnerWidth,
-                        BorderWidthIn = v,
+                        BorderInnerWidth = v,
                     };
 
                     void UpdateExpectedState(ComparisonState state, double v) => state.SuperSource.BorderWidthIn = v;
@@ -340,7 +340,7 @@ namespace LibAtem.ComparisonTests
                     ICommand Setter(double v) => new SuperSourcePropertiesSetCommand
                     {
                         Mask = SuperSourcePropertiesSetCommand.MaskFlags.BorderInnerWidth,
-                        BorderWidthIn = v,
+                        BorderInnerWidth = v,
                     };
 
                     void UpdateExpectedState(ComparisonState state, double v) => state.SuperSource.BorderWidthIn = v;
@@ -376,7 +376,7 @@ namespace LibAtem.ComparisonTests
                     ICommand Setter(double v) => new SuperSourcePropertiesSetCommand
                     {
                         Mask = SuperSourcePropertiesSetCommand.MaskFlags.BorderOuterWidth,
-                        BorderWidthOut = v,
+                        BorderOuterWidth = v,
                     };
 
                     void UpdateExpectedState(ComparisonState state, double v) => state.SuperSource.BorderWidthOut = v;
@@ -401,7 +401,7 @@ namespace LibAtem.ComparisonTests
                     ICommand Setter(double v) => new SuperSourcePropertiesSetCommand
                     {
                         Mask = SuperSourcePropertiesSetCommand.MaskFlags.BorderOuterWidth,
-                        BorderWidthOut = v,
+                        BorderOuterWidth = v,
                     };
 
                     void UpdateExpectedState(ComparisonState state, double v) => state.SuperSource.BorderWidthOut = v;
@@ -433,7 +433,7 @@ namespace LibAtem.ComparisonTests
                 ICommand Setter(uint v) => new SuperSourcePropertiesSetCommand
                 {
                     Mask = SuperSourcePropertiesSetCommand.MaskFlags.BorderOuterSoftness,
-                    BorderSoftnessOut = v,
+                    BorderOuterSoftness = v,
                 };
 
                 void UpdateExpectedState(ComparisonState state, uint v) => state.SuperSource.BorderSoftnessOut = v;
@@ -459,7 +459,7 @@ namespace LibAtem.ComparisonTests
                 ICommand Setter(uint v) => new SuperSourcePropertiesSetCommand
                 {
                     Mask = SuperSourcePropertiesSetCommand.MaskFlags.BorderInnerSoftness,
-                    BorderSoftnessIn = v,
+                    BorderInnerSoftness = v,
                 };
 
                 void UpdateExpectedState(ComparisonState state, uint v) => state.SuperSource.BorderSoftnessIn = v;
@@ -620,7 +620,7 @@ namespace LibAtem.ComparisonTests
 
                 ICommand Setter(double v) => new SuperSourcePropertiesSetCommand
                 {
-                    Mask = SuperSourcePropertiesSetCommand.MaskFlags.LightSourceDirection,
+                    Mask = SuperSourcePropertiesSetCommand.MaskFlags.BorderLightSourceDirection,
                     BorderLightSourceDirection = v,
                 };
 
@@ -646,7 +646,7 @@ namespace LibAtem.ComparisonTests
 
                 ICommand Setter(uint v) => new SuperSourcePropertiesSetCommand
                 {
-                    Mask = SuperSourcePropertiesSetCommand.MaskFlags.LightSourceAltitude,
+                    Mask = SuperSourcePropertiesSetCommand.MaskFlags.BorderLightSourceAltitude,
                     BorderLightSourceAltitude = v,
                 };
 
@@ -707,7 +707,7 @@ namespace LibAtem.ComparisonTests
                     {
                         Mask = SuperSourceBoxSetCommand.MaskFlags.Source,
                         Index = box.Item1,
-                        InputSource = v,
+                        Source = v,
                     };
 
                     void UpdateExpectedState(ComparisonState state, VideoSource v) => state.SuperSource.Boxes[box.Item1].InputSource = v;

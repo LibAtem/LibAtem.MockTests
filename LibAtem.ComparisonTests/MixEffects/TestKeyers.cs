@@ -86,7 +86,7 @@ namespace LibAtem.ComparisonTests.MixEffects
                             {
                                 MixEffectIndex = key.Item1,
                                 KeyerIndex = key.Item2,
-                                Mask = MixEffectKeyTypeSetCommand.MaskFlags.Type,
+                                Mask = MixEffectKeyTypeSetCommand.MaskFlags.KeyType,
                                 KeyType = type,
                             };
                         }
@@ -147,7 +147,7 @@ namespace LibAtem.ComparisonTests.MixEffects
                 {
                     MixEffectIndex = k.Item1,
                     KeyerIndex = k.Item2,
-                    Mask = MixEffectKeyTypeSetCommand.MaskFlags.Type,
+                    Mask = MixEffectKeyTypeSetCommand.MaskFlags.KeyType,
                     KeyType = type,
                 });
             }
@@ -364,7 +364,7 @@ namespace LibAtem.ComparisonTests.MixEffects
                     {
                         MixEffectIndex = key.Item1,
                         KeyerIndex = key.Item2,
-                        Mask = MixEffectKeyMaskSetCommand.MaskFlags.Enabled,
+                        Mask = MixEffectKeyMaskSetCommand.MaskFlags.MaskEnabled,
                         MaskEnabled = v
                     };
 

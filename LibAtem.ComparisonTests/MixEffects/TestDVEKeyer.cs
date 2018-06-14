@@ -166,7 +166,7 @@ namespace LibAtem.ComparisonTests.MixEffects
                         MixEffectIndex = key.Item1,
                         KeyerIndex = key.Item2,
                         Mask = MixEffectKeyDVESetCommand.MaskFlags.BorderInnerWidth,
-                        InnerWidth = v,
+                        BorderInnerWidth = v,
                     };
 
                     void UpdateExpectedState(ComparisonState state, double v) => state.MixEffects[key.Item1].Keyers[key.Item2].DVE.InnerWidth = v;
@@ -193,7 +193,7 @@ namespace LibAtem.ComparisonTests.MixEffects
                         MixEffectIndex = key.Item1,
                         KeyerIndex = key.Item2,
                         Mask = MixEffectKeyDVESetCommand.MaskFlags.BorderInnerWidth,
-                        InnerWidth = v,
+                        BorderInnerWidth = v,
                     };
 
                     void UpdateExpectedState(ComparisonState state, double v) => state.MixEffects[key.Item1].Keyers[key.Item2].DVE.InnerWidth = v;
@@ -227,7 +227,7 @@ namespace LibAtem.ComparisonTests.MixEffects
                         MixEffectIndex = key.Item1,
                         KeyerIndex = key.Item2,
                         Mask = MixEffectKeyDVESetCommand.MaskFlags.BorderOuterWidth,
-                        OuterWidth = v,
+                        BorderOuterWidth = v,
                     };
 
                     void UpdateExpectedState(ComparisonState state, double v) => state.MixEffects[key.Item1].Keyers[key.Item2].DVE.OuterWidth = v;
@@ -254,7 +254,7 @@ namespace LibAtem.ComparisonTests.MixEffects
                         MixEffectIndex = key.Item1,
                         KeyerIndex = key.Item2,
                         Mask = MixEffectKeyDVESetCommand.MaskFlags.BorderOuterWidth,
-                        OuterWidth = v,
+                        BorderOuterWidth = v,
                     };
 
                     void UpdateExpectedState(ComparisonState state, double v) => state.MixEffects[key.Item1].Keyers[key.Item2].DVE.OuterWidth = v;
@@ -285,7 +285,7 @@ namespace LibAtem.ComparisonTests.MixEffects
                         MixEffectIndex = key.Item1,
                         KeyerIndex = key.Item2,
                         Mask = MixEffectKeyDVESetCommand.MaskFlags.BorderInnerSoftness,
-                        InnerSoftness = v,
+                        BorderInnerSoftness = v,
                     };
 
                     void UpdateExpectedState(ComparisonState state, uint v) => state.MixEffects[key.Item1].Keyers[key.Item2].DVE.InnerSoftness = v;
@@ -312,7 +312,7 @@ namespace LibAtem.ComparisonTests.MixEffects
                         MixEffectIndex = key.Item1,
                         KeyerIndex = key.Item2,
                         Mask = MixEffectKeyDVESetCommand.MaskFlags.BorderOuterSoftness,
-                        OuterSoftness = v,
+                        BorderOuterSoftness = v,
                     };
 
                     void UpdateExpectedState(ComparisonState state, uint v) => state.MixEffects[key.Item1].Keyers[key.Item2].DVE.OuterSoftness = v;
@@ -339,7 +339,7 @@ namespace LibAtem.ComparisonTests.MixEffects
                         MixEffectIndex = key.Item1,
                         KeyerIndex = key.Item2,
                         Mask = MixEffectKeyDVESetCommand.MaskFlags.BorderBevelSoftness,
-                        BevelSoftness = v,
+                        BorderBevelSoftness = v,
                     };
 
                     void UpdateExpectedState(ComparisonState state, uint v) => state.MixEffects[key.Item1].Keyers[key.Item2].DVE.BevelSoftness = v;
@@ -366,7 +366,7 @@ namespace LibAtem.ComparisonTests.MixEffects
                         MixEffectIndex = key.Item1,
                         KeyerIndex = key.Item2,
                         Mask = MixEffectKeyDVESetCommand.MaskFlags.BorderBevelPosition,
-                        BevelPosition = v,
+                        BorderBevelPosition = v,
                     };
 
                     void UpdateExpectedState(ComparisonState state, uint v) => state.MixEffects[key.Item1].Keyers[key.Item2].DVE.BevelPosition = v;
