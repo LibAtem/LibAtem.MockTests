@@ -104,7 +104,8 @@ namespace LibAtem.ComparisonTests2
 
             public override IEnumerable<CommandQueueKey> ExpectedCommands(bool goodValue, VideoSource v)
             {
-                yield return new CommandQueueKey(new DownstreamKeySourceGetCommand() { Index = _keyId });
+                if (goodValue)
+                    yield return new CommandQueueKey(new DownstreamKeySourceGetCommand() { Index = _keyId });
             }
         }
 
@@ -168,7 +169,8 @@ namespace LibAtem.ComparisonTests2
 
             public override IEnumerable<CommandQueueKey> ExpectedCommands(bool goodValue, VideoSource v)
             {
-                yield return new CommandQueueKey(new DownstreamKeySourceGetCommand() { Index = _keyId });
+                if (goodValue)
+                    yield return new CommandQueueKey(new DownstreamKeySourceGetCommand() { Index = _keyId });
             }
         }
 

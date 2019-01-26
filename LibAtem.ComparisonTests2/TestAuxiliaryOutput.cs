@@ -82,7 +82,10 @@ namespace LibAtem.ComparisonTests2
 
             public override IEnumerable<CommandQueueKey> ExpectedCommands(bool goodValue, long v)
             {
-                yield return new CommandQueueKey(new AuxSourceGetCommand() { Id = _auxId });
+                if (goodValue)
+                {
+                    yield return new CommandQueueKey(new AuxSourceGetCommand() { Id = _auxId });
+                }
             }
         }
 

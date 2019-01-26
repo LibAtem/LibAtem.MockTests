@@ -26,7 +26,7 @@ namespace LibAtem.ComparisonTests2
 
         public bool TestResult { get; set; } = true;
 
-        public AtemComparisonHelper(AtemClientWrapper client, ITestOutputHelper output = null)
+        public AtemComparisonHelper(AtemClientWrapper client, ITestOutputHelper output)
         {
             _client = client;
             Output = output;
@@ -177,27 +177,41 @@ namespace LibAtem.ComparisonTests2
             if (responseWait != null)
                 throw new Exception("a SendAndWaitForMatching is already running");
 
-            responseWait = new AutoResetEvent(false);
+            if (expected.Count == 0)
+            {
+                if (toSend != null)
+                    SendCommand(toSend);
+
+                Sleep(timeout);
+                return;
+            }
+
+            var libWait = new ManualResetEvent(false);
+            var sdkWait = new ManualResetEvent(false);
 
             var pendingLib = expected.ToList();
             var pendingSdk = expected.ToList();
 
             void HandlerLib(object sender, CommandQueueKey queueKey)
             {
+                Output.WriteLine("SendAndWaitForMatching: Got Lib change: " + queueKey);
+
                 lock (pendingLib)
                 {
                     pendingLib.Remove(queueKey);
-                    if (pendingLib.Count == 0 && pendingSdk.Count == 0)
-                        responseWait.Set();
+                    if (pendingLib.Count == 0)
+                        libWait.Set();
                 }
             }
             void HandlerSdk(object sender, CommandQueueKey queueKey)
             {
-                lock (pendingLib)
+                Output.WriteLine("SendAndWaitForMatching: Got Sdk change: " + queueKey);
+
+                lock (pendingSdk)
                 {
                     pendingSdk.Remove(queueKey);
-                    if (pendingLib.Count == 0 && pendingSdk.Count == 0)
-                        responseWait.Set();
+                    if (pendingSdk.Count == 0)
+                        sdkWait.Set();
                 }
             }
 
@@ -208,11 +222,20 @@ namespace LibAtem.ComparisonTests2
                 SendCommand(toSend);
 
             // Wait for the expected time. If no response, then go with last data
-            responseWait.WaitOne(timeout == -1 ? CommandWaitTime * 3 : timeout);
+            libWait.WaitOne(timeout == -1 ? CommandWaitTime * 3 : timeout);
+            // The Sdk doesn't send the same notifies if nothing changed, so once the lib has finished, wait a small time for sdk to finish up
+            sdkWait.WaitOne(timeout == -1 ? CommandWaitTime / 2 : timeout);
 
             _client.OnCommandKey -= HandlerLib;
             _client.OnSdkStateChange -= HandlerSdk;
-            responseWait = null;
+
+            if (pendingLib.Count > 0)
+                Output.WriteLine("SendAndWaitForMatching: Pending Lib changes: " + string.Join(", ", pendingLib));
+
+            if (pendingSdk.Count > 0)
+                Output.WriteLine("SendAndWaitForMatching: Pending Sdk changes: " + string.Join(", ", pendingSdk));
+
+            Output.WriteLine("");
         }
     }
 
