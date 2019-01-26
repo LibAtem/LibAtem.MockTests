@@ -47,11 +47,11 @@ namespace LibAtem.ComparisonTests2
 
             public override double[] GoodValues()
             {
-                return new double[] { 0, 100, 23, 87 };
+                return new double[] { 0, 87.4, 14.7, 99.9, 100, 0.1 };
             }
             public override double[] BadValues()
             {
-                return new double[] { 100.1, 101, -0.1, -1 };
+                return new double[] { 100.1, 110, 101, -0.01, -1, -10 };
             }
 
             public override IEnumerable<CommandQueueKey> ExpectedCommands(bool goodValue, double v)

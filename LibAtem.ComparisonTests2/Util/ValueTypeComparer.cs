@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using LibAtem.Commands;
+using LibAtem.Common;
 using LibAtem.ComparisonTests2.State;
 using LibAtem.DeviceProfile;
 using LibAtem.Util;
@@ -50,7 +51,14 @@ namespace LibAtem.ComparisonTests2.Util
 
            throw new NotImplementedException("GoodValues");
         }
-        public virtual  T[] BadValues() {
+        public virtual T[] BadValues() {
+            if (typeof(T) == typeof(VideoSource))
+            {
+                dynamic goodValues = GoodValues().ToList();
+                dynamic r = VideoSourceLists.All.Where(s => !goodValues.Contains(s)).ToArray();
+                return r;
+            }
+
             return new T[0];
         }
 

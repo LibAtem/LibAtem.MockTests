@@ -1,5 +1,7 @@
 ﻿using System;
 using BMDSwitcherAPI;
+using LibAtem.Commands;
+using LibAtem.Commands.SuperSource;
 using LibAtem.Common;
 
 namespace LibAtem.ComparisonTests2.State.SDK
@@ -8,11 +10,13 @@ namespace LibAtem.ComparisonTests2.State.SDK
     {
         private readonly ComparisonSuperSourceState _state;
         private readonly IBMDSwitcherInputSuperSource _props;
+        private readonly Action<CommandQueueKey> _onChange;
 
-        public SuperSourceCallback(ComparisonSuperSourceState state, IBMDSwitcherInputSuperSource props)
+        public SuperSourceCallback(ComparisonSuperSourceState state, IBMDSwitcherInputSuperSource props, Action<CommandQueueKey> onChange)
         {
             _state = state;
             _props = props;
+            _onChange = onChange;
         }
 
         public void Notify(_BMDSwitcherInputSuperSourceEventType eventType)
@@ -103,18 +107,24 @@ namespace LibAtem.ComparisonTests2.State.SDK
                 default:
                     throw new ArgumentOutOfRangeException(nameof(eventType), eventType, null);
             }
+
+            _onChange(new CommandQueueKey(new SuperSourcePropertiesGetCommand()));
         }
     }
 
     public sealed class SuperSourceBoxCallback : IBMDSwitcherSuperSourceBoxCallback, INotify<_BMDSwitcherSuperSourceBoxEventType>
     {
         private readonly ComparisonSuperSourceBoxState _state;
+        private readonly SuperSourceBoxId _index;
         private readonly IBMDSwitcherSuperSourceBox _props;
+        private readonly Action<CommandQueueKey> _onChange;
 
-        public SuperSourceBoxCallback(ComparisonSuperSourceBoxState state, IBMDSwitcherSuperSourceBox props)
+        public SuperSourceBoxCallback(ComparisonSuperSourceBoxState state, SuperSourceBoxId index, IBMDSwitcherSuperSourceBox props, Action<CommandQueueKey> onChange)
         {
             _state = state;
+            _index = index;
             _props = props;
+            _onChange = onChange;
         }
 
         public void Notify(_BMDSwitcherSuperSourceBoxEventType eventType)
@@ -164,6 +174,8 @@ namespace LibAtem.ComparisonTests2.State.SDK
                 default:
                     throw new ArgumentOutOfRangeException(nameof(eventType), eventType, null);
             }
+
+            _onChange(new CommandQueueKey(new SuperSourceBoxGetCommand() { Index = _index }));
         }
     }
 }

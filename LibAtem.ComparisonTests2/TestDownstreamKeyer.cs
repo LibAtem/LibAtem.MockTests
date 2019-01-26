@@ -79,11 +79,6 @@ namespace LibAtem.ComparisonTests2
             {
                 return VideoSourceLists.All.Where(s => s.IsAvailable(_helper.Profile) && s.IsAvailable(MixEffectBlockId.One) && s.IsAvailable(SourceAvailability.KeySource)).ToArray();
             }
-            public override VideoSource[] BadValues()
-            {
-                var testValues = GoodValues();
-                return VideoSourceLists.All.Where(s => !testValues.Contains(s)).ToArray();
-            }
 
             public override ICommand GenerateCommand(VideoSource v)
             {
@@ -141,11 +136,6 @@ namespace LibAtem.ComparisonTests2
             public override VideoSource[] GoodValues()
             {
                 return VideoSourceLists.All.Where(s => s.IsAvailable(_helper.Profile) && s.IsAvailable(MixEffectBlockId.One)).ToArray();
-            }
-            public override VideoSource[] BadValues()
-            {
-                var testValues = GoodValues();
-                return VideoSourceLists.All.Where(s => !testValues.Contains(s)).ToArray();
             }
 
             public override ICommand GenerateCommand(VideoSource v)
@@ -673,6 +663,7 @@ namespace LibAtem.ComparisonTests2
                 _sdk.SetMasked(1);
                 _sdk.SetMaskTop(5);
                 _sdk.SetMaskBottom(5);
+                _helper.Sleep();
             }
 
             protected double ClampValueToRange(bool goodValue, double v)
@@ -821,6 +812,7 @@ namespace LibAtem.ComparisonTests2
                 _sdk.SetMasked(1);
                 _sdk.SetMaskLeft(2);
                 _sdk.SetMaskRight(2);
+                _helper.Sleep();
             }
 
             protected double ClampValueToRange(bool goodValue, double v)
