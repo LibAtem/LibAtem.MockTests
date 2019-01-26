@@ -1,5 +1,7 @@
 ﻿using System;
 using BMDSwitcherAPI;
+using LibAtem.Commands;
+using LibAtem.Commands.MixEffects;
 using LibAtem.Common;
 
 namespace LibAtem.ComparisonTests2.State.SDK
@@ -7,12 +9,16 @@ namespace LibAtem.ComparisonTests2.State.SDK
     public sealed class MixEffectPropertiesCallback : IBMDSwitcherMixEffectBlockCallback, INotify<_BMDSwitcherMixEffectBlockPropertyId>
     {
         private readonly ComparisonMixEffectState _state;
+        private readonly MixEffectBlockId _meId;
         private readonly IBMDSwitcherMixEffectBlock _props;
+        private readonly Action<CommandQueueKey> _onChange;
 
-        public MixEffectPropertiesCallback(ComparisonMixEffectState state, IBMDSwitcherMixEffectBlock props)
+        public MixEffectPropertiesCallback(ComparisonMixEffectState state, MixEffectBlockId meId, IBMDSwitcherMixEffectBlock props, Action<CommandQueueKey> onChange)
         {
             _state = state;
+            _meId = meId;
             _props = props;
+            _onChange = onChange;
         }
 
         public void PropertyChanged(_BMDSwitcherMixEffectBlockPropertyId propertyId)
@@ -27,10 +33,12 @@ namespace LibAtem.ComparisonTests2.State.SDK
                 case _BMDSwitcherMixEffectBlockPropertyId.bmdSwitcherMixEffectBlockPropertyIdProgramInput:
                     _props.GetInt(_BMDSwitcherMixEffectBlockPropertyId.bmdSwitcherMixEffectBlockPropertyIdProgramInput, out long program);
                     _state.Program = (VideoSource) program;
+                    _onChange(new CommandQueueKey(new ProgramInputGetCommand() { Index = _meId }));
                     break;
                 case _BMDSwitcherMixEffectBlockPropertyId.bmdSwitcherMixEffectBlockPropertyIdPreviewInput:
                     _props.GetInt(_BMDSwitcherMixEffectBlockPropertyId.bmdSwitcherMixEffectBlockPropertyIdPreviewInput, out long preview);
                     _state.Preview = (VideoSource) preview;
+                    _onChange(new CommandQueueKey(new PreviewInputGetCommand() { Index = _meId }));
                     break;
                 // TODO - remainder
                 case _BMDSwitcherMixEffectBlockPropertyId.bmdSwitcherMixEffectBlockPropertyIdTransitionPosition:

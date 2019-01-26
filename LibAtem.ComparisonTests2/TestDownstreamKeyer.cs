@@ -43,12 +43,12 @@ namespace LibAtem.ComparisonTests2
             return result;
         }
 
-        private abstract class DownstreamKeyerTestDefition<T> : TestDefinitionBase<T>
+        private abstract class DownstreamKeyerTestDefinition<T> : TestDefinitionBase<T>
         {
             protected readonly IBMDSwitcherDownstreamKey _sdk;
             protected readonly DownstreamKeyId _keyId;
 
-            public DownstreamKeyerTestDefition(AtemComparisonHelper helper, Tuple<DownstreamKeyId, IBMDSwitcherDownstreamKey> keyer) : base(helper)
+            public DownstreamKeyerTestDefinition(AtemComparisonHelper helper, Tuple<DownstreamKeyId, IBMDSwitcherDownstreamKey> keyer) : base(helper)
             {
                 _sdk = keyer.Item2;
                 _keyId = keyer.Item1;
@@ -61,9 +61,9 @@ namespace LibAtem.ComparisonTests2
             }
         }
 
-        private class DownstreamKeyerCutSourceTestDefition : DownstreamKeyerTestDefition<VideoSource>
+        private class DownstreamKeyerCutSourceTestDefinition : DownstreamKeyerTestDefinition<VideoSource>
         {
-            public DownstreamKeyerCutSourceTestDefition(AtemComparisonHelper helper, Tuple<DownstreamKeyId, IBMDSwitcherDownstreamKey> keyer) : base(helper, keyer)
+            public DownstreamKeyerCutSourceTestDefinition(AtemComparisonHelper helper, Tuple<DownstreamKeyId, IBMDSwitcherDownstreamKey> keyer) : base(helper, keyer)
             {
             }
 
@@ -118,14 +118,14 @@ namespace LibAtem.ComparisonTests2
                     key.Item2.GetCutInputAvailabilityMask(out _BMDSwitcherInputAvailability availability);
                     Assert.Equal(_BMDSwitcherInputAvailability.bmdSwitcherInputAvailabilityInputCut | _BMDSwitcherInputAvailability.bmdSwitcherInputAvailabilityMixEffectBlock0, availability);
 
-                    new DownstreamKeyerCutSourceTestDefition(helper, key).Run();
+                    new DownstreamKeyerCutSourceTestDefinition(helper, key).Run();
                 }
             }
         }
 
-        private class DownstreamKeyerFillSourceTestDefition : DownstreamKeyerTestDefition<VideoSource>
+        private class DownstreamKeyerFillSourceTestDefinition : DownstreamKeyerTestDefinition<VideoSource>
         {
-            public DownstreamKeyerFillSourceTestDefition(AtemComparisonHelper helper, Tuple<DownstreamKeyId, IBMDSwitcherDownstreamKey> keyer) : base(helper, keyer)
+            public DownstreamKeyerFillSourceTestDefinition(AtemComparisonHelper helper, Tuple<DownstreamKeyId, IBMDSwitcherDownstreamKey> keyer) : base(helper, keyer)
             {
             }
 
@@ -182,14 +182,14 @@ namespace LibAtem.ComparisonTests2
                     key.Item2.GetFillInputAvailabilityMask(out _BMDSwitcherInputAvailability availability);
                     Assert.Equal(_BMDSwitcherInputAvailability.bmdSwitcherInputAvailabilityMixEffectBlock0, availability);
 
-                    new DownstreamKeyerFillSourceTestDefition(helper, key).Run();
+                    new DownstreamKeyerFillSourceTestDefinition(helper, key).Run();
                 }
             }
         }
 
-        private class DownstreamKeyerTieTestDefition : DownstreamKeyerTestDefition<bool>
+        private class DownstreamKeyerTieTestDefinition : DownstreamKeyerTestDefinition<bool>
         {
-            public DownstreamKeyerTieTestDefition(AtemComparisonHelper helper, Tuple<DownstreamKeyId, IBMDSwitcherDownstreamKey> keyer) : base(helper, keyer)
+            public DownstreamKeyerTieTestDefinition(AtemComparisonHelper helper, Tuple<DownstreamKeyId, IBMDSwitcherDownstreamKey> keyer) : base(helper, keyer)
             {
             }
 
@@ -229,14 +229,14 @@ namespace LibAtem.ComparisonTests2
             {
                 foreach (var key in GetKeyers())
                 {
-                    new DownstreamKeyerTieTestDefition(helper, key).Run();
+                    new DownstreamKeyerTieTestDefinition(helper, key).Run();
                 }
             }
         }
 
-        private class DownstreamKeyerRateTestDefition : DownstreamKeyerTestDefition<uint>
+        private class DownstreamKeyerRateTestDefinition : DownstreamKeyerTestDefinition<uint>
         {
-            public DownstreamKeyerRateTestDefition(AtemComparisonHelper helper, Tuple<DownstreamKeyId, IBMDSwitcherDownstreamKey> keyer) : base(helper, keyer)
+            public DownstreamKeyerRateTestDefinition(AtemComparisonHelper helper, Tuple<DownstreamKeyId, IBMDSwitcherDownstreamKey> keyer) : base(helper, keyer)
             {
             }
 
@@ -292,14 +292,14 @@ namespace LibAtem.ComparisonTests2
             {
                 foreach (var key in GetKeyers())
                 {
-                    new DownstreamKeyerRateTestDefition(helper, key).Run();
+                    new DownstreamKeyerRateTestDefinition(helper, key).Run();
                 }
             }
         }
 
-        private class DownstreamKeyerOnAirTestDefition : DownstreamKeyerTestDefition<bool>
+        private class DownstreamKeyerOnAirTestDefinition : DownstreamKeyerTestDefinition<bool>
         {
-            public DownstreamKeyerOnAirTestDefition(AtemComparisonHelper helper, Tuple<DownstreamKeyId, IBMDSwitcherDownstreamKey> keyer) : base(helper, keyer)
+            public DownstreamKeyerOnAirTestDefinition(AtemComparisonHelper helper, Tuple<DownstreamKeyId, IBMDSwitcherDownstreamKey> keyer) : base(helper, keyer)
             {
             }
 
@@ -339,7 +339,7 @@ namespace LibAtem.ComparisonTests2
             {
                 foreach (var key in GetKeyers())
                 {
-                    new DownstreamKeyerOnAirTestDefition(helper, key).Run();
+                    new DownstreamKeyerOnAirTestDefinition(helper, key).Run();
                 }
             }
         }
@@ -406,9 +406,9 @@ namespace LibAtem.ComparisonTests2
             }
         }
 
-        private class DownstreamKeyerPreMultipliedTestDefition : DownstreamKeyerTestDefition<bool>
+        private class DownstreamKeyerPreMultipliedTestDefinition : DownstreamKeyerTestDefinition<bool>
         {
-            public DownstreamKeyerPreMultipliedTestDefition(AtemComparisonHelper helper, Tuple<DownstreamKeyId, IBMDSwitcherDownstreamKey> keyer) : base(helper, keyer)
+            public DownstreamKeyerPreMultipliedTestDefinition(AtemComparisonHelper helper, Tuple<DownstreamKeyId, IBMDSwitcherDownstreamKey> keyer) : base(helper, keyer)
             {
             }
 
@@ -444,14 +444,14 @@ namespace LibAtem.ComparisonTests2
             {
                 foreach (var key in GetKeyers())
                 {
-                    new DownstreamKeyerPreMultipliedTestDefition(helper, key).Run();
+                    new DownstreamKeyerPreMultipliedTestDefinition(helper, key).Run();
                 }
             }
         }
 
-        private class DownstreamKeyerClipTestDefition : DownstreamKeyerTestDefition<double>
+        private class DownstreamKeyerClipTestDefinition : DownstreamKeyerTestDefinition<double>
         {
-            public DownstreamKeyerClipTestDefition(AtemComparisonHelper helper, Tuple<DownstreamKeyId, IBMDSwitcherDownstreamKey> keyer) : base(helper, keyer)
+            public DownstreamKeyerClipTestDefinition(AtemComparisonHelper helper, Tuple<DownstreamKeyId, IBMDSwitcherDownstreamKey> keyer) : base(helper, keyer)
             {
             }
 
@@ -501,14 +501,14 @@ namespace LibAtem.ComparisonTests2
             {
                 foreach (var key in GetKeyers())
                 {
-                    new DownstreamKeyerClipTestDefition(helper, key).Run();
+                    new DownstreamKeyerClipTestDefinition(helper, key).Run();
                 }
             }
         }
 
-        private class DownstreamKeyerGainTestDefition : DownstreamKeyerTestDefition<double>
+        private class DownstreamKeyerGainTestDefinition : DownstreamKeyerTestDefinition<double>
         {
-            public DownstreamKeyerGainTestDefition(AtemComparisonHelper helper, Tuple<DownstreamKeyId, IBMDSwitcherDownstreamKey> keyer) : base(helper, keyer)
+            public DownstreamKeyerGainTestDefinition(AtemComparisonHelper helper, Tuple<DownstreamKeyId, IBMDSwitcherDownstreamKey> keyer) : base(helper, keyer)
             {
             }
 
@@ -558,14 +558,14 @@ namespace LibAtem.ComparisonTests2
             {
                 foreach (var key in GetKeyers())
                 {
-                    new DownstreamKeyerGainTestDefition(helper, key).Run();
+                    new DownstreamKeyerGainTestDefinition(helper, key).Run();
                 }
             }
         }
 
-        private class DownstreamKeyerInverseTestDefition : DownstreamKeyerTestDefition<bool>
+        private class DownstreamKeyerInverseTestDefinition : DownstreamKeyerTestDefinition<bool>
         {
-            public DownstreamKeyerInverseTestDefition(AtemComparisonHelper helper, Tuple<DownstreamKeyId, IBMDSwitcherDownstreamKey> keyer) : base(helper, keyer)
+            public DownstreamKeyerInverseTestDefinition(AtemComparisonHelper helper, Tuple<DownstreamKeyId, IBMDSwitcherDownstreamKey> keyer) : base(helper, keyer)
             {
             }
 
@@ -601,14 +601,14 @@ namespace LibAtem.ComparisonTests2
             {
                 foreach (var key in GetKeyers())
                 {
-                    new DownstreamKeyerInverseTestDefition(helper, key).Run();
+                    new DownstreamKeyerInverseTestDefinition(helper, key).Run();
                 }
             }
         }
 
-        private class DownstreamKeyerMaskedTestDefition : DownstreamKeyerTestDefition<bool>
+        private class DownstreamKeyerMaskedTestDefinition : DownstreamKeyerTestDefinition<bool>
         {
-            public DownstreamKeyerMaskedTestDefition(AtemComparisonHelper helper, Tuple<DownstreamKeyId, IBMDSwitcherDownstreamKey> keyer) : base(helper, keyer)
+            public DownstreamKeyerMaskedTestDefinition(AtemComparisonHelper helper, Tuple<DownstreamKeyId, IBMDSwitcherDownstreamKey> keyer) : base(helper, keyer)
             {
             }
 
@@ -644,16 +644,16 @@ namespace LibAtem.ComparisonTests2
             {
                 foreach (var key in GetKeyers())
                 {
-                    new DownstreamKeyerMaskedTestDefition(helper, key).Run();
+                    new DownstreamKeyerMaskedTestDefinition(helper, key).Run();
                 }
             }
         }
 
-        private abstract class DownstreamKeyerMaskYTestDefition : DownstreamKeyerTestDefition<double>
+        private abstract class DownstreamKeyerMaskYTestDefinition : DownstreamKeyerTestDefinition<double>
         {
             private readonly VideoMode _mode;
 
-            public DownstreamKeyerMaskYTestDefition(AtemComparisonHelper helper, VideoMode mode, Tuple<DownstreamKeyId, IBMDSwitcherDownstreamKey> keyer) : base(helper, keyer)
+            public DownstreamKeyerMaskYTestDefinition(AtemComparisonHelper helper, VideoMode mode, Tuple<DownstreamKeyId, IBMDSwitcherDownstreamKey> keyer) : base(helper, keyer)
             {
                 _mode = mode;
             }
@@ -719,9 +719,9 @@ namespace LibAtem.ComparisonTests2
             }
         }
 
-        private class DownstreamKeyerMaskTopTestDefition : DownstreamKeyerMaskYTestDefition
+        private class DownstreamKeyerMaskTopTestDefinition : DownstreamKeyerMaskYTestDefinition
         {
-            public DownstreamKeyerMaskTopTestDefition(AtemComparisonHelper helper, VideoMode mode, Tuple<DownstreamKeyId, IBMDSwitcherDownstreamKey> keyer) : base(helper, mode, keyer)
+            public DownstreamKeyerMaskTopTestDefinition(AtemComparisonHelper helper, VideoMode mode, Tuple<DownstreamKeyId, IBMDSwitcherDownstreamKey> keyer) : base(helper, mode, keyer)
             {
             }
 
@@ -746,21 +746,21 @@ namespace LibAtem.ComparisonTests2
         {
             using (var helper = new AtemComparisonHelper(_client, _output))
             {
-                foreach (var mode in DownstreamKeyerMaskYTestDefition.VideoModes())
+                foreach (var mode in DownstreamKeyerMaskYTestDefinition.VideoModes())
                 {
                     helper.EnsureVideoMode(mode);
 
                     foreach (var key in GetKeyers())
                     {
-                        new DownstreamKeyerMaskTopTestDefition(helper, mode, key).Run();
+                        new DownstreamKeyerMaskTopTestDefinition(helper, mode, key).Run();
                     }
                 }
             }
         }
 
-        private class DownstreamKeyerMaskBottomTestDefition : DownstreamKeyerMaskYTestDefition
+        private class DownstreamKeyerMaskBottomTestDefinition : DownstreamKeyerMaskYTestDefinition
         {
-            public DownstreamKeyerMaskBottomTestDefition(AtemComparisonHelper helper, VideoMode mode, Tuple<DownstreamKeyId, IBMDSwitcherDownstreamKey> keyer) : base(helper, mode, keyer)
+            public DownstreamKeyerMaskBottomTestDefinition(AtemComparisonHelper helper, VideoMode mode, Tuple<DownstreamKeyId, IBMDSwitcherDownstreamKey> keyer) : base(helper, mode, keyer)
             {
             }
 
@@ -785,23 +785,23 @@ namespace LibAtem.ComparisonTests2
         {
             using (var helper = new AtemComparisonHelper(_client, _output))
             {
-                foreach (var mode in DownstreamKeyerMaskYTestDefition.VideoModes())
+                foreach (var mode in DownstreamKeyerMaskYTestDefinition.VideoModes())
                 {
                     helper.EnsureVideoMode(mode);
 
                     foreach (var key in GetKeyers())
                     {
-                        new DownstreamKeyerMaskBottomTestDefition(helper, mode, key).Run();
+                        new DownstreamKeyerMaskBottomTestDefinition(helper, mode, key).Run();
                     }
                 }
             }
         }
 
-        private abstract class DownstreamKeyerMaskXTestDefition : DownstreamKeyerTestDefition<double>
+        private abstract class DownstreamKeyerMaskXTestDefinition : DownstreamKeyerTestDefinition<double>
         {
             private readonly VideoMode _mode;
 
-            public DownstreamKeyerMaskXTestDefition(AtemComparisonHelper helper, VideoMode mode, Tuple<DownstreamKeyId, IBMDSwitcherDownstreamKey> keyer) : base(helper, keyer)
+            public DownstreamKeyerMaskXTestDefinition(AtemComparisonHelper helper, VideoMode mode, Tuple<DownstreamKeyId, IBMDSwitcherDownstreamKey> keyer) : base(helper, keyer)
             {
                 _mode = mode;
             }
@@ -867,9 +867,9 @@ namespace LibAtem.ComparisonTests2
             }
         }
 
-        private class DownstreamKeyerMaskLeftTestDefition : DownstreamKeyerMaskXTestDefition
+        private class DownstreamKeyerMaskLeftTestDefinition : DownstreamKeyerMaskXTestDefinition
         {
-            public DownstreamKeyerMaskLeftTestDefition(AtemComparisonHelper helper, VideoMode mode, Tuple<DownstreamKeyId, IBMDSwitcherDownstreamKey> keyer) : base(helper, mode, keyer)
+            public DownstreamKeyerMaskLeftTestDefinition(AtemComparisonHelper helper, VideoMode mode, Tuple<DownstreamKeyId, IBMDSwitcherDownstreamKey> keyer) : base(helper, mode, keyer)
             {
             }
 
@@ -894,21 +894,21 @@ namespace LibAtem.ComparisonTests2
         {
             using (var helper = new AtemComparisonHelper(_client, _output))
             {
-                foreach (var mode in DownstreamKeyerMaskYTestDefition.VideoModes())
+                foreach (var mode in DownstreamKeyerMaskYTestDefinition.VideoModes())
                 {
                     helper.EnsureVideoMode(mode);
 
                     foreach (var key in GetKeyers())
                     {
-                        new DownstreamKeyerMaskLeftTestDefition(helper, mode, key).Run();
+                        new DownstreamKeyerMaskLeftTestDefinition(helper, mode, key).Run();
                     }
                 }
             }
         }
 
-        private class DownstreamKeyerMaskRightTestDefition : DownstreamKeyerMaskXTestDefition
+        private class DownstreamKeyerMaskRightTestDefinition : DownstreamKeyerMaskXTestDefinition
         {
-            public DownstreamKeyerMaskRightTestDefition(AtemComparisonHelper helper, VideoMode mode, Tuple<DownstreamKeyId, IBMDSwitcherDownstreamKey> keyer) : base(helper, mode, keyer)
+            public DownstreamKeyerMaskRightTestDefinition(AtemComparisonHelper helper, VideoMode mode, Tuple<DownstreamKeyId, IBMDSwitcherDownstreamKey> keyer) : base(helper, mode, keyer)
             {
             }
 
@@ -933,13 +933,13 @@ namespace LibAtem.ComparisonTests2
         {
             using (var helper = new AtemComparisonHelper(_client, _output))
             {
-                foreach (var mode in DownstreamKeyerMaskYTestDefition.VideoModes())
+                foreach (var mode in DownstreamKeyerMaskYTestDefinition.VideoModes())
                 {
                     helper.EnsureVideoMode(mode);
 
                     foreach (var key in GetKeyers())
                     {
-                        new DownstreamKeyerMaskRightTestDefition(helper, mode, key).Run();
+                        new DownstreamKeyerMaskRightTestDefinition(helper, mode, key).Run();
                     }
                 }
             }

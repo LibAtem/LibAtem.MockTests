@@ -36,12 +36,12 @@ namespace LibAtem.ComparisonTests2
             }
         }
 
-        private class AuxSourceTestDefition : TestDefinitionBase<long>
+        private class AuxSourceTestDefinition : TestDefinitionBase<long>
         {
             private readonly IBMDSwitcherInputAux _sdk;
             private readonly AuxiliaryId _auxId;
 
-            public AuxSourceTestDefition(AtemComparisonHelper helper, IBMDSwitcherInputAux sdk, AuxiliaryId id) : base(helper)
+            public AuxSourceTestDefinition(AtemComparisonHelper helper, IBMDSwitcherInputAux sdk, AuxiliaryId id) : base(helper)
             {
                 _sdk = sdk;
                 _auxId = id;
@@ -101,7 +101,7 @@ namespace LibAtem.ComparisonTests2
                     aux.GetInputAvailabilityMask(out _BMDSwitcherInputAvailability availabilityMask);
                     Assert.Equal(availabilityMask, (_BMDSwitcherInputAvailability)((int)SourceAvailability.Auxiliary << 2));
 
-                    new AuxSourceTestDefition(helper, aux, auxId).Run();
+                    new AuxSourceTestDefinition(helper, aux, auxId).Run();
                 }
             }
         }

@@ -23,7 +23,6 @@ namespace LibAtem.ComparisonTests2
         private readonly List<ICommand> _receivedCommands;
 
         private AutoResetEvent responseWait;
-        private List<CommandQueueKey> responseTarget;
 
         public bool TestResult { get; set; } = true;
 
@@ -155,7 +154,6 @@ namespace LibAtem.ComparisonTests2
                 return;
 
             responseWait = new AutoResetEvent(false);
-            responseTarget = new List<CommandQueueKey> { key };
 
             void Handler (object sender, CommandQueueKey queueKey){
                 if (queueKey.Equals(key))
@@ -180,24 +178,40 @@ namespace LibAtem.ComparisonTests2
                 throw new Exception("a SendAndWaitForMatching is already running");
 
             responseWait = new AutoResetEvent(false);
-            responseTarget = expected;
 
-            void Handler(object sender, CommandQueueKey queueKey)
+            var pendingLib = expected.ToList();
+            var pendingSdk = expected.ToList();
+
+            void HandlerLib(object sender, CommandQueueKey queueKey)
             {
-                responseTarget.Remove(queueKey);
-                if (responseTarget.Count == 0)
-                    responseWait.Set();
+                lock (pendingLib)
+                {
+                    pendingLib.Remove(queueKey);
+                    if (pendingLib.Count == 0 && pendingSdk.Count == 0)
+                        responseWait.Set();
+                }
+            }
+            void HandlerSdk(object sender, CommandQueueKey queueKey)
+            {
+                lock (pendingLib)
+                {
+                    pendingSdk.Remove(queueKey);
+                    if (pendingLib.Count == 0 && pendingSdk.Count == 0)
+                        responseWait.Set();
+                }
             }
 
-            _client.OnCommandKey += Handler;
+            _client.OnCommandKey += HandlerLib;
+            _client.OnSdkStateChange += HandlerSdk;
 
             if (toSend != null)
                 SendCommand(toSend);
 
             // Wait for the expected time. If no response, then go with last data
-            responseWait.WaitOne(timeout == -1 ? CommandWaitTime : timeout);
+            responseWait.WaitOne(timeout == -1 ? CommandWaitTime * 3 : timeout);
 
-            _client.OnCommandKey -= Handler;
+            _client.OnCommandKey -= HandlerLib;
+            _client.OnSdkStateChange -= HandlerSdk;
             responseWait = null;
         }
     }

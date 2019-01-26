@@ -51,6 +51,9 @@ namespace LibAtem.ComparisonTests2
         public delegate void CommandKeyHandler(object sender, CommandQueueKey key);
         public event CommandKeyHandler OnCommandKey;
 
+        public delegate void StateChangeHandler(object sender, CommandQueueKey key);
+        public event StateChangeHandler OnSdkStateChange;
+
         public AtemClientWrapper()
         {
             var logRepository = LogManager.GetRepository(Assembly.GetExecutingAssembly());
@@ -86,6 +89,8 @@ namespace LibAtem.ComparisonTests2
 
             _sdkSwitcher.AddCallback(new SwitcherConnectionMonitor()); // TODO - make this monitor work better!
             _sdkState = new AtemSDKComparisonMonitor(_sdkSwitcher);
+
+            _sdkState.OnStateChange += (s, e) => OnSdkStateChange?.Invoke(s, e);
 
             WaitForHandshake();
         }

@@ -34,12 +34,12 @@ namespace LibAtem.ComparisonTests2
             }
         }
 
-        private abstract class ColorGeneratorTestDefition : TestDefinitionBase<double>
+        private abstract class ColorGeneratorTestDefinition : TestDefinitionBase<double>
         {
             protected readonly IBMDSwitcherInputColor _sdk;
             protected readonly ColorGeneratorId _colId;
 
-            public ColorGeneratorTestDefition(AtemComparisonHelper helper, IBMDSwitcherInputColor sdk, VideoSource id) : base(helper)
+            public ColorGeneratorTestDefinition(AtemComparisonHelper helper, IBMDSwitcherInputColor sdk, VideoSource id) : base(helper)
             {
                 _sdk = sdk;
                 _colId = AtemEnumMaps.GetSourceIdForGen(id);
@@ -60,9 +60,9 @@ namespace LibAtem.ComparisonTests2
             }
         }
 
-        private class ColorGeneratorHueTestDefition : ColorGeneratorTestDefition
+        private class ColorGeneratorHueTestDefinition : ColorGeneratorTestDefinition
         {
-            public ColorGeneratorHueTestDefition(AtemComparisonHelper helper, IBMDSwitcherInputColor sdk, VideoSource id) : base(helper, sdk, id)
+            public ColorGeneratorHueTestDefinition(AtemComparisonHelper helper, IBMDSwitcherInputColor sdk, VideoSource id) : base(helper, sdk, id)
             {
             }
 
@@ -112,14 +112,14 @@ namespace LibAtem.ComparisonTests2
             {
                 foreach (KeyValuePair<VideoSource, IBMDSwitcherInputColor> c in helper.GetSdkInputsOfType<IBMDSwitcherInputColor>())
                 {
-                    new ColorGeneratorHueTestDefition(helper, c.Value, c.Key).Run();
+                    new ColorGeneratorHueTestDefinition(helper, c.Value, c.Key).Run();
                 }
             }
         }
 
-        private class ColorGeneratorSaturationTestDefition : ColorGeneratorTestDefition
+        private class ColorGeneratorSaturationTestDefinition : ColorGeneratorTestDefinition
         {
-            public ColorGeneratorSaturationTestDefition(AtemComparisonHelper helper, IBMDSwitcherInputColor sdk, VideoSource id) : base(helper, sdk, id)
+            public ColorGeneratorSaturationTestDefinition(AtemComparisonHelper helper, IBMDSwitcherInputColor sdk, VideoSource id) : base(helper, sdk, id)
             {
             }
 
@@ -159,14 +159,14 @@ namespace LibAtem.ComparisonTests2
             {
                 foreach (KeyValuePair<VideoSource, IBMDSwitcherInputColor> c in helper.GetSdkInputsOfType<IBMDSwitcherInputColor>())
                 {
-                    new ColorGeneratorSaturationTestDefition(helper, c.Value, c.Key).Run();
+                    new ColorGeneratorSaturationTestDefinition(helper, c.Value, c.Key).Run();
                 }
             }
         }
 
-        private class ColorGeneratorLumaTestDefition : ColorGeneratorTestDefition
+        private class ColorGeneratorLumaTestDefinition : ColorGeneratorTestDefinition
         {
-            public ColorGeneratorLumaTestDefition(AtemComparisonHelper helper, IBMDSwitcherInputColor sdk, VideoSource id) : base(helper, sdk, id)
+            public ColorGeneratorLumaTestDefinition(AtemComparisonHelper helper, IBMDSwitcherInputColor sdk, VideoSource id) : base(helper, sdk, id)
             {
             }
 
@@ -206,7 +206,7 @@ namespace LibAtem.ComparisonTests2
             {
                 foreach (KeyValuePair<VideoSource, IBMDSwitcherInputColor> c in helper.GetSdkInputsOfType<IBMDSwitcherInputColor>())
                 {
-                    new ColorGeneratorLumaTestDefition(helper, c.Value, c.Key).Run();
+                    new ColorGeneratorLumaTestDefinition(helper, c.Value, c.Key).Run();
                 }
             }
         }

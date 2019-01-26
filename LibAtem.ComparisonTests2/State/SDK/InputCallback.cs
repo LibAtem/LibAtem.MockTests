@@ -1,5 +1,7 @@
 ﻿using System;
 using BMDSwitcherAPI;
+using LibAtem.Commands;
+using LibAtem.Commands.Settings;
 using LibAtem.Common;
 
 namespace LibAtem.ComparisonTests2.State.SDK
@@ -7,12 +9,16 @@ namespace LibAtem.ComparisonTests2.State.SDK
     public sealed class InputCallback : IBMDSwitcherInputCallback, INotify<_BMDSwitcherInputEventType>
     {
         private readonly ComparisonInputState _state;
+        private readonly VideoSource _id;
         private readonly IBMDSwitcherInput _props;
+        private readonly Action<CommandQueueKey> _onChange;
 
-        public InputCallback(ComparisonInputState state, IBMDSwitcherInput props)
+        public InputCallback(ComparisonInputState state, VideoSource id, IBMDSwitcherInput props, Action<CommandQueueKey> onChange)
         {
             _state = state;
+            _id = id;
             _props = props;
+            _onChange = onChange;
         }
 
         public void Notify(_BMDSwitcherInputEventType eventType)
@@ -51,6 +57,8 @@ namespace LibAtem.ComparisonTests2.State.SDK
                 default:
                     throw new ArgumentOutOfRangeException(nameof(eventType), eventType, null);
             }
+
+            _onChange(new CommandQueueKey(new InputPropertiesGetCommand() { Id = _id }));
         }
     }
 }
