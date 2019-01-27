@@ -336,7 +336,7 @@ namespace LibAtem.ComparisonTests2.State.SDK
                     throw new ArgumentOutOfRangeException(nameof(eventType), eventType, null);
             }
 
-            _onChange(new CommandQueueKey(new MixEffectKeyPatternGetCommand() { MixEffectIndex = _meId, KeyerIndex = _keyId }));
+            _onChange(new CommandQueueKey(new MixEffectKeyDVEGetCommand() { MixEffectIndex = _meId, KeyerIndex = _keyId }));
         }
     }
 
@@ -404,7 +404,7 @@ namespace LibAtem.ComparisonTests2.State.SDK
                     throw new ArgumentOutOfRangeException(nameof(eventType), eventType, null);
             }
 
-            _onChange(new CommandQueueKey(new MixEffectKeyPatternGetCommand() { MixEffectIndex = _meId, KeyerIndex = _keyId }));
+            _onChange(new CommandQueueKey(new MixEffectKeyFlyPropertiesGetCommand() { MixEffectIndex = _meId, KeyerIndex = _keyId }));
         }
     }
 

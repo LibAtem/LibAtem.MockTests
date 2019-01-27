@@ -2,11 +2,12 @@
 using LibAtem.Commands;
 using LibAtem.Commands.Macro;
 using LibAtem.Common;
-using LibAtem.ComparisonTests.MixEffects;
-using LibAtem.ComparisonTests.State;
-using LibAtem.ComparisonTests.Util;
+using LibAtem.ComparisonTests2.MixEffects;
+using LibAtem.ComparisonTests2.State;
+using LibAtem.ComparisonTests2.Util;
 using LibAtem.Net.DataTransfer;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Security.Cryptography;
@@ -14,10 +15,10 @@ using System.Threading;
 using Xunit;
 using Xunit.Abstractions;
 
-namespace LibAtem.ComparisonTests
+namespace LibAtem.ComparisonTests2
 {
     [Collection("Client")]
-    public class TestMacros : ComparisonTestBase
+    public class TestMacros : MixEffectsTestBase
     {
         public TestMacros(ITestOutputHelper output, AtemClientWrapper client) : base(output, client)
         {
@@ -73,20 +74,48 @@ namespace LibAtem.ComparisonTests
             Assert.Equal(maxCount, Client.Profile.MacroCount);
         }
 
+
+        private class MacroLoopTestDefinition : TestDefinitionBase<bool>
+        {
+            private readonly IBMDSwitcherMacroControl _sdk;
+
+            public MacroLoopTestDefinition(AtemComparisonHelper helper, IBMDSwitcherMacroControl sdk) : base(helper)
+            {
+                _sdk = sdk;
+            }
+
+            public override void Prepare()
+            {
+                // Ensure the first value will have a change
+                _sdk.SetLoop(0);
+            }
+
+            public override ICommand GenerateCommand(bool v)
+            {
+                return new MacroRunStatusSetCommand
+                {
+                    Mask = MacroRunStatusSetCommand.MaskFlags.Looping,
+                    Looping = v
+                };
+            }
+
+            public override void UpdateExpectedState(ComparisonState state, bool goodValue, bool v)
+            {
+                state.Macros.Loop = v;
+            }
+
+            public override IEnumerable<CommandQueueKey> ExpectedCommands(bool goodValue, bool v)
+            {
+                yield return new CommandQueueKey(new MacroRunStatusGetCommand());
+            }
+        }
+
         [Fact]
         public void TestLoop()
         {
             using (var helper = new AtemComparisonHelper(Client, Output))
             {
-                ICommand Setter(bool v) => new MacroRunStatusSetCommand()
-                {
-                    Mask = MacroRunStatusSetCommand.MaskFlags.Looping,
-                    Looping = v,
-                };
-
-                void UpdateExpectedState(ComparisonState state, bool v) => state.Macros.Loop = v;
-
-                ValueTypeComparer<bool>.Run(helper, Setter, UpdateExpectedState, new[] { true, false });
+                new MacroLoopTestDefinition(helper, GetMacroControl()).Run();
             }
         }
 
@@ -210,6 +239,8 @@ namespace LibAtem.ComparisonTests
                 Assert.True(mac.IsUsed);
                 Assert.Equal("lib-dummy", mac.Name);
                 Assert.Equal("d2", mac.Description);
+
+                helper.Sleep();
 
                 // Verify macros 
                 var pool = GetMacroPool();
