@@ -3,16 +3,19 @@ using System.Collections.Generic;
 using System.Runtime.InteropServices;
 using BMDSwitcherAPI;
 using Xunit;
+using Xunit.Abstractions;
 
-namespace LibAtem.ComparisonTests.Settings
+namespace LibAtem.ComparisonTests2.Settings
 {
     [Collection("Client")]
     public class TestMixMinusOutput
     {
+        private readonly ITestOutputHelper _output;
         private readonly AtemClientWrapper _client;
 
-        public TestMixMinusOutput(AtemClientWrapper client)
+        public TestMixMinusOutput(ITestOutputHelper output, AtemClientWrapper client)
         {
+            _output = output;
             _client = client;
         }
 
@@ -32,7 +35,7 @@ namespace LibAtem.ComparisonTests.Settings
         [Fact]
         public void TestMixMinusOutputCount()
         {
-            using (var helper = new AtemComparisonHelper(_client))
+            using (var helper = new AtemComparisonHelper(_client, _output))
             {
                 List<IBMDSwitcherMixMinusOutput> outputs = GetOutputs(helper);
                 Assert.Empty(outputs);

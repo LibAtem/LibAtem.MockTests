@@ -133,7 +133,7 @@ namespace LibAtem.ComparisonTests2.State.SDK
             {
                 Assert.Equal(0, id);
                 
-                var cb = new SerialPortPropertiesCallback(State.Settings, port);
+                var cb = new SerialPortPropertiesCallback(State.Settings, port, FireCommandKey);
                 port.AddCallback(cb);
                 _cleanupCallbacks.Add(() => port.RemoveCallback(cb));
                 TriggerAllChanged(cb);
@@ -306,7 +306,7 @@ namespace LibAtem.ComparisonTests2.State.SDK
         {
             ComparisonMixEffectTransitionState st = State.MixEffects[id].Transition;
 
-            var cb = new MixEffectTransitionPropertiesCallback(st, trans);
+            var cb = new MixEffectTransitionPropertiesCallback(st, id, trans, FireCommandKey);
             trans.AddCallback(cb);
             _cleanupCallbacks.Add(() => trans.RemoveCallback(cb));
 
@@ -317,7 +317,7 @@ namespace LibAtem.ComparisonTests2.State.SDK
         {
             ComparisonMixEffectTransitionMixState st = State.MixEffects[id].Transition.Mix;
 
-            var cb = new MixEffectTransitionMixCallback(st, dip);
+            var cb = new MixEffectTransitionMixCallback(st, id, dip, FireCommandKey);
             dip.AddCallback(cb);
             _cleanupCallbacks.Add(() => dip.RemoveCallback(cb));
 
@@ -328,7 +328,7 @@ namespace LibAtem.ComparisonTests2.State.SDK
         {
             ComparisonMixEffectTransitionDipState st = State.MixEffects[id].Transition.Dip;
 
-            var cb = new MixEffectTransitionDipCallback(st, dip);
+            var cb = new MixEffectTransitionDipCallback(st, id, dip, FireCommandKey);
             dip.AddCallback(cb);
             _cleanupCallbacks.Add(() => dip.RemoveCallback(cb));
 
@@ -339,7 +339,7 @@ namespace LibAtem.ComparisonTests2.State.SDK
         {
             ComparisonMixEffectTransitionWipeState st = State.MixEffects[id].Transition.Wipe;
 
-            var cb = new MixEffectTransitionWipeCallback(st, wipe);
+            var cb = new MixEffectTransitionWipeCallback(st, id, wipe, FireCommandKey);
             wipe.AddCallback(cb);
             _cleanupCallbacks.Add(() => wipe.RemoveCallback(cb));
 
@@ -350,7 +350,7 @@ namespace LibAtem.ComparisonTests2.State.SDK
         {
             ComparisonMixEffectTransitionStingerState st = State.MixEffects[id].Transition.Stinger;
 
-            var cb = new MixEffectTransitionStingerCallback(st, stinger);
+            var cb = new MixEffectTransitionStingerCallback(st, id, stinger, FireCommandKey);
             stinger.AddCallback(cb);
             _cleanupCallbacks.Add(() => stinger.RemoveCallback(cb));
 
@@ -361,7 +361,7 @@ namespace LibAtem.ComparisonTests2.State.SDK
         {
             ComparisonMixEffectTransitionDVEState st = State.MixEffects[id].Transition.DVE;
 
-            var cb = new MixEffectTransitionDVECallback(st, dve);
+            var cb = new MixEffectTransitionDVECallback(st, id, dve, FireCommandKey);
             dve.AddCallback(cb);
             _cleanupCallbacks.Add(() => dve.RemoveCallback(cb));
 

@@ -6,12 +6,12 @@ using BMDSwitcherAPI;
 using LibAtem.Commands;
 using LibAtem.Commands.Settings;
 using LibAtem.Common;
-using LibAtem.ComparisonTests.State;
-using LibAtem.ComparisonTests.Util;
+using LibAtem.ComparisonTests2.State;
+using LibAtem.ComparisonTests2.Util;
 using Xunit;
 using Xunit.Abstractions;
 
-namespace LibAtem.ComparisonTests.Settings
+namespace LibAtem.ComparisonTests2.Settings
 {
     [Collection("Client")]
     public class TestSerialPort
@@ -38,15 +38,10 @@ namespace LibAtem.ComparisonTests.Settings
             return result;
         }
 
-        private static IBMDSwitcherSerialPort GetPort(AtemComparisonHelper helper)
-        {
-            return GetPorts(helper).FirstOrDefault();
-        }
-
         [Fact]
         public void TestSerialPortCount()
         {
-            using (var helper = new AtemComparisonHelper(_client))
+            using (var helper = new AtemComparisonHelper(_client, _output))
             {
                 List<IBMDSwitcherSerialPort> ports = GetPorts(helper);
                 Assert.Equal((int) helper.Profile.SerialPort, ports.Count);
@@ -54,17 +49,53 @@ namespace LibAtem.ComparisonTests.Settings
             }
         }
 
-        [Fact]
+        private class SerialPortFunctionTestDefinition : TestDefinitionBase<SerialMode>
+        {
+            private readonly IBMDSwitcherSerialPort _sdk;
+
+            public SerialPortFunctionTestDefinition(AtemComparisonHelper helper, IBMDSwitcherSerialPort sdk) : base(helper)
+            {
+                _sdk = sdk;
+            }
+
+            public override void Prepare()
+            {
+                // Ensure the first value will have a change
+                _sdk.SetFunction(AtemEnumMaps.SerialModeMap.Values.ToArray()[1]);
+            }
+
+            public override SerialMode[] GoodValues()
+            {
+                return AtemEnumMaps.SerialModeMap.Keys.ToArray();
+            }
+
+            public override ICommand GenerateCommand(SerialMode v)
+            {
+                return new SerialPortModeCommand
+                {
+                    SerialMode = v
+                };
+            }
+
+            public override void UpdateExpectedState(ComparisonState state, bool goodValue, SerialMode v)
+            {
+                state.Settings.SerialMode = v;
+            }
+
+            public override IEnumerable<CommandQueueKey> ExpectedCommands(bool goodValue, SerialMode v)
+            {
+                yield return new CommandQueueKey(new SerialPortModeCommand());
+            }
+        }
+
+
+        [SkippableFact]
         public void TestSerialPortFunction()
         {
-            using (var helper = new AtemComparisonHelper(_client))
+            using (var helper = new AtemComparisonHelper(_client, _output))
             {
-                IBMDSwitcherSerialPort port = GetPort(helper);
-                if (port == null)
-                {
-                    _output.WriteLine("No serial ports on device. Skipping tests");
-                    return;
-                }
+                IBMDSwitcherSerialPort port = GetPorts(helper).FirstOrDefault();
+                Skip.If(port == null, "Model does not have a serial port");
 
                 foreach (KeyValuePair<SerialMode, _BMDSwitcherSerialPortFunction> func in AtemEnumMaps.SerialModeMap)
                 {
@@ -72,13 +103,7 @@ namespace LibAtem.ComparisonTests.Settings
                     Assert.NotEqual(0, supported);
                 }
 
-                ICommand Setter(SerialMode v) => new SerialPortModeCommand { SerialMode = v };
-
-                void UpdateExpectedState(ComparisonState state, SerialMode v) => state.Settings.SerialMode = v;
-
-                SerialMode[] newVals = AtemEnumMaps.SerialModeMap.Keys.ToArray();
-
-                ValueTypeComparer<SerialMode>.Run(helper, Setter, UpdateExpectedState, newVals);
+                new SerialPortFunctionTestDefinition(helper, port).Run();
             }
         }
     }

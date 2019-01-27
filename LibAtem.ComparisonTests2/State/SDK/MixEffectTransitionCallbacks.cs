@@ -1,5 +1,7 @@
 ﻿using System;
 using BMDSwitcherAPI;
+using LibAtem.Commands;
+using LibAtem.Commands.MixEffects.Transition;
 using LibAtem.Common;
 
 namespace LibAtem.ComparisonTests2.State.SDK
@@ -7,12 +9,16 @@ namespace LibAtem.ComparisonTests2.State.SDK
     public sealed class MixEffectTransitionPropertiesCallback : IBMDSwitcherTransitionParametersCallback, INotify<_BMDSwitcherTransitionParametersEventType>
     {
         private readonly ComparisonMixEffectTransitionState _state;
+        private readonly MixEffectBlockId _id;
         private readonly IBMDSwitcherTransitionParameters _props;
+        private readonly Action<CommandQueueKey> _onChange;
 
-        public MixEffectTransitionPropertiesCallback(ComparisonMixEffectTransitionState state, IBMDSwitcherTransitionParameters props)
+        public MixEffectTransitionPropertiesCallback(ComparisonMixEffectTransitionState state, MixEffectBlockId id, IBMDSwitcherTransitionParameters props, Action<CommandQueueKey> onChange)
         {
             _state = state;
+            _id = id;
             _props = props;
+            _onChange = onChange;
         }
 
         public void Notify(_BMDSwitcherTransitionParametersEventType eventType)
@@ -39,17 +45,23 @@ namespace LibAtem.ComparisonTests2.State.SDK
             }
             _props.GetNextTransitionSelection(out _BMDSwitcherTransitionSelection nextSelection);
             _state.NextSelection = (TransitionLayer)nextSelection;
+
+            _onChange(new CommandQueueKey(new TransitionPropertiesGetCommand() { Index = _id }));
         }
     }
     public sealed class MixEffectTransitionMixCallback : IBMDSwitcherTransitionMixParametersCallback, INotify<_BMDSwitcherTransitionMixParametersEventType>
     {
         private readonly ComparisonMixEffectTransitionMixState _state;
+        private readonly MixEffectBlockId _id;
         private readonly IBMDSwitcherTransitionMixParameters _props;
+        private readonly Action<CommandQueueKey> _onChange;
 
-        public MixEffectTransitionMixCallback(ComparisonMixEffectTransitionMixState state, IBMDSwitcherTransitionMixParameters props)
+        public MixEffectTransitionMixCallback(ComparisonMixEffectTransitionMixState state, MixEffectBlockId id, IBMDSwitcherTransitionMixParameters props, Action<CommandQueueKey> onChange)
         {
             _state = state;
+            _id = id;
             _props = props;
+            _onChange = onChange;
         }
 
         public void Notify(_BMDSwitcherTransitionMixParametersEventType eventType)
@@ -63,18 +75,24 @@ namespace LibAtem.ComparisonTests2.State.SDK
                 default:
                     throw new ArgumentOutOfRangeException(nameof(eventType), eventType, null);
             }
+
+            _onChange(new CommandQueueKey(new TransitionMixGetCommand() { Index = _id }));
         }
     }
 
     public sealed class MixEffectTransitionDipCallback : IBMDSwitcherTransitionDipParametersCallback, INotify<_BMDSwitcherTransitionDipParametersEventType>
     {
         private readonly ComparisonMixEffectTransitionDipState _state;
+        private readonly MixEffectBlockId _id;
         private readonly IBMDSwitcherTransitionDipParameters _props;
+        private readonly Action<CommandQueueKey> _onChange;
 
-        public MixEffectTransitionDipCallback(ComparisonMixEffectTransitionDipState state, IBMDSwitcherTransitionDipParameters props)
+        public MixEffectTransitionDipCallback(ComparisonMixEffectTransitionDipState state, MixEffectBlockId id, IBMDSwitcherTransitionDipParameters props, Action<CommandQueueKey> onChange)
         {
             _state = state;
+            _id = id;
             _props = props;
+            _onChange = onChange;
         }
 
         public void Notify(_BMDSwitcherTransitionDipParametersEventType eventType)
@@ -92,18 +110,24 @@ namespace LibAtem.ComparisonTests2.State.SDK
                 default:
                     throw new ArgumentOutOfRangeException(nameof(eventType), eventType, null);
             }
+
+            _onChange(new CommandQueueKey(new TransitionDipGetCommand() { Index = _id }));
         }
     }
 
     public sealed class MixEffectTransitionWipeCallback : IBMDSwitcherTransitionWipeParametersCallback, INotify<_BMDSwitcherTransitionWipeParametersEventType>
     {
         private readonly ComparisonMixEffectTransitionWipeState _state;
+        private readonly MixEffectBlockId _id;
         private readonly IBMDSwitcherTransitionWipeParameters _props;
+        private readonly Action<CommandQueueKey> _onChange;
 
-        public MixEffectTransitionWipeCallback(ComparisonMixEffectTransitionWipeState state, IBMDSwitcherTransitionWipeParameters props)
+        public MixEffectTransitionWipeCallback(ComparisonMixEffectTransitionWipeState state, MixEffectBlockId id, IBMDSwitcherTransitionWipeParameters props, Action<CommandQueueKey> onChange)
         {
             _state = state;
+            _id = id;
             _props = props;
+            _onChange = onChange;
         }
 
         public void Notify(_BMDSwitcherTransitionWipeParametersEventType eventType)
@@ -153,18 +177,24 @@ namespace LibAtem.ComparisonTests2.State.SDK
                 default:
                     throw new ArgumentOutOfRangeException(nameof(eventType), eventType, null);
             }
+
+            _onChange(new CommandQueueKey(new TransitionWipeGetCommand() { Index = _id }));
         }
     }
 
     public sealed class MixEffectTransitionStingerCallback : IBMDSwitcherTransitionStingerParametersCallback, INotify<_BMDSwitcherTransitionStingerParametersEventType>
     {
         private readonly ComparisonMixEffectTransitionStingerState _state;
+        private readonly MixEffectBlockId _id;
         private readonly IBMDSwitcherTransitionStingerParameters _props;
+        private readonly Action<CommandQueueKey> _onChange;
 
-        public MixEffectTransitionStingerCallback(ComparisonMixEffectTransitionStingerState state, IBMDSwitcherTransitionStingerParameters props)
+        public MixEffectTransitionStingerCallback(ComparisonMixEffectTransitionStingerState state, MixEffectBlockId id, IBMDSwitcherTransitionStingerParameters props, Action<CommandQueueKey> onChange)
         {
             _state = state;
+            _id = id;
             _props = props;
+            _onChange = onChange;
         }
 
         public void Notify(_BMDSwitcherTransitionStingerParametersEventType eventType)
@@ -210,18 +240,24 @@ namespace LibAtem.ComparisonTests2.State.SDK
                 default:
                     throw new ArgumentOutOfRangeException(nameof(eventType), eventType, null);
             }
+
+            _onChange(new CommandQueueKey(new TransitionStingerGetCommand() { Index = _id }));
         }
     }
 
     public sealed class MixEffectTransitionDVECallback : IBMDSwitcherTransitionDVEParametersCallback, INotify<_BMDSwitcherTransitionDVEParametersEventType>
     {
         private readonly ComparisonMixEffectTransitionDVEState _state;
+        private readonly MixEffectBlockId _id;
         private readonly IBMDSwitcherTransitionDVEParameters _props;
+        private readonly Action<CommandQueueKey> _onChange;
 
-        public MixEffectTransitionDVECallback(ComparisonMixEffectTransitionDVEState state, IBMDSwitcherTransitionDVEParameters props)
+        public MixEffectTransitionDVECallback(ComparisonMixEffectTransitionDVEState state, MixEffectBlockId id, IBMDSwitcherTransitionDVEParameters props, Action<CommandQueueKey> onChange)
         {
             _state = state;
+            _id = id;
             _props = props;
+            _onChange = onChange;
         }
 
         public void Notify(_BMDSwitcherTransitionDVEParametersEventType eventType)
@@ -279,6 +315,8 @@ namespace LibAtem.ComparisonTests2.State.SDK
                 default:
                     throw new ArgumentOutOfRangeException(nameof(eventType), eventType, null);
             }
+
+            _onChange(new CommandQueueKey(new TransitionDVEGetCommand() { Index = _id }));
         }
     }
 }
