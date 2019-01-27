@@ -152,7 +152,7 @@ namespace LibAtem.ComparisonTests2.State.SDK
             for (iterator.Next(out IBMDSwitcherMultiView mv); mv != null; iterator.Next(out mv))
             {
                 State.Settings.MultiViews[id] = new ComparisonSettingsMultiViewState();
-                var cb = new MultiViewPropertiesCallback(State.Settings.MultiViews[id], mv);
+                var cb = new MultiViewPropertiesCallback(State.Settings.MultiViews[id], id, mv, FireCommandKey);
                 mv.AddCallback(cb);
                 _cleanupCallbacks.Add(() => mv.RemoveCallback(cb));
                 TriggerAllChanged(cb);

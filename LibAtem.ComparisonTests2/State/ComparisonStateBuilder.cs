@@ -403,8 +403,11 @@ namespace LibAtem.ComparisonTests2.State
             //props.SafeAreaEnabled = cmd.SafeAreaEnabled;
             props.ProgramPreviewSwapped = cmd.ProgramPreviewSwapped;
 
-            props.Windows[0].SupportsVuMeter = props.ProgramPreviewSwapped;
-            props.Windows[1].SupportsVuMeter = !props.ProgramPreviewSwapped;
+            if (profile.MultiView.VuMeters)
+            {
+                props.Windows[0].SupportsVuMeter = props.ProgramPreviewSwapped;
+                props.Windows[1].SupportsVuMeter = !props.ProgramPreviewSwapped;
+            }
         }
 
         private static void UpdateSettingsMultiviewerWindowInputProperties(LibAtem.DeviceProfile.DeviceProfile profile, ComparisonState state, ICommand rawCmd)

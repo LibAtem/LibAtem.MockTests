@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Linq;
 using BMDSwitcherAPI;
+using LibAtem.Commands;
+using LibAtem.Commands.Settings.Multiview;
 using LibAtem.Common;
 using LibAtem.Util;
 
@@ -9,12 +11,16 @@ namespace LibAtem.ComparisonTests2.State.SDK
     public sealed class MultiViewPropertiesCallback : IBMDSwitcherMultiViewCallback, INotify<_BMDSwitcherMultiViewEventType>
     {
         private readonly ComparisonSettingsMultiViewState _state;
+        private readonly uint _id;
         private readonly IBMDSwitcherMultiView _props;
+        private readonly Action<CommandQueueKey> _onChange;
 
-        public MultiViewPropertiesCallback(ComparisonSettingsMultiViewState state, IBMDSwitcherMultiView props)
+        public MultiViewPropertiesCallback(ComparisonSettingsMultiViewState state, uint id, IBMDSwitcherMultiView props, Action<CommandQueueKey> onChange)
         {
             _state = state;
+            _id = id;
             _props = props;
+            _onChange = onChange;
         }
 
         public void Notify(_BMDSwitcherMultiViewEventType eventType)
@@ -29,8 +35,11 @@ namespace LibAtem.ComparisonTests2.State.SDK
                     break;
                 default:
                     Notify(eventType, 0);
+                    _onChange(new CommandQueueKey(new MultiviewPropertiesGetCommand() { MultiviewIndex = _id }));
                     break;
             }
+
+            _onChange(new CommandQueueKey(new MultiviewPropertiesGetCommand()));
         }
 
         public void Notify(_BMDSwitcherMultiViewEventType eventType, int window)
@@ -46,8 +55,11 @@ namespace LibAtem.ComparisonTests2.State.SDK
                     _state.Windows[window].Source = (VideoSource) input;
                     break;
                 case _BMDSwitcherMultiViewEventType.bmdSwitcherMultiViewEventTypeCurrentInputSupportsVuMeterChanged:
-                    //_props.CurrentInputSupportsVuMeter((uint)window, out int supportsVu);
-                    //_state.Windows[window].SupportsVuMeter = supportsVu != 0;
+                    _props.SupportsVuMeters(out int supportsVu);
+                    if (supportsVu != 0)
+                        _props.CurrentInputSupportsVuMeter((uint)window, out supportsVu);
+                    _state.Windows[window].SupportsVuMeter = supportsVu != 0;
+                    _onChange(new CommandQueueKey(new MultiviewWindowVuMeterGetCommand() { MultiviewIndex = _id, WindowIndex = (uint)window }));
                     break;
                 case _BMDSwitcherMultiViewEventType.bmdSwitcherMultiViewEventTypeVuMeterEnabledChanged:
                     //_props.GetVuMeterEnabled((uint)window, out int vuEnabled);
@@ -68,6 +80,8 @@ namespace LibAtem.ComparisonTests2.State.SDK
                 default:
                     throw new ArgumentOutOfRangeException(nameof(eventType), eventType, null);
             }
+
+            _onChange(new CommandQueueKey(new MultiviewPropertiesGetCommand()));
         }
     }
 }
