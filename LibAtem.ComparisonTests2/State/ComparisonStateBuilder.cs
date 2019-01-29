@@ -263,26 +263,26 @@ namespace LibAtem.ComparisonTests2.State
             var cmd = (MixEffectKeyFlyKeyframeGetCommand)rawCmd;
             var props = state.MixEffects[cmd.MixEffectIndex].Keyers[cmd.KeyerIndex].Fly.Frames[cmd.KeyFrame];
 
-            props.SizeX = cmd.XSize;
-            props.SizeY = cmd.YSize;
-            props.PositionX = cmd.XPosition;
-            props.PositionY = cmd.YPosition;
+            props.XSize = cmd.XSize;
+            props.YSize = cmd.YSize;
+            props.XPosition = cmd.XPosition;
+            props.YPosition = cmd.YPosition;
             props.Rotation = cmd.Rotation;
 
-            props.OuterWidth = cmd.OuterWidth;
-            props.InnerWidth = cmd.InnerWidth;
-            props.OuterSoftness = cmd.OuterSoftness;
-            props.InnerSoftness = cmd.InnerSoftness;
-            props.BevelSoftness = cmd.BevelSoftness;
-            props.BevelPosition = cmd.BevelPosition;
+            props.BorderOuterWidth = cmd.OuterWidth;
+            props.BorderInnerWidth = cmd.InnerWidth;
+            props.BorderOuterSoftness = cmd.OuterSoftness;
+            props.BorderInnerSoftness = cmd.InnerSoftness;
+            props.BorderBevelSoftness = cmd.BevelSoftness;
+            props.BorderBevelPosition = cmd.BevelPosition;
 
             props.BorderOpacity = cmd.BorderOpacity;
             props.BorderHue = cmd.BorderHue;
             props.BorderSaturation = cmd.BorderSaturation;
             props.BorderLuma = cmd.BorderLuma;
 
-            props.LightSourceDirection = cmd.LightSourceDirection;
-            props.LightSourceAltitude = cmd.LightSourceAltitude;
+            props.BorderLightSourceDirection = cmd.BorderLightSourceDirection;
+            props.BorderLightSourceAltitude = cmd.BorderLightSourceAltitude;
 
             // public bool MaskEnabled { get; set; }
             props.MaskTop = cmd.MaskTop;

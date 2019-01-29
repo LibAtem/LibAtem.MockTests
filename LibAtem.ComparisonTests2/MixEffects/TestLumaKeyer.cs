@@ -33,11 +33,7 @@ namespace LibAtem.ComparisonTests2.MixEffects
 
             public override IEnumerable<CommandQueueKey> ExpectedCommands(bool goodValue, T v)
             {
-                yield return new CommandQueueKey(new MixEffectKeyLumaGetCommand()
-                {
-                    MixEffectIndex = _meId,
-                    KeyerIndex = _keyId,
-                });
+                yield return new CommandQueueKey(new MixEffectKeyLumaGetCommand() { MixEffectIndex = _meId, KeyerIndex = _keyId });
             }
         }
 

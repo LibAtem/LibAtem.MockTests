@@ -62,6 +62,24 @@ namespace LibAtem.ComparisonTests2.State
                         yield return "Value: " + name + prop.Name + " Expected: " + oldVal + " Actual: " + newVal;
                     }
                 }
+                else if (prop.PropertyType == typeof(uint))
+                {
+                    UintToleranceAttribute attr = prop.GetCustomAttribute<UintToleranceAttribute>();
+                    if (attr != null)
+                    {
+                        var oldDbl = (uint)oldVal;
+                        var newDbl = (uint)newVal;
+
+                        if (!attr.AreEqual(oldDbl, newDbl))
+                        {
+                            yield return "Value: " + name + prop.Name + " Expected: " + oldVal + " Actual: " + newVal;
+                        }
+                    }
+                    else if (!oldVal.Equals(newVal))
+                    {
+                        yield return "Value: " + name + prop.Name + " Expected: " + oldVal + " Actual: " + newVal;
+                    }
+                }
                 else if (prop.PropertyType == typeof(byte[]))
                 {
                     byte[] oldVal2 = (byte[]) oldVal;

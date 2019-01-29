@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using LibAtem.Commands;
 using LibAtem.Common;
 using LibAtem.ComparisonTests2.State;
@@ -9,21 +10,179 @@ using LibAtem.Util;
 
 namespace LibAtem.ComparisonTests2.Util
 {
-    internal interface ITestDefinition<T>
+    internal abstract class TestDefinitionBase2<Tc, T> where Tc : ICommand, new()
     {
-        void Prepare();
+        protected readonly AtemComparisonHelper _helper;
 
-        T[] GoodValues();
-        T[] BadValues();
+        public TestDefinitionBase2(AtemComparisonHelper helper)
+        {
+            _helper = helper;
+        }
 
-        ICommand GenerateCommand(T v);
+        public static void Run(TestDefinitionBase2<Tc, T> def)
+        {
+            def.Run();
+        }
 
-        void UpdateExpectedState(ComparisonState state, bool goodValue, T v);
+        public void Run()
+        {
+            Prepare();
+            _helper.Sleep();
 
-        IEnumerable<CommandQueueKey> ExpectedCommands(bool goodValue, T v);
+            ValueTypeComparer2<Tc, T>.Run(_helper, this);
+            ValueTypeComparer2<Tc, T>.Fail(_helper, this);
+        }
+
+        public abstract void Prepare();
+
+        public virtual T[] GoodValues
+        {
+            get {
+                if (typeof(T) == typeof(bool))
+                {
+                    dynamic r = new bool[] { true, false };
+                    return r;
+                }
+
+                throw new NotImplementedException("GoodValues");
+            }
+        }
+
+        public virtual T[] BadValues
+        {
+            get
+            {
+                if (typeof(T) == typeof(VideoSource))
+                {
+                    dynamic goodValues = GoodValues.ToList();
+                    dynamic r = VideoSourceLists.All.Where(s => !goodValues.Contains(s)).ToArray();
+                    return r;
+                }
+
+                return new T[0];
+            }
+        }
+
+        public abstract string PropertyName { get; }
+
+        public virtual void SetupCommand(Tc cmd) { }
+
+        public virtual ICommand GenerateCommand(T v)
+        {
+            Tc cmd = new Tc();
+
+            var typeInfo = cmd.GetType();
+
+            PropertyInfo prop = typeInfo.GetProperty(PropertyName);
+            prop.SetValue(cmd, v);
+
+            PropertyInfo maskProp = typeInfo.GetProperty("Mask");
+            if (maskProp != null && maskProp.PropertyType != typeof(uint))
+            {
+                bool matchedMask = false;
+                foreach (var m in Enum.GetValues(maskProp.PropertyType))
+                {
+                    if (m.ToString() == PropertyName)
+                    {
+                        maskProp.SetValue(cmd, m);
+                        matchedMask = true;
+                        break;
+                    }
+                }
+
+                if (!matchedMask) throw new MissingFieldException("Missing mask value: " + PropertyName);
+            }
+
+            SetupCommand(cmd);
+
+            return cmd;
+        }
+
+        public abstract IEnumerable<CommandQueueKey> ExpectedCommands(bool goodValue, T v);
+        public abstract void UpdateExpectedState(ComparisonState state, bool goodValue, T v);
     }
 
-    internal abstract class TestDefinitionBase<T> : ITestDefinition<T>
+    internal static class ValueTypeComparer2<Tc, T> where Tc : ICommand, new()
+    {
+        private static void LogErrors(AtemComparisonHelper helper, string identifier, T val, ComparisonState origSdk, ComparisonState origLib)
+        {
+            List<string> before = ComparisonStateComparer.AreEqual(origSdk, origLib);
+            List<string> sdk = ComparisonStateComparer.AreEqual(origSdk, helper.SdkState);
+            List<string> lib = ComparisonStateComparer.AreEqual(origLib, helper.LibState);
+
+            if (before.Count > 0 || sdk.Count > 0 || lib.Count > 0)
+            {
+                helper.Output.WriteLine("Setting " + identifier + " value: " + val);
+
+                if (before.Count > 0)
+                {
+                    helper.Output.WriteLine("Before wrong");
+                    before.ForEach(helper.Output.WriteLine);
+                }
+
+                if (sdk.Count > 0)
+                {
+                    helper.Output.WriteLine("SDK wrong");
+                    sdk.ForEach(helper.Output.WriteLine);
+                }
+
+                if (lib.Count > 0)
+                {
+                    helper.Output.WriteLine("Lib wrong");
+                    lib.ForEach(helper.Output.WriteLine);
+                }
+
+                helper.TestResult = false;
+            }
+        }
+
+        public static void Run(AtemComparisonHelper helper, TestDefinitionBase2<Tc, T> definition)
+        {
+            var newVals = definition.GoodValues;
+            newVals.ForEach(v => Run(helper, definition, v));
+        }
+
+        public static void Run(AtemComparisonHelper helper, TestDefinitionBase2<Tc, T> definition, T newVal)
+        {
+            ComparisonState origSdk = helper.SdkState;
+            ComparisonState origLib = helper.LibState;
+            definition.UpdateExpectedState(origSdk, true, newVal);
+            definition.UpdateExpectedState(origLib, true, newVal);
+
+            ICommand cmd = definition.GenerateCommand(newVal);
+            helper.SendAndWaitForMatching(definition.ExpectedCommands(true, newVal).ToList(), cmd);
+
+            LogErrors(helper, "good", newVal, origSdk, origLib);
+
+            IReadOnlyList<string> cmdIssues = CommandValidator.Validate(helper.Profile, cmd);
+            if (cmdIssues.Count > 0)
+            {
+                cmdIssues.ForEach(helper.Output.WriteLine);
+                helper.TestResult = false;
+            }
+        }
+
+        public static void Fail(AtemComparisonHelper helper, TestDefinitionBase2<Tc, T> definition)
+        {
+            var newVals = definition.BadValues;
+            newVals.ForEach(v => Fail(helper, definition, v));
+        }
+
+        public static void Fail(AtemComparisonHelper helper, TestDefinitionBase2<Tc, T> definition, T newVal)
+        {
+            ComparisonState origSdk = helper.SdkState;
+            ComparisonState origLib = helper.LibState;
+
+            definition.UpdateExpectedState(origSdk, false, newVal);
+            definition.UpdateExpectedState(origLib, false, newVal);
+
+            helper.SendAndWaitForMatching(definition.ExpectedCommands(false, newVal).ToList(), definition.GenerateCommand(newVal));
+
+            LogErrors(helper, "bad", newVal, origSdk, origLib);
+        }
+    }
+
+    internal abstract class TestDefinitionBase<T>
     {
         protected readonly AtemComparisonHelper _helper;
 
@@ -70,29 +229,16 @@ namespace LibAtem.ComparisonTests2.Util
 
     internal static class ValueTypeComparer<T>
     {
-        public static void Run(AtemComparisonHelper helper, ITestDefinition<T> definition)
+        private static void LogErrors(AtemComparisonHelper helper, string identifier, T val, ComparisonState origSdk, ComparisonState origLib)
         {
-            var newVals = definition.GoodValues();
-            newVals.ForEach(v => Run(helper, definition, v));
-        }
-
-        public static void Run(AtemComparisonHelper helper, ITestDefinition<T> definition, T newVal)
-        {
-            ComparisonState origSdk = helper.SdkState;
-            ComparisonState origLib = helper.LibState;
-            definition.UpdateExpectedState(origSdk, true, newVal);
-            definition.UpdateExpectedState(origLib, true, newVal);
-
             List<string> before = ComparisonStateComparer.AreEqual(origSdk, origLib);
-
-            ICommand cmd = definition.GenerateCommand(newVal);
-            helper.SendAndWaitForMatching(definition.ExpectedCommands(true, newVal).ToList(), cmd);
-
             List<string> sdk = ComparisonStateComparer.AreEqual(origSdk, helper.SdkState);
             List<string> lib = ComparisonStateComparer.AreEqual(origLib, helper.LibState);
+
             if (before.Count > 0 || sdk.Count > 0 || lib.Count > 0)
             {
-                helper.Output.WriteLine("Setting good value: " + newVal);
+                helper.Output.WriteLine("Setting good value: " + val);
+
                 if (before.Count > 0)
                 {
                     helper.Output.WriteLine("Before wrong");
@@ -113,6 +259,25 @@ namespace LibAtem.ComparisonTests2.Util
 
                 helper.TestResult = false;
             }
+        }
+
+        public static void Run(AtemComparisonHelper helper, TestDefinitionBase<T> definition)
+        {
+            var newVals = definition.GoodValues();
+            newVals.ForEach(v => Run(helper, definition, v));
+        }
+
+        public static void Run(AtemComparisonHelper helper, TestDefinitionBase<T> definition, T newVal)
+        {
+            ComparisonState origSdk = helper.SdkState;
+            ComparisonState origLib = helper.LibState;
+            definition.UpdateExpectedState(origSdk, true, newVal);
+            definition.UpdateExpectedState(origLib, true, newVal);
+
+            ICommand cmd = definition.GenerateCommand(newVal);
+            helper.SendAndWaitForMatching(definition.ExpectedCommands(true, newVal).ToList(), cmd);
+
+            LogErrors(helper, "good", newVal, origSdk, origLib);
 
             IReadOnlyList<string> cmdIssues = CommandValidator.Validate(helper.Profile, cmd);
             if (cmdIssues.Count > 0)
@@ -122,13 +287,13 @@ namespace LibAtem.ComparisonTests2.Util
             }
         }
 
-        public static void Fail(AtemComparisonHelper helper, ITestDefinition<T> definition)
+        public static void Fail(AtemComparisonHelper helper, TestDefinitionBase<T> definition)
         {
             var newVals = definition.BadValues();
             newVals.ForEach(v => Fail(helper, definition, v));
         }
 
-        public static void Fail(AtemComparisonHelper helper, ITestDefinition<T> definition, T newVal)
+        public static void Fail(AtemComparisonHelper helper, TestDefinitionBase<T> definition, T newVal)
         {
             ComparisonState origSdk = helper.SdkState;
             ComparisonState origLib = helper.LibState;
@@ -136,35 +301,9 @@ namespace LibAtem.ComparisonTests2.Util
             definition.UpdateExpectedState(origSdk, false, newVal);
             definition.UpdateExpectedState(origLib, false, newVal);
 
-            List<string> before = ComparisonStateComparer.AreEqual(origSdk, origLib);
-
             helper.SendAndWaitForMatching(definition.ExpectedCommands(false, newVal).ToList(), definition.GenerateCommand(newVal));
 
-            List<string> sdk = ComparisonStateComparer.AreEqual(origSdk, helper.SdkState);
-            List<string> lib = ComparisonStateComparer.AreEqual(origLib, helper.LibState);
-            if (before.Count > 0 || sdk.Count > 0 || lib.Count > 0)
-            {
-                helper.Output.WriteLine("Setting bad value: " + newVal);
-                if (before.Count > 0)
-                {
-                    helper.Output.WriteLine("Before wrong");
-                    before.ForEach(helper.Output.WriteLine);
-                }
-
-                if (sdk.Count > 0)
-                {
-                    helper.Output.WriteLine("SDK wrong");
-                    sdk.ForEach(helper.Output.WriteLine);
-                }
-
-                if (lib.Count > 0)
-                {
-                    helper.Output.WriteLine("Lib wrong");
-                    lib.ForEach(helper.Output.WriteLine);
-                }
-
-                helper.TestResult = false;
-            }
+            LogErrors(helper, "bad", newVal, origSdk, origLib);
         }
     }
 

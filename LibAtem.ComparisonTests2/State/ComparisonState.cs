@@ -22,6 +22,22 @@ namespace LibAtem.ComparisonTests2.State
             return Math.Abs(a - b) <= Tolerance;
         }
     }
+    public class UintToleranceAttribute : Attribute
+    {
+        public uint Tolerance { get; }
+
+        public UintToleranceAttribute(uint tolerance)
+        {
+            Tolerance = tolerance;
+        }
+
+        public virtual bool AreEqual(uint a, uint b)
+        {
+            uint c = Math.Min(a, b);
+            uint d = Math.Max(a, b);
+            return d - c <= Tolerance;
+        }
+    }
 
     public sealed class DecibelToleranceAttribute : ToleranceAttribute
     {
@@ -568,24 +584,28 @@ namespace LibAtem.ComparisonTests2.State
     public class ComparisonMixEffectKeyerFlyFrameState
     {
         [Tolerance(0.01)]
-        public double SizeX { get; set; }
+        public double XSize { get; set; }
         [Tolerance(0.01)]
-        public double SizeY { get; set; }
+        public double YSize { get; set; }
         [Tolerance(0.01)]
-        public double PositionX { get; set; }
+        public double XPosition { get; set; }
         [Tolerance(0.01)]
-        public double PositionY { get; set; }
+        public double YPosition { get; set; }
         [Tolerance(0.01)]
         public double Rotation { get; set; }
 
         [Tolerance(0.01)]
-        public double OuterWidth { get; set; }
+        public double BorderOuterWidth { get; set; }
         [Tolerance(0.01)]
-        public double InnerWidth { get; set; }
-        public uint OuterSoftness { get; set; }
-        public uint InnerSoftness { get; set; }
-        public uint BevelSoftness { get; set; }
-        public uint BevelPosition { get; set; }
+        public double BorderInnerWidth { get; set; }
+        [UintTolerance(1)]
+        public uint BorderOuterSoftness { get; set; }
+        [UintTolerance(1)]
+        public uint BorderInnerSoftness { get; set; }
+        [UintTolerance(1)]
+        public uint BorderBevelSoftness { get; set; }
+        [UintTolerance(1)]
+        public uint BorderBevelPosition { get; set; }
 
         public uint BorderOpacity { get; set; }
         [Tolerance(0.01)]
@@ -596,8 +616,9 @@ namespace LibAtem.ComparisonTests2.State
         public double BorderLuma { get; set; }
 
         [Tolerance(0.01)]
-        public double LightSourceDirection { get; set; }
-        public uint LightSourceAltitude { get; set; }
+        public double BorderLightSourceDirection { get; set; }
+        [UintTolerance(1)]
+        public uint BorderLightSourceAltitude { get; set; }
 
         [Tolerance(0.01)]
         public double MaskTop { get; set; }

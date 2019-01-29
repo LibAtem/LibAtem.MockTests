@@ -447,19 +447,19 @@ namespace LibAtem.ComparisonTests2.State.SDK
             {
                 case _BMDSwitcherKeyFlyKeyFrameParametersEventType.bmdSwitcherKeyFlyKeyFrameParametersEventTypeSizeXChanged:
                     _props.GetSizeX(out double sizeX);
-                    _state.SizeX = sizeX;
+                    _state.XSize = sizeX;
                     break;
                 case _BMDSwitcherKeyFlyKeyFrameParametersEventType.bmdSwitcherKeyFlyKeyFrameParametersEventTypeSizeYChanged:
                     _props.GetSizeY(out double sizeY);
-                    _state.SizeY = sizeY;
+                    _state.YSize = sizeY;
                     break;
                 case _BMDSwitcherKeyFlyKeyFrameParametersEventType.bmdSwitcherKeyFlyKeyFrameParametersEventTypePositionXChanged:
                     _props.GetPositionX(out double positionX);
-                    _state.PositionX = positionX;
+                    _state.XPosition = positionX;
                     break;
                 case _BMDSwitcherKeyFlyKeyFrameParametersEventType.bmdSwitcherKeyFlyKeyFrameParametersEventTypePositionYChanged:
                     _props.GetPositionY(out double positionY);
-                    _state.PositionY = positionY;
+                    _state.YPosition = positionY;
                     break;
                 case _BMDSwitcherKeyFlyKeyFrameParametersEventType.bmdSwitcherKeyFlyKeyFrameParametersEventTypeRotationChanged:
                     _props.GetRotation(out double rotation);
@@ -467,27 +467,27 @@ namespace LibAtem.ComparisonTests2.State.SDK
                     break;
                 case _BMDSwitcherKeyFlyKeyFrameParametersEventType.bmdSwitcherKeyFlyKeyFrameParametersEventTypeBorderWidthOutChanged:
                     _props.GetBorderWidthOut(out double widthOut);
-                    _state.OuterWidth = widthOut;
+                    _state.BorderOuterWidth = widthOut;
                     break;
                 case _BMDSwitcherKeyFlyKeyFrameParametersEventType.bmdSwitcherKeyFlyKeyFrameParametersEventTypeBorderWidthInChanged:
                     _props.GetBorderWidthIn(out double widthIn);
-                    _state.InnerWidth = widthIn;
+                    _state.BorderInnerWidth = widthIn;
                     break;
                 case _BMDSwitcherKeyFlyKeyFrameParametersEventType.bmdSwitcherKeyFlyKeyFrameParametersEventTypeBorderSoftnessOutChanged:
                     _props.GetBorderSoftnessOut(out double borderSoftnessOut);
-                    _state.OuterSoftness = (uint)(borderSoftnessOut * 100);
+                    _state.BorderOuterSoftness = (uint)(borderSoftnessOut * 100);
                     break;
                 case _BMDSwitcherKeyFlyKeyFrameParametersEventType.bmdSwitcherKeyFlyKeyFrameParametersEventTypeBorderSoftnessInChanged:
                     _props.GetBorderSoftnessIn(out double borderSoftnessIn);
-                    _state.InnerSoftness = (uint)(borderSoftnessIn * 100);
+                    _state.BorderInnerSoftness = (uint)(borderSoftnessIn * 100);
                     break;
                 case _BMDSwitcherKeyFlyKeyFrameParametersEventType.bmdSwitcherKeyFlyKeyFrameParametersEventTypeBorderBevelSoftnessChanged:
                     _props.GetBorderBevelSoftness(out double borderBevelSoftness);
-                    _state.BevelSoftness = (uint)(borderBevelSoftness * 100);
+                    _state.BorderBevelSoftness = (uint)(borderBevelSoftness * 100);
                     break;
                 case _BMDSwitcherKeyFlyKeyFrameParametersEventType.bmdSwitcherKeyFlyKeyFrameParametersEventTypeBorderBevelPositionChanged:
                     _props.GetBorderBevelPosition(out double borderBevelPosition);
-                    _state.BevelPosition = (uint)(borderBevelPosition * 100);
+                    _state.BorderBevelPosition = (uint)(borderBevelPosition * 100);
                     break;
                 case _BMDSwitcherKeyFlyKeyFrameParametersEventType.bmdSwitcherKeyFlyKeyFrameParametersEventTypeBorderHueChanged:
                     _props.GetBorderHue(out double hue);
@@ -503,11 +503,11 @@ namespace LibAtem.ComparisonTests2.State.SDK
                     break;
                 case _BMDSwitcherKeyFlyKeyFrameParametersEventType.bmdSwitcherKeyFlyKeyFrameParametersEventTypeBorderLightSourceDirectionChanged:
                     _props.GetBorderLightSourceDirection(out double deg);
-                    _state.LightSourceDirection = deg;
+                    _state.BorderLightSourceDirection = deg;
                     break;
                 case _BMDSwitcherKeyFlyKeyFrameParametersEventType.bmdSwitcherKeyFlyKeyFrameParametersEventTypeBorderLightSourceAltitudeChanged:
                     _props.GetBorderLightSourceAltitude(out double alt);
-                    _state.LightSourceAltitude = (uint)(alt * 100);
+                    _state.BorderLightSourceAltitude = (uint)(alt * 100);
                     break;
                 default:
                     throw new ArgumentOutOfRangeException(nameof(eventType), eventType, null);
