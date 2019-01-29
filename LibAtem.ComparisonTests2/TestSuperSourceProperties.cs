@@ -87,7 +87,7 @@ namespace LibAtem.ComparisonTests2
             public override VideoSource MangleBadValue(VideoSource v) => v;
             public override void UpdateExpectedState(ComparisonState state, bool goodValue, VideoSource v)
             {
-                if (goodValue) base.UpdateExpectedState(state, goodValue, v);
+                if (goodValue) state.SuperSource.ArtKeyInput = v;
             }
 
             public override IEnumerable<CommandQueueKey> ExpectedCommands(bool goodValue, VideoSource v)

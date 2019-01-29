@@ -50,6 +50,11 @@ namespace LibAtem.ComparisonTests2
             // Ensure the first value will have a change
             public override void Prepare() => _sdk.SetInputSource((long)VideoSource.ColorBars);
 
+            public override void SetupCommand(AuxSourceSetCommand cmd)
+            {
+                cmd.Id = _auxId;
+            }
+
             public override string PropertyName => "Source";
 
             public override VideoSource[] GoodValues => VideoSourceLists.All.Where(s => s.IsAvailable(_helper.Profile, InternalPortType.Mask) && s.IsAvailable(SourceAvailability.Auxiliary)).ToArray();
