@@ -18,10 +18,10 @@ namespace LibAtem.ComparisonTests2.MixEffects
         {
         }
 
-        private abstract class ChromaKeyerTestDefinition<T> : TestDefinitionBase<T>
+        private abstract class ChromaKeyerTestDefinition<T> : TestDefinitionBase2<MixEffectKeyChromaSetCommand, T>
         {
-            protected readonly MixEffectBlockId _meId;
-            protected readonly UpstreamKeyId _keyId;
+            private readonly MixEffectBlockId _meId;
+            private readonly UpstreamKeyId _keyId;
             protected readonly IBMDSwitcherKeyChromaParameters _sdk;
 
             public ChromaKeyerTestDefinition(AtemComparisonHelper helper, Tuple<MixEffectBlockId, UpstreamKeyId, IBMDSwitcherKeyChromaParameters> key) : base(helper)
@@ -31,13 +31,23 @@ namespace LibAtem.ComparisonTests2.MixEffects
                 _sdk = key.Item3;
             }
 
+            public override void SetupCommand(MixEffectKeyChromaSetCommand cmd)
+            {
+                cmd.MixEffectIndex = _meId;
+                cmd.KeyerIndex = _keyId;
+            }
+
+            public abstract T MangleBadValue(T v);
+
+            public sealed override void UpdateExpectedState(ComparisonState state, bool goodValue, T v)
+            {
+                ComparisonMixEffectKeyerChromaState obj = state.MixEffects[_meId].Keyers[_keyId].Chroma;
+                SetCommandProperty(obj, PropertyName, goodValue ? v : MangleBadValue(v));
+            }
+
             public override IEnumerable<CommandQueueKey> ExpectedCommands(bool goodValue, T v)
             {
-                yield return new CommandQueueKey(new MixEffectKeyChromaGetCommand()
-                {
-                    MixEffectIndex = _meId,
-                    KeyerIndex = _keyId,
-                });
+                yield return new CommandQueueKey(new MixEffectKeyChromaGetCommand() { MixEffectIndex = _meId, KeyerIndex = _keyId });
             }
         }
 
@@ -47,57 +57,25 @@ namespace LibAtem.ComparisonTests2.MixEffects
             {
             }
 
-            public override void Prepare()
+            // Ensure the first value will have a change
+            public override void Prepare() => _sdk.SetHue(20);
+
+            public override string PropertyName => "Hue";
+            public override double MangleBadValue(double v)
             {
-                // Ensure the first value will have a change
-                _sdk.SetHue(20);
+                ushort ui = (ushort)((ushort)(v * 10) % 3600);
+                return ui / 10d;
             }
 
-            public override ICommand GenerateCommand(double v)
-            {
-                return new MixEffectKeyChromaSetCommand
-                {
-                    MixEffectIndex = _meId,
-                    KeyerIndex = _keyId,
-                    Mask = MixEffectKeyChromaSetCommand.MaskFlags.Hue,
-                    Hue = v
-                };
-            }
-
-            public override void UpdateExpectedState(ComparisonState state, bool goodValue, double v)
-            {
-                if (goodValue)
-                {
-                    state.MixEffects[_meId].Keyers[_keyId].Chroma.Hue = v;
-                }
-                else
-                {
-                    ushort ui = (ushort)((ushort)(v * 10) % 3600);
-                    state.MixEffects[_meId].Keyers[_keyId].Chroma.Hue = ui / 10d;
-                }
-            }
-
-            public override double[] GoodValues()
-            {
-                return new double[] { 0, 123, 233.4, 359.9 };
-            }
-
-            public override double[] BadValues()
-            {
-                return new double[] { 360, 360.1, 361, -1, -0.01 };
-            }
+            public override double[] GoodValues => new double[] { 0, 123, 233.4, 359.9 };
+            public override double[] BadValues => new double[] { 360, 360.1, 361, -1, -0.01 };
         }
 
         [Fact]
         public void TestHue()
         {
             using (var helper = new AtemComparisonHelper(Client, Output))
-            {
-                foreach (var key in GetKeyers<IBMDSwitcherKeyChromaParameters>())
-                {
-                    new ChromaKeyerHueTestDefinition(helper, key).Run();
-                }
-            }
+                GetKeyers<IBMDSwitcherKeyChromaParameters>().ForEach(k => new ChromaKeyerHueTestDefinition(helper, k).Run());
         }
 
         private class ChromaKeyerGainTestDefinition : ChromaKeyerTestDefinition<double>
@@ -106,56 +84,21 @@ namespace LibAtem.ComparisonTests2.MixEffects
             {
             }
 
-            public override void Prepare()
-            {
-                // Ensure the first value will have a change
-                _sdk.SetGain(20);
-            }
+            // Ensure the first value will have a change
+            public override void Prepare() => _sdk.SetGain(20);
 
-            public override ICommand GenerateCommand(double v)
-            {
-                return new MixEffectKeyChromaSetCommand
-                {
-                    MixEffectIndex = _meId,
-                    KeyerIndex = _keyId,
-                    Mask = MixEffectKeyChromaSetCommand.MaskFlags.Gain,
-                    Gain = v
-                };
-            }
+            public override string PropertyName => "Gain";
+            public override double MangleBadValue(double v) => v >= 100 ? 100 : 0;
 
-            public override void UpdateExpectedState(ComparisonState state, bool goodValue, double v)
-            {
-                if (goodValue)
-                {
-                    state.MixEffects[_meId].Keyers[_keyId].Chroma.Gain = v;
-                }
-                else
-                {
-                    state.MixEffects[_meId].Keyers[_keyId].Chroma.Gain = v >= 100 ? 100 : 0;
-                }
-            }
-
-            public override double[] GoodValues()
-            {
-                return new double[] { 0, 87.4, 14.7, 99.9, 100, 0.1 };
-            }
-
-            public override double[] BadValues()
-            {
-                return new double[] { 100.1, 110, 101, -0.01, -1, -10 };
-            }
+            public override double[] GoodValues => new double[] { 0, 87.4, 14.7, 99.9, 100, 0.1 };
+            public override double[] BadValues => new double[] { 100.1, 110, 101, -0.01, -1, -10 };
         }
 
         [Fact]
         public void TestGain()
         {
             using (var helper = new AtemComparisonHelper(Client, Output))
-            {
-                foreach (var key in GetKeyers<IBMDSwitcherKeyChromaParameters>())
-                {
-                    new ChromaKeyerGainTestDefinition(helper, key).Run();
-                }
-            }
+                GetKeyers<IBMDSwitcherKeyChromaParameters>().ForEach(k => new ChromaKeyerGainTestDefinition(helper, k).Run());
         }
 
         private class ChromaKeyerYSuppressTestDefinition : ChromaKeyerTestDefinition<double>
@@ -164,56 +107,21 @@ namespace LibAtem.ComparisonTests2.MixEffects
             {
             }
 
-            public override void Prepare()
-            {
-                // Ensure the first value will have a change
-                _sdk.SetYSuppress(20);
-            }
+            // Ensure the first value will have a change
+            public override void Prepare() => _sdk.SetYSuppress(20);
 
-            public override ICommand GenerateCommand(double v)
-            {
-                return new MixEffectKeyChromaSetCommand
-                {
-                    MixEffectIndex = _meId,
-                    KeyerIndex = _keyId,
-                    Mask = MixEffectKeyChromaSetCommand.MaskFlags.YSuppress,
-                    YSuppress = v
-                };
-            }
+            public override string PropertyName => "YSuppress";
+            public override double MangleBadValue(double v) => v >= 100 ? 100 : 0;
 
-            public override void UpdateExpectedState(ComparisonState state, bool goodValue, double v)
-            {
-                if (goodValue)
-                {
-                    state.MixEffects[_meId].Keyers[_keyId].Chroma.YSuppress = v;
-                }
-                else
-                {
-                    state.MixEffects[_meId].Keyers[_keyId].Chroma.YSuppress = v >= 100 ? 100 : 0;
-                }
-            }
-
-            public override double[] GoodValues()
-            {
-                return new double[] { 0, 87.4, 14.7, 99.9, 100, 0.1 };
-            }
-
-            public override double[] BadValues()
-            {
-                return new double[] { 100.1, 110, 101, -0.01, -1, -10 };
-            }
+            public override double[] GoodValues => new double[] { 0, 87.4, 14.7, 99.9, 100, 0.1 };
+            public override double[] BadValues => new double[] { 100.1, 110, 101, -0.01, -1, -10 };
         }
 
         [Fact]
         public void TestYSuppress()
         {
             using (var helper = new AtemComparisonHelper(Client, Output))
-            {
-                foreach (var key in GetKeyers<IBMDSwitcherKeyChromaParameters>())
-                {
-                    new ChromaKeyerYSuppressTestDefinition(helper, key).Run();
-                }
-            }
+                GetKeyers<IBMDSwitcherKeyChromaParameters>().ForEach(k => new ChromaKeyerYSuppressTestDefinition(helper, k).Run());
         }
 
         private class ChromaKeyerLiftTestDefinition : ChromaKeyerTestDefinition<double>
@@ -222,56 +130,21 @@ namespace LibAtem.ComparisonTests2.MixEffects
             {
             }
 
-            public override void Prepare()
-            {
-                // Ensure the first value will have a change
-                _sdk.SetLift(20);
-            }
+            // Ensure the first value will have a change
+            public override void Prepare() => _sdk.SetLift(20);
 
-            public override ICommand GenerateCommand(double v)
-            {
-                return new MixEffectKeyChromaSetCommand
-                {
-                    MixEffectIndex = _meId,
-                    KeyerIndex = _keyId,
-                    Mask = MixEffectKeyChromaSetCommand.MaskFlags.Lift,
-                    Lift = v
-                };
-            }
+            public override string PropertyName => "Lift";
+            public override double MangleBadValue(double v) => v >= 100 ? 100 : 0;
 
-            public override void UpdateExpectedState(ComparisonState state, bool goodValue, double v)
-            {
-                if (goodValue)
-                {
-                    state.MixEffects[_meId].Keyers[_keyId].Chroma.Lift = v;
-                }
-                else
-                {
-                    state.MixEffects[_meId].Keyers[_keyId].Chroma.Lift = v >= 100 ? 100 : 0;
-                }
-            }
-
-            public override double[] GoodValues()
-            {
-                return new double[] { 0, 87.4, 14.7, 99.9, 100, 0.1 };
-            }
-
-            public override double[] BadValues()
-            {
-                return new double[] { 100.1, 110, 101, -0.01, -1, -10 };
-            }
+            public override double[] GoodValues => new double[] { 0, 87.4, 14.7, 99.9, 100, 0.1 };
+            public override double[] BadValues => new double[] { 100.1, 110, 101, -0.01, -1, -10 };
         }
 
         [Fact]
         public void TestLift()
         {
             using (var helper = new AtemComparisonHelper(Client, Output))
-            {
-                foreach (var key in GetKeyers<IBMDSwitcherKeyChromaParameters>())
-                {
-                    new ChromaKeyerLiftTestDefinition(helper, key).Run();
-                }
-            }
+                GetKeyers<IBMDSwitcherKeyChromaParameters>().ForEach(k => new ChromaKeyerLiftTestDefinition(helper, k).Run());
         }
 
         private class ChromaKeyerNarrowTestDefinition : ChromaKeyerTestDefinition<bool>
@@ -280,39 +153,18 @@ namespace LibAtem.ComparisonTests2.MixEffects
             {
             }
 
-            public override void Prepare()
-            {
-                // Ensure the first value will have a change
-                _sdk.SetNarrow(0);
-            }
+            // Ensure the first value will have a change
+            public override void Prepare() => _sdk.SetNarrow(0);
 
-            public override ICommand GenerateCommand(bool v)
-            {
-                return new MixEffectKeyChromaSetCommand
-                {
-                    MixEffectIndex = _meId,
-                    KeyerIndex = _keyId,
-                    Mask = MixEffectKeyChromaSetCommand.MaskFlags.Narrow,
-                    Narrow = v
-                };
-            }
-
-            public override void UpdateExpectedState(ComparisonState state, bool goodValue, bool v)
-            {
-                state.MixEffects[_meId].Keyers[_keyId].Chroma.Narrow = v;
-            }
+            public override string PropertyName => "Narrow";
+            public override bool MangleBadValue(bool v) => v;
         }
 
         [Fact]
         public void TestNarrow()
         {
             using (var helper = new AtemComparisonHelper(Client, Output))
-            {
-                foreach (var key in GetKeyers<IBMDSwitcherKeyChromaParameters>())
-                {
-                    new ChromaKeyerNarrowTestDefinition(helper, key).Run();
-                }
-            }
+                GetKeyers<IBMDSwitcherKeyChromaParameters>().ForEach(k => new ChromaKeyerNarrowTestDefinition(helper, k).Run());
         }
     }
 }

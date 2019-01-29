@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using BMDSwitcherAPI;
 using LibAtem.Commands;
-using LibAtem.Commands.MixEffects.Key;
 using LibAtem.Commands.MixEffects.Transition;
 using LibAtem.Common;
 using LibAtem.ComparisonTests2.State;
@@ -22,7 +21,7 @@ namespace LibAtem.ComparisonTests2.MixEffects
         {
         }
 
-        private abstract class DipTransitionTestDefinition<T> : TestDefinitionBase<T>
+        private abstract class DipTransitionTestDefinition<T> : TestDefinitionBase2<TransitionDipSetCommand, T>
         {
             protected readonly MixEffectBlockId _id;
             protected readonly IBMDSwitcherTransitionDipParameters _sdk;
@@ -33,12 +32,22 @@ namespace LibAtem.ComparisonTests2.MixEffects
                 _sdk = me.Item2;
             }
 
+            public override void SetupCommand(TransitionDipSetCommand cmd)
+            {
+                cmd.Index = _id;
+            }
+
+            public abstract T MangleBadValue(T v);
+
+            public override void UpdateExpectedState(ComparisonState state, bool goodValue, T v)
+            {
+                ComparisonMixEffectTransitionDipState obj = state.MixEffects[_id].Transition.Dip;
+                SetCommandProperty(obj, PropertyName, goodValue ? v : MangleBadValue(v));
+            }
+
             public override IEnumerable<CommandQueueKey> ExpectedCommands(bool goodValue, T v)
             {
-                yield return new CommandQueueKey(new TransitionDipGetCommand()
-                {
-                    Index = _id,
-                });
+                yield return new CommandQueueKey(new TransitionDipGetCommand() { Index = _id });
             }
         }
 
@@ -48,54 +57,22 @@ namespace LibAtem.ComparisonTests2.MixEffects
             {
             }
 
-            public override void Prepare()
-            {
-                // Ensure the first value will have a change
-                _sdk.SetRate(20);
-            }
+            // Ensure the first value will have a change
+            public override void Prepare() => _sdk.SetRate(20);
 
-            public override uint[] GoodValues()
-            {
-                return new uint[] { 1, 18, 28, 95, 234, 244, 250 };
-            }
-            public override uint[] BadValues()
-            {
-                return new uint[] { 251, 255, 0 };
-            }
+            public override string PropertyName => "Rate";
+            public override uint MangleBadValue(uint v) => v >= 250 ? 250 : (uint)1;
 
-            public override ICommand GenerateCommand(uint v)
-            {
-                return new TransitionDipSetCommand
-                {
-                    Index = _id,
-                    Mask = TransitionDipSetCommand.MaskFlags.Rate,
-                    Rate = v
-                };
-            }
-
-            public override void UpdateExpectedState(ComparisonState state, bool goodValue, uint v)
-            {
-                if (goodValue)
-                {
-                    state.MixEffects[_id].Transition.Dip.Rate = v;
-                }
-                else
-                {
-                    state.MixEffects[_id].Transition.Dip.Rate = v >= 250 ? 250 : (uint)1;
-                }
-            }
+            public override uint[] GoodValues => new uint[] { 1, 18, 28, 95, 234, 244, 250 };
+            public override uint[] BadValues => new uint[] { 251, 255, 0 };
         }
 
         [Fact]
         public void TestRate()
         {
             using (var helper = new AtemComparisonHelper(Client, Output))
-            {
-                foreach (var me in GetMixEffects<IBMDSwitcherTransitionDipParameters>())
-                {
-                    new DipTransitionRateTestDefinition(helper, me).Run();
-                }
-            }
+                GetMixEffects<IBMDSwitcherTransitionDipParameters>().ForEach(k => new DipTransitionRateTestDefinition(helper, k).Run());
+
         }
 
         private class DipTransitionInputTestDefinition : DipTransitionTestDefinition<VideoSource>
@@ -104,31 +81,18 @@ namespace LibAtem.ComparisonTests2.MixEffects
             {
             }
 
-            public override void Prepare()
-            {
-                // Ensure the first value will have a change
-                _sdk.SetRate(20);
-            }
+            // Ensure the first value will have a change
+            public override void Prepare() => _sdk.SetInputDip((long)VideoSource.ColorBars);
 
-            public override VideoSource[] GoodValues()
-            {
-                return VideoSourceLists.All.Where(s => s.IsAvailable(_helper.Profile) && s.IsAvailable(_id)).ToArray();
-            }
+            public override string PropertyName => "Input";
+            public override VideoSource MangleBadValue(VideoSource v) => v;
 
-            public override ICommand GenerateCommand(VideoSource v)
-            {
-                return new TransitionDipSetCommand
-                {
-                    Index = _id,
-                    Mask = TransitionDipSetCommand.MaskFlags.Input,
-                    Input = v
-                };
-            }
+            public override VideoSource[] GoodValues => VideoSourceLists.All.Where(s => s.IsAvailable(_helper.Profile) && s.IsAvailable(_id)).ToArray();
 
             public override void UpdateExpectedState(ComparisonState state, bool goodValue, VideoSource v)
             {
                 if (goodValue)
-                    state.MixEffects[_id].Transition.Dip.Input = v;
+                    base.UpdateExpectedState(state, goodValue, v);
             }
 
             public override IEnumerable<CommandQueueKey> ExpectedCommands(bool goodValue, VideoSource v)
@@ -144,12 +108,7 @@ namespace LibAtem.ComparisonTests2.MixEffects
         public void TestInput()
         {
             using (var helper = new AtemComparisonHelper(Client, Output))
-            {
-                foreach (var me in GetMixEffects<IBMDSwitcherTransitionDipParameters>())
-                {
-                    new DipTransitionInputTestDefinition(helper, me).Run();
-                }
-            }
+                GetMixEffects<IBMDSwitcherTransitionDipParameters>().ForEach(k => new DipTransitionInputTestDefinition(helper, k).Run());
         }
     }
 }

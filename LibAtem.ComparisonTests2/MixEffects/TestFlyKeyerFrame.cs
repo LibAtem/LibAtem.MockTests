@@ -60,13 +60,8 @@ namespace LibAtem.ComparisonTests2.MixEffects
             public sealed override void UpdateExpectedState(ComparisonState state, bool goodValue, T v)
             {
                 ComparisonMixEffectKeyerFlyFrameState obj = state.MixEffects[_meId].Keyers[_keyId].Fly.Frames[_frameId];
-
-                var prop = obj.GetType().GetProperty(PropertyName);
-                if (prop == null) throw new MissingMemberException(PropertyName);
-
-                prop.SetValue(obj, goodValue ? v : MangleBadValue(v));
+                SetCommandProperty(obj, PropertyName, goodValue ? v : MangleBadValue(v));
             }
-
 
             public override IEnumerable<CommandQueueKey> ExpectedCommands(bool goodValue, T v)
             {
@@ -80,11 +75,8 @@ namespace LibAtem.ComparisonTests2.MixEffects
             {
             }
 
-            public override void Prepare()
-            {
-                // Ensure the first value will have a change
-                _sdk.SetSizeX(10);
-            }
+            // Ensure the first value will have a change
+            public override void Prepare() => _sdk.SetSizeX(10);
 
             public override string PropertyName => "XSize";
             public override double MangleBadValue(double v) => 0;
@@ -97,9 +89,7 @@ namespace LibAtem.ComparisonTests2.MixEffects
         public void TestSizeX()
         {
             using (var helper = new AtemComparisonHelper(Client, Output))
-            {
                 GetFrames().ForEach(f => new FlyKeyFrameSizeXTestDefinition(helper, f).Run());
-            }
         }
 
         private class FlyKeyFrameSizeYTestDefinition : FlyKeyFrameTestDefinition<double>
@@ -108,11 +98,8 @@ namespace LibAtem.ComparisonTests2.MixEffects
             {
             }
 
-            public override void Prepare()
-            {
-                // Ensure the first value will have a change
-                _sdk.SetSizeY(10);
-            }
+            // Ensure the first value will have a change
+            public override void Prepare() => _sdk.SetSizeY(10);
 
             public override string PropertyName => "YSize";
             public override double MangleBadValue(double v) => 0;
@@ -125,9 +112,7 @@ namespace LibAtem.ComparisonTests2.MixEffects
         public void TestSizeY()
         {
             using (var helper = new AtemComparisonHelper(Client, Output))
-            {
                 GetFrames().ForEach(f => new FlyKeyFrameSizeYTestDefinition(helper, f).Run());
-            }
         }
         
         private class FlyKeyFramePositionXTestDefinition : FlyKeyFrameTestDefinition<double>
@@ -136,11 +121,8 @@ namespace LibAtem.ComparisonTests2.MixEffects
             {
             }
 
-            public override void Prepare()
-            {
-                // Ensure the first value will have a change
-                _sdk.SetPositionX(10);
-            }
+            // Ensure the first value will have a change
+            public override void Prepare() => _sdk.SetPositionX(10);
 
             public override string PropertyName => "XPosition";
             public override double MangleBadValue(double v) => v >= 32768 ? v - 2 * 32768 : v + 2 * 32768;
@@ -153,9 +135,7 @@ namespace LibAtem.ComparisonTests2.MixEffects
         public void TestPositionX()
         {
             using (var helper = new AtemComparisonHelper(Client, Output))
-            {
                 GetFrames().ForEach(f => new FlyKeyFramePositionXTestDefinition(helper, f).Run());
-            }
         }
 
         private class FlyKeyFramePositionYTestDefinition : FlyKeyFrameTestDefinition<double>
@@ -164,11 +144,8 @@ namespace LibAtem.ComparisonTests2.MixEffects
             {
             }
 
-            public override void Prepare()
-            {
-                // Ensure the first value will have a change
-                _sdk.SetPositionY(10);
-            }
+            // Ensure the first value will have a change
+            public override void Prepare() => _sdk.SetPositionY(10);
 
             public override string PropertyName => "YPosition";
             public override double MangleBadValue(double v) => v >= 32768 ? v - 2 * 32768 : v + 2 * 32768;
@@ -181,9 +158,7 @@ namespace LibAtem.ComparisonTests2.MixEffects
         public void TestPositionY()
         {
             using (var helper = new AtemComparisonHelper(Client, Output))
-            {
                 GetFrames().ForEach(f => new FlyKeyFramePositionYTestDefinition(helper, f).Run());
-            }
         }
 
         private class FlyKeyFrameRotationTestDefinition : FlyKeyFrameTestDefinition<double>
@@ -192,11 +167,8 @@ namespace LibAtem.ComparisonTests2.MixEffects
             {
             }
 
-            public override void Prepare()
-            {
-                // Ensure the first value will have a change
-                _sdk.SetPositionY(10);
-            }
+            // Ensure the first value will have a change
+            public override void Prepare() => _sdk.SetPositionY(10);
 
             public override string PropertyName => "Rotation";
             public override double MangleBadValue(double v) => v >= 32768 ? v - 2 * 32768 : v + 2 * 32768;
@@ -209,9 +181,7 @@ namespace LibAtem.ComparisonTests2.MixEffects
         public void TestRotation()
         {
             using (var helper = new AtemComparisonHelper(Client, Output))
-            {
                 GetFrames().ForEach(f => new FlyKeyFrameRotationTestDefinition(helper, f).Run());
-            }
         }
 
         private class FlyKeyFrameBorderInnerWidthTestDefinition : FlyKeyFrameTestDefinition<double>
@@ -220,11 +190,8 @@ namespace LibAtem.ComparisonTests2.MixEffects
             {
             }
 
-            public override void Prepare()
-            {
-                // Ensure the first value will have a change
-                _sdk.SetBorderWidthIn(10);
-            }
+            // Ensure the first value will have a change
+            public override void Prepare() => _sdk.SetBorderWidthIn(10);
 
             public override string PropertyName => "BorderInnerWidth";
             public override double MangleBadValue(double v) => v < 0 ? v + 655.36 * 2 : v - 655.35;
@@ -237,9 +204,7 @@ namespace LibAtem.ComparisonTests2.MixEffects
         public void TestBorderInnerWidth()
         {
             using (var helper = new AtemComparisonHelper(Client, Output))
-            {
                 GetFrames().ForEach(f => new FlyKeyFrameBorderInnerWidthTestDefinition(helper, f).Run());
-            }
         }
 
         private class FlyKeyFrameBorderOuterWidthTestDefinition : FlyKeyFrameTestDefinition<double>
@@ -248,11 +213,8 @@ namespace LibAtem.ComparisonTests2.MixEffects
             {
             }
 
-            public override void Prepare()
-            {
-                // Ensure the first value will have a change
-                _sdk.SetBorderWidthOut(10);
-            }
+            // Ensure the first value will have a change
+            public override void Prepare() => _sdk.SetBorderWidthOut(10);
 
             public override string PropertyName => "BorderOuterWidth";
             public override double MangleBadValue(double v) => v < 0 ? v + 655.36 * 2 : v - 655.35;
@@ -265,9 +227,7 @@ namespace LibAtem.ComparisonTests2.MixEffects
         public void TestBorderOuterWidth()
         {
             using (var helper = new AtemComparisonHelper(Client, Output))
-            {
                 GetFrames().ForEach(f => new FlyKeyFrameBorderOuterWidthTestDefinition(helper, f).Run());
-            }
         }
 
         private class FlyKeyFrameBorderOuterSoftnessTestDefinition : FlyKeyFrameTestDefinition<uint>
@@ -276,11 +236,8 @@ namespace LibAtem.ComparisonTests2.MixEffects
             {
             }
 
-            public override void Prepare()
-            {
-                // Ensure the first value will have a change
-                _sdk.SetBorderSoftnessOut(10);
-            }
+            // Ensure the first value will have a change
+            public override void Prepare() => _sdk.SetBorderSoftnessOut(10);
 
             public override string PropertyName => "BorderOuterSoftness";
             public override uint MangleBadValue(uint v) => 254;
@@ -293,9 +250,7 @@ namespace LibAtem.ComparisonTests2.MixEffects
         public void TestBorderOuterSoftness()
         {
             using (var helper = new AtemComparisonHelper(Client, Output))
-            {
                 GetFrames().ForEach(f => new FlyKeyFrameBorderOuterSoftnessTestDefinition(helper, f).Run());
-            }
         }
 
         private class FlyKeyFrameBorderInnerSoftnessTestDefinition : FlyKeyFrameTestDefinition<uint>
@@ -304,11 +259,8 @@ namespace LibAtem.ComparisonTests2.MixEffects
             {
             }
 
-            public override void Prepare()
-            {
-                // Ensure the first value will have a change
-                _sdk.SetBorderSoftnessIn(10);
-            }
+            // Ensure the first value will have a change
+            public override void Prepare() => _sdk.SetBorderSoftnessIn(10);
 
             public override string PropertyName => "BorderInnerSoftness";
             public override uint MangleBadValue(uint v) => 254;
@@ -321,9 +273,7 @@ namespace LibAtem.ComparisonTests2.MixEffects
         public void TestBorderInnerSoftness()
         {
             using (var helper = new AtemComparisonHelper(Client, Output))
-            {
                 GetFrames().ForEach(f => new FlyKeyFrameBorderInnerSoftnessTestDefinition(helper, f).Run());
-            }
         }
 
         private class FlyKeyFrameBorderBevelSoftnessTestDefinition : FlyKeyFrameTestDefinition<uint>
@@ -332,11 +282,8 @@ namespace LibAtem.ComparisonTests2.MixEffects
             {
             }
 
-            public override void Prepare()
-            {
-                // Ensure the first value will have a change
-                _sdk.SetBorderBevelSoftness(10);
-            }
+            // Ensure the first value will have a change
+            public override void Prepare() => _sdk.SetBorderBevelSoftness(10);
 
             public override string PropertyName => "BorderBevelSoftness";
             public override uint MangleBadValue(uint v) => 254;
@@ -349,9 +296,7 @@ namespace LibAtem.ComparisonTests2.MixEffects
         public void TestBorderBevelSoftness()
         {
             using (var helper = new AtemComparisonHelper(Client, Output))
-            {
                 GetFrames().ForEach(f => new FlyKeyFrameBorderBevelSoftnessTestDefinition(helper, f).Run());
-            }
         }
 
         private class FlyKeyFrameBorderBevelPositionTestDefinition : FlyKeyFrameTestDefinition<uint>
@@ -360,11 +305,8 @@ namespace LibAtem.ComparisonTests2.MixEffects
             {
             }
 
-            public override void Prepare()
-            {
-                // Ensure the first value will have a change
-                _sdk.SetBorderBevelPosition(10);
-            }
+            // Ensure the first value will have a change
+            public override void Prepare() => _sdk.SetBorderBevelPosition(10);
 
             public override string PropertyName => "BorderBevelPosition";
             public override uint MangleBadValue(uint v) => 254;
@@ -377,9 +319,7 @@ namespace LibAtem.ComparisonTests2.MixEffects
         public void TestBorderBevelPosition()
         {
             using (var helper = new AtemComparisonHelper(Client, Output))
-            {
                 GetFrames().ForEach(f => new FlyKeyFrameBorderBevelPositionTestDefinition(helper, f).Run());
-            }
         }
 
         private class FlyKeyFrameBorderOpacityTestDefinition : FlyKeyFrameTestDefinition<uint>
@@ -388,11 +328,8 @@ namespace LibAtem.ComparisonTests2.MixEffects
             {
             }
 
-            public override void Prepare()
-            {
-                // Ensure the first value will have a change
-                _sdk.SetBorderOpacity(10);
-            }
+            // Ensure the first value will have a change
+            public override void Prepare() => _sdk.SetBorderOpacity(10);
 
             public override string PropertyName => "BorderOpacity";
             public override uint MangleBadValue(uint v) => 254;
@@ -406,9 +343,7 @@ namespace LibAtem.ComparisonTests2.MixEffects
         public void TestBorderOpacity()
         {
             using (var helper = new AtemComparisonHelper(Client, Output))
-            {
                 GetFrames().ForEach(f => new FlyKeyFrameBorderOpacityTestDefinition(helper, f).Run());
-            }
         }
         */
 
@@ -418,11 +353,8 @@ namespace LibAtem.ComparisonTests2.MixEffects
             {
             }
 
-            public override void Prepare()
-            {
-                // Ensure the first value will have a change
-                _sdk.SetBorderHue(10);
-            }
+            // Ensure the first value will have a change
+            public override void Prepare() => _sdk.SetBorderHue(10);
 
             public override string PropertyName => "BorderHue";
             public override double MangleBadValue(double v) => v > 0 ? v - 6553.6 : v + 6553.6;
@@ -435,9 +367,7 @@ namespace LibAtem.ComparisonTests2.MixEffects
         public void TestBorderHue()
         {
             using (var helper = new AtemComparisonHelper(Client, Output))
-            {
                 GetFrames().ForEach(f => new FlyKeyFrameBorderHueTestDefinition(helper, f).Run());
-            }
         }
 
         private class FlyKeyFrameBorderSaturationTestDefinition : FlyKeyFrameTestDefinition<double>
@@ -446,11 +376,8 @@ namespace LibAtem.ComparisonTests2.MixEffects
             {
             }
 
-            public override void Prepare()
-            {
-                // Ensure the first value will have a change
-                _sdk.SetBorderSaturation(10);
-            }
+            // Ensure the first value will have a change
+            public override void Prepare() => _sdk.SetBorderSaturation(10);
 
             public override string PropertyName => "BorderSaturation";
             public override double MangleBadValue(double v) => v > 0 ? v - 6553.6 : v + 6553.6;
@@ -463,9 +390,7 @@ namespace LibAtem.ComparisonTests2.MixEffects
         public void TestBorderSaturation()
         {
             using (var helper = new AtemComparisonHelper(Client, Output))
-            {
                 GetFrames().ForEach(f => new FlyKeyFrameBorderSaturationTestDefinition(helper, f).Run());
-            }
         }
 
         private class FlyKeyFrameBorderLumaTestDefinition : FlyKeyFrameTestDefinition<double>
@@ -474,11 +399,8 @@ namespace LibAtem.ComparisonTests2.MixEffects
             {
             }
 
-            public override void Prepare()
-            {
-                // Ensure the first value will have a change
-                _sdk.SetBorderLuma(10);
-            }
+            // Ensure the first value will have a change
+            public override void Prepare() => _sdk.SetBorderLuma(10);
 
             public override string PropertyName => "BorderLuma";
             public override double MangleBadValue(double v) => v > 0 ? v - 6553.6 : v + 6553.6;
@@ -491,9 +413,7 @@ namespace LibAtem.ComparisonTests2.MixEffects
         public void TestBorderLuma()
         {
             using (var helper = new AtemComparisonHelper(Client, Output))
-            {
                 GetFrames().ForEach(f => new FlyKeyFrameBorderLumaTestDefinition(helper, f).Run());
-            }
         }
 
         private class FlyKeyFrameBorderLightSourceDirectionTestDefinition : FlyKeyFrameTestDefinition<double>
@@ -502,11 +422,8 @@ namespace LibAtem.ComparisonTests2.MixEffects
             {
             }
 
-            public override void Prepare()
-            {
-                // Ensure the first value will have a change
-                _sdk.SetBorderLightSourceDirection(10);
-            }
+            // Ensure the first value will have a change
+            public override void Prepare() => _sdk.SetBorderLightSourceDirection(10);
 
             public override string PropertyName => "BorderLightSourceDirection";
             public override double MangleBadValue(double v) => v > 0 ? v - 360 : v + 73.6;
@@ -519,9 +436,7 @@ namespace LibAtem.ComparisonTests2.MixEffects
         public void TestBorderLightSourceDirection()
         {
             using (var helper = new AtemComparisonHelper(Client, Output))
-            {
                 GetFrames().ForEach(f => new FlyKeyFrameBorderLightSourceDirectionTestDefinition(helper, f).Run());
-            }
         }
 
         private class FlyKeyFrameBorderLightSourceAltitudeTestDefinition : FlyKeyFrameTestDefinition<uint>
@@ -530,11 +445,8 @@ namespace LibAtem.ComparisonTests2.MixEffects
             {
             }
 
-            public override void Prepare()
-            {
-                // Ensure the first value will have a change
-                _sdk.SetBorderLightSourceAltitude(10);
-            }
+            // Ensure the first value will have a change
+            public override void Prepare() => _sdk.SetBorderLightSourceAltitude(10);
 
             public override string PropertyName => "BorderLightSourceAltitude";
             public override uint MangleBadValue(uint v) => 254;
@@ -547,9 +459,7 @@ namespace LibAtem.ComparisonTests2.MixEffects
         public void TestBorderLightSourceAltitude()
         {
             using (var helper = new AtemComparisonHelper(Client, Output))
-            {
                 GetFrames().ForEach(f => new FlyKeyFrameBorderLightSourceAltitudeTestDefinition(helper, f).Run());
-            }
         }
 
         // TODO - mask

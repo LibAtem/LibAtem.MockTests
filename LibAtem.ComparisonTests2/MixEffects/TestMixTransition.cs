@@ -19,69 +19,57 @@ namespace LibAtem.ComparisonTests2.MixEffects
         {
         }
 
-        private class MixTransitionRateTestDefinition : TestDefinitionBase<uint>
+        private abstract class MixTransitionTestDefinition<T> : TestDefinitionBase2<TransitionMixSetCommand, T>
         {
-            private readonly MixEffectBlockId _id;
-            private readonly IBMDSwitcherTransitionMixParameters _sdk;
+            private readonly MixEffectBlockId _meId;
+            protected readonly IBMDSwitcherTransitionMixParameters _sdk;
 
-            public MixTransitionRateTestDefinition(AtemComparisonHelper helper, Tuple<MixEffectBlockId, IBMDSwitcherTransitionMixParameters> me) : base(helper)
+            public MixTransitionTestDefinition(AtemComparisonHelper helper, Tuple<MixEffectBlockId, IBMDSwitcherTransitionMixParameters> me) : base(helper)
             {
-                _id = me.Item1;
+                _meId = me.Item1;
                 _sdk = me.Item2;
             }
 
-            public override void Prepare()
+            public override void SetupCommand(TransitionMixSetCommand cmd)
             {
-                // Ensure the first value will have a change
-                _sdk.SetRate(20);
+                cmd.Index = _meId;
             }
 
-            public override uint[] GoodValues()
+            public abstract T MangleBadValue(T v);
+
+            public sealed override void UpdateExpectedState(ComparisonState state, bool goodValue, T v)
             {
-                return new uint[] { 1, 18, 28, 95, 234, 244, 250 };
-            }
-            public override uint[] BadValues()
-            {
-                return new uint[] { 251, 255, 0 };
+                ComparisonMixEffectTransitionMixState obj = state.MixEffects[_meId].Transition.Mix;
+                SetCommandProperty(obj, PropertyName, goodValue ? v : MangleBadValue(v));
             }
 
-            public override ICommand GenerateCommand(uint v)
+            public override IEnumerable<CommandQueueKey> ExpectedCommands(bool goodValue, T v)
             {
-                return new TransitionMixSetCommand
-                {
-                    Index = _id,
-                    Rate = v
-                };
+                yield return new CommandQueueKey(new TransitionMixGetCommand() { Index = _meId });
+            }
+        }
+
+        private class MixTransitionRateTestDefinition : MixTransitionTestDefinition<uint>
+        {
+            public MixTransitionRateTestDefinition(AtemComparisonHelper helper, Tuple<MixEffectBlockId, IBMDSwitcherTransitionMixParameters> me) : base(helper, me)
+            {
             }
 
-            public override void UpdateExpectedState(ComparisonState state, bool goodValue, uint v)
-            {
-                if (goodValue)
-                {
-                    state.MixEffects[_id].Transition.Mix.Rate = v;
-                }
-                else
-                {
-                    state.MixEffects[_id].Transition.Mix.Rate = v >= 250 ? 250 : (uint)1;
-                }
-            }
+            // Ensure the first value will have a change
+            public override void Prepare() => _sdk.SetRate(20);
 
-            public override IEnumerable<CommandQueueKey> ExpectedCommands(bool goodValue, uint v)
-            {
-                yield return new CommandQueueKey(new TransitionMixGetCommand() { Index = _id });
-            }
+            public override string PropertyName => "Rate";
+            public override uint MangleBadValue(uint v) => v >= 250 ? 250 : (uint)1;
+
+            public override uint[] GoodValues => new uint[] { 1, 18, 28, 95, 234, 244, 250 };
+            public override uint[] BadValues => new uint[] { 251, 255, 0 };
         }
         
         [Fact]
         public void TestRate()
         {
             using (var helper = new AtemComparisonHelper(Client, Output))
-            {
-                foreach (var me in GetMixEffects<IBMDSwitcherTransitionMixParameters>())
-                {
-                    new MixTransitionRateTestDefinition(helper, me).Run();
-                }
-            }
+                GetMixEffects<IBMDSwitcherTransitionMixParameters>().ForEach(k => new MixTransitionRateTestDefinition(helper, k).Run());
         }
     }
 }

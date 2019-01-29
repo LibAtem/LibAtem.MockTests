@@ -98,6 +98,14 @@ namespace LibAtem.ComparisonTests2.Util
             return cmd;
         }
 
+        protected static void SetCommandProperty(object obj, string name, object val)
+        {
+            PropertyInfo prop = obj.GetType().GetProperty(name);
+            if (prop == null) throw new MissingMemberException(name);
+
+            prop.SetValue(obj, val);
+        }
+
         public abstract IEnumerable<CommandQueueKey> ExpectedCommands(bool goodValue, T v);
         public abstract void UpdateExpectedState(ComparisonState state, bool goodValue, T v);
     }
