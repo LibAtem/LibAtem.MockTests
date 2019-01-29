@@ -36,7 +36,7 @@ namespace LibAtem.ComparisonTests2
             }
         }
 
-        private class AuxSourceTestDefinition : TestDefinitionBase<long>
+        private class AuxSourceTestDefinition : TestDefinitionBase2<AuxSourceSetCommand, VideoSource>
         {
             private readonly IBMDSwitcherInputAux _sdk;
             private readonly AuxiliaryId _auxId;
@@ -47,45 +47,23 @@ namespace LibAtem.ComparisonTests2
                 _auxId = id;
             }
 
-            public override void Prepare()
-            {
-                // Ensure the first value will have a change
-                _sdk.SetInputSource((long)VideoSource.ColorBars);
-            }
+            // Ensure the first value will have a change
+            public override void Prepare() => _sdk.SetInputSource((long)VideoSource.ColorBars);
 
-            public override long[] GoodValues()
-            {
-                return VideoSourceLists.All.Where(s => s.IsAvailable(_helper.Profile, InternalPortType.Mask) && s.IsAvailable(SourceAvailability.Auxiliary)).Select(s => (long)s).ToArray();
-            }
-            public override long[] BadValues()
-            {
-                var goodValues = GoodValues();
-                return VideoSourceLists.All.Select(s => (long)s).Where(s => !goodValues.Contains(s)).ToArray();
-            }
+            public override string PropertyName => "Source";
 
-            public override ICommand GenerateCommand(long v)
-            {
-                return new AuxSourceSetCommand
-                {
-                    Id = _auxId,
-                    Source = (VideoSource)v,
-                };
-            }
-
-            public override void UpdateExpectedState(ComparisonState state, bool goodValue, long v)
+            public override VideoSource[] GoodValues => VideoSourceLists.All.Where(s => s.IsAvailable(_helper.Profile, InternalPortType.Mask) && s.IsAvailable(SourceAvailability.Auxiliary)).ToArray();
+            
+            public override void UpdateExpectedState(ComparisonState state, bool goodValue, VideoSource v)
             {
                 if (goodValue)
-                {
                     state.Auxiliaries[_auxId].Source = (VideoSource)v;
-                }
             }
 
-            public override IEnumerable<CommandQueueKey> ExpectedCommands(bool goodValue, long v)
+            public override IEnumerable<CommandQueueKey> ExpectedCommands(bool goodValue, VideoSource v)
             {
                 if (goodValue)
-                {
                     yield return new CommandQueueKey(new AuxSourceGetCommand() { Id = _auxId });
-                }
             }
         }
 

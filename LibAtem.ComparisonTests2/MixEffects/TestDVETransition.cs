@@ -21,7 +21,7 @@ namespace LibAtem.ComparisonTests2.MixEffects
         {
         }
 
-        private abstract class DVETransitionTestDefinition<T> : TestDefinitionBase<T>
+        private abstract class DVETransitionTestDefinition<T> : TestDefinitionBase2<TransitionDVESetCommand, T>
         {
             protected readonly MixEffectBlockId _id;
             protected readonly IBMDSwitcherTransitionDVEParameters _sdk;
@@ -30,6 +30,19 @@ namespace LibAtem.ComparisonTests2.MixEffects
             {
                 _id = me.Item1;
                 _sdk = me.Item2;
+            }
+
+            public override void SetupCommand(TransitionDVESetCommand cmd)
+            {
+                cmd.Index = _id;
+            }
+
+            public abstract T MangleBadValue(T v);
+
+            public override void UpdateExpectedState(ComparisonState state, bool goodValue, T v)
+            {
+                ComparisonMixEffectTransitionDVEState obj = state.MixEffects[_id].Transition.DVE;
+                SetCommandProperty(obj, PropertyName, goodValue ? v : MangleBadValue(v));
             }
 
             public override IEnumerable<CommandQueueKey> ExpectedCommands(bool goodValue, T v)
@@ -44,38 +57,14 @@ namespace LibAtem.ComparisonTests2.MixEffects
             {
             }
 
-            public override void Prepare()
-            {
-                // Ensure the first value will have a change
-                _sdk.SetRate(20);
-            }
+            // Ensure the first value will have a change
+            public override void Prepare() => _sdk.SetRate(20);
 
-            public override uint[] GoodValues()
-            {
-                return new uint[] { 1, 18, 28, 95, 234, 244, 250 };
-            }
-            public override uint[] BadValues()
-            {
-                return new uint[] { 251, 255, 0 };
-            }
+            public override string PropertyName => "Rate";
+            public override uint MangleBadValue(uint v) => v >= 250 ? 250 : (uint)1;
 
-            public override ICommand GenerateCommand(uint v)
-            {
-                return new TransitionDVESetCommand
-                {
-                    Index = _id,
-                    Mask = TransitionDVESetCommand.MaskFlags.Rate,
-                    Rate = v
-                };
-            }
-
-            public override void UpdateExpectedState(ComparisonState state, bool goodValue, uint v)
-            {
-                if (goodValue)
-                    state.MixEffects[_id].Transition.DVE.Rate = v;
-                else
-                    state.MixEffects[_id].Transition.DVE.Rate = v >= 250 ? 250 : (uint)1;
-            }
+            public override uint[] GoodValues => new uint[] { 1, 18, 28, 95, 234, 244, 250 };
+            public override uint[] BadValues => new uint[] { 251, 255, 0 };
 
             public override IEnumerable<CommandQueueKey> ExpectedCommands(bool goodValue, uint v)
             {
@@ -89,12 +78,7 @@ namespace LibAtem.ComparisonTests2.MixEffects
         public void TestRate()
         {
             using (var helper = new AtemComparisonHelper(Client, Output))
-            {
-                foreach (var me in GetMixEffects<IBMDSwitcherTransitionDVEParameters>())
-                {
-                    new DVETransitionRateTestDefinition(helper, me).Run();
-                }
-            }
+                GetMixEffects<IBMDSwitcherTransitionDVEParameters>().ForEach(k => new DVETransitionRateTestDefinition(helper, k).Run());
         }
 
         private class DVETransitionLogoRateTestDefinition : DVETransitionTestDefinition<uint>
@@ -103,38 +87,14 @@ namespace LibAtem.ComparisonTests2.MixEffects
             {
             }
 
-            public override void Prepare()
-            {
-                // Ensure the first value will have a change
-                _sdk.SetLogoRate(20);
-            }
+            // Ensure the first value will have a change
+            public override void Prepare() => _sdk.SetLogoRate(20);
 
-            public override uint[] GoodValues()
-            {
-                return new uint[] { 1, 18, 28, 95, 234, 244, 250 };
-            }
-            public override uint[] BadValues()
-            {
-                return new uint[] { 251, 255, 0 };
-            }
+            public override string PropertyName => "LogoRate";
+            public override uint MangleBadValue(uint v) => v >= 250 ? 250 : (uint)1;
 
-            public override ICommand GenerateCommand(uint v)
-            {
-                return new TransitionDVESetCommand
-                {
-                    Index = _id,
-                    Mask = TransitionDVESetCommand.MaskFlags.LogoRate,
-                    LogoRate = v
-                };
-            }
-
-            public override void UpdateExpectedState(ComparisonState state, bool goodValue, uint v)
-            {
-                if (goodValue)
-                    state.MixEffects[_id].Transition.DVE.LogoRate = v;
-                else
-                    state.MixEffects[_id].Transition.DVE.LogoRate = v >= 250 ? 250 : (uint)1;
-            }
+            public override uint[] GoodValues => new uint[] { 1, 18, 28, 95, 234, 244, 250 };
+            public override uint[] BadValues => new uint[] { 251, 255, 0 };
 
             public override IEnumerable<CommandQueueKey> ExpectedCommands(bool goodValue, uint v)
             {
@@ -148,12 +108,7 @@ namespace LibAtem.ComparisonTests2.MixEffects
         public void TestLogoRate()
         {
             using (var helper = new AtemComparisonHelper(Client, Output))
-            {
-                foreach (var me in GetMixEffects<IBMDSwitcherTransitionDVEParameters>())
-                {
-                    new DVETransitionLogoRateTestDefinition(helper, me).Run();
-                }
-            }
+                GetMixEffects<IBMDSwitcherTransitionDVEParameters>().ForEach(k => new DVETransitionLogoRateTestDefinition(helper, k).Run());
         }
 
         private class DVETransitionReverseTestDefinition : DVETransitionTestDefinition<bool>
@@ -162,21 +117,11 @@ namespace LibAtem.ComparisonTests2.MixEffects
             {
             }
 
-            public override void Prepare()
-            {
-                // Ensure the first value will have a change
-                _sdk.SetReverse(0);
-            }
+            // Ensure the first value will have a change
+            public override void Prepare() => _sdk.SetReverse(0);
 
-            public override ICommand GenerateCommand(bool v)
-            {
-                return new TransitionDVESetCommand
-                {
-                    Index = _id,
-                    Mask = TransitionDVESetCommand.MaskFlags.Reverse,
-                    Reverse = v
-                };
-            }
+            public override string PropertyName => "Reverse";
+            public override bool MangleBadValue(bool v) => v;
 
             public override void UpdateExpectedState(ComparisonState state, bool goodValue, bool v)
             {
@@ -189,12 +134,7 @@ namespace LibAtem.ComparisonTests2.MixEffects
         public void TestReverse()
         {
             using (var helper = new AtemComparisonHelper(Client, Output))
-            {
-                foreach (var me in GetMixEffects<IBMDSwitcherTransitionDVEParameters>())
-                {
-                    new DVETransitionReverseTestDefinition(helper, me).Run();
-                }
-            }
+                GetMixEffects<IBMDSwitcherTransitionDVEParameters>().ForEach(k => new DVETransitionReverseTestDefinition(helper, k).Run());
         }
 
         private class DVETransitionFlipFlopTestDefinition : DVETransitionTestDefinition<bool>
@@ -203,21 +143,11 @@ namespace LibAtem.ComparisonTests2.MixEffects
             {
             }
 
-            public override void Prepare()
-            {
-                // Ensure the first value will have a change
-                _sdk.SetFlipFlop(0);
-            }
+            // Ensure the first value will have a change
+            public override void Prepare() => _sdk.SetFlipFlop(0);
 
-            public override ICommand GenerateCommand(bool v)
-            {
-                return new TransitionDVESetCommand
-                {
-                    Index = _id,
-                    Mask = TransitionDVESetCommand.MaskFlags.FlipFlop,
-                    FlipFlop = v
-                };
-            }
+            public override string PropertyName => "FlipFlop";
+            public override bool MangleBadValue(bool v) => v;
 
             public override void UpdateExpectedState(ComparisonState state, bool goodValue, bool v)
             {
@@ -230,12 +160,7 @@ namespace LibAtem.ComparisonTests2.MixEffects
         public void TestFlipFlop()
         {
             using (var helper = new AtemComparisonHelper(Client, Output))
-            {
-                foreach (var me in GetMixEffects<IBMDSwitcherTransitionDVEParameters>())
-                {
-                    new DVETransitionFlipFlopTestDefinition(helper, me).Run();
-                }
-            }
+                GetMixEffects<IBMDSwitcherTransitionDVEParameters>().ForEach(k => new DVETransitionFlipFlopTestDefinition(helper, k).Run());
         }
 
         // TODO: GetStyle, DoesSupportStyle, GetNumSupportedStyles, GetSupportedStyle
@@ -246,27 +171,14 @@ namespace LibAtem.ComparisonTests2.MixEffects
             {
             }
 
-            public override void Prepare()
-            {
-                // Ensure the first value will have a change
-                _sdk.SetInputFill((long)VideoSource.ColorBars);
-            }
+            // Ensure the first value will have a change
+            public override void Prepare() => _sdk.SetInputFill((long)VideoSource.ColorBars);
 
-            public override VideoSource[] GoodValues()
-            {
-                return VideoSourceLists.All.Where(s => s.IsAvailable(_helper.Profile, InternalPortType.Mask) && s.IsAvailable(_id)).ToArray();
-            }
+            public override string PropertyName => "FillSource";
 
-            public override ICommand GenerateCommand(VideoSource v)
-            {
-                return new TransitionDVESetCommand
-                {
-                    Index = _id,
-                    Mask = TransitionDVESetCommand.MaskFlags.FillSource,
-                    FillSource = v
-                };
-            }
-
+            public override VideoSource[] GoodValues => VideoSourceLists.All.Where(s => s.IsAvailable(_helper.Profile, InternalPortType.Mask) && s.IsAvailable(_id)).ToArray();
+            
+            public override VideoSource MangleBadValue(VideoSource v) => v;
             public override void UpdateExpectedState(ComparisonState state, bool goodValue, VideoSource v)
             {
                 if (goodValue)
@@ -307,27 +219,14 @@ namespace LibAtem.ComparisonTests2.MixEffects
             {
             }
 
-            public override void Prepare()
-            {
-                // Ensure the first value will have a change
-                _sdk.SetInputCut((long)VideoSource.ColorBars);
-            }
+            // Ensure the first value will have a change
+            public override void Prepare() => _sdk.SetInputCut((long)VideoSource.ColorBars);
 
-            public override VideoSource[] GoodValues()
-            {
-                return VideoSourceLists.All.Where(s => s.IsAvailable(_helper.Profile, InternalPortType.Mask) && s.IsAvailable(_id) && s.IsAvailable(SourceAvailability.KeySource)).ToArray();
-            }
+            public override string PropertyName => "KeySource";
 
-            public override ICommand GenerateCommand(VideoSource v)
-            {
-                return new TransitionDVESetCommand
-                {
-                    Index = _id,
-                    Mask = TransitionDVESetCommand.MaskFlags.KeySource,
-                    KeySource = v
-                };
-            }
+            public override VideoSource[] GoodValues => VideoSourceLists.All.Where(s => s.IsAvailable(_helper.Profile, InternalPortType.Mask) && s.IsAvailable(_id) && s.IsAvailable(SourceAvailability.KeySource)).ToArray();
 
+            public override VideoSource MangleBadValue(VideoSource v) => v;
             public override void UpdateExpectedState(ComparisonState state, bool goodValue, VideoSource v)
             {
                 if (goodValue)
@@ -364,38 +263,18 @@ namespace LibAtem.ComparisonTests2.MixEffects
             {
             }
 
-            public override void Prepare()
-            {
-                // Ensure the first value will have a change
-                _sdk.SetEnableKey(0);
-            }
+            // Ensure the first value will have a change
+            public override void Prepare() => _sdk.SetEnableKey(0);
 
-            public override ICommand GenerateCommand(bool v)
-            {
-                return new TransitionDVESetCommand
-                {
-                    Index = _id,
-                    Mask = TransitionDVESetCommand.MaskFlags.EnableKey,
-                    EnableKey = v
-                };
-            }
-
-            public override void UpdateExpectedState(ComparisonState state, bool goodValue, bool v)
-            {
-                state.MixEffects[_id].Transition.DVE.EnableKey = v;
-            }
+            public override string PropertyName => "EnableKey";
+            public override bool MangleBadValue(bool v) => v;
         }
 
         [Fact]
         public void TestEnableKey()
         {
             using (var helper = new AtemComparisonHelper(Client, Output))
-            {
-                foreach (var me in GetMixEffects<IBMDSwitcherTransitionDVEParameters>())
-                {
-                    new DVETransitionEnableKeyTestDefinition(helper, me).Run();
-                }
-            }
+                GetMixEffects<IBMDSwitcherTransitionDVEParameters>().ForEach(k => new DVETransitionEnableKeyTestDefinition(helper, k).Run());
         }
 
         private class DVETransitionPreMultipliedTestDefinition : DVETransitionTestDefinition<bool>
@@ -404,21 +283,11 @@ namespace LibAtem.ComparisonTests2.MixEffects
             {
             }
 
-            public override void Prepare()
-            {
-                // Ensure the first value will have a change
-                _sdk.SetPreMultiplied(0);
-            }
+            // Ensure the first value will have a change
+            public override void Prepare() => _sdk.SetPreMultiplied(0);
 
-            public override ICommand GenerateCommand(bool v)
-            {
-                return new TransitionDVESetCommand
-                {
-                    Index = _id,
-                    Mask = TransitionDVESetCommand.MaskFlags.PreMultiplied,
-                    PreMultiplied = v
-                };
-            }
+            public override string PropertyName => "PreMultiplied";
+            public override bool MangleBadValue(bool v) => v;
 
             public override void UpdateExpectedState(ComparisonState state, bool goodValue, bool v)
             {
@@ -431,12 +300,7 @@ namespace LibAtem.ComparisonTests2.MixEffects
         public void TestPreMultiplied()
         {
             using (var helper = new AtemComparisonHelper(Client, Output))
-            {
-                foreach (var me in GetMixEffects<IBMDSwitcherTransitionDVEParameters>())
-                {
-                    new DVETransitionPreMultipliedTestDefinition(helper, me).Run();
-                }
-            }
+                GetMixEffects<IBMDSwitcherTransitionDVEParameters>().ForEach(k => new DVETransitionPreMultipliedTestDefinition(helper, k).Run());
         }
 
         private class DVETransitionClipTestDefinition : DVETransitionTestDefinition<double>
@@ -445,43 +309,19 @@ namespace LibAtem.ComparisonTests2.MixEffects
             {
             }
 
-            public override void Prepare()
-            {
-                // Ensure the first value will have a change
-                _sdk.SetClip(20);
-            }
+            // Ensure the first value will have a change
+            public override void Prepare() => _sdk.SetClip(20);
 
-            public override double[] GoodValues()
-            {
-                return new double[] { 0, 87.4, 14.7, 99.9, 100, 0.1 };
-            }
-            public override double[] BadValues()
-            {
-                return new double[] { 100.1, 110, 101, -0.01, -1, -10 };
-            }
+            public override string PropertyName => "Clip";
+            public override double MangleBadValue(double v) => v;
 
-            public override ICommand GenerateCommand(double v)
-            {
-                return new TransitionDVESetCommand
-                {
-                    Index = _id,
-                    Mask = TransitionDVESetCommand.MaskFlags.Clip,
-                    Clip = v
-                };
-            }
+            public override double[] GoodValues => new double[] { 0, 87.4, 14.7, 99.9, 100, 0.1 };
+            public override double[] BadValues => new double[] { 100.1, 110, 101, -0.01, -1, -10 };
 
             public override void UpdateExpectedState(ComparisonState state, bool goodValue, double v)
             {
-                if (goodValue)
-                {
-                    state.MixEffects[_id].Transition.DVE.Clip = v;
-                    state.MixEffects[_id].Transition.Stinger.Clip = v;
-                }
-                else
-                {
-                    state.MixEffects[_id].Transition.DVE.Clip = v > 100 ? 100 : 0;
-                    state.MixEffects[_id].Transition.Stinger.Clip = v > 100 ? 100 : 0;
-                }
+                state.MixEffects[_id].Transition.DVE.Clip = goodValue ? v : v > 100 ? 100 : 0;
+                state.MixEffects[_id].Transition.Stinger.Clip = goodValue ? v : v > 100 ? 100 : 0;
             }
         }
 
@@ -489,12 +329,7 @@ namespace LibAtem.ComparisonTests2.MixEffects
         public void TestClip()
         {
             using (var helper = new AtemComparisonHelper(Client, Output))
-            {
-                foreach (var me in GetMixEffects<IBMDSwitcherTransitionDVEParameters>())
-                {
-                    new DVETransitionClipTestDefinition(helper, me).Run();
-                }
-            }
+                GetMixEffects<IBMDSwitcherTransitionDVEParameters>().ForEach(k => new DVETransitionClipTestDefinition(helper, k).Run());
         }
 
         private class DVETransitionGainTestDefinition : DVETransitionTestDefinition<double>
@@ -503,43 +338,19 @@ namespace LibAtem.ComparisonTests2.MixEffects
             {
             }
 
-            public override void Prepare()
-            {
-                // Ensure the first value will have a change
-                _sdk.SetGain(20);
-            }
+            // Ensure the first value will have a change
+            public override void Prepare() => _sdk.SetGain(20);
 
-            public override double[] GoodValues()
-            {
-                return new double[] { 0, 87.4, 14.7, 99.9, 100, 0.1 };
-            }
-            public override double[] BadValues()
-            {
-                return new double[] { 100.1, 110, 101, -0.01, -1, -10 };
-            }
+            public override string PropertyName => "Gain";
+            public override double MangleBadValue(double v) => v;
 
-            public override ICommand GenerateCommand(double v)
-            {
-                return new TransitionDVESetCommand
-                {
-                    Index = _id,
-                    Mask = TransitionDVESetCommand.MaskFlags.Gain,
-                    Gain = v
-                };
-            }
-
+            public override double[] GoodValues => new double[] { 0, 87.4, 14.7, 99.9, 100, 0.1 };
+            public override double[] BadValues => new double[] { 100.1, 110, 101, -0.01, -1, -10 };
+            
             public override void UpdateExpectedState(ComparisonState state, bool goodValue, double v)
             {
-                if (goodValue)
-                {
-                    state.MixEffects[_id].Transition.DVE.Gain = v;
-                    state.MixEffects[_id].Transition.Stinger.Gain = v;
-                }
-                else
-                {
-                    state.MixEffects[_id].Transition.DVE.Gain = v > 100 ? 100 : 0;
-                    state.MixEffects[_id].Transition.Stinger.Gain = v > 100 ? 100 : 0;
-                }
+                state.MixEffects[_id].Transition.DVE.Gain = goodValue ? v : v > 100 ? 100 : 0;
+                state.MixEffects[_id].Transition.Stinger.Gain = goodValue ? v : v > 100 ? 100 : 0;
             }
         }
 
@@ -547,12 +358,7 @@ namespace LibAtem.ComparisonTests2.MixEffects
         public void TestGain()
         {
             using (var helper = new AtemComparisonHelper(Client, Output))
-            {
-                foreach (var me in GetMixEffects<IBMDSwitcherTransitionDVEParameters>())
-                {
-                    new DVETransitionGainTestDefinition(helper, me).Run();
-                }
-            }
+                GetMixEffects<IBMDSwitcherTransitionDVEParameters>().ForEach(k => new DVETransitionGainTestDefinition(helper, k).Run());
         }
 
         private class DVETransitionInvertKeyTestDefinition : DVETransitionTestDefinition<bool>
@@ -561,21 +367,11 @@ namespace LibAtem.ComparisonTests2.MixEffects
             {
             }
 
-            public override void Prepare()
-            {
-                // Ensure the first value will have a change
-                _sdk.SetInverse(0);
-            }
+            // Ensure the first value will have a change
+            public override void Prepare() => _sdk.SetInverse(0);
 
-            public override ICommand GenerateCommand(bool v)
-            {
-                return new TransitionDVESetCommand
-                {
-                    Index = _id,
-                    Mask = TransitionDVESetCommand.MaskFlags.InvertKey,
-                    InvertKey = v
-                };
-            }
+            public override string PropertyName => "InvertKey";
+            public override bool MangleBadValue(bool v) => v;
 
             public override void UpdateExpectedState(ComparisonState state, bool goodValue, bool v)
             {
@@ -588,12 +384,7 @@ namespace LibAtem.ComparisonTests2.MixEffects
         public void TestInvertKey()
         {
             using (var helper = new AtemComparisonHelper(Client, Output))
-            {
-                foreach (var me in GetMixEffects<IBMDSwitcherTransitionDVEParameters>())
-                {
-                    new DVETransitionInvertKeyTestDefinition(helper, me).Run();
-                }
-            }
+                GetMixEffects<IBMDSwitcherTransitionDVEParameters>().ForEach(k => new DVETransitionInvertKeyTestDefinition(helper, k).Run());
         }
     }
 }

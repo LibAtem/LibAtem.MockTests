@@ -315,7 +315,7 @@ namespace LibAtem.ComparisonTests2.State
         public bool Mute { get; set; }
 
         public bool Solo { get; set; }
-        public AudioSource SoloInput { get; set; }
+        public AudioSource SoloSource { get; set; }
 
         public bool Dim { get; set; }
     }
@@ -523,16 +523,16 @@ namespace LibAtem.ComparisonTests2.State
     public class ComparisonMixEffectKeyerDVEState
     {
         public bool BorderEnabled { get; set; }
-        public bool BorderShadow { get; set; }
+        public bool BorderShadowEnabled { get; set; }
         public BorderBevel BorderBevel { get; set; }
         [Tolerance(0.01)]
-        public double OuterWidth { get; set; }
+        public double BorderOuterWidth { get; set; }
         [Tolerance(0.01)]
-        public double InnerWidth { get; set; }
-        public uint OuterSoftness { get; set; }
-        public uint InnerSoftness { get; set; }
-        public uint BevelSoftness { get; set; }
-        public uint BevelPosition { get; set; }
+        public double BorderInnerWidth { get; set; }
+        public uint BorderOuterSoftness { get; set; }
+        public uint BorderInnerSoftness { get; set; }
+        public uint BorderBevelSoftness { get; set; }
+        public uint BorderBevelPosition { get; set; }
 
         public uint BorderOpacity { get; set; }
         [Tolerance(0.01)]

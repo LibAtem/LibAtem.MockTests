@@ -74,6 +74,7 @@ namespace LibAtem.ComparisonTests2.Util
             var typeInfo = cmd.GetType();
 
             PropertyInfo prop = typeInfo.GetProperty(PropertyName);
+            if (prop == null) throw new MissingMemberException(PropertyName);
             prop.SetValue(cmd, v);
 
             PropertyInfo maskProp = typeInfo.GetProperty("Mask");

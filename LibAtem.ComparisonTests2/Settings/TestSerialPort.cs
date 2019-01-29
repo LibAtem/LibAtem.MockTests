@@ -49,7 +49,7 @@ namespace LibAtem.ComparisonTests2.Settings
             }
         }
 
-        private class SerialPortFunctionTestDefinition : TestDefinitionBase<SerialMode>
+        private class SerialPortFunctionTestDefinition : TestDefinitionBase2<SerialPortModeCommand, SerialMode>
         {
             private readonly IBMDSwitcherSerialPort _sdk;
 
@@ -58,24 +58,12 @@ namespace LibAtem.ComparisonTests2.Settings
                 _sdk = sdk;
             }
 
-            public override void Prepare()
-            {
-                // Ensure the first value will have a change
-                _sdk.SetFunction(AtemEnumMaps.SerialModeMap.Values.ToArray()[1]);
-            }
+            // Ensure the first value will have a change
+            public override void Prepare() => _sdk.SetFunction(AtemEnumMaps.SerialModeMap.Values.ToArray()[1]);
 
-            public override SerialMode[] GoodValues()
-            {
-                return AtemEnumMaps.SerialModeMap.Keys.ToArray();
-            }
+            public override string PropertyName => "SerialMode";
 
-            public override ICommand GenerateCommand(SerialMode v)
-            {
-                return new SerialPortModeCommand
-                {
-                    SerialMode = v
-                };
-            }
+            public override SerialMode[] GoodValues => AtemEnumMaps.SerialModeMap.Keys.ToArray();
 
             public override void UpdateExpectedState(ComparisonState state, bool goodValue, SerialMode v)
             {

@@ -61,7 +61,7 @@ namespace LibAtem.ComparisonTests2.Settings
             }
         }
 
-        private abstract class MultiviewTestDefinition<T> : TestDefinitionBase<T>
+        private abstract class MultiviewTestDefinition<T> : TestDefinitionBase2<MultiviewPropertiesSetCommand, T>
         {
             protected readonly uint _id;
             protected readonly IBMDSwitcherMultiView _sdk;
@@ -70,6 +70,19 @@ namespace LibAtem.ComparisonTests2.Settings
             {
                 _id = mv.Item1;
                 _sdk = mv.Item2;
+            }
+
+            public override void SetupCommand(MultiviewPropertiesSetCommand cmd)
+            {
+                cmd.MultiviewIndex = _id;
+            }
+
+            public abstract T MangleBadValue(T v);
+
+            public override void UpdateExpectedState(ComparisonState state, bool goodValue, T v)
+            {
+                ComparisonSettingsMultiViewState obj = state.Settings.MultiViews[_id];
+                SetCommandProperty(obj, PropertyName, goodValue ? v : MangleBadValue(v));
             }
 
             public override IEnumerable<CommandQueueKey> ExpectedCommands(bool goodValue, T v)
@@ -84,43 +97,20 @@ namespace LibAtem.ComparisonTests2.Settings
             {
             }
 
-            public override void Prepare()
-            {
-                // Ensure the first value will have a change
-                _sdk.SetLayout(_BMDSwitcherMultiViewLayout.bmdSwitcherMultiViewLayoutProgramRight);
-            }
+            // Ensure the first value will have a change
+            public override void Prepare() => _sdk.SetLayout(_BMDSwitcherMultiViewLayout.bmdSwitcherMultiViewLayoutProgramRight);
 
-            public override ICommand GenerateCommand(MultiViewLayout v)
-            {
-                return new MultiviewPropertiesSetCommand
-                {
-                    MultiviewIndex = _id,
-                    Mask = MultiviewPropertiesSetCommand.MaskFlags.Layout,
-                    Layout = v,
-                };
-            }
+            public override string PropertyName => "Layout";
+            public override MultiViewLayout MangleBadValue(MultiViewLayout v) => v;
 
-            public override void UpdateExpectedState(ComparisonState state, bool goodValue, MultiViewLayout v)
-            {
-                state.Settings.MultiViews[_id].Layout = v;
-            }
-
-            public override MultiViewLayout[] GoodValues()
-            {
-                return Enum.GetValues(typeof(MultiViewLayout)).OfType<MultiViewLayout>().ToArray();
-            }
+            public override MultiViewLayout[] GoodValues => Enum.GetValues(typeof(MultiViewLayout)).OfType<MultiViewLayout>().ToArray();
         }
 
         [Fact]
         public void TestLayout()
         {
             using (var helper = new AtemComparisonHelper(_client, _output))
-            {
-                foreach (Tuple<uint, IBMDSwitcherMultiView> mv in GetMultiviewers())
-                {
-                    new MultiviewLayoutTestDefinition(helper, mv).Run();
-                }
-            }
+                GetMultiviewers().ForEach(k => new MultiviewLayoutTestDefinition(helper, k).Run());
         }
 
         [Fact]
@@ -137,23 +127,15 @@ namespace LibAtem.ComparisonTests2.Settings
         {
             public MultiviewProgramPreviewSwappedTestDefinition(AtemComparisonHelper helper, Tuple<uint, IBMDSwitcherMultiView> mv) : base(helper, mv)
             {
+                mv.Item2.SupportsProgramPreviewSwap(out int canTest);
+                Skip.If(canTest == 0, "Model does not support Multiview.ProgramPreviewSwapped");
             }
 
-            public override void Prepare()
-            {
-                // Ensure the first value will have a change
-                _sdk.SetProgramPreviewSwapped(0);
-            }
+            // Ensure the first value will have a change
+            public override void Prepare() => _sdk.SetProgramPreviewSwapped(0);
 
-            public override ICommand GenerateCommand(bool v)
-            {
-                return new MultiviewPropertiesSetCommand
-                {
-                    MultiviewIndex = _id,
-                    Mask = MultiviewPropertiesSetCommand.MaskFlags.ProgramPreviewSwapped,
-                    ProgramPreviewSwapped = v,
-                };
-            }
+            public override string PropertyName => "ProgramPreviewSwapped";
+            public override bool MangleBadValue(bool v) => v;
 
             public override void UpdateExpectedState(ComparisonState state, bool goodValue, bool v)
             {
@@ -174,15 +156,7 @@ namespace LibAtem.ComparisonTests2.Settings
         public void TestProgramPreviewSwapped()
         {
             using (var helper = new AtemComparisonHelper(_client, _output))
-            {
-                foreach (Tuple<uint, IBMDSwitcherMultiView> mv in GetMultiviewers())
-                {
-                    mv.Item2.SupportsProgramPreviewSwap(out int canTest);
-                    Skip.If(canTest == 0, "Model does not support Multiview.ProgramPreviewSwapped");
-
-                    new MultiviewProgramPreviewSwappedTestDefinition(helper, mv).Run();
-                }
-            }
+                GetMultiviewers().ForEach(k => new MultiviewProgramPreviewSwappedTestDefinition(helper, k).Run());
         }
 
         [Fact]
@@ -199,53 +173,36 @@ namespace LibAtem.ComparisonTests2.Settings
         {
             public MultiviewToggleSafeAreaTestDefinition(AtemComparisonHelper helper, Tuple<uint, IBMDSwitcherMultiView> mv) : base(helper, mv)
             {
+                mv.Item2.SupportsProgramPreviewSwap(out int canTest);
+                Skip.If(canTest == 0, "Model does not support Multiview.ProgramPreviewSwapped");
             }
 
-            public override void Prepare()
-            {
-                // Ensure the first value will have a change
-                _sdk.SetSafeAreaEnabled(0);
-            }
+            // Ensure the first value will have a change
+            public override void Prepare() => _sdk.SetSafeAreaEnabled(0);
 
-            public override ICommand GenerateCommand(bool v)
-            {
-                return new MultiviewPropertiesSetCommand
-                {
-                    MultiviewIndex = _id,
-                    Mask = MultiviewPropertiesSetCommand.MaskFlags.SafeAreaEnabled,
-                    SafeAreaEnabled = v,
-                };
-            }
-
-            public override void UpdateExpectedState(ComparisonState state, bool goodValue, bool v)
-            {
-                state.Settings.MultiViews[_id].SafeAreaEnabled = v;
-            }
+            public override string PropertyName => "SafeAreaEnabled";
+            public override bool MangleBadValue(bool v) => v;
         }
 
         [SkippableFact]
         public void TestToggleSafeArea()
         {
             using (var helper = new AtemComparisonHelper(_client, _output))
-            {
-                foreach (Tuple<uint, IBMDSwitcherMultiView> mv in GetMultiviewers())
-                {
-                    mv.Item2.SupportsProgramPreviewSwap(out int canTest);
-                    Skip.If(canTest == 0, "Model does not support Multiview.ProgramPreviewSwapped");
-
-                    new MultiviewToggleSafeAreaTestDefinition(helper, mv).Run();
-                }
-            }
+                GetMultiviewers().ForEach(k => new MultiviewToggleSafeAreaTestDefinition(helper, k).Run());
         }
 
-        private class MultiviewUnroutableWindowSourcesTestDefinition : MultiviewTestDefinition<VideoSource>
+        private class MultiviewUnroutableWindowSourcesTestDefinition : TestDefinitionBase2<MultiviewWindowInputSetCommand, VideoSource>
         {
+            private readonly uint _id;
             private readonly uint _window;
+            private readonly IBMDSwitcherMultiView _sdk;
             private readonly bool _quick;
 
-            public MultiviewUnroutableWindowSourcesTestDefinition(AtemComparisonHelper helper, Tuple<uint, IBMDSwitcherMultiView> mv, uint window, bool quick) : base(helper, mv)
+            public MultiviewUnroutableWindowSourcesTestDefinition(AtemComparisonHelper helper, Tuple<uint, IBMDSwitcherMultiView> mv, uint window, bool quick) : base(helper)
             {
+                _id = mv.Item1;
                 _window = window;
+                _sdk = mv.Item2;
                 _quick = quick;
             }
 
@@ -253,29 +210,27 @@ namespace LibAtem.ComparisonTests2.Settings
             {
             }
 
-            public override ICommand GenerateCommand(VideoSource v)
+            public override string PropertyName => "Source";
+
+            public override void SetupCommand(MultiviewWindowInputSetCommand cmd)
             {
-                return new MultiviewWindowInputSetCommand
-                {
-                    MultiviewIndex = _id,
-                    WindowIndex = _window,
-                    Source = v
-                };
+                cmd.MultiviewIndex = _id;
+                cmd.WindowIndex = _window;
             }
 
             public override void UpdateExpectedState(ComparisonState state, bool goodValue, VideoSource v)
             {
             }
 
-            public override VideoSource[] GoodValues()
+            public override VideoSource[] GoodValues => new VideoSource[0];
+            public override VideoSource[] BadValues
             {
-                return new VideoSource[0];
-            }
-            public override VideoSource[] BadValues()
-            {
-                if (_quick)
-                    return new VideoSource[] { VideoSource.ColorBars, VideoSource.Input1 };
-                return VideoSourceLists.All.ToArray();
+                get
+                {
+                    if (_quick)
+                        return new VideoSource[] { VideoSource.ColorBars, VideoSource.Input1 };
+                    return VideoSourceLists.All.ToArray();
+                }
             }
 
             public override IEnumerable<CommandQueueKey> ExpectedCommands(bool goodValue, VideoSource v)
@@ -284,27 +239,29 @@ namespace LibAtem.ComparisonTests2.Settings
             }
         }
 
-        private class MultiviewPvwPgmSetVuMeterTestDefinition : MultiviewTestDefinition<bool>
+        private class MultiviewPvwPgmSetVuMeterTestDefinition : TestDefinitionBase2<MultiviewWindowVuMeterSetCommand, bool>
         {
+            private readonly uint _id;
             private readonly uint _window;
+            private readonly IBMDSwitcherMultiView _sdk;
 
-            public MultiviewPvwPgmSetVuMeterTestDefinition(AtemComparisonHelper helper, Tuple<uint, IBMDSwitcherMultiView> mv, uint window) : base(helper, mv)
+            public MultiviewPvwPgmSetVuMeterTestDefinition(AtemComparisonHelper helper, Tuple<uint, IBMDSwitcherMultiView> mv, uint window) : base(helper)
             {
+                _id = mv.Item1;
                 _window = window;
+                _sdk = mv.Item2;
             }
 
             public override void Prepare()
             {
             }
 
-            public override ICommand GenerateCommand(bool v)
+            public override string PropertyName => "VuEnabled";
+
+            public override void SetupCommand(MultiviewWindowVuMeterSetCommand cmd)
             {
-                return new MultiviewWindowVuMeterSetCommand()
-                {
-                    MultiviewIndex = _id,
-                    WindowIndex = _window,
-                    VuEnabled = v,
-                };
+                cmd.MultiviewIndex = _id;
+                cmd.WindowIndex = _window;
             }
 
             public override void UpdateExpectedState(ComparisonState state, bool goodValue, bool v)
@@ -319,34 +276,33 @@ namespace LibAtem.ComparisonTests2.Settings
 
             public override IEnumerable<CommandQueueKey> ExpectedCommands(bool goodValue, bool v)
             {
-                return new CommandQueueKey[0];
+                yield break;
             }
         }
-        private class MultiviewRoutableWindowSourcesTestDefinition : MultiviewTestDefinition<VideoSource>
+        private class MultiviewRoutableWindowSourcesTestDefinition : TestDefinitionBase2<MultiviewWindowInputSetCommand, VideoSource>
         {
+            private readonly uint _id;
             private readonly uint _window;
+            private readonly IBMDSwitcherMultiView _sdk;
             private readonly bool _quick;
 
-            public MultiviewRoutableWindowSourcesTestDefinition(AtemComparisonHelper helper, Tuple<uint, IBMDSwitcherMultiView> mv, uint window, bool quick) : base(helper, mv)
+            public MultiviewRoutableWindowSourcesTestDefinition(AtemComparisonHelper helper, Tuple<uint, IBMDSwitcherMultiView> mv, uint window, bool quick) : base(helper)
             {
+                _id = mv.Item1;
                 _window = window;
+                _sdk = mv.Item2;
                 _quick = quick;
             }
 
-            public override void Prepare()
+            public override string PropertyName => "Source";
+
+            public override void SetupCommand(MultiviewWindowInputSetCommand cmd)
             {
-                _sdk.SetWindowInput(_window, (long)VideoSource.ColorBars);
+                cmd.MultiviewIndex = _id;
+                cmd.WindowIndex = _window;
             }
 
-            public override ICommand GenerateCommand(VideoSource v)
-            {
-                return new MultiviewWindowInputSetCommand
-                {
-                    MultiviewIndex = _id,
-                    WindowIndex = _window,
-                    Source = v
-                };
-            }
+            public override void Prepare() => _sdk.SetWindowInput(_window, (long)VideoSource.ColorBars);
 
             public override void UpdateExpectedState(ComparisonState state, bool goodValue, VideoSource v)
             {
@@ -354,20 +310,26 @@ namespace LibAtem.ComparisonTests2.Settings
                     state.Settings.MultiViews[_id].Windows[(int)_window].Source = v;
             }
 
-            public override VideoSource[] GoodValues()
+            public override VideoSource[] GoodValues
             {
-                var ignorePortTypes = new List<InternalPortType>();
-                ignorePortTypes.Add(InternalPortType.Mask); // TODO - dynamic based on model
+                get
+                {
+                    var ignorePortTypes = new List<InternalPortType>();
+                    ignorePortTypes.Add(InternalPortType.Mask); // TODO - dynamic based on model
 
-                if (_quick)
-                    return new[] { VideoSource.Black, VideoSource.ColorBars };
-                return VideoSourceLists.All.Where(s => s.IsAvailable(_helper.Profile, ignorePortTypes.ToArray()) && s.IsAvailable(SourceAvailability.Multiviewer)).ToArray();
+                    if (_quick)
+                        return new[] { VideoSource.Black, VideoSource.ColorBars };
+                    return VideoSourceLists.All.Where(s => s.IsAvailable(_helper.Profile, ignorePortTypes.ToArray()) && s.IsAvailable(SourceAvailability.Multiviewer)).ToArray();
+                }
             }
-            public override VideoSource[] BadValues()
+            public override VideoSource[] BadValues
             {
-                if (_quick)
-                    return new VideoSource[0];
-                return base.BadValues();
+                get
+                {
+                    if (_quick)
+                        return new VideoSource[0];
+                    return base.BadValues;
+                }
             }
 
             public override IEnumerable<CommandQueueKey> ExpectedCommands(bool goodValue, VideoSource v)
@@ -376,29 +338,27 @@ namespace LibAtem.ComparisonTests2.Settings
                     yield return new CommandQueueKey(new MultiviewWindowInputGetCommand() { MultiviewIndex = _id, WindowIndex = _window });
             }
         }
-        private class MultiviewRoutableWindowVuMeterTestDefinition : MultiviewTestDefinition<bool>
+        private class MultiviewRoutableWindowVuMeterTestDefinition : TestDefinitionBase2<MultiviewWindowVuMeterSetCommand, bool>
         {
+            private readonly uint _id;
             private readonly uint _window;
+            private readonly IBMDSwitcherMultiView _sdk;
 
-            public MultiviewRoutableWindowVuMeterTestDefinition(AtemComparisonHelper helper, Tuple<uint, IBMDSwitcherMultiView> mv, uint window) : base(helper, mv)
+            public MultiviewRoutableWindowVuMeterTestDefinition(AtemComparisonHelper helper, Tuple<uint, IBMDSwitcherMultiView> mv, uint window) : base(helper)
             {
+                _id = mv.Item1;
                 _window = window;
+                _sdk = mv.Item2;
             }
 
-            public override void Prepare()
-            {
-                _sdk.SetWindowInput(_window, (long)VideoSource.Input1);
-                //_helper.Sleep();
-            }
+            public override void Prepare() => _sdk.SetWindowInput(_window, (long)VideoSource.Input1);
 
-            public override ICommand GenerateCommand(bool v)
+            public override string PropertyName => "VuEnabled";
+
+            public override void SetupCommand(MultiviewWindowVuMeterSetCommand cmd)
             {
-                return new MultiviewWindowVuMeterSetCommand()
-                {
-                    MultiviewIndex = _id,
-                    WindowIndex = _window,
-                    VuEnabled = v,
-                };
+                cmd.MultiviewIndex = _id;
+                cmd.WindowIndex = _window;
             }
 
             public override void UpdateExpectedState(ComparisonState state, bool goodValue, bool v)
@@ -411,7 +371,7 @@ namespace LibAtem.ComparisonTests2.Settings
 
             public override IEnumerable<CommandQueueKey> ExpectedCommands(bool goodValue, bool v)
             {
-                return new CommandQueueKey[0];
+                yield break;
             }
         }
 
@@ -481,25 +441,31 @@ namespace LibAtem.ComparisonTests2.Settings
             }
         }
 
-        private class MultiviewVuOpacityTestDefinition : MultiviewTestDefinition<double>
+        private class MultiviewVuOpacityTestDefinition : TestDefinitionBase2<MultiviewVuOpacityCommand, double>
         {
-            public MultiviewVuOpacityTestDefinition(AtemComparisonHelper helper, Tuple<uint, IBMDSwitcherMultiView> mv) : base(helper, mv)
+            private readonly uint _id;
+            private readonly IBMDSwitcherMultiView _sdk;
+
+            public MultiviewVuOpacityTestDefinition(AtemComparisonHelper helper, Tuple<uint, IBMDSwitcherMultiView> mv) : base(helper)
             {
+                _id = mv.Item1;
+                _sdk = mv.Item2;
+
+                mv.Item2.SupportsVuMeters(out int canTest);
+                Skip.If(canTest == 0, "Model does not support Multiview.SupportsVuMeters");
             }
 
             public override void Prepare()
             {
             }
 
-            public override ICommand GenerateCommand(double v)
-            {
-                return new MultiviewVuOpacityCommand()
-                {
-                    MultiviewIndex = _id,
-                    Opacity= v,
-                };
-            }
+            public override string PropertyName => "Opacity";
 
+            public override void SetupCommand(MultiviewVuOpacityCommand cmd)
+            {
+                cmd.MultiviewIndex = _id;
+            }
+            
             public override void UpdateExpectedState(ComparisonState state, bool goodValue, double v)
             {
                 if (goodValue)
@@ -513,30 +479,15 @@ namespace LibAtem.ComparisonTests2.Settings
                 yield return new CommandQueueKey(new MultiviewVuOpacityCommand() { MultiviewIndex = _id});
             }
 
-            public override double[] GoodValues()
-            {
-                return new double[] { 10, 87, 14, 99, 100, 11 };
-            }
-            public override double[] BadValues()
-            {
-                return new double[] { 100.1, 110, 101, -1, -10, 9 };
-            }
+            public override double[] GoodValues => new double[] { 10, 87, 14, 99, 100, 11 };
+            public override double[] BadValues => new double[] { 100.1, 110, 101, -1, -10, 9 };
         }
         
         [SkippableFact]
         public void TestMultiviewVuMeterOpacity()
         {
             using (var helper = new AtemComparisonHelper(_client, _output))
-            {
-                foreach (Tuple<uint, IBMDSwitcherMultiView> mv in GetMultiviewers())
-                {
-                    mv.Item2.SupportsVuMeters(out int canTest);
-                    Skip.If(canTest == 0, "Model does not support Multiview.SupportsVuMeters");
-
-        
-                    new MultiviewVuOpacityTestDefinition(helper, mv).Run();
-                }
-            }
+                GetMultiviewers().ForEach(k => new MultiviewVuOpacityTestDefinition(helper, k).Run());
         }
     }
 }

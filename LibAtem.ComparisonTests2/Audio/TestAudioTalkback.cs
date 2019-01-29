@@ -7,7 +7,6 @@ using LibAtem.ComparisonTests2.State;
 using LibAtem.ComparisonTests2.Util;
 using System;
 using System.Collections.Generic;
-using System.Runtime.InteropServices;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -36,7 +35,7 @@ namespace LibAtem.ComparisonTests2.Audio
             }
         }
 
-        private class AudioMixerTalkbackMuteSDITestDefinition : TestDefinitionBase<bool>
+        private class AudioMixerTalkbackMuteSDITestDefinition : TestDefinitionBase2<AudioMixerTalkbackPropertiesSetCommand, bool>
         {
             private readonly IBMDSwitcherTalkback _sdk;
 
@@ -45,25 +44,11 @@ namespace LibAtem.ComparisonTests2.Audio
                 _sdk = sdk;
             }
 
-            public override void Prepare()
-            {
-                // Ensure the first value will have a change
-                _sdk.SetMuteSDI(0);
-            }
+            // Ensure the first value will have a change
+            public override void Prepare() => _sdk.SetMuteSDI(0);
 
-            public override ICommand GenerateCommand(bool v)
-            {
-                return new AudioMixerTalkbackPropertiesSetCommand
-                {
-                    Mask = AudioMixerTalkbackPropertiesSetCommand.MaskFlags.MuteSDI,
-                    MuteSDI = v,
-                };
-            }
-
-            public override void UpdateExpectedState(ComparisonState state, bool goodValue, bool v)
-            {
-                state.Audio.Talkback.MuteSDI = v;
-            }
+            public override string PropertyName => "MuteSDI";
+            public override void UpdateExpectedState(ComparisonState state, bool goodValue, bool v) => SetCommandProperty(state, PropertyName, v);
 
             public override IEnumerable<CommandQueueKey> ExpectedCommands(bool goodValue, bool v)
             {

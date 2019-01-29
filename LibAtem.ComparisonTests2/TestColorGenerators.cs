@@ -34,7 +34,7 @@ namespace LibAtem.ComparisonTests2
             }
         }
 
-        private abstract class ColorGeneratorTestDefinition : TestDefinitionBase<double>
+        private abstract class ColorGeneratorTestDefinition : TestDefinitionBase2<ColorGeneratorSetCommand, double>
         {
             protected readonly IBMDSwitcherInputColor _sdk;
             protected readonly ColorGeneratorId _colId;
@@ -45,13 +45,20 @@ namespace LibAtem.ComparisonTests2
                 _colId = AtemEnumMaps.GetSourceIdForGen(id);
             }
 
-            public override double[] GoodValues()
+            public override double[] GoodValues => new double[] { 0, 87.4, 14.7, 99.9, 100, 0.1 };
+            public override double[] BadValues => new double[] { 100.1, 110, 101, -0.01, -1, -10 };
+
+            public override void SetupCommand(ColorGeneratorSetCommand cmd)
             {
-                return new double[] { 0, 87.4, 14.7, 99.9, 100, 0.1 };
+                cmd.Index = _colId;
             }
-            public override double[] BadValues()
+
+            public abstract double MangleBadValue(double v);
+
+            public override void UpdateExpectedState(ComparisonState state, bool goodValue, double v)
             {
-                return new double[] { 100.1, 110, 101, -0.01, -1, -10 };
+                ComparisonColorState obj = state.Colors[_colId];
+                SetCommandProperty(obj, PropertyName, goodValue ? v : MangleBadValue(v));
             }
 
             public override IEnumerable<CommandQueueKey> ExpectedCommands(bool goodValue, double v)
@@ -66,43 +73,18 @@ namespace LibAtem.ComparisonTests2
             {
             }
 
-            public override void Prepare()
+            // Ensure the first value will have a change
+            public override void Prepare() => _sdk.SetHue(20);
+
+            public override string PropertyName => "Hue";
+            public override double MangleBadValue(double v)
             {
-                // Ensure the first value will have a change
-                _sdk.SetHue(20);
+                ushort ui = (ushort)((ushort)(v * 10) % 3600);
+                return ui / 10d;
             }
 
-            public override double[] GoodValues()
-            {
-                return new double[] { 0, 123, 233.4, 359.9 };
-            }
-            public override double[] BadValues()
-            {
-                return new double[] { 360, 360.1, 361, -1, -0.01 };
-            }
-
-            public override ICommand GenerateCommand(double v)
-            {
-                return new ColorGeneratorSetCommand
-                {
-                    Index = _colId,
-                    Mask = ColorGeneratorSetCommand.MaskFlags.Hue,
-                    Hue = v,
-                };
-            }
-
-            public override void UpdateExpectedState(ComparisonState state, bool goodValue, double v)
-            {
-                if (goodValue)
-                {
-                    state.Colors[_colId].Hue = v;
-                }
-                else
-                {
-                    ushort ui = (ushort)((ushort)(v * 10) % 3600);
-                    state.Colors[_colId].Hue = ui / 10d;
-                }
-            }
+            public override double[] GoodValues => new double[] { 0, 123, 233.4, 359.9 };
+            public override double[] BadValues => new double[] { 360, 360.1, 361, -1, -0.01 };
         }
 
         [Fact]
@@ -111,9 +93,7 @@ namespace LibAtem.ComparisonTests2
             using (var helper = new AtemComparisonHelper(_client, _output))
             {
                 foreach (KeyValuePair<VideoSource, IBMDSwitcherInputColor> c in helper.GetSdkInputsOfType<IBMDSwitcherInputColor>())
-                {
                     new ColorGeneratorHueTestDefinition(helper, c.Value, c.Key).Run();
-                }
             }
         }
 
@@ -123,33 +103,11 @@ namespace LibAtem.ComparisonTests2
             {
             }
 
-            public override void Prepare()
-            {
-                // Ensure the first value will have a change
-                _sdk.SetSaturation(20);
-            }
+            // Ensure the first value will have a change
+            public override void Prepare() => _sdk.SetSaturation(20);
 
-            public override ICommand GenerateCommand(double v)
-            {
-                return new ColorGeneratorSetCommand
-                {
-                    Index = _colId,
-                    Mask = ColorGeneratorSetCommand.MaskFlags.Saturation,
-                    Saturation = v,
-                };
-            }
-
-            public override void UpdateExpectedState(ComparisonState state, bool goodValue, double v)
-            {
-                if (goodValue)
-                {
-                    state.Colors[_colId].Saturation = v;
-                }
-                else
-                {
-                    state.Colors[_colId].Saturation = v >= 100 ? 100 : 0;
-                }
-            }
+            public override string PropertyName => "Saturation";
+            public override double MangleBadValue(double v) => v >= 100 ? 100 : 0;
         }
 
         [Fact]
@@ -158,9 +116,7 @@ namespace LibAtem.ComparisonTests2
             using (var helper = new AtemComparisonHelper(_client, _output))
             {
                 foreach (KeyValuePair<VideoSource, IBMDSwitcherInputColor> c in helper.GetSdkInputsOfType<IBMDSwitcherInputColor>())
-                {
                     new ColorGeneratorSaturationTestDefinition(helper, c.Value, c.Key).Run();
-                }
             }
         }
 
@@ -170,33 +126,11 @@ namespace LibAtem.ComparisonTests2
             {
             }
 
-            public override void Prepare()
-            {
-                // Ensure the first value will have a change
-                _sdk.SetLuma(20);
-            }
+            // Ensure the first value will have a change
+            public override void Prepare() => _sdk.SetLuma(20);
 
-            public override ICommand GenerateCommand(double v)
-            {
-                return new ColorGeneratorSetCommand
-                {
-                    Index = _colId,
-                    Mask = ColorGeneratorSetCommand.MaskFlags.Luma,
-                    Luma = v,
-                };
-            }
-
-            public override void UpdateExpectedState(ComparisonState state, bool goodValue, double v)
-            {
-                if (goodValue)
-                {
-                    state.Colors[_colId].Luma = v;
-                }
-                else
-                {
-                    state.Colors[_colId].Luma = v >= 100 ? 100 : 0;
-                }
-            }
+            public override string PropertyName => "Luma";
+            public override double MangleBadValue(double v) => v >= 100 ? 100 : 0;
         }
 
         [Fact]
@@ -205,9 +139,7 @@ namespace LibAtem.ComparisonTests2
             using (var helper = new AtemComparisonHelper(_client, _output))
             {
                 foreach (KeyValuePair<VideoSource, IBMDSwitcherInputColor> c in helper.GetSdkInputsOfType<IBMDSwitcherInputColor>())
-                {
                     new ColorGeneratorLumaTestDefinition(helper, c.Value, c.Key).Run();
-                }
             }
         }
     }

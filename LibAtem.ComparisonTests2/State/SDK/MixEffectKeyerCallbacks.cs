@@ -254,7 +254,7 @@ namespace LibAtem.ComparisonTests2.State.SDK
             {
                 case _BMDSwitcherKeyDVEParametersEventType.bmdSwitcherKeyDVEParametersEventTypeShadowChanged:
                     _props.GetShadow(out int shadow);
-                    _state.BorderShadow = shadow != 0;
+                    _state.BorderShadowEnabled = shadow != 0;
                     break;
                 case _BMDSwitcherKeyDVEParametersEventType.bmdSwitcherKeyDVEParametersEventTypeLightSourceDirectionChanged:
                     _props.GetLightSourceDirection(out double deg);
@@ -274,27 +274,27 @@ namespace LibAtem.ComparisonTests2.State.SDK
                     break;
                 case _BMDSwitcherKeyDVEParametersEventType.bmdSwitcherKeyDVEParametersEventTypeBorderWidthInChanged:
                     _props.GetBorderWidthIn(out double widthIn);
-                    _state.InnerWidth = widthIn;
+                    _state.BorderInnerWidth = widthIn;
                     break;
                 case _BMDSwitcherKeyDVEParametersEventType.bmdSwitcherKeyDVEParametersEventTypeBorderWidthOutChanged:
                     _props.GetBorderWidthOut(out double widthOut);
-                    _state.OuterWidth = widthOut;
+                    _state.BorderOuterWidth = widthOut;
                     break;
                 case _BMDSwitcherKeyDVEParametersEventType.bmdSwitcherKeyDVEParametersEventTypeBorderSoftnessInChanged:
                     _props.GetBorderSoftnessIn(out double softIn);
-                    _state.InnerSoftness = (uint)(softIn * 100);
+                    _state.BorderInnerSoftness = (uint)(softIn * 100);
                     break;
                 case _BMDSwitcherKeyDVEParametersEventType.bmdSwitcherKeyDVEParametersEventTypeBorderSoftnessOutChanged:
                     _props.GetBorderSoftnessOut(out double softOut);
-                    _state.OuterSoftness = (uint)(softOut * 100);
+                    _state.BorderOuterSoftness = (uint)(softOut * 100);
                     break;
                 case _BMDSwitcherKeyDVEParametersEventType.bmdSwitcherKeyDVEParametersEventTypeBorderBevelSoftnessChanged:
                     _props.GetBorderBevelSoftness(out double bevelSoft);
-                    _state.BevelSoftness = (uint)(bevelSoft * 100);
+                    _state.BorderBevelSoftness = (uint)(bevelSoft * 100);
                     break;
                 case _BMDSwitcherKeyDVEParametersEventType.bmdSwitcherKeyDVEParametersEventTypeBorderBevelPositionChanged:
                     _props.GetBorderBevelPosition(out double bevelPosition);
-                    _state.BevelPosition = (uint)(bevelPosition * 100);
+                    _state.BorderBevelPosition = (uint)(bevelPosition * 100);
                     break;
                 case _BMDSwitcherKeyDVEParametersEventType.bmdSwitcherKeyDVEParametersEventTypeBorderOpacityChanged:
                     _props.GetBorderOpacity(out double opacity);

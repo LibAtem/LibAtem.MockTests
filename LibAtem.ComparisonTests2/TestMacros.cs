@@ -75,7 +75,7 @@ namespace LibAtem.ComparisonTests2
         }
 
 
-        private class MacroLoopTestDefinition : TestDefinitionBase<bool>
+        private class MacroLoopTestDefinition : TestDefinitionBase2<MacroRunStatusSetCommand, bool>
         {
             private readonly IBMDSwitcherMacroControl _sdk;
 
@@ -84,25 +84,11 @@ namespace LibAtem.ComparisonTests2
                 _sdk = sdk;
             }
 
-            public override void Prepare()
-            {
-                // Ensure the first value will have a change
-                _sdk.SetLoop(0);
-            }
+            // Ensure the first value will have a change
+            public override void Prepare() => _sdk.SetLoop(0);
 
-            public override ICommand GenerateCommand(bool v)
-            {
-                return new MacroRunStatusSetCommand
-                {
-                    Mask = MacroRunStatusSetCommand.MaskFlags.Looping,
-                    Looping = v
-                };
-            }
-
-            public override void UpdateExpectedState(ComparisonState state, bool goodValue, bool v)
-            {
-                state.Macros.Loop = v;
-            }
+            public override string PropertyName => "Loop";
+            public override void UpdateExpectedState(ComparisonState state, bool goodValue, bool v) => state.Macros.Loop = v;
 
             public override IEnumerable<CommandQueueKey> ExpectedCommands(bool goodValue, bool v)
             {

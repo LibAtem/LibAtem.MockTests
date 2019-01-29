@@ -233,14 +233,14 @@ namespace LibAtem.ComparisonTests2.State
             props2.Rotation = cmd.Rotation;
 
             props.BorderEnabled = cmd.BorderEnabled;
-            props.BorderShadow = cmd.BorderShadow;
+            props.BorderShadowEnabled = cmd.BorderShadowEnabled;
             props.BorderBevel = cmd.BorderBevel;
-            props.OuterWidth = cmd.OuterWidth;
-            props.InnerWidth = cmd.InnerWidth;
-            props.OuterSoftness = cmd.OuterSoftness;
-            props.InnerSoftness = cmd.InnerSoftness;
-            props.BevelSoftness = cmd.BevelSoftness;
-            props.BevelPosition = cmd.BevelPosition;
+            props.BorderOuterWidth = cmd.BorderOuterWidth;
+            props.BorderInnerWidth = cmd.BorderInnerWidth;
+            props.BorderOuterSoftness = cmd.BorderOuterSoftness;
+            props.BorderInnerSoftness = cmd.BorderInnerSoftness;
+            props.BorderBevelSoftness = cmd.BorderBevelSoftness;
+            props.BorderBevelPosition = cmd.BorderBevelPosition;
 
             props.BorderOpacity = cmd.BorderOpacity;
             props.BorderHue = cmd.BorderHue;
@@ -281,8 +281,8 @@ namespace LibAtem.ComparisonTests2.State
             props.BorderSaturation = cmd.BorderSaturation;
             props.BorderLuma = cmd.BorderLuma;
 
-            props.BorderLightSourceDirection = cmd.BorderLightSourceDirection;
-            props.BorderLightSourceAltitude = cmd.BorderLightSourceAltitude;
+            props.BorderLightSourceDirection = cmd.LightSourceDirection;
+            props.BorderLightSourceAltitude = cmd.LightSourceAltitude;
 
             // public bool MaskEnabled { get; set; }
             props.MaskTop = cmd.MaskTop;
@@ -706,7 +706,7 @@ namespace LibAtem.ComparisonTests2.State
             props.Gain = cmd.Gain;
             props.Mute = cmd.Mute;
             props.Solo = cmd.Solo;
-            props.SoloInput = cmd.SoloSource;
+            props.SoloSource = cmd.SoloSource;
             props.Dim = cmd.Dim;
         }
         private static void UpdateAudioTalkbackState(LibAtem.DeviceProfile.DeviceProfile profile, ComparisonState state, ICommand rawCmd)

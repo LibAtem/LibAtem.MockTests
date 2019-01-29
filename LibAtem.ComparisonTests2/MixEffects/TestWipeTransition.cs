@@ -21,7 +21,7 @@ namespace LibAtem.ComparisonTests2.MixEffects
         {
         }
 
-        private abstract class WipeTransitionTestDefinition<T> : TestDefinitionBase<T>
+        private abstract class WipeTransitionTestDefinition<T> : TestDefinitionBase2<TransitionWipeSetCommand, T>
         {
             protected readonly MixEffectBlockId _id;
             protected readonly IBMDSwitcherTransitionWipeParameters _sdk;
@@ -31,6 +31,20 @@ namespace LibAtem.ComparisonTests2.MixEffects
                 _id = me.Item1;
                 _sdk = me.Item2;
             }
+
+            public override void SetupCommand(TransitionWipeSetCommand cmd)
+            {
+                cmd.Index = _id;
+            }
+
+            public abstract T MangleBadValue(T v);
+
+            public override void UpdateExpectedState(ComparisonState state, bool goodValue, T v)
+            {
+                ComparisonMixEffectTransitionWipeState obj = state.MixEffects[_id].Transition.Wipe;
+                SetCommandProperty(obj, PropertyName, goodValue ? v : MangleBadValue(v));
+            }
+
 
             public override IEnumerable<CommandQueueKey> ExpectedCommands(bool goodValue, T v)
             {
@@ -44,50 +58,21 @@ namespace LibAtem.ComparisonTests2.MixEffects
             {
             }
 
-            public override void Prepare()
-            {
-                // Ensure the first value will have a change
-                _sdk.SetRate(20);
-            }
+            // Ensure the first value will have a change
+            public override void Prepare() => _sdk.SetRate(20);
 
-            public override uint[] GoodValues()
-            {
-                return new uint[] { 1, 18, 28, 95, 234, 244, 250 };
-            }
-            public override uint[] BadValues()
-            {
-                return new uint[] { 251, 255, 0 };
-            }
+            public override string PropertyName => "Rate";
+            public override uint MangleBadValue(uint v) => v >= 250 ? 250 : (uint)1;
 
-            public override ICommand GenerateCommand(uint v)
-            {
-                return new TransitionWipeSetCommand
-                {
-                    Index = _id,
-                    Mask = TransitionWipeSetCommand.MaskFlags.Rate,
-                    Rate = v
-                };
-            }
-
-            public override void UpdateExpectedState(ComparisonState state, bool goodValue, uint v)
-            {
-                if (goodValue)
-                    state.MixEffects[_id].Transition.Wipe.Rate = v;
-                else
-                    state.MixEffects[_id].Transition.Wipe.Rate = v >= 250 ? 250 : (uint)1;
-            }
+            public override uint[] GoodValues => new uint[] { 1, 18, 28, 95, 234, 244, 250 };
+            public override uint[] BadValues => new uint[] { 251, 255, 0 };
         }
 
         [Fact]
         public void TestRate()
         {
             using (var helper = new AtemComparisonHelper(Client, Output))
-            {
-                foreach (var me in GetMixEffects<IBMDSwitcherTransitionWipeParameters>())
-                {
-                    new WipeTransitionRateTestDefinition(helper, me).Run();
-                }
-            }
+                GetMixEffects<IBMDSwitcherTransitionWipeParameters>().ForEach(k => new WipeTransitionRateTestDefinition(helper, k).Run());
         }
 
         private class WipeTransitionPatternTestDefinition : WipeTransitionTestDefinition<Pattern>
@@ -96,26 +81,13 @@ namespace LibAtem.ComparisonTests2.MixEffects
             {
             }
 
-            public override void Prepare()
-            {
-                // Ensure the first value will have a change
-                _sdk.SetRate(20);
-            }
+            // Ensure the first value will have a change
+            public override void Prepare() => _sdk.SetRate(20);
 
-            public override Pattern[] GoodValues()
-            {
-                return Enum.GetValues(typeof(Pattern)).OfType<Pattern>().ToArray();
-            }
+            public override string PropertyName => "Pattern";
+            public override Pattern MangleBadValue(Pattern v) => v;
 
-            public override ICommand GenerateCommand(Pattern v)
-            {
-                return new TransitionWipeSetCommand
-                {
-                    Index = _id,
-                    Mask = TransitionWipeSetCommand.MaskFlags.Pattern,
-                    Pattern = v
-                };
-            }
+            public override Pattern[] GoodValues => Enum.GetValues(typeof(Pattern)).OfType<Pattern>().ToArray();
 
             public override void UpdateExpectedState(ComparisonState state, bool goodValue, Pattern v)
             {
@@ -131,12 +103,7 @@ namespace LibAtem.ComparisonTests2.MixEffects
         public void TestPattern()
         {
             using (var helper = new AtemComparisonHelper(Client, Output))
-            {
-                foreach (var me in GetMixEffects<IBMDSwitcherTransitionWipeParameters>())
-                {
-                    new WipeTransitionPatternTestDefinition(helper, me).Run();
-                }
-            }
+                GetMixEffects<IBMDSwitcherTransitionWipeParameters>().ForEach(k => new WipeTransitionPatternTestDefinition(helper, k).Run());
         }
 
         private class WipeTransitionBorderSizeTestDefinition : WipeTransitionTestDefinition<double>
@@ -145,50 +112,21 @@ namespace LibAtem.ComparisonTests2.MixEffects
             {
             }
 
-            public override void Prepare()
-            {
-                // Ensure the first value will have a change
-                _sdk.SetBorderSize(20);
-            }
+            // Ensure the first value will have a change
+            public override void Prepare() => _sdk.SetBorderSize(20);
 
-            public override double[] GoodValues()
-            {
-                return new double[] { 0, 87.4, 14.7, 99.9, 100, 0.01 };
-            }
-            public override double[] BadValues()
-            {
-                return new double[] { 100.1, 110, 101, -0.01, -1, -10 };
-            }
+            public override string PropertyName => "BorderWidth";
+            public override double MangleBadValue(double v) => v >= 100 ? 100 : 0;
 
-            public override ICommand GenerateCommand(double v)
-            {
-                return new TransitionWipeSetCommand
-                {
-                    Index = _id,
-                    Mask = TransitionWipeSetCommand.MaskFlags.BorderWidth,
-                    BorderWidth = v
-                };
-            }
-
-            public override void UpdateExpectedState(ComparisonState state, bool goodValue, double v)
-            {
-                if (goodValue)
-                    state.MixEffects[_id].Transition.Wipe.BorderWidth = v;
-                else
-                    state.MixEffects[_id].Transition.Wipe.BorderWidth = v >= 100 ? 100 : 0;
-            }
+            public override double[] GoodValues => new double[] { 0, 87.4, 14.7, 99.9, 100, 0.01 };
+            public override double[] BadValues => new double[] { 100.1, 110, 101, -0.01, -1, -10 };
         }
 
         [Fact]
         public void TestBorderSize()
         {
             using (var helper = new AtemComparisonHelper(Client, Output))
-            {
-                foreach (var me in GetMixEffects<IBMDSwitcherTransitionWipeParameters>())
-                {
-                    new WipeTransitionBorderSizeTestDefinition(helper, me).Run();
-                }
-            }
+                GetMixEffects<IBMDSwitcherTransitionWipeParameters>().ForEach(k => new WipeTransitionBorderSizeTestDefinition(helper, k).Run());
         }
 
         private class WipeTransitionBorderInputTestDefinition : WipeTransitionTestDefinition<VideoSource>
@@ -197,27 +135,14 @@ namespace LibAtem.ComparisonTests2.MixEffects
             {
             }
 
-            public override void Prepare()
-            {
-                // Ensure the first value will have a change
-                _sdk.SetInputBorder((long)VideoSource.ColorBars);
-            }
+            // Ensure the first value will have a change
+            public override void Prepare() => _sdk.SetInputBorder((long)VideoSource.ColorBars);
 
-            public override VideoSource[] GoodValues()
-            {
-                return VideoSourceLists.All.Where(s => s.IsAvailable(_helper.Profile) && s.IsAvailable(_id)).ToArray();
-            }
+            public override string PropertyName => "BorderInput";
+            public override VideoSource MangleBadValue(VideoSource v) => v;
 
-            public override ICommand GenerateCommand(VideoSource v)
-            {
-                return new TransitionWipeSetCommand
-                {
-                    Index = _id,
-                    Mask = TransitionWipeSetCommand.MaskFlags.BorderInput,
-                    BorderInput = v
-                };
-            }
-
+            public override VideoSource[] GoodValues => VideoSourceLists.All.Where(s => s.IsAvailable(_helper.Profile) && s.IsAvailable(_id)).ToArray();
+            
             public override void UpdateExpectedState(ComparisonState state, bool goodValue, VideoSource v)
             {
                 if (goodValue)
@@ -229,12 +154,7 @@ namespace LibAtem.ComparisonTests2.MixEffects
         public void TestBorderInput()
         {
             using (var helper = new AtemComparisonHelper(Client, Output))
-            {
-                foreach (var me in GetMixEffects<IBMDSwitcherTransitionWipeParameters>())
-                {
-                    new WipeTransitionBorderInputTestDefinition(helper, me).Run();
-                }
-            }
+                GetMixEffects<IBMDSwitcherTransitionWipeParameters>().ForEach(k => new WipeTransitionBorderInputTestDefinition(helper, k).Run());
         }
 
         private class WipeTransitionSymmetryTestDefinition : WipeTransitionTestDefinition<double>
@@ -251,44 +171,18 @@ namespace LibAtem.ComparisonTests2.MixEffects
                 _helper.Sleep();
             }
 
-            public override double[] GoodValues()
-            {
-                return new double[] { 0, 87.4, 14.7, 99.9, 100, 0.01 };
-            }
-            public override double[] BadValues()
-            {
-                return new double[] { 100.1, 110, 101, -0.01, -1, -10 };
-            }
+            public override string PropertyName => "Symmetry";
+            public override double MangleBadValue(double v) => v >= 100 ? 100 : 0;
 
-            public override ICommand GenerateCommand(double v)
-            {
-                return new TransitionWipeSetCommand
-                {
-                    Index = _id,
-                    Mask = TransitionWipeSetCommand.MaskFlags.Symmetry,
-                    Symmetry = v
-                };
-            }
-
-            public override void UpdateExpectedState(ComparisonState state, bool goodValue, double v)
-            {
-                if (goodValue)
-                    state.MixEffects[_id].Transition.Wipe.Symmetry = v;
-                else
-                    state.MixEffects[_id].Transition.Wipe.Symmetry = v >= 100 ? 100 : 0;
-            }
+            public override double[] GoodValues => new double[] { 0, 87.4, 14.7, 99.9, 100, 0.01 };
+            public override double[] BadValues => new double[] { 100.1, 110, 101, -0.01, -1, -10 };
         }
 
         [Fact]
         public void TestSymmetry()
         {
             using (var helper = new AtemComparisonHelper(Client, Output))
-            {
-                foreach (var me in GetMixEffects<IBMDSwitcherTransitionWipeParameters>())
-                {
-                    new WipeTransitionSymmetryTestDefinition(helper, me).Run();
-                }
-            }
+                GetMixEffects<IBMDSwitcherTransitionWipeParameters>().ForEach(k => new WipeTransitionSymmetryTestDefinition(helper, k).Run());
         }
 
         private class WipeTransitionSoftnessTestDefinition : WipeTransitionTestDefinition<double>
@@ -297,50 +191,21 @@ namespace LibAtem.ComparisonTests2.MixEffects
             {
             }
 
-            public override void Prepare()
-            {
-                // Ensure the first value will have a change
-                _sdk.SetSoftness(20);
-            }
+            // Ensure the first value will have a change
+            public override void Prepare() => _sdk.SetSoftness(20);
 
-            public override double[] GoodValues()
-            {
-                return new double[] { 0, 87.4, 14.7, 99.9, 100, 0.01 };
-            }
-            public override double[] BadValues()
-            {
-                return new double[] { 100.1, 110, 101, -0.01, -1, -10 };
-            }
+            public override string PropertyName => "Symmetry";
+            public override double MangleBadValue(double v) => v >= 100 ? 100 : 0;
 
-            public override ICommand GenerateCommand(double v)
-            {
-                return new TransitionWipeSetCommand
-                {
-                    Index = _id,
-                    Mask = TransitionWipeSetCommand.MaskFlags.BorderSoftness,
-                    BorderSoftness = v
-                };
-            }
-
-            public override void UpdateExpectedState(ComparisonState state, bool goodValue, double v)
-            {
-                if (goodValue)
-                    state.MixEffects[_id].Transition.Wipe.BorderSoftness = v;
-                else
-                    state.MixEffects[_id].Transition.Wipe.BorderSoftness = v >= 100 ? 100 : 0;
-            }
+            public override double[] GoodValues => new double[] { 0, 87.4, 14.7, 99.9, 100, 0.01 };
+            public override double[] BadValues => new double[] { 100.1, 110, 101, -0.01, -1, -10 };
         }
 
         [Fact]
         public void TestSoftness()
         {
             using (var helper = new AtemComparisonHelper(Client, Output))
-            {
-                foreach (var me in GetMixEffects<IBMDSwitcherTransitionWipeParameters>())
-                {
-                    new WipeTransitionSoftnessTestDefinition(helper, me).Run();
-                }
-            }
+                GetMixEffects<IBMDSwitcherTransitionWipeParameters>().ForEach(k => new WipeTransitionSoftnessTestDefinition(helper, k).Run());
         }
 
         private class WipeTransitionHorizontalOffsetTestDefinition : WipeTransitionTestDefinition<double>
@@ -357,44 +222,18 @@ namespace LibAtem.ComparisonTests2.MixEffects
                 _helper.Sleep();
             }
 
-            public override double[] GoodValues()
-            {
-                return new double[] { 0, 0.874, 0.147, 0.999, 1.00, 0.01 };
-            }
-            public override double[] BadValues()
-            {
-                return new double[] { 1.001, 1.1, 1.01, -0.01, -1, -0.10 };
-            }
+            public override string PropertyName => "XPosition";
+            public override double MangleBadValue(double v) => v >= 1 ? 1 : 0;
 
-            public override ICommand GenerateCommand(double v)
-            {
-                return new TransitionWipeSetCommand
-                {
-                    Index = _id,
-                    Mask = TransitionWipeSetCommand.MaskFlags.XPosition,
-                    XPosition = v
-                };
-            }
-
-            public override void UpdateExpectedState(ComparisonState state, bool goodValue, double v)
-            {
-                if (goodValue)
-                    state.MixEffects[_id].Transition.Wipe.XPosition = v;
-                else
-                    state.MixEffects[_id].Transition.Wipe.XPosition = v >= 1 ? 1 : 0;
-            }
+            public override double[] GoodValues => new double[] { 0, 0.874, 0.147, 0.999, 1.00, 0.01 };
+            public override double[] BadValues => new double[] { 1.001, 1.1, 1.01, -0.01, -1, -0.10 };
         }
 
         [Fact]
         public void TestHorizontalOffset()
         {
             using (var helper = new AtemComparisonHelper(Client, Output))
-            {
-                foreach (var me in GetMixEffects<IBMDSwitcherTransitionWipeParameters>())
-                {
-                    new WipeTransitionHorizontalOffsetTestDefinition(helper, me).Run();
-                }
-            }
+                GetMixEffects<IBMDSwitcherTransitionWipeParameters>().ForEach(k => new WipeTransitionHorizontalOffsetTestDefinition(helper, k).Run());
         }
 
         private class WipeTransitionVerticalOffsetTestDefinition : WipeTransitionTestDefinition<double>
@@ -411,44 +250,18 @@ namespace LibAtem.ComparisonTests2.MixEffects
                 _helper.Sleep();
             }
 
-            public override double[] GoodValues()
-            {
-                return new double[] { 0, 0.874, 0.147, 0.999, 1.00, 0.01 };
-            }
-            public override double[] BadValues()
-            {
-                return new double[] { 1.001, 1.1, 1.01, -0.01, -1, -0.10 };
-            }
+            public override string PropertyName => "YPosition";
+            public override double MangleBadValue(double v) => v >= 1 ? 1 : 0;
 
-            public override ICommand GenerateCommand(double v)
-            {
-                return new TransitionWipeSetCommand
-                {
-                    Index = _id,
-                    Mask = TransitionWipeSetCommand.MaskFlags.YPosition,
-                    YPosition = v
-                };
-            }
-
-            public override void UpdateExpectedState(ComparisonState state, bool goodValue, double v)
-            {
-                if (goodValue)
-                    state.MixEffects[_id].Transition.Wipe.YPosition = v;
-                else
-                    state.MixEffects[_id].Transition.Wipe.YPosition = v >= 1 ? 1 : 0;
-            }
+            public override double[] GoodValues => new double[] { 0, 0.874, 0.147, 0.999, 1.00, 0.01 };
+            public override double[] BadValues => new double[] { 1.001, 1.1, 1.01, -0.01, -1, -0.10 };
         }
 
         [Fact]
         public void TestVerticalOffset()
         {
             using (var helper = new AtemComparisonHelper(Client, Output))
-            {
-                foreach (var me in GetMixEffects<IBMDSwitcherTransitionWipeParameters>())
-                {
-                    new WipeTransitionVerticalOffsetTestDefinition(helper, me).Run();
-                }
-            }
+                GetMixEffects<IBMDSwitcherTransitionWipeParameters>().ForEach(k => new WipeTransitionVerticalOffsetTestDefinition(helper, k).Run());
         }
 
         private class WipeTransitionReverseTestDefinition : WipeTransitionTestDefinition<bool>
@@ -457,21 +270,11 @@ namespace LibAtem.ComparisonTests2.MixEffects
             {
             }
 
-            public override void Prepare()
-            {
-                // Ensure the first value will have a change
-                _sdk.SetReverse(0);
-            }
+            // Ensure the first value will have a change
+            public override void Prepare() => _sdk.SetReverse(0);
 
-            public override ICommand GenerateCommand(bool v)
-            {
-                return new TransitionWipeSetCommand
-                {
-                    Index = _id,
-                    Mask = TransitionWipeSetCommand.MaskFlags.ReverseDirection,
-                    ReverseDirection = v
-                };
-            }
+            public override string PropertyName => "ReverseDirection";
+            public override bool MangleBadValue(bool v) => v;
 
             public override void UpdateExpectedState(ComparisonState state, bool goodValue, bool v)
             {
@@ -484,12 +287,7 @@ namespace LibAtem.ComparisonTests2.MixEffects
         public void TestReverse()
         {
             using (var helper = new AtemComparisonHelper(Client, Output))
-            {
-                foreach (var me in GetMixEffects<IBMDSwitcherTransitionWipeParameters>())
-                {
-                    new WipeTransitionReverseTestDefinition(helper, me).Run();
-                }
-            }
+                GetMixEffects<IBMDSwitcherTransitionWipeParameters>().ForEach(k => new WipeTransitionReverseTestDefinition(helper, k).Run());
         }
 
         private class WipeTransitionFlipFlopTestDefinition : WipeTransitionTestDefinition<bool>
@@ -498,21 +296,11 @@ namespace LibAtem.ComparisonTests2.MixEffects
             {
             }
 
-            public override void Prepare()
-            {
-                // Ensure the first value will have a change
-                _sdk.SetFlipFlop(0);
-            }
+            // Ensure the first value will have a change
+            public override void Prepare() => _sdk.SetFlipFlop(0);
 
-            public override ICommand GenerateCommand(bool v)
-            {
-                return new TransitionWipeSetCommand
-                {
-                    Index = _id,
-                    Mask = TransitionWipeSetCommand.MaskFlags.FlipFlop,
-                    FlipFlop = v
-                };
-            }
+            public override string PropertyName => "FlipFlop";
+            public override bool MangleBadValue(bool v) => v;
 
             public override void UpdateExpectedState(ComparisonState state, bool goodValue, bool v)
             {
@@ -525,12 +313,7 @@ namespace LibAtem.ComparisonTests2.MixEffects
         public void TestFlipFlop()
         {
             using (var helper = new AtemComparisonHelper(Client, Output))
-            {
-                foreach (var me in GetMixEffects<IBMDSwitcherTransitionWipeParameters>())
-                {
-                    new WipeTransitionFlipFlopTestDefinition(helper, me).Run();
-                }
-            }
+                GetMixEffects<IBMDSwitcherTransitionWipeParameters>().ForEach(k => new WipeTransitionFlipFlopTestDefinition(helper, k).Run());
         }
     }
 }

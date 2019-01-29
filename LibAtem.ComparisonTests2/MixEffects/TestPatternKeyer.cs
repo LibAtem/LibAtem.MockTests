@@ -19,7 +19,7 @@ namespace LibAtem.ComparisonTests2.MixEffects
         {
         }
 
-        private abstract class PatternKeyerTestDefinition<T> : TestDefinitionBase<T>
+        private abstract class PatternKeyerTestDefinition<T> : TestDefinitionBase2<MixEffectKeyPatternSetCommand, T>
         {
             protected readonly MixEffectBlockId _meId;
             protected readonly UpstreamKeyId _keyId;
@@ -32,13 +32,23 @@ namespace LibAtem.ComparisonTests2.MixEffects
                 _sdk = key.Item3;
             }
 
+            public override void SetupCommand(MixEffectKeyPatternSetCommand cmd)
+            {
+                cmd.MixEffectIndex = _meId;
+                cmd.KeyerIndex = _keyId;
+            }
+
+            public abstract T MangleBadValue(T v);
+
+            public override void UpdateExpectedState(ComparisonState state, bool goodValue, T v)
+            {
+                ComparisonMixEffectKeyerPatternState obj = state.MixEffects[_meId].Keyers[_keyId].Pattern;
+                SetCommandProperty(obj, PropertyName, goodValue ? v : MangleBadValue(v));
+            }
+
             public override IEnumerable<CommandQueueKey> ExpectedCommands(bool goodValue, T v)
             {
-                yield return new CommandQueueKey(new MixEffectKeyPatternGetCommand()
-                {
-                    MixEffectIndex = _meId,
-                    KeyerIndex = _keyId,
-                });
+                yield return new CommandQueueKey(new MixEffectKeyPatternGetCommand() { MixEffectIndex = _meId, KeyerIndex = _keyId });
             }
         }
 
@@ -48,22 +58,11 @@ namespace LibAtem.ComparisonTests2.MixEffects
             {
             }
 
-            public override void Prepare()
-            {
-                // Ensure the first value will have a change
-                _sdk.SetPattern(_BMDSwitcherPatternStyle.bmdSwitcherPatternStyleDiamondIris);
-            }
+            // Ensure the first value will have a change
+            public override void Prepare() => _sdk.SetPattern(_BMDSwitcherPatternStyle.bmdSwitcherPatternStyleDiamondIris);
 
-            public override ICommand GenerateCommand(Pattern v)
-            {
-                return new MixEffectKeyPatternSetCommand
-                {
-                    MixEffectIndex = _meId,
-                    KeyerIndex = _keyId,
-                    Mask = MixEffectKeyPatternSetCommand.MaskFlags.Pattern,
-                    Pattern = v
-                };
-            }
+            public override string PropertyName => "Pattern";
+            public override Pattern MangleBadValue(Pattern v) => v;
 
             public override void UpdateExpectedState(ComparisonState state, bool goodValue, Pattern v)
             {
@@ -74,22 +73,14 @@ namespace LibAtem.ComparisonTests2.MixEffects
                 props.Symmetry = v.GetDefaultPatternSymmetry();
             }
 
-            public override Pattern[] GoodValues()
-            {
-                return Enum.GetValues(typeof(Pattern)).OfType<Pattern>().ToArray();
-            }
+            public override Pattern[] GoodValues => Enum.GetValues(typeof(Pattern)).OfType<Pattern>().ToArray();
         }
 
         [Fact]
         public void TestPattern()
         {
             using (var helper = new AtemComparisonHelper(Client, Output))
-            {
-                foreach (var key in GetKeyers<IBMDSwitcherKeyPatternParameters>())
-                {
-                    new PatternKeyerPatternTestDefinition(helper, key).Run();
-                }
-            }
+                GetKeyers<IBMDSwitcherKeyPatternParameters>().ForEach(k => new PatternKeyerPatternTestDefinition(helper, k).Run());
         }
 
         private class PatternKeyerSizeTestDefinition : PatternKeyerTestDefinition<double>
@@ -98,51 +89,21 @@ namespace LibAtem.ComparisonTests2.MixEffects
             {
             }
 
-            public override void Prepare()
-            {
-                // Ensure the first value will have a change
-                _sdk.SetSize(40);
-            }
+            // Ensure the first value will have a change
+            public override void Prepare() => _sdk.SetSize(40);
 
-            public override ICommand GenerateCommand(double v)
-            {
-                return new MixEffectKeyPatternSetCommand
-                {
-                    MixEffectIndex = _meId,
-                    KeyerIndex = _keyId,
-                    Mask = MixEffectKeyPatternSetCommand.MaskFlags.Size,
-                    Size = v
-                };
-            }
+            public override string PropertyName => "Size";
+            public override double MangleBadValue(double v) => v >= 100 ? 100 : 0;
 
-            public override void UpdateExpectedState(ComparisonState state, bool goodValue, double v)
-            {
-                if (goodValue)
-                    state.MixEffects[_meId].Keyers[_keyId].Pattern.Size = v;
-                else
-                    state.MixEffects[_meId].Keyers[_keyId].Pattern.Size = v >= 100 ? 100 : 0;
-            }
-
-            public override double[] GoodValues()
-            {
-                return new double[] { 0, 87.4, 14.7, 99.9, 100, 0.01 };
-            }
-            public override double[] BadValues()
-            {
-                return new double[] { 100.1, 110, 101, -0.01, -1, -10 };
-            }
+            public override double[] GoodValues => new double[] { 0, 87.4, 14.7, 99.9, 100, 0.01 };
+            public override double[] BadValues => new double[] { 100.1, 110, 101, -0.01, -1, -10 };
         }
 
         [Fact]
         public void TestSize()
         {
             using (var helper = new AtemComparisonHelper(Client, Output))
-            {
-                foreach (var key in GetKeyers<IBMDSwitcherKeyPatternParameters>())
-                {
-                    new PatternKeyerSizeTestDefinition(helper, key).Run();
-                }
-            }
+                GetKeyers<IBMDSwitcherKeyPatternParameters>().ForEach(k => new PatternKeyerSizeTestDefinition(helper, k).Run());
         }
 
         private class PatternKeyerSymmetryTestDefinition : PatternKeyerTestDefinition<double>
@@ -151,51 +112,21 @@ namespace LibAtem.ComparisonTests2.MixEffects
             {
             }
 
-            public override void Prepare()
-            {
-                // Ensure the first value will have a change
-                _sdk.SetSymmetry(40);
-            }
+            // Ensure the first value will have a change
+            public override void Prepare() => _sdk.SetSymmetry(40);
 
-            public override ICommand GenerateCommand(double v)
-            {
-                return new MixEffectKeyPatternSetCommand
-                {
-                    MixEffectIndex = _meId,
-                    KeyerIndex = _keyId,
-                    Mask = MixEffectKeyPatternSetCommand.MaskFlags.Symmetry,
-                    Symmetry = v
-                };
-            }
+            public override string PropertyName => "Symmetry";
+            public override double MangleBadValue(double v) => v >= 100 ? 100 : 0;
 
-            public override void UpdateExpectedState(ComparisonState state, bool goodValue, double v)
-            {
-                if (goodValue)
-                    state.MixEffects[_meId].Keyers[_keyId].Pattern.Symmetry = v;
-                else
-                    state.MixEffects[_meId].Keyers[_keyId].Pattern.Symmetry = v >= 100 ? 100 : 0;
-            }
-
-            public override double[] GoodValues()
-            {
-                return new double[] { 0, 87.4, 14.7, 99.9, 100, 0.01 };
-            }
-            public override double[] BadValues()
-            {
-                return new double[] { 100.1, 110, 101, -0.01, -1, -10 };
-            }
+            public override double[] GoodValues => new double[] { 0, 87.4, 14.7, 99.9, 100, 0.01 };
+            public override double[] BadValues => new double[] { 100.1, 110, 101, -0.01, -1, -10 };
         }
 
         [Fact]
         public void TestSymmetry()
         {
             using (var helper = new AtemComparisonHelper(Client, Output))
-            {
-                foreach (var key in GetKeyers<IBMDSwitcherKeyPatternParameters>())
-                {
-                    new PatternKeyerSymmetryTestDefinition(helper, key).Run();
-                }
-            }
+                GetKeyers<IBMDSwitcherKeyPatternParameters>().ForEach(k => new PatternKeyerSymmetryTestDefinition(helper, k).Run());
         }
 
         private class PatternKeyerSoftnessTestDefinition : PatternKeyerTestDefinition<double>
@@ -204,51 +135,21 @@ namespace LibAtem.ComparisonTests2.MixEffects
             {
             }
 
-            public override void Prepare()
-            {
-                // Ensure the first value will have a change
-                _sdk.SetSoftness(40);
-            }
+            // Ensure the first value will have a change
+            public override void Prepare() => _sdk.SetSoftness(40);
 
-            public override ICommand GenerateCommand(double v)
-            {
-                return new MixEffectKeyPatternSetCommand
-                {
-                    MixEffectIndex = _meId,
-                    KeyerIndex = _keyId,
-                    Mask = MixEffectKeyPatternSetCommand.MaskFlags.Softness,
-                    Softness = v
-                };
-            }
+            public override string PropertyName => "Softness";
+            public override double MangleBadValue(double v) => v >= 100 ? 100 : 0;
 
-            public override void UpdateExpectedState(ComparisonState state, bool goodValue, double v)
-            {
-                if (goodValue)
-                    state.MixEffects[_meId].Keyers[_keyId].Pattern.Softness = v;
-                else
-                    state.MixEffects[_meId].Keyers[_keyId].Pattern.Softness = v >= 100 ? 100 : 0;
-            }
-
-            public override double[] GoodValues()
-            {
-                return new double[] { 0, 87.4, 14.7, 99.9, 100, 0.01 };
-            }
-            public override double[] BadValues()
-            {
-                return new double[] { 100.1, 110, 101, -0.01, -1, -10 };
-            }
+            public override double[] GoodValues => new double[] { 0, 87.4, 14.7, 99.9, 100, 0.01 };
+            public override double[] BadValues => new double[] { 100.1, 110, 101, -0.01, -1, -10 };
         }
 
         [Fact]
         public void TestSoftness()
         {
             using (var helper = new AtemComparisonHelper(Client, Output))
-            {
-                foreach (var key in GetKeyers<IBMDSwitcherKeyPatternParameters>())
-                {
-                    new PatternKeyerSoftnessTestDefinition(helper, key).Run();
-                }
-            }
+                GetKeyers<IBMDSwitcherKeyPatternParameters>().ForEach(k => new PatternKeyerSoftnessTestDefinition(helper, k).Run());
         }
 
         private class PatternKeyerHorizontalOffsetTestDefinition : PatternKeyerTestDefinition<double>
@@ -257,51 +158,21 @@ namespace LibAtem.ComparisonTests2.MixEffects
             {
             }
 
-            public override void Prepare()
-            {
-                // Ensure the first value will have a change
-                _sdk.SetHorizontalOffset(0.5);
-            }
+            // Ensure the first value will have a change
+            public override void Prepare() => _sdk.SetHorizontalOffset(0.5);
 
-            public override ICommand GenerateCommand(double v)
-            {
-                return new MixEffectKeyPatternSetCommand
-                {
-                    MixEffectIndex = _meId,
-                    KeyerIndex = _keyId,
-                    Mask = MixEffectKeyPatternSetCommand.MaskFlags.XPosition,
-                    XPosition = v
-                };
-            }
+            public override string PropertyName => "XPosition";
+            public override double MangleBadValue(double v) => v >= 1 ? 1 : 0;
 
-            public override void UpdateExpectedState(ComparisonState state, bool goodValue, double v)
-            {
-                if (goodValue)
-                    state.MixEffects[_meId].Keyers[_keyId].Pattern.XPosition = v;
-                else
-                    state.MixEffects[_meId].Keyers[_keyId].Pattern.XPosition = v >= 1 ? 1 : 0;
-            }
-
-            public override double[] GoodValues()
-            {
-                return new double[] { 0, 0.874, 0.147, 0.999, 1.00, 0.01 };
-            }
-            public override double[] BadValues()
-            {
-                return new double[] { 1.001, 1.1, 1.01, -0.01, -1, -0.10 };
-            }
+            public override double[] GoodValues => new double[] { 0, 0.874, 0.147, 0.999, 1.00, 0.01 };
+            public override double[] BadValues => new double[] { 1.001, 1.1, 1.01, -0.01, -1, -0.10 };
         }
 
         [Fact]
         public void TestHorizontalOffset()
         {
             using (var helper = new AtemComparisonHelper(Client, Output))
-            {
-                foreach (var key in GetKeyers<IBMDSwitcherKeyPatternParameters>())
-                {
-                    new PatternKeyerHorizontalOffsetTestDefinition(helper, key).Run();
-                }
-            }
+                GetKeyers<IBMDSwitcherKeyPatternParameters>().ForEach(k => new PatternKeyerHorizontalOffsetTestDefinition(helper, k).Run());
         }
 
         private class PatternKeyerVerticalOffsetTestDefinition : PatternKeyerTestDefinition<double>
@@ -310,51 +181,21 @@ namespace LibAtem.ComparisonTests2.MixEffects
             {
             }
 
-            public override void Prepare()
-            {
-                // Ensure the first value will have a change
-                _sdk.SetVerticalOffset(0.5);
-            }
+            // Ensure the first value will have a change
+            public override void Prepare() => _sdk.SetVerticalOffset(0.5);
 
-            public override ICommand GenerateCommand(double v)
-            {
-                return new MixEffectKeyPatternSetCommand
-                {
-                    MixEffectIndex = _meId,
-                    KeyerIndex = _keyId,
-                    Mask = MixEffectKeyPatternSetCommand.MaskFlags.YPosition,
-                    YPosition = v
-                };
-            }
+            public override string PropertyName => "YPosition";
+            public override double MangleBadValue(double v) => v >= 1 ? 1 : 0;
 
-            public override void UpdateExpectedState(ComparisonState state, bool goodValue, double v)
-            {
-                if (goodValue)
-                    state.MixEffects[_meId].Keyers[_keyId].Pattern.YPosition = v;
-                else
-                    state.MixEffects[_meId].Keyers[_keyId].Pattern.YPosition = v >= 1 ? 1 : 0;
-            }
-
-            public override double[] GoodValues()
-            {
-                return new double[] { 0, 0.874, 0.147, 0.999, 1.00, 0.01 };
-            }
-            public override double[] BadValues()
-            {
-                return new double[] { 1.001, 1.1, 1.01, -0.01, -1, -0.10 };
-            }
+            public override double[] GoodValues => new double[] { 0, 0.874, 0.147, 0.999, 1.00, 0.01 };
+            public override double[] BadValues => new double[] { 1.001, 1.1, 1.01, -0.01, -1, -0.10 };
         }
 
         [Fact]
         public void TestVertictalOffset()
         {
             using (var helper = new AtemComparisonHelper(Client, Output))
-            {
-                foreach (var key in GetKeyers<IBMDSwitcherKeyPatternParameters>())
-                {
-                    new PatternKeyerVerticalOffsetTestDefinition(helper, key).Run();
-                }
-            }
+                GetKeyers<IBMDSwitcherKeyPatternParameters>().ForEach(k => new PatternKeyerVerticalOffsetTestDefinition(helper, k).Run());
         }
 
         private class PatternKeyerInvertKeyTestDefinition : PatternKeyerTestDefinition<bool>
@@ -363,39 +204,18 @@ namespace LibAtem.ComparisonTests2.MixEffects
             {
             }
 
-            public override void Prepare()
-            {
-                // Ensure the first value will have a change
-                _sdk.SetInverse(0);
-            }
+            // Ensure the first value will have a change
+            public override void Prepare() => _sdk.SetInverse(0);
 
-            public override ICommand GenerateCommand(bool v)
-            {
-                return new MixEffectKeyPatternSetCommand
-                {
-                    MixEffectIndex = _meId,
-                    KeyerIndex = _keyId,
-                    Mask = MixEffectKeyPatternSetCommand.MaskFlags.Inverse,
-                    Inverse = v
-                };
-            }
-
-            public override void UpdateExpectedState(ComparisonState state, bool goodValue, bool v)
-            {
-                state.MixEffects[_meId].Keyers[_keyId].Pattern.Inverse = v;
-            }
+            public override string PropertyName => "Inverse";
+            public override bool MangleBadValue(bool v) => v;
         }
 
         [Fact]
         public void TestInvertKey()
         {
             using (var helper = new AtemComparisonHelper(Client, Output))
-            {
-                foreach (var key in GetKeyers<IBMDSwitcherKeyPatternParameters>())
-                {
-                    new PatternKeyerInvertKeyTestDefinition(helper, key).Run();
-                }
-            }
+                GetKeyers<IBMDSwitcherKeyPatternParameters>().ForEach(k => new PatternKeyerInvertKeyTestDefinition(helper, k).Run());
         }
     }
 }

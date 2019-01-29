@@ -41,7 +41,7 @@ namespace LibAtem.ComparisonTests2.State.SDK
                     break;
                 case _BMDSwitcherAudioMonitorOutputEventType.bmdSwitcherAudioMonitorOutputEventTypeSoloInputChanged:
                     _props.GetSoloInput(out long soloInput);
-                    _state.SoloInput = (AudioSource)soloInput;
+                    _state.SoloSource = (AudioSource)soloInput;
                     break;
                 case _BMDSwitcherAudioMonitorOutputEventType.bmdSwitcherAudioMonitorOutputEventTypeDimChanged:
                     _props.GetDim(out int dim);

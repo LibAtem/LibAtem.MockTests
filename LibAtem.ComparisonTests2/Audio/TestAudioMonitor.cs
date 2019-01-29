@@ -45,7 +45,9 @@ namespace LibAtem.ComparisonTests2.Audio
         protected IBMDSwitcherAudioMonitorOutput GetMonitor()
         {
             // We are only prepared for up to one, so fail if there are more
-            return GetMonitors().SingleOrDefault();
+            var monitor = GetMonitors().SingleOrDefault();
+            Skip.If(monitor == null, "Model does not support monitor");
+            return monitor;
         }
 
         [Fact]
@@ -60,133 +62,80 @@ namespace LibAtem.ComparisonTests2.Audio
             }
         }
 
-        private class AudioMonitorEnabledTestDefinition : TestDefinitionBase<bool>
+        private abstract class AudioMonitorTestDefinition<T> : TestDefinitionBase2<AudioMixerMonitorSetCommand, T>
         {
             protected readonly IBMDSwitcherAudioMonitorOutput _sdk;
 
-            public AudioMonitorEnabledTestDefinition(AtemComparisonHelper helper, IBMDSwitcherAudioMonitorOutput sdk) : base(helper)
+            public AudioMonitorTestDefinition(AtemComparisonHelper helper, IBMDSwitcherAudioMonitorOutput sdk) : base(helper)
             {
                 _sdk = sdk;
             }
 
-            public override void Prepare()
+            public abstract T MangleBadValue(T v);
+
+            public sealed override void UpdateExpectedState(ComparisonState state, bool goodValue, T v)
             {
-                // Ensure the first value will have a change
-                _sdk.SetMonitorEnable(0);
+                ComparisonAudioMonitorOutputState obj = state.Audio.Monitors[0];
+                SetCommandProperty(obj, PropertyName, goodValue ? v : MangleBadValue(v));
             }
 
-            public override ICommand GenerateCommand(bool v)
-            {
-                return new AudioMixerMonitorSetCommand
-                {
-                    Mask = AudioMixerMonitorSetCommand.MaskFlags.Enabled,
-                    Enabled = v
-                };
-            }
-
-            public override void UpdateExpectedState(ComparisonState state, bool goodValue, bool v)
-            {
-                state.Audio.Monitors[0].Enabled = v;
-            }
-
-            public override IEnumerable<CommandQueueKey> ExpectedCommands(bool goodValue, bool v)
+            public override IEnumerable<CommandQueueKey> ExpectedCommands(bool goodValue, T v)
             {
                 yield return new CommandQueueKey(new AudioMixerMonitorGetCommand());
             }
+        }
+
+        private class AudioMonitorEnabledTestDefinition : AudioMonitorTestDefinition<bool>
+        {
+            public AudioMonitorEnabledTestDefinition(AtemComparisonHelper helper, IBMDSwitcherAudioMonitorOutput sdk) : base(helper, sdk)
+            {
+            }
+
+            // Ensure the first value will have a change
+            public override void Prepare() => _sdk.SetMonitorEnable(0);
+
+            public override string PropertyName => "Enabled";
+            public override bool MangleBadValue(bool v) => v;
         }
 
         [SkippableFact]
         public void TestEnabled()
         {
             using (var helper = new AtemComparisonHelper(_client, _output))
-            {
-                IBMDSwitcherAudioMonitorOutput monitor = GetMonitor();
-                Skip.If(monitor == null, "Model does not support monitor");
-
-                new AudioMonitorEnabledTestDefinition(helper, monitor).Run();
-            }
+                new AudioMonitorEnabledTestDefinition(helper, GetMonitor()).Run();
         }
 
-        private class AudioMonitorMuteTestDefinition : TestDefinitionBase<bool>
+        private class AudioMonitorMuteTestDefinition : AudioMonitorTestDefinition<bool>
         {
-            protected readonly IBMDSwitcherAudioMonitorOutput _sdk;
-
-            public AudioMonitorMuteTestDefinition(AtemComparisonHelper helper, IBMDSwitcherAudioMonitorOutput sdk) : base(helper)
+            public AudioMonitorMuteTestDefinition(AtemComparisonHelper helper, IBMDSwitcherAudioMonitorOutput sdk) : base(helper, sdk)
             {
-                _sdk = sdk;
             }
 
-            public override void Prepare()
-            {
-                // Ensure the first value will have a change
-                _sdk.SetMute(0);
-            }
+            // Ensure the first value will have a change
+            public override void Prepare() => _sdk.SetMute(0);
 
-            public override ICommand GenerateCommand(bool v)
-            {
-                return new AudioMixerMonitorSetCommand
-                {
-                    Mask = AudioMixerMonitorSetCommand.MaskFlags.Mute,
-                    Mute = v
-                };
-            }
-
-            public override void UpdateExpectedState(ComparisonState state, bool goodValue, bool v)
-            {
-                state.Audio.Monitors[0].Mute = v;
-            }
-
-            public override IEnumerable<CommandQueueKey> ExpectedCommands(bool goodValue, bool v)
-            {
-                yield return new CommandQueueKey(new AudioMixerMonitorGetCommand());
-            }
+            public override string PropertyName => "Mute";
+            public override bool MangleBadValue(bool v) => v;
         }
 
         [SkippableFact]
         public void TestMute()
         {
             using (var helper = new AtemComparisonHelper(_client, _output))
-            {
-                IBMDSwitcherAudioMonitorOutput monitor = GetMonitor();
-                Skip.If(monitor == null, "Model does not support monitor");
-
-                new AudioMonitorMuteTestDefinition(helper, monitor).Run();
-            }
+                new AudioMonitorMuteTestDefinition(helper, GetMonitor()).Run();
         }
 
-        private class AudioMonitorDimTestDefinition : TestDefinitionBase<bool>
+        private class AudioMonitorDimTestDefinition : AudioMonitorTestDefinition<bool>
         {
-            protected readonly IBMDSwitcherAudioMonitorOutput _sdk;
-
-            public AudioMonitorDimTestDefinition(AtemComparisonHelper helper, IBMDSwitcherAudioMonitorOutput sdk) : base(helper)
+            public AudioMonitorDimTestDefinition(AtemComparisonHelper helper, IBMDSwitcherAudioMonitorOutput sdk) : base(helper, sdk)
             {
-                _sdk = sdk;
             }
 
-            public override void Prepare()
-            {
-                // Ensure the first value will have a change
-                _sdk.SetDim(0);
-            }
+            // Ensure the first value will have a change
+            public override void Prepare() => _sdk.SetDim(0);
 
-            public override ICommand GenerateCommand(bool v)
-            {
-                return new AudioMixerMonitorSetCommand
-                {
-                    Mask = AudioMixerMonitorSetCommand.MaskFlags.Dim,
-                    Dim = v
-                };
-            }
-
-            public override void UpdateExpectedState(ComparisonState state, bool goodValue, bool v)
-            {
-                state.Audio.Monitors[0].Dim = v;
-            }
-
-            public override IEnumerable<CommandQueueKey> ExpectedCommands(bool goodValue, bool v)
-            {
-                yield return new CommandQueueKey(new AudioMixerMonitorGetCommand());
-            }
+            public override string PropertyName => "Dim";
+            public override bool MangleBadValue(bool v) => v;
         }
 
         [SkippableFact]
@@ -201,163 +150,69 @@ namespace LibAtem.ComparisonTests2.Audio
             }
         }
 
-        private class AudioMonitorSoloTestDefinition : TestDefinitionBase<bool>
+        private class AudioMonitorSoloTestDefinition : AudioMonitorTestDefinition<bool>
         {
-            protected readonly IBMDSwitcherAudioMonitorOutput _sdk;
-
-            public AudioMonitorSoloTestDefinition(AtemComparisonHelper helper, IBMDSwitcherAudioMonitorOutput sdk) : base(helper)
+            public AudioMonitorSoloTestDefinition(AtemComparisonHelper helper, IBMDSwitcherAudioMonitorOutput sdk) : base(helper, sdk)
             {
-                _sdk = sdk;
             }
 
-            public override void Prepare()
-            {
-                // Ensure the first value will have a change
-                _sdk.SetSolo(0);
-            }
+            // Ensure the first value will have a change
+            public override void Prepare() => _sdk.SetSolo(0);
 
-            public override ICommand GenerateCommand(bool v)
-            {
-                return new AudioMixerMonitorSetCommand
-                {
-                    Mask = AudioMixerMonitorSetCommand.MaskFlags.Solo,
-                    Solo = v
-                };
-            }
-
-            public override void UpdateExpectedState(ComparisonState state, bool goodValue, bool v)
-            {
-                state.Audio.Monitors[0].Solo = v;
-            }
-
-            public override IEnumerable<CommandQueueKey> ExpectedCommands(bool goodValue, bool v)
-            {
-                yield return new CommandQueueKey(new AudioMixerMonitorGetCommand());
-            }
+            public override string PropertyName => "Solo";
+            public override bool MangleBadValue(bool v) => v;
         }
 
         [SkippableFact]
         public void TestSolo()
         {
             using (var helper = new AtemComparisonHelper(_client, _output))
-            {
-                IBMDSwitcherAudioMonitorOutput monitor = GetMonitor();
-                Skip.If(monitor == null, "Model does not support monitor");
-
-                new AudioMonitorSoloTestDefinition(helper, monitor).Run();
-            }
+                new AudioMonitorSoloTestDefinition(helper, GetMonitor()).Run();
         }
 
-        private class AudioMonitorGainTestDefinition : TestDefinitionBase<double>
+        private class AudioMonitorGainTestDefinition : AudioMonitorTestDefinition<double>
         {
-            protected readonly IBMDSwitcherAudioMonitorOutput _sdk;
-
-            public AudioMonitorGainTestDefinition(AtemComparisonHelper helper, IBMDSwitcherAudioMonitorOutput sdk) : base(helper)
+            public AudioMonitorGainTestDefinition(AtemComparisonHelper helper, IBMDSwitcherAudioMonitorOutput sdk) : base(helper, sdk)
             {
-                _sdk = sdk;
             }
 
-            public override void Prepare()
-            {
-                // Ensure the first value will have a change
-                _sdk.SetGain(20);
-            }
+            // Ensure the first value will have a change
+            public override void Prepare() => _sdk.SetGain(20);
 
-            public override ICommand GenerateCommand(double v)
-            {
-                return new AudioMixerMonitorSetCommand
-                {
-                    Mask = AudioMixerMonitorSetCommand.MaskFlags.Gain,
-                    Gain = v
-                };
-            }
+            public override string PropertyName => "Gain";
+            public override double MangleBadValue(double v) => v;
 
-            public override void UpdateExpectedState(ComparisonState state, bool goodValue, double v)
-            {
-                state.Audio.Monitors[0].Gain = v;
-            }
-
-            public override IEnumerable<CommandQueueKey> ExpectedCommands(bool goodValue, double v)
-            {
-                yield return new CommandQueueKey(new AudioMixerMonitorGetCommand());
-            }
-
-            public override double[] GoodValues()
-            {
-                return new double[] { -60, -59, -45, -10, 0, 0.1, 6, 5.99, 5.9, -60.1, 6.01, -65, -90, double.NegativeInfinity };
-            }
+            public override double[] GoodValues => new double[] { -60, -59, -45, -10, 0, 0.1, 6, 5.99, 5.9, -60.1, 6.01, -65, -90, double.NegativeInfinity };
         }
 
         [SkippableFact]
         public void TestGain()
         {
             using (var helper = new AtemComparisonHelper(_client, _output))
-            {
-                IBMDSwitcherAudioMonitorOutput monitor = GetMonitor();
-                Skip.If(monitor == null, "Model does not support monitor");
-
-                new AudioMonitorGainTestDefinition(helper, monitor).Run();
-            }
+                new AudioMonitorGainTestDefinition(helper, GetMonitor()).Run();
         }
 
-        private class AudioMonitorSoloInputTestDefinition : TestDefinitionBase<AudioSource>
+        private class AudioMonitorSoloInputTestDefinition : AudioMonitorTestDefinition<AudioSource>
         {
-            protected readonly IBMDSwitcherAudioMonitorOutput _sdk;
-
-            public AudioMonitorSoloInputTestDefinition(AtemComparisonHelper helper, IBMDSwitcherAudioMonitorOutput sdk) : base(helper)
+            public AudioMonitorSoloInputTestDefinition(AtemComparisonHelper helper, IBMDSwitcherAudioMonitorOutput sdk) : base(helper, sdk)
             {
-                _sdk = sdk;
             }
 
-            public override void Prepare()
-            {
-                // Ensure the first value will have a change
-                _sdk.SetSoloInput((long)AudioSource.XLR);
-            }
+            // Ensure the first value will have a change
+            public override void Prepare() => _sdk.SetSoloInput((long)AudioSource.XLR);
 
-            public override ICommand GenerateCommand(AudioSource v)
-            {
-                return new AudioMixerMonitorSetCommand
-                {
-                    Mask = AudioMixerMonitorSetCommand.MaskFlags.SoloSource,
-                    SoloSource = v
-                };
-            }
+            public override string PropertyName => "SoloSource";
+            public override AudioSource MangleBadValue(AudioSource v) => AudioSource.Input1;
 
-            public override void UpdateExpectedState(ComparisonState state, bool goodValue, AudioSource v)
-            {
-                if (goodValue)
-                    state.Audio.Monitors[0].SoloInput = v;
-                else
-                    state.Audio.Monitors[0].SoloInput = AudioSource.Input1;
-            }
-
-            public override IEnumerable<CommandQueueKey> ExpectedCommands(bool goodValue, AudioSource v)
-            {
-                yield return new CommandQueueKey(new AudioMixerMonitorGetCommand());
-            }
-
-            public override AudioSource[] GoodValues()
-            {
-                return _helper.LibState.Audio.Inputs.Keys.Select(i => (AudioSource)i).ToArray();
-            }
-
-            public override AudioSource[] BadValues()
-            {
-                return Enum.GetValues(typeof(AudioSource)).OfType<AudioSource>().Except(GoodValues()).ToArray();
-            }
+            public override AudioSource[] GoodValues =>  _helper.LibState.Audio.Inputs.Keys.Select(i => (AudioSource)i).ToArray();
+            public override AudioSource[] BadValues => Enum.GetValues(typeof(AudioSource)).OfType<AudioSource>().Except(GoodValues).ToArray();
         }
 
         [SkippableFact]
         public void TestSoloInput()
         {
             using (var helper = new AtemComparisonHelper(_client, _output))
-            {
-                IBMDSwitcherAudioMonitorOutput monitor = GetMonitor();
-                Skip.If(monitor == null, "Model does not support monitor");
-
-                new AudioMonitorSoloInputTestDefinition(helper, monitor).Run();
-            }
+                new AudioMonitorSoloInputTestDefinition(helper, GetMonitor()).Run();
         }
     }
 }
