@@ -455,10 +455,10 @@ namespace LibAtem.ComparisonTests2.State
 
             props.BorderEnabled = cmd.BorderEnabled;
             props.BorderBevel = cmd.BorderBevel;
-            props.BorderWidthOut = cmd.BorderWidthOut;
-            props.BorderWidthIn = cmd.BorderWidthIn;
-            props.BorderSoftnessOut = cmd.BorderSoftnessOut;
-            props.BorderSoftnessIn = cmd.BorderSoftnessIn;
+            props.BorderOuterWidth = cmd.BorderWidthOut;
+            props.BorderInnerWidth = cmd.BorderWidthIn;
+            props.BorderOuterSoftness = cmd.BorderSoftnessOut;
+            props.BorderInnerSoftness = cmd.BorderSoftnessIn;
             props.BorderBevelSoftness = cmd.BorderBevelSoftness;
             props.BorderBevelPosition = cmd.BorderBevelPosition;
             props.BorderHue = cmd.BorderHue;
@@ -491,7 +491,7 @@ namespace LibAtem.ComparisonTests2.State
 
             props.Tie = cmd.Tie;
             props.Rate = cmd.Rate;
-            props.PreMultipliedKey = cmd.PreMultipliedKey;
+            props.PreMultiply = cmd.PreMultipliedKey;
             props.Clip = cmd.Clip;
             props.Gain = cmd.Gain;
             props.Invert = cmd.Invert;

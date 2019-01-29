@@ -62,19 +62,19 @@ namespace LibAtem.ComparisonTests2.State.SDK
                     break;
                 case _BMDSwitcherInputSuperSourceEventType.bmdSwitcherInputSuperSourceEventTypeBorderWidthOutChanged:
                     _props.GetBorderWidthOut(out double widthOut);
-                    _state.BorderWidthOut = widthOut;
+                    _state.BorderOuterWidth = widthOut;
                     break;
                 case _BMDSwitcherInputSuperSourceEventType.bmdSwitcherInputSuperSourceEventTypeBorderWidthInChanged:
                     _props.GetBorderWidthIn(out double widthIn);
-                    _state.BorderWidthIn = widthIn;
+                    _state.BorderInnerWidth = widthIn;
                     break;
                 case _BMDSwitcherInputSuperSourceEventType.bmdSwitcherInputSuperSourceEventTypeBorderSoftnessOutChanged:
                     _props.GetBorderSoftnessOut(out double softnessOut);
-                    _state.BorderSoftnessOut = (uint) (softnessOut * 100);
+                    _state.BorderOuterSoftness = (uint) (softnessOut * 100);
                     break;
                 case _BMDSwitcherInputSuperSourceEventType.bmdSwitcherInputSuperSourceEventTypeBorderSoftnessInChanged:
                     _props.GetBorderSoftnessIn(out double softnessIn);
-                    _state.BorderSoftnessIn = (uint) (softnessIn * 100);
+                    _state.BorderInnerSoftness = (uint) (softnessIn * 100);
                     break;
                 case _BMDSwitcherInputSuperSourceEventType.bmdSwitcherInputSuperSourceEventTypeBorderBevelSoftnessChanged:
                     _props.GetBorderBevelSoftness(out double bevelSoftness);

@@ -43,58 +43,42 @@ namespace LibAtem.ComparisonTests2
             return result;
         }
 
-        private abstract class DownstreamKeyerTestDefinition<T> : TestDefinitionBase<T>
+        private class DownstreamKeyerCutSourceTestDefinition : TestDefinitionBase2<DownstreamKeyCutSourceSetCommand, VideoSource>
         {
             protected readonly IBMDSwitcherDownstreamKey _sdk;
             protected readonly DownstreamKeyId _keyId;
 
-            public DownstreamKeyerTestDefinition(AtemComparisonHelper helper, Tuple<DownstreamKeyId, IBMDSwitcherDownstreamKey> keyer) : base(helper)
+            public DownstreamKeyerCutSourceTestDefinition(AtemComparisonHelper helper, Tuple<DownstreamKeyId, IBMDSwitcherDownstreamKey> keyer) : base(helper)
             {
                 _sdk = keyer.Item2;
                 _keyId = keyer.Item1;
-            }
 
-            public override IEnumerable<CommandQueueKey> ExpectedCommands(bool goodValue, T v)
-            {
-                //yield return new CommandQueueKey(new DownstreamKeySourceGetCommand() { Index = _keyId });
-                yield return new CommandQueueKey(new DownstreamKeyPropertiesGetCommand() { Index = _keyId });
-            }
-        }
-
-        private class DownstreamKeyerCutSourceTestDefinition : DownstreamKeyerTestDefinition<VideoSource>
-        {
-            public DownstreamKeyerCutSourceTestDefinition(AtemComparisonHelper helper, Tuple<DownstreamKeyId, IBMDSwitcherDownstreamKey> keyer) : base(helper, keyer)
-            {
+                keyer.Item2.GetCutInputAvailabilityMask(out _BMDSwitcherInputAvailability availability);
+                Assert.Equal(_BMDSwitcherInputAvailability.bmdSwitcherInputAvailabilityInputCut | _BMDSwitcherInputAvailability.bmdSwitcherInputAvailabilityMixEffectBlock0, availability);
             }
 
             public override void Prepare()
             {
                 // Ensure the first value will have a change
+                _sdk.SetInputFill((long)VideoSource.ColorBars);
                 _sdk.SetInputCut((long)VideoSource.ColorBars);
                 _sdk.SetTie(0);
                 _sdk.SetOnAir(0);
             }
 
-            public override VideoSource[] GoodValues()
+            public override void SetupCommand(DownstreamKeyCutSourceSetCommand cmd)
             {
-                return VideoSourceLists.All.Where(s => s.IsAvailable(_helper.Profile) && s.IsAvailable(MixEffectBlockId.One) && s.IsAvailable(SourceAvailability.KeySource)).ToArray();
+                cmd.Index = _keyId;
             }
 
-            public override ICommand GenerateCommand(VideoSource v)
-            {
-                return new DownstreamKeyCutSourceSetCommand
-                {
-                    Index = _keyId,
-                    Source = v,
-                };
-            }
+            public override string PropertyName => "Source";
+
+            public override VideoSource[] GoodValues => VideoSourceLists.All.Where(s => s.IsAvailable(_helper.Profile) && s.IsAvailable(MixEffectBlockId.One) && s.IsAvailable(SourceAvailability.KeySource)).ToArray();
 
             public override void UpdateExpectedState(ComparisonState state, bool goodValue, VideoSource v)
             {
                 if (goodValue)
-                {
                     state.DownstreamKeyers[_keyId].CutSource = v;
-                }
             }
 
             public override IEnumerable<CommandQueueKey> ExpectedCommands(bool goodValue, VideoSource v)
@@ -108,44 +92,40 @@ namespace LibAtem.ComparisonTests2
         public void TestCutSource()
         {
             using (var helper = new AtemComparisonHelper(_client, _output))
-            {
-                foreach (var key in GetKeyers())
-                {
-                    key.Item2.GetCutInputAvailabilityMask(out _BMDSwitcherInputAvailability availability);
-                    Assert.Equal(_BMDSwitcherInputAvailability.bmdSwitcherInputAvailabilityInputCut | _BMDSwitcherInputAvailability.bmdSwitcherInputAvailabilityMixEffectBlock0, availability);
-
-                    new DownstreamKeyerCutSourceTestDefinition(helper, key).Run();
-                }
-            }
+                GetKeyers().ForEach(k => new DownstreamKeyerCutSourceTestDefinition(helper, k).Run());
         }
 
-        private class DownstreamKeyerFillSourceTestDefinition : DownstreamKeyerTestDefinition<VideoSource>
+        private class DownstreamKeyerFillSourceTestDefinition : TestDefinitionBase2<DownstreamKeyFillSourceSetCommand, VideoSource>
         {
-            public DownstreamKeyerFillSourceTestDefinition(AtemComparisonHelper helper, Tuple<DownstreamKeyId, IBMDSwitcherDownstreamKey> keyer) : base(helper, keyer)
+            protected readonly IBMDSwitcherDownstreamKey _sdk;
+            protected readonly DownstreamKeyId _keyId;
+
+            public DownstreamKeyerFillSourceTestDefinition(AtemComparisonHelper helper, Tuple<DownstreamKeyId, IBMDSwitcherDownstreamKey> keyer) : base(helper)
             {
+                _sdk = keyer.Item2;
+                _keyId = keyer.Item1;
+
+                keyer.Item2.GetFillInputAvailabilityMask(out _BMDSwitcherInputAvailability availability);
+                Assert.Equal(_BMDSwitcherInputAvailability.bmdSwitcherInputAvailabilityMixEffectBlock0, availability);
             }
 
             public override void Prepare()
             {
                 // Ensure the first value will have a change
                 _sdk.SetInputFill((long)VideoSource.ColorBars);
+                _sdk.SetInputCut((long)VideoSource.ColorBars);
                 _sdk.SetTie(0);
                 _sdk.SetOnAir(0);
             }
 
-            public override VideoSource[] GoodValues()
+            public override void SetupCommand(DownstreamKeyFillSourceSetCommand cmd)
             {
-                return VideoSourceLists.All.Where(s => s.IsAvailable(_helper.Profile) && s.IsAvailable(MixEffectBlockId.One)).ToArray();
+                cmd.Index = _keyId;
             }
 
-            public override ICommand GenerateCommand(VideoSource v)
-            {
-                return new DownstreamKeyFillSourceSetCommand
-                {
-                    Index = _keyId,
-                    Source = v,
-                };
-            }
+            public override string PropertyName => "Source";
+
+            public override VideoSource[] GoodValues => VideoSourceLists.All.Where(s => s.IsAvailable(_helper.Profile) && s.IsAvailable(MixEffectBlockId.One)).ToArray();
 
             public override void UpdateExpectedState(ComparisonState state, bool goodValue, VideoSource v)
             {
@@ -168,21 +148,47 @@ namespace LibAtem.ComparisonTests2
         public void TestFillSource()
         {
             using (var helper = new AtemComparisonHelper(_client, _output))
-            {
-                foreach (var key in GetKeyers())
-                {
-                    key.Item2.GetFillInputAvailabilityMask(out _BMDSwitcherInputAvailability availability);
-                    Assert.Equal(_BMDSwitcherInputAvailability.bmdSwitcherInputAvailabilityMixEffectBlock0, availability);
+                GetKeyers().ForEach(k => new DownstreamKeyerFillSourceTestDefinition(helper, k).Run());
+        }
 
-                    new DownstreamKeyerFillSourceTestDefinition(helper, key).Run();
-                }
+        private abstract class DownstreamKeyerTestDefinition<T> : TestDefinitionBase2<DownstreamKeyGeneralSetCommand, T>
+        {
+            protected readonly IBMDSwitcherDownstreamKey _sdk;
+            protected readonly DownstreamKeyId _keyId;
+
+            public DownstreamKeyerTestDefinition(AtemComparisonHelper helper, Tuple<DownstreamKeyId, IBMDSwitcherDownstreamKey> keyer) : base(helper)
+            {
+                _sdk = keyer.Item2;
+                _keyId = keyer.Item1;
+            }
+
+            public override void SetupCommand(DownstreamKeyGeneralSetCommand cmd)
+            {
+                cmd.Index = _keyId;
+            }
+
+            public abstract T MangleBadValue(T v);
+
+            public override void UpdateExpectedState(ComparisonState state, bool goodValue, T v)
+            {
+                SetCommandProperty(state.DownstreamKeyers[_keyId], PropertyName, goodValue ? v : MangleBadValue(v));
+            }
+
+            public override IEnumerable<CommandQueueKey> ExpectedCommands(bool goodValue, T v)
+            {
+                yield return new CommandQueueKey(new DownstreamKeyPropertiesGetCommand() { Index = _keyId });
             }
         }
 
-        private class DownstreamKeyerTieTestDefinition : DownstreamKeyerTestDefinition<bool>
+        private class DownstreamKeyerTieTestDefinition : TestDefinitionBase2<DownstreamKeyTieSetCommand, bool>
         {
-            public DownstreamKeyerTieTestDefinition(AtemComparisonHelper helper, Tuple<DownstreamKeyId, IBMDSwitcherDownstreamKey> keyer) : base(helper, keyer)
+            protected readonly IBMDSwitcherDownstreamKey _sdk;
+            protected readonly DownstreamKeyId _keyId;
+
+            public DownstreamKeyerTieTestDefinition(AtemComparisonHelper helper, Tuple<DownstreamKeyId, IBMDSwitcherDownstreamKey> keyer) : base(helper)
             {
+                _sdk = keyer.Item2;
+                _keyId = keyer.Item1;
             }
 
             public override void Prepare()
@@ -194,14 +200,12 @@ namespace LibAtem.ComparisonTests2
                 _sdk.SetInputCut((long)VideoSource.MediaPlayer1Key);
             }
 
-            public override ICommand GenerateCommand(bool v)
+            public override void SetupCommand(DownstreamKeyTieSetCommand cmd)
             {
-                return new DownstreamKeyTieSetCommand
-                {
-                    Index = _keyId,
-                    Tie = v,
-                };
+                cmd.Index = _keyId;
             }
+
+            public override string PropertyName => "Tie";
 
             public override void UpdateExpectedState(ComparisonState state, bool goodValue, bool v)
             {
@@ -212,24 +216,29 @@ namespace LibAtem.ComparisonTests2
                     state.Inputs[VideoSource.MediaPlayer1Key].PreviewTally = v;
                 }
             }
+
+            public override IEnumerable<CommandQueueKey> ExpectedCommands(bool goodValue, bool v)
+            {
+                yield return new CommandQueueKey(new DownstreamKeyPropertiesGetCommand() { Index = _keyId });
+            }
         }
 
         [Fact]
         public void TestTie()
         {
             using (var helper = new AtemComparisonHelper(_client, _output))
-            {
-                foreach (var key in GetKeyers())
-                {
-                    new DownstreamKeyerTieTestDefinition(helper, key).Run();
-                }
-            }
+                GetKeyers().ForEach(k => new DownstreamKeyerTieTestDefinition(helper, k).Run());
         }
 
-        private class DownstreamKeyerRateTestDefinition : DownstreamKeyerTestDefinition<uint>
+        private class DownstreamKeyerRateTestDefinition : TestDefinitionBase2<DownstreamKeyRateSetCommand, uint>
         {
-            public DownstreamKeyerRateTestDefinition(AtemComparisonHelper helper, Tuple<DownstreamKeyId, IBMDSwitcherDownstreamKey> keyer) : base(helper, keyer)
+            protected readonly IBMDSwitcherDownstreamKey _sdk;
+            protected readonly DownstreamKeyId _keyId;
+
+            public DownstreamKeyerRateTestDefinition(AtemComparisonHelper helper, Tuple<DownstreamKeyId, IBMDSwitcherDownstreamKey> keyer) : base(helper)
             {
+                _sdk = keyer.Item2;
+                _keyId = keyer.Item1;
             }
 
             public override void Prepare()
@@ -238,42 +247,26 @@ namespace LibAtem.ComparisonTests2
                 _sdk.SetRate(20);
             }
 
-            public override ICommand GenerateCommand(uint v)
+            public override void SetupCommand(DownstreamKeyRateSetCommand cmd)
             {
-                return new DownstreamKeyRateSetCommand
-                {
-                    Index = _keyId,
-                    Rate = v,
-                };
+                cmd.Index = _keyId;
             }
 
+            public override string PropertyName => "Rate";
+
+            private uint MangleBadValue(uint v) => v >= 250 ? 250 : (uint)1;
             public override void UpdateExpectedState(ComparisonState state, bool goodValue, uint v)
             {
-                if (goodValue)
-                {
-                    state.DownstreamKeyers[_keyId].Rate = v;
-                    state.DownstreamKeyers[_keyId].RemainingFrames = v;
-                }
-                else
-                {
-                    state.DownstreamKeyers[_keyId].Rate = v >= 250 ? 250 : (uint)1;
-                    state.DownstreamKeyers[_keyId].RemainingFrames = v >= 250 ? 250 : (uint)1;
-                }
+                state.DownstreamKeyers[_keyId].Rate = goodValue ? v : MangleBadValue(v);
+                state.DownstreamKeyers[_keyId].RemainingFrames = goodValue ? v : MangleBadValue(v);
             }
+
+            public override uint[] GoodValues => new uint[] { 1, 18, 28, 95, 234, 244, 250 };
+            public override uint[] BadValues => new uint[] { 251, 255, 0 };
 
             public override IEnumerable<CommandQueueKey> ExpectedCommands(bool goodValue, uint v)
             {
                 yield return new CommandQueueKey(new DownstreamKeyPropertiesGetCommand() { Index = _keyId });
-            }
-
-            public override uint[] GoodValues()
-            {
-                return new uint[] { 1, 18, 28, 95, 234, 244, 250 };
-            }
-
-            public override uint[] BadValues()
-            {
-                return new uint[] { 251, 255, 0 };
             }
         }
 
@@ -281,18 +274,18 @@ namespace LibAtem.ComparisonTests2
         public void TestRate()
         {
             using (var helper = new AtemComparisonHelper(_client, _output))
-            {
-                foreach (var key in GetKeyers())
-                {
-                    new DownstreamKeyerRateTestDefinition(helper, key).Run();
-                }
-            }
+                GetKeyers().ForEach(k => new DownstreamKeyerRateTestDefinition(helper, k).Run());
         }
 
-        private class DownstreamKeyerOnAirTestDefinition : DownstreamKeyerTestDefinition<bool>
+        private class DownstreamKeyerOnAirTestDefinition : TestDefinitionBase2<DownstreamKeyOnAirSetCommand, bool>
         {
-            public DownstreamKeyerOnAirTestDefinition(AtemComparisonHelper helper, Tuple<DownstreamKeyId, IBMDSwitcherDownstreamKey> keyer) : base(helper, keyer)
+            protected readonly IBMDSwitcherDownstreamKey _sdk;
+            protected readonly DownstreamKeyId _keyId;
+
+            public DownstreamKeyerOnAirTestDefinition(AtemComparisonHelper helper, Tuple<DownstreamKeyId, IBMDSwitcherDownstreamKey> keyer) : base(helper)
             {
+                _sdk = keyer.Item2;
+                _keyId = keyer.Item1;
             }
 
             public override void Prepare()
@@ -304,15 +297,13 @@ namespace LibAtem.ComparisonTests2
                 _sdk.SetInputCut((long)VideoSource.MediaPlayer1Key);
             }
 
-            public override ICommand GenerateCommand(bool v)
+            public override void SetupCommand(DownstreamKeyOnAirSetCommand cmd)
             {
-                return new DownstreamKeyOnAirSetCommand
-                {
-                    Index = _keyId,
-                    OnAir = v,
-                };
+                cmd.Index = _keyId;
             }
 
+            public override string PropertyName => "OnAir";
+            
             public override void UpdateExpectedState(ComparisonState state, bool goodValue, bool v)
             {
                 if (goodValue)
@@ -322,18 +313,18 @@ namespace LibAtem.ComparisonTests2
                     state.Inputs[VideoSource.MediaPlayer1Key].ProgramTally = v;
                 }
             }
+
+            public override IEnumerable<CommandQueueKey> ExpectedCommands(bool goodValue, bool v)
+            {
+                yield return new CommandQueueKey(new DownstreamKeyPropertiesGetCommand() { Index = _keyId });
+            }
         }
 
         [Fact]
         public void TestOnAir()
         {
             using (var helper = new AtemComparisonHelper(_client, _output))
-            {
-                foreach (var key in GetKeyers())
-                {
-                    new DownstreamKeyerOnAirTestDefinition(helper, key).Run();
-                }
-            }
+                GetKeyers().ForEach(k => new DownstreamKeyerOnAirTestDefinition(helper, k).Run());
         }
         
         [Fact]
@@ -404,41 +395,18 @@ namespace LibAtem.ComparisonTests2
             {
             }
 
-            public override void Prepare()
-            {
-                // Ensure the first value will have a change
-                _sdk.SetPreMultiplied(0);
-            }
+            // Ensure the first value will have a change
+            public override void Prepare() => _sdk.SetPreMultiplied(0);
 
-            public override ICommand GenerateCommand(bool v)
-            {
-                return new DownstreamKeyGeneralSetCommand
-                {
-                    Mask = DownstreamKeyGeneralSetCommand.MaskFlags.PreMultiply,
-                    Index = _keyId,
-                    PreMultiply = v,
-                };
-            }
-
-            public override void UpdateExpectedState(ComparisonState state, bool goodValue, bool v)
-            {
-                if (goodValue)
-                {
-                    state.DownstreamKeyers[_keyId].PreMultipliedKey = v;
-                }
-            }
+            public override string PropertyName => "PreMultiply";
+            public override bool MangleBadValue(bool v) => v;
         }
 
         [Fact]
         public void TestPreMultiplied()
         {
             using (var helper = new AtemComparisonHelper(_client, _output))
-            {
-                foreach (var key in GetKeyers())
-                {
-                    new DownstreamKeyerPreMultipliedTestDefinition(helper, key).Run();
-                }
-            }
+                GetKeyers().ForEach(k => new DownstreamKeyerPreMultipliedTestDefinition(helper, k).Run());
         }
 
         private class DownstreamKeyerClipTestDefinition : DownstreamKeyerTestDefinition<double>
@@ -447,55 +415,21 @@ namespace LibAtem.ComparisonTests2
             {
             }
 
-            public override void Prepare()
-            {
-                // Ensure the first value will have a change
-                _sdk.SetClip(20);
-            }
+            // Ensure the first value will have a change
+            public override void Prepare() => _sdk.SetClip(20);
 
-            public override ICommand GenerateCommand(double v)
-            {
-                return new DownstreamKeyGeneralSetCommand
-                {
-                    Mask = DownstreamKeyGeneralSetCommand.MaskFlags.Clip,
-                    Index = _keyId,
-                    Clip = v,
-                };
-            }
+            public override string PropertyName => "Clip";
+            public override double MangleBadValue(double v) => v >= 100 ? 100 : 0;
 
-            public override void UpdateExpectedState(ComparisonState state, bool goodValue, double v)
-            {
-                if (goodValue)
-                {
-                    state.DownstreamKeyers[_keyId].Clip = v;
-                }
-                else
-                {
-                    state.DownstreamKeyers[_keyId].Clip = v >= 100 ? 100 : 0;
-                }
-            }
-
-            public override double[] GoodValues()
-            {
-                return new double[] { 0, 87.4, 14.7, 99.9, 100, 0.1 };
-            }
-
-            public override double[] BadValues()
-            {
-                return new double[] { 100.1, 110, 101, -0.01, -1, -10 };
-            }
+            public override double[] GoodValues => new double[] { 0, 87.4, 14.7, 99.9, 100, 0.1 };
+            public override double[] BadValues => new double[] { 100.1, 110, 101, -0.01, -1, -10 };
         }
 
         [Fact]
         public void TestClip()
         {
             using (var helper = new AtemComparisonHelper(_client, _output))
-            {
-                foreach (var key in GetKeyers())
-                {
-                    new DownstreamKeyerClipTestDefinition(helper, key).Run();
-                }
-            }
+                GetKeyers().ForEach(k => new DownstreamKeyerClipTestDefinition(helper, k).Run());
         }
 
         private class DownstreamKeyerGainTestDefinition : DownstreamKeyerTestDefinition<double>
@@ -504,55 +438,21 @@ namespace LibAtem.ComparisonTests2
             {
             }
 
-            public override void Prepare()
-            {
-                // Ensure the first value will have a change
-                _sdk.SetGain(20);
-            }
+            // Ensure the first value will have a change
+            public override void Prepare() => _sdk.SetGain(20);
 
-            public override ICommand GenerateCommand(double v)
-            {
-                return new DownstreamKeyGeneralSetCommand
-                {
-                    Mask = DownstreamKeyGeneralSetCommand.MaskFlags.Gain,
-                    Index = _keyId,
-                    Gain = v,
-                };
-            }
+            public override string PropertyName => "Gain";
+            public override double MangleBadValue(double v) => v >= 100 ? 100 : 0;
 
-            public override void UpdateExpectedState(ComparisonState state, bool goodValue, double v)
-            {
-                if (goodValue)
-                {
-                    state.DownstreamKeyers[_keyId].Gain = v;
-                }
-                else
-                {
-                    state.DownstreamKeyers[_keyId].Gain = v >= 100 ? 100 : 0;
-                }
-            }
-
-            public override double[] GoodValues()
-            {
-                return new double[] { 0, 87.4, 14.7, 99.9, 100, 0.1 };
-            }
-
-            public override double[] BadValues()
-            {
-                return new double[] { 100.1, 110, 101, -0.01, -1, -10 };
-            }
+            public override double[] GoodValues => new double[] { 0, 87.4, 14.7, 99.9, 100, 0.1 };
+            public override double[] BadValues => new double[] { 100.1, 110, 101, -0.01, -1, -10 };
         }
 
         [Fact]
         public void TestGain()
         {
             using (var helper = new AtemComparisonHelper(_client, _output))
-            {
-                foreach (var key in GetKeyers())
-                {
-                    new DownstreamKeyerGainTestDefinition(helper, key).Run();
-                }
-            }
+                GetKeyers().ForEach(k => new DownstreamKeyerGainTestDefinition(helper, k).Run());
         }
 
         private class DownstreamKeyerInverseTestDefinition : DownstreamKeyerTestDefinition<bool>
@@ -561,93 +461,79 @@ namespace LibAtem.ComparisonTests2
             {
             }
 
-            public override void Prepare()
-            {
-                // Ensure the first value will have a change
-                _sdk.SetInverse(0);
-            }
+            // Ensure the first value will have a change
+            public override void Prepare() => _sdk.SetInverse(0);
 
-            public override ICommand GenerateCommand(bool v)
-            {
-                return new DownstreamKeyGeneralSetCommand
-                {
-                    Mask = DownstreamKeyGeneralSetCommand.MaskFlags.Invert,
-                    Index = _keyId,
-                    Invert = v,
-                };
-            }
-
-            public override void UpdateExpectedState(ComparisonState state, bool goodValue, bool v)
-            {
-                if (goodValue)
-                {
-                    state.DownstreamKeyers[_keyId].Invert = v;
-                }
-            }
+            public override string PropertyName => "Invert";
+            public override bool MangleBadValue(bool v) => v;
         }
 
         [Fact]
         public void TestInverse()
         {
             using (var helper = new AtemComparisonHelper(_client, _output))
+                GetKeyers().ForEach(k => new DownstreamKeyerInverseTestDefinition(helper, k).Run());
+        }
+
+        private abstract class DownstreamKeyerMaskTestDefinition<T> : TestDefinitionBase2<DownstreamKeyMaskSetCommand, T>
+        {
+            protected readonly IBMDSwitcherDownstreamKey _sdk;
+            protected readonly DownstreamKeyId _keyId;
+
+            public DownstreamKeyerMaskTestDefinition(AtemComparisonHelper helper, Tuple<DownstreamKeyId, IBMDSwitcherDownstreamKey> keyer) : base(helper)
             {
-                foreach (var key in GetKeyers())
-                {
-                    new DownstreamKeyerInverseTestDefinition(helper, key).Run();
-                }
+                _sdk = keyer.Item2;
+                _keyId = keyer.Item1;
+            }
+
+            public override void SetupCommand(DownstreamKeyMaskSetCommand cmd)
+            {
+                cmd.Index = _keyId;
+            }
+
+            public abstract T MangleBadValue(T v);
+
+            public override void UpdateExpectedState(ComparisonState state, bool goodValue, T v)
+            {
+                SetCommandProperty(state.DownstreamKeyers[_keyId], PropertyName, goodValue ? v : MangleBadValue(v));
+            }
+
+            public override IEnumerable<CommandQueueKey> ExpectedCommands(bool goodValue, T v)
+            {
+                yield return new CommandQueueKey(new DownstreamKeyPropertiesGetCommand() { Index = _keyId });
             }
         }
 
-        private class DownstreamKeyerMaskedTestDefinition : DownstreamKeyerTestDefinition<bool>
+        private class DownstreamKeyerMaskedTestDefinition : DownstreamKeyerMaskTestDefinition<bool>
         {
             public DownstreamKeyerMaskedTestDefinition(AtemComparisonHelper helper, Tuple<DownstreamKeyId, IBMDSwitcherDownstreamKey> keyer) : base(helper, keyer)
             {
             }
 
-            public override void Prepare()
-            {
-                // Ensure the first value will have a change
-                _sdk.SetMasked(0);
-            }
+            // Ensure the first value will have a change
+            public override void Prepare() => _sdk.SetMasked(0);
 
-            public override ICommand GenerateCommand(bool v)
-            {
-                return new DownstreamKeyMaskSetCommand
-                {
-                    Mask = DownstreamKeyMaskSetCommand.MaskFlags.Enabled,
-                    Index = _keyId,
-                    Enabled = v,
-                };
-            }
-
-            public override void UpdateExpectedState(ComparisonState state, bool goodValue, bool v)
-            {
-                if (goodValue)
-                {
-                    state.DownstreamKeyers[_keyId].MaskEnabled = v;
-                }
-            }
+            public override string PropertyName => "MaskEnabled";
+            public override bool MangleBadValue(bool v) => v;
         }
 
         [Fact]
         public void TestMasked()
         {
             using (var helper = new AtemComparisonHelper(_client, _output))
-            {
-                foreach (var key in GetKeyers())
-                {
-                    new DownstreamKeyerMaskedTestDefinition(helper, key).Run();
-                }
-            }
+                GetKeyers().ForEach(k => new DownstreamKeyerMaskedTestDefinition(helper, k).Run());
         }
 
-        private abstract class DownstreamKeyerMaskYTestDefinition : DownstreamKeyerTestDefinition<double>
+        private class DownstreamKeyerMaskYTestDefinition : DownstreamKeyerMaskTestDefinition<double>
         {
             private readonly VideoMode _mode;
 
-            public DownstreamKeyerMaskYTestDefinition(AtemComparisonHelper helper, VideoMode mode, Tuple<DownstreamKeyId, IBMDSwitcherDownstreamKey> keyer) : base(helper, keyer)
+            public override string PropertyName { get; }
+
+            public DownstreamKeyerMaskYTestDefinition(AtemComparisonHelper helper, VideoMode mode, Tuple<DownstreamKeyId, IBMDSwitcherDownstreamKey> keyer, string propName) : base(helper, keyer)
             {
                 _mode = mode;
+                PropertyName = propName;
             }
 
             public static IEnumerable<VideoMode> VideoModes()
@@ -666,11 +552,8 @@ namespace LibAtem.ComparisonTests2
                 _helper.Sleep();
             }
 
-            protected double ClampValueToRange(bool goodValue, double v)
+            public override double MangleBadValue(double v)
             {
-                if (goodValue)
-                    return v;
-
                 switch (_mode)
                 {
                     case VideoMode.P1080i50:
@@ -683,54 +566,38 @@ namespace LibAtem.ComparisonTests2
                 }
             }
             
-            public override double[] GoodValues()
+            public override double[] GoodValues
             {
-                switch (_mode)
+                get
                 {
-                    case VideoMode.P1080i50:
-                    case VideoMode.N720p5994:
-                        return new double[] { 1, 0, 5, -5, -9, 9, 4.78 };
-                    case VideoMode.P625i50PAL:
-                        return new double[] { 1, 0, 2.5, -2.5, -3, 3, 1.78 };
-                    default:
-                        throw new NotSupportedException();
+                    switch (_mode)
+                    {
+                        case VideoMode.P1080i50:
+                        case VideoMode.N720p5994:
+                            return new double[] { 1, 0, 5, -5, -9, 9, 4.78 };
+                        case VideoMode.P625i50PAL:
+                            return new double[] { 1, 0, 2.5, -2.5, -3, 3, 1.78 };
+                        default:
+                            throw new NotSupportedException();
+                    }
                 }
             }
 
-            public override double[] BadValues()
+            public override double[] BadValues
             {
-                switch (_mode)
+                get
                 {
-                    case VideoMode.P1080i50:
-                    case VideoMode.N720p5994:
-                        return new double[] { -9.01, 9.01, 9.1, -9.1 };
-                    case VideoMode.P625i50PAL:
-                        return new double[] { -3.01, 3.01, 3.1, -3.1 };
-                    default:
-                        throw new NotSupportedException();
+                    switch (_mode)
+                    {
+                        case VideoMode.P1080i50:
+                        case VideoMode.N720p5994:
+                            return new double[] { -9.01, 9.01, 9.1, -9.1 };
+                        case VideoMode.P625i50PAL:
+                            return new double[] { -3.01, 3.01, 3.1, -3.1 };
+                        default:
+                            throw new NotSupportedException();
+                    }
                 }
-            }
-        }
-
-        private class DownstreamKeyerMaskTopTestDefinition : DownstreamKeyerMaskYTestDefinition
-        {
-            public DownstreamKeyerMaskTopTestDefinition(AtemComparisonHelper helper, VideoMode mode, Tuple<DownstreamKeyId, IBMDSwitcherDownstreamKey> keyer) : base(helper, mode, keyer)
-            {
-            }
-
-            public override ICommand GenerateCommand(double v)
-            {
-                return new DownstreamKeyMaskSetCommand
-                {
-                    Mask = DownstreamKeyMaskSetCommand.MaskFlags.Top,
-                    Index = _keyId,
-                    Top = v,
-                };
-            }
-
-            public override void UpdateExpectedState(ComparisonState state, bool goodValue, double v)
-            {
-                state.DownstreamKeyers[_keyId].MaskTop = ClampValueToRange(goodValue, v);
             }
         }
 
@@ -743,33 +610,8 @@ namespace LibAtem.ComparisonTests2
                 {
                     helper.EnsureVideoMode(mode);
 
-                    foreach (var key in GetKeyers())
-                    {
-                        new DownstreamKeyerMaskTopTestDefinition(helper, mode, key).Run();
-                    }
+                    GetKeyers().ForEach(k => new DownstreamKeyerMaskYTestDefinition(helper, mode, k, "MaskTop").Run());
                 }
-            }
-        }
-
-        private class DownstreamKeyerMaskBottomTestDefinition : DownstreamKeyerMaskYTestDefinition
-        {
-            public DownstreamKeyerMaskBottomTestDefinition(AtemComparisonHelper helper, VideoMode mode, Tuple<DownstreamKeyId, IBMDSwitcherDownstreamKey> keyer) : base(helper, mode, keyer)
-            {
-            }
-
-            public override ICommand GenerateCommand(double v)
-            {
-                return new DownstreamKeyMaskSetCommand
-                {
-                    Mask = DownstreamKeyMaskSetCommand.MaskFlags.Bottom,
-                    Index = _keyId,
-                    Bottom = v,
-                };
-            }
-
-            public override void UpdateExpectedState(ComparisonState state, bool goodValue, double v)
-            {
-                state.DownstreamKeyers[_keyId].MaskBottom = ClampValueToRange(goodValue, v);
             }
         }
 
@@ -782,21 +624,21 @@ namespace LibAtem.ComparisonTests2
                 {
                     helper.EnsureVideoMode(mode);
 
-                    foreach (var key in GetKeyers())
-                    {
-                        new DownstreamKeyerMaskBottomTestDefinition(helper, mode, key).Run();
-                    }
+                    GetKeyers().ForEach(k => new DownstreamKeyerMaskYTestDefinition(helper, mode, k, "MaskBottom").Run());
                 }
             }
         }
 
-        private abstract class DownstreamKeyerMaskXTestDefinition : DownstreamKeyerTestDefinition<double>
+        private class DownstreamKeyerMaskXTestDefinition : DownstreamKeyerMaskTestDefinition<double>
         {
             private readonly VideoMode _mode;
 
-            public DownstreamKeyerMaskXTestDefinition(AtemComparisonHelper helper, VideoMode mode, Tuple<DownstreamKeyId, IBMDSwitcherDownstreamKey> keyer) : base(helper, keyer)
+            public override string PropertyName { get; }
+
+            public DownstreamKeyerMaskXTestDefinition(AtemComparisonHelper helper, VideoMode mode, Tuple<DownstreamKeyId, IBMDSwitcherDownstreamKey> keyer, string propName) : base(helper, keyer)
             {
                 _mode = mode;
+                PropertyName = propName;
             }
 
             public static IEnumerable<VideoMode> VideoModes()
@@ -815,11 +657,8 @@ namespace LibAtem.ComparisonTests2
                 _helper.Sleep();
             }
 
-            protected double ClampValueToRange(bool goodValue, double v)
+            public override double MangleBadValue(double v)
             {
-                if (goodValue)
-                    return v;
-
                 switch (_mode)
                 {
                     case VideoMode.P1080i50:
@@ -832,54 +671,38 @@ namespace LibAtem.ComparisonTests2
                 }
             }
 
-            public override double[] GoodValues()
+            public override double[] GoodValues
             {
-                switch (_mode)
+                get
                 {
-                    case VideoMode.P1080i50:
-                    case VideoMode.N720p5994:
-                        return new double[] { 1, 0, 5, -5, -16, 16, 4.78 };
-                    case VideoMode.P625i50PAL:
-                        return new double[] { 1, 0, 2.5, -2.5, -4, 4, 1.78 };
-                    default:
-                        throw new NotSupportedException();
+                    switch (_mode)
+                    {
+                        case VideoMode.P1080i50:
+                        case VideoMode.N720p5994:
+                            return new double[] { 1, 0, 5, -5, -16, 16, 4.78 };
+                        case VideoMode.P625i50PAL:
+                            return new double[] { 1, 0, 2.5, -2.5, -4, 4, 1.78 };
+                        default:
+                            throw new NotSupportedException();
+                    }
                 }
             }
 
-            public override double[] BadValues()
+            public override double[] BadValues
             {
-                switch (_mode)
+                get
                 {
-                    case VideoMode.P1080i50:
-                    case VideoMode.N720p5994:
-                        return new double[] { -16.01, 16.01, 16.1, -16.1 };
-                    case VideoMode.P625i50PAL:
-                        return new double[] { -4.01, 4.01, 4.1, -4.1 };
-                    default:
-                        throw new NotSupportedException();
+                    switch (_mode)
+                    {
+                        case VideoMode.P1080i50:
+                        case VideoMode.N720p5994:
+                            return new double[] { -16.01, 16.01, 16.1, -16.1 };
+                        case VideoMode.P625i50PAL:
+                            return new double[] { -4.01, 4.01, 4.1, -4.1 };
+                        default:
+                            throw new NotSupportedException();
+                    }
                 }
-            }
-        }
-
-        private class DownstreamKeyerMaskLeftTestDefinition : DownstreamKeyerMaskXTestDefinition
-        {
-            public DownstreamKeyerMaskLeftTestDefinition(AtemComparisonHelper helper, VideoMode mode, Tuple<DownstreamKeyId, IBMDSwitcherDownstreamKey> keyer) : base(helper, mode, keyer)
-            {
-            }
-
-            public override ICommand GenerateCommand(double v)
-            {
-                return new DownstreamKeyMaskSetCommand
-                {
-                    Mask = DownstreamKeyMaskSetCommand.MaskFlags.Left,
-                    Index = _keyId,
-                    Left = v,
-                };
-            }
-
-            public override void UpdateExpectedState(ComparisonState state, bool goodValue, double v)
-            {
-                 state.DownstreamKeyers[_keyId].MaskLeft = ClampValueToRange(goodValue, v);
             }
         }
 
@@ -892,33 +715,8 @@ namespace LibAtem.ComparisonTests2
                 {
                     helper.EnsureVideoMode(mode);
 
-                    foreach (var key in GetKeyers())
-                    {
-                        new DownstreamKeyerMaskLeftTestDefinition(helper, mode, key).Run();
-                    }
+                    GetKeyers().ForEach(k => new DownstreamKeyerMaskXTestDefinition(helper, mode, k, "MaskLeft").Run());
                 }
-            }
-        }
-
-        private class DownstreamKeyerMaskRightTestDefinition : DownstreamKeyerMaskXTestDefinition
-        {
-            public DownstreamKeyerMaskRightTestDefinition(AtemComparisonHelper helper, VideoMode mode, Tuple<DownstreamKeyId, IBMDSwitcherDownstreamKey> keyer) : base(helper, mode, keyer)
-            {
-            }
-
-            public override ICommand GenerateCommand(double v)
-            {
-                return new DownstreamKeyMaskSetCommand
-                {
-                    Mask = DownstreamKeyMaskSetCommand.MaskFlags.Right,
-                    Index = _keyId,
-                    Right = v,
-                };
-            }
-
-            public override void UpdateExpectedState(ComparisonState state, bool goodValue, double v)
-            {
-                state.DownstreamKeyers[_keyId].MaskRight = ClampValueToRange(goodValue, v);
             }
         }
 
@@ -931,10 +729,7 @@ namespace LibAtem.ComparisonTests2
                 {
                     helper.EnsureVideoMode(mode);
 
-                    foreach (var key in GetKeyers())
-                    {
-                        new DownstreamKeyerMaskRightTestDefinition(helper, mode, key).Run();
-                    }
+                    GetKeyers().ForEach(k => new DownstreamKeyerMaskXTestDefinition(helper, mode, k, "MaskRight").Run());
                 }
             }
         }

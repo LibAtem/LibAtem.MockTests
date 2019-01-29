@@ -181,7 +181,7 @@ namespace LibAtem.ComparisonTests2.State
         public bool Tie { get; set; }
         public uint Rate { get; set; }
 
-        public bool PreMultipliedKey { get; set; }
+        public bool PreMultiply { get; set; }
         [Tolerance(0.01)]
         public double Clip { get; set; }
         [Tolerance(0.01)]
@@ -222,11 +222,11 @@ namespace LibAtem.ComparisonTests2.State
         public bool BorderEnabled { get; set; }
         public BorderBevel BorderBevel { get; set; }
         [Tolerance(0.01)]
-        public double BorderWidthOut { get; set; }
+        public double BorderOuterWidth { get; set; }
         [Tolerance(0.01)]
-        public double BorderWidthIn { get; set; }
-        public uint BorderSoftnessOut { get; set; }
-        public uint BorderSoftnessIn { get; set; }
+        public double BorderInnerWidth { get; set; }
+        public uint BorderOuterSoftness { get; set; }
+        public uint BorderInnerSoftness { get; set; }
         public uint BorderBevelSoftness { get; set; }
         public uint BorderBevelPosition { get; set; }
         [Tolerance(0.01)]

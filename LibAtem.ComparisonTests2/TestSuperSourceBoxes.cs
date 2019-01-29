@@ -28,7 +28,9 @@ namespace LibAtem.ComparisonTests2
 
         private IBMDSwitcherInputSuperSource GetSuperSource(AtemComparisonHelper helper)
         {
-            return helper.GetSdkInputsOfType<IBMDSwitcherInputSuperSource>().Select(s => s.Value).FirstOrDefault();
+            var ssrc = helper.GetSdkInputsOfType<IBMDSwitcherInputSuperSource>().Select(s => s.Value).SingleOrDefault();
+            Skip.If(ssrc == null, "Model does not support SuperSource");
+            return ssrc;
         }
 
         private IEnumerable<Tuple<SuperSourceBoxId, IBMDSwitcherSuperSourceBox>> GetSuperSourceBoxes(AtemComparisonHelper helper)
@@ -50,7 +52,7 @@ namespace LibAtem.ComparisonTests2
             }
         }
 
-        private abstract class SuperSourceBoxTestDefinition<T> : TestDefinitionBase<T>
+        private abstract class SuperSourceBoxTestDefinition<T> : TestDefinitionBase2<SuperSourceBoxSetCommand, T>
         {
             protected readonly SuperSourceBoxId _id;
             protected readonly IBMDSwitcherSuperSourceBox _sdk;
@@ -59,6 +61,18 @@ namespace LibAtem.ComparisonTests2
             {
                 _id = box.Item1;
                 _sdk = box.Item2;
+            }
+
+            public override void SetupCommand(SuperSourceBoxSetCommand cmd)
+            {
+                cmd.Index = _id;
+            }
+
+            public abstract T MangleBadValue(T v);
+
+            public override void UpdateExpectedState(ComparisonState state, bool goodValue, T v)
+            {
+                SetCommandProperty(state.SuperSource.Boxes[_id], PropertyName, goodValue ? v : MangleBadValue(v));
             }
 
             public override IEnumerable<CommandQueueKey> ExpectedCommands(bool goodValue, T v)
@@ -73,69 +87,38 @@ namespace LibAtem.ComparisonTests2
             {
             }
 
-            public override void Prepare()
-            {
-                // Ensure the first value will have a change
-                _sdk.SetEnabled(0);
-            }
+            // Ensure the first value will have a change
+            public override void Prepare() => _sdk.SetEnabled(0);
 
-            public override ICommand GenerateCommand(bool v)
-            {
-                return new SuperSourceBoxSetCommand
-                {
-                    Mask = SuperSourceBoxSetCommand.MaskFlags.Enabled,
-                    Index = _id,
-                    Enabled = v,
-                };
-            }
-
-            public override void UpdateExpectedState(ComparisonState state, bool goodValue, bool v)
-            {
-                state.SuperSource.Boxes[_id].Enabled = v;
-            }
+            public override string PropertyName => "Enabled";
+            public override bool MangleBadValue(bool v) => v;
         }
 
         [SkippableFact]
         public void TestBoxEnabled()
         {
             using (var helper = new AtemComparisonHelper(_client, _output))
-            {
-                IBMDSwitcherInputSuperSource ssrc = GetSuperSource(helper);
-                Skip.If(ssrc == null, "Model does not support SuperSource");
-
-                foreach (var box in GetSuperSourceBoxes(helper))
-                {
-                    new SuperSourceBoxEnabledTestDefinition(helper, box).Run();
-                }
-            }
+                GetSuperSourceBoxes(helper).ToList().ForEach(b => new SuperSourceBoxEnabledTestDefinition(helper, b).Run());
         }
 
         private class SuperSourceBoxInputTestDefinition : SuperSourceBoxTestDefinition<VideoSource>
         {
             public SuperSourceBoxInputTestDefinition(AtemComparisonHelper helper, Tuple<SuperSourceBoxId, IBMDSwitcherSuperSourceBox> box) : base(helper, box)
             {
+                // GetInputAvailabilityMask is used when checking if another input can be used for this output.
+                // We track this another way
+                _BMDSwitcherInputAvailability availabilityMask = 0;
+                box.Item2.GetInputAvailabilityMask(ref availabilityMask);
+                Assert.Equal(_BMDSwitcherInputAvailability.bmdSwitcherInputAvailabilitySuperSourceBox, availabilityMask);
             }
 
-            public override void Prepare()
-            {
-                // Ensure the first value will have a change
-                _sdk.SetEnabled(0);
-            }
+            // Ensure the first value will have a change
+            public override void Prepare() => _sdk.SetInputSource((long)VideoSource.ColorBars);
 
-            public override VideoSource[] GoodValues()
-            {
-                return VideoSourceLists.All.Where(s => s.IsAvailable(_helper.Profile, InternalPortType.Mask) && s.IsAvailable(SourceAvailability.SuperSourceBox)).ToArray();
-            }
+            public override string PropertyName => "Source";
+            public override VideoSource MangleBadValue(VideoSource v) => v;
 
-            public override ICommand GenerateCommand(VideoSource v)
-            {
-                return new SuperSourceBoxSetCommand
-                {
-                    Mask = SuperSourceBoxSetCommand.MaskFlags.Source,
-                    Index = _id,
-                    Source = v,
-                };
-            }
+            public override VideoSource[] GoodValues => VideoSourceLists.All.Where(s => s.IsAvailable(_helper.Profile, InternalPortType.Mask) && s.IsAvailable(SourceAvailability.SuperSourceBox)).ToArray();
 
             public override void UpdateExpectedState(ComparisonState state, bool goodValue, VideoSource v)
             {
@@ -156,21 +139,7 @@ namespace LibAtem.ComparisonTests2
         public void TestBoxInputSource()
         {
             using (var helper = new AtemComparisonHelper(_client, _output))
-            {
-                IBMDSwitcherInputSuperSource ssrc = GetSuperSource(helper);
-                Skip.If(ssrc == null, "Model does not support SuperSource");
-
-                foreach (var box in GetSuperSourceBoxes(helper))
-                {
-                    // GetInputAvailabilityMask is used when checking if another input can be used for this output.
-                    // We track this another way
-                    _BMDSwitcherInputAvailability availabilityMask = 0;
-                    box.Item2.GetInputAvailabilityMask(ref availabilityMask);
-                    Assert.Equal(_BMDSwitcherInputAvailability.bmdSwitcherInputAvailabilitySuperSourceBox, availabilityMask);
-
-                    new SuperSourceBoxInputTestDefinition(helper, box).Run();
-                }
-            }
+                GetSuperSourceBoxes(helper).ToList().ForEach(b => new SuperSourceBoxInputTestDefinition(helper, b).Run());
         }
 
         private class SuperSourceBoxPositionXTestDefinition : SuperSourceBoxTestDefinition<double>
@@ -189,37 +158,55 @@ namespace LibAtem.ComparisonTests2
                 yield return VideoMode.P625i50PAL;
             }
 
-            public override void Prepare()
-            {
-                // Ensure the first value will have a change
-                _sdk.SetPositionX(10);
-            }
+            // Ensure the first value will have a change
+            public override void Prepare() => _sdk.SetPositionX(10);
 
-            public override double[] GoodValues()
+            public override string PropertyName => "PositionX";
+            public override double MangleBadValue(double v)
             {
                 switch (_mode)
                 {
                     case VideoMode.P1080i50:
                     case VideoMode.N720p5994:
-                        return new double[] { 0, 0.87, 48, 47.99, -48, -47.99, 9.65 };
+                        return v >= 48 ? 48 : -48;
                     case VideoMode.P625i50PAL:
-                        return new double[] { 0, 0.87, 12, 11.99, -12, -11.99, 9.65 };
+                        return v >= 12 ? 12 : -12;
                     default:
                         throw new NotSupportedException();
                 }
             }
 
-            public override double[] BadValues()
+            public override double[] GoodValues
             {
-                switch (_mode)
+                get
                 {
-                    case VideoMode.P1080i50:
-                    case VideoMode.N720p5994:
-                        return new double[] { -48.01, 48.01, 48.1, -48.1, -55, 55 };
-                    case VideoMode.P625i50PAL:
-                        return new double[] { -12.01, 12.01, 12.1, -12.1, -15, 15 };
-                    default:
-                        throw new NotSupportedException();
+                    switch (_mode)
+                    {
+                        case VideoMode.P1080i50:
+                        case VideoMode.N720p5994:
+                            return new double[] { 0, 0.87, 48, 47.99, -48, -47.99, 9.65 };
+                        case VideoMode.P625i50PAL:
+                            return new double[] { 0, 0.87, 12, 11.99, -12, -11.99, 9.65 };
+                        default:
+                            throw new NotSupportedException();
+                    }
+                }
+            }
+
+            public override double[] BadValues
+            {
+                get
+            {
+                    switch (_mode)
+                    {
+                        case VideoMode.P1080i50:
+                        case VideoMode.N720p5994:
+                            return new double[] { -48.01, 48.01, 48.1, -48.1, -55, 55 };
+                        case VideoMode.P625i50PAL:
+                            return new double[] { -12.01, 12.01, 12.1, -12.1, -15, 15 };
+                        default:
+                            throw new NotSupportedException();
+                    }
                 }
             }
 
@@ -232,29 +219,6 @@ namespace LibAtem.ComparisonTests2
                     PositionX = v,
                 };
             }
-
-            public override void UpdateExpectedState(ComparisonState state, bool goodValue, double v)
-            {
-                if (goodValue)
-                {
-                    state.SuperSource.Boxes[_id].PositionX = v;
-                }
-                else
-                {
-                    switch (_mode)
-                    {
-                        case VideoMode.P1080i50:
-                        case VideoMode.N720p5994:
-                            state.SuperSource.Boxes[_id].PositionX = v >= 48 ? 48 : -48;
-                            break;
-                        case VideoMode.P625i50PAL:
-                            state.SuperSource.Boxes[_id].PositionX = v >= 12 ? 12 : -12;
-                            break;
-                        default:
-                            throw new NotSupportedException();
-                    }
-                }
-            }
         }
 
         [SkippableFact]
@@ -262,17 +226,11 @@ namespace LibAtem.ComparisonTests2
         {
             using (var helper = new AtemComparisonHelper(_client, _output))
             {
-                IBMDSwitcherInputSuperSource ssrc = GetSuperSource(helper);
-                Skip.If(ssrc == null, "Model does not support SuperSource");
-
                 foreach (var mode in SuperSourceBoxPositionXTestDefinition.VideoModes())
                 {
                     helper.EnsureVideoMode(mode);
 
-                    foreach (var box in GetSuperSourceBoxes(helper))
-                    {
-                        new SuperSourceBoxPositionXTestDefinition(helper, mode, box).Run();
-                    }
+                    GetSuperSourceBoxes(helper).ToList().ForEach(b => new SuperSourceBoxPositionXTestDefinition(helper, mode, b).Run());
                 }
             }
         }
@@ -293,67 +251,52 @@ namespace LibAtem.ComparisonTests2
                 yield return VideoMode.P625i50PAL;
             }
 
-            public override void Prepare()
-            {
-                // Ensure the first value will have a change
-                _sdk.SetPositionY(10);
-            }
+            // Ensure the first value will have a change
+            public override void Prepare() => _sdk.SetPositionY(10);
 
-            public override double[] GoodValues()
+            public override string PropertyName => "PositionY";
+            public override double MangleBadValue(double v)
             {
                 switch (_mode)
                 {
                     case VideoMode.P1080i50:
                     case VideoMode.N720p5994:
-                        return new double[] { 0, 0.87, 34, 33.99, -34, -33.99, 9.65 };
+                        return v >= 34 ? 34 : -34;
                     case VideoMode.P625i50PAL:
-                        return new double[] { 0, 0.87, 10, 9.99, -10, -9.99, 6.65 };
+                        return v >= 10 ? 10 : -10;
                     default:
                         throw new NotSupportedException();
                 }
             }
 
-            public override double[] BadValues()
+            public override double[] GoodValues
             {
-                switch (_mode)
-                {
-                    case VideoMode.P1080i50:
-                    case VideoMode.N720p5994:
-                        return new double[] { -34.01, 34.01, 34.1, -34.1, -39, 39 };
-                    case VideoMode.P625i50PAL:
-                        return new double[] { -10.01, 10.01, 10.1, -10.1, -15, 15 };
-                    default:
-                        throw new NotSupportedException();
-                }
-            }
-
-            public override ICommand GenerateCommand(double v)
-            {
-                return new SuperSourceBoxSetCommand
-                {
-                    Mask = SuperSourceBoxSetCommand.MaskFlags.PositionY,
-                    Index = _id,
-                    PositionY = v,
-                };
-            }
-
-            public override void UpdateExpectedState(ComparisonState state, bool goodValue, double v)
-            {
-                if (goodValue)
-                {
-                    state.SuperSource.Boxes[_id].PositionY = v;
-                }
-                else
+                get
                 {
                     switch (_mode)
                     {
                         case VideoMode.P1080i50:
                         case VideoMode.N720p5994:
-                            state.SuperSource.Boxes[_id].PositionY = v >= 34 ? 34 : -34;
-                            break;
+                            return new double[] { 0, 0.87, 34, 33.99, -34, -33.99, 9.65 };
                         case VideoMode.P625i50PAL:
-                            state.SuperSource.Boxes[_id].PositionY = v >= 10 ? 10 : -10;
-                            break;
+                            return new double[] { 0, 0.87, 10, 9.99, -10, -9.99, 6.65 };
+                        default:
+                            throw new NotSupportedException();
+                    }
+                }
+            }
+
+            public override double[] BadValues
+            {
+                get
+                {
+                    switch (_mode)
+                    {
+                        case VideoMode.P1080i50:
+                        case VideoMode.N720p5994:
+                            return new double[] { -34.01, 34.01, 34.1, -34.1, -39, 39 };
+                        case VideoMode.P625i50PAL:
+                            return new double[] { -10.01, 10.01, 10.1, -10.1, -15, 15 };
                         default:
                             throw new NotSupportedException();
                     }
@@ -366,17 +309,11 @@ namespace LibAtem.ComparisonTests2
         {
             using (var helper = new AtemComparisonHelper(_client, _output))
             {
-                IBMDSwitcherInputSuperSource ssrc = GetSuperSource(helper);
-                Skip.If(ssrc == null, "Model does not support SuperSource");
-
                 foreach (var mode in SuperSourceBoxPositionXTestDefinition.VideoModes())
                 {
                     helper.EnsureVideoMode(mode);
 
-                    foreach (var box in GetSuperSourceBoxes(helper))
-                    {
-                        new SuperSourceBoxPositionYTestDefinition(helper, mode, box).Run();
-                    }
+                    GetSuperSourceBoxes(helper).ToList().ForEach(b => new SuperSourceBoxPositionYTestDefinition(helper, mode, b).Run());
                 }
             }
         }
@@ -387,53 +324,21 @@ namespace LibAtem.ComparisonTests2
             {
             }
 
-            public override void Prepare()
-            {
-                // Ensure the first value will have a change
-                _sdk.SetSize(0.5);
-            }
+            // Ensure the first value will have a change
+            public override void Prepare() => _sdk.SetSize(0.5);
 
-            public override double[] GoodValues()
-            {
-                return new double[] { 0.07, 0.874, 0.147, 0.999, 1.00 };
-            }
-            public override double[] BadValues()
-            {
-                return new double[] { 0, 0.06, 1.001, 1.1, 1.01, -0.01, -1, -0.10 };
-            }
+            public override string PropertyName => "Size";
+            public override double MangleBadValue(double v) => v >= 1 || v < 0 ? 1 : 0.07;
 
-            public override ICommand GenerateCommand(double v)
-            {
-                return new SuperSourceBoxSetCommand
-                {
-                    Mask = SuperSourceBoxSetCommand.MaskFlags.Size,
-                    Index = _id,
-                    Size = v,
-                };
-            }
-
-            public override void UpdateExpectedState(ComparisonState state, bool goodValue, double v)
-            {
-                if (goodValue)
-                    state.SuperSource.Boxes[_id].Size = v;
-                else
-                    state.SuperSource.Boxes[_id].Size = v >= 1 || v < 0 ? 1 : 0.07;
-            }
+            public override double[] GoodValues => new double[] { 0.07, 0.874, 0.147, 0.999, 1.00 };
+            public override double[] BadValues => new double[] { 0, 0.06, 1.001, 1.1, 1.01, -0.01, -1, -0.10 };
         }
 
         [SkippableFact]
         public void TestBoxSize()
         {
             using (var helper = new AtemComparisonHelper(_client, _output))
-            {
-                IBMDSwitcherInputSuperSource ssrc = GetSuperSource(helper);
-                Skip.If(ssrc == null, "Model does not support SuperSource");
-
-                foreach (var box in GetSuperSourceBoxes(helper))
-                {
-                    new SuperSourceBoxSizeTestDefinition(helper, box).Run();
-                }
-            }
+                GetSuperSourceBoxes(helper).ToList().ForEach(b => new SuperSourceBoxSizeTestDefinition(helper, b).Run());
         }
 
         private class SuperSourceBoxCroppedTestDefinition : SuperSourceBoxTestDefinition<bool>
@@ -442,50 +347,30 @@ namespace LibAtem.ComparisonTests2
             {
             }
 
-            public override void Prepare()
-            {
-                // Ensure the first value will have a change
-                _sdk.SetCropped(0);
-            }
+            // Ensure the first value will have a change
+            public override void Prepare() => _sdk.SetCropped(0);
 
-            public override ICommand GenerateCommand(bool v)
-            {
-                return new SuperSourceBoxSetCommand
-                {
-                    Mask = SuperSourceBoxSetCommand.MaskFlags.Cropped,
-                    Index = _id,
-                    Cropped = v,
-                };
-            }
-
-            public override void UpdateExpectedState(ComparisonState state, bool goodValue, bool v)
-            {
-                state.SuperSource.Boxes[_id].Cropped = v;
-            }
+            public override string PropertyName => "Cropped";
+            public override bool MangleBadValue(bool v) => v;
         }
 
         [SkippableFact]
         public void TestBoxCropped()
         {
             using (var helper = new AtemComparisonHelper(_client, _output))
-            {
-                IBMDSwitcherInputSuperSource ssrc = GetSuperSource(helper);
-                Skip.If(ssrc == null, "Model does not support SuperSource");
-
-                foreach (var box in GetSuperSourceBoxes(helper))
-                {
-                    new SuperSourceBoxCroppedTestDefinition(helper, box).Run();
-                }
-            }
+                GetSuperSourceBoxes(helper).ToList().ForEach(b => new SuperSourceBoxCroppedTestDefinition(helper, b).Run());
         }
 
-        private abstract class SuperSourceBoxCropYTestDefinition : SuperSourceBoxTestDefinition<double>
+        private class SuperSourceBoxCropYTestDefinition : SuperSourceBoxTestDefinition<double>
         {
             private readonly VideoMode _mode;
 
-            public SuperSourceBoxCropYTestDefinition(AtemComparisonHelper helper, VideoMode mode, Tuple<SuperSourceBoxId, IBMDSwitcherSuperSourceBox> box) : base(helper, box)
+            public override string PropertyName { get; }
+
+            public SuperSourceBoxCropYTestDefinition(AtemComparisonHelper helper, VideoMode mode, Tuple<SuperSourceBoxId, IBMDSwitcherSuperSourceBox> box, string propName) : base(helper, box)
             {
                 _mode = mode;
+                PropertyName = propName;
             }
 
             public static IEnumerable<VideoMode> VideoModes()
@@ -503,11 +388,8 @@ namespace LibAtem.ComparisonTests2
                 _helper.Sleep();
             }
 
-            protected double ClampValueToRange(bool goodValue, double v)
+            public override double MangleBadValue(double v)
             {
-                if (goodValue)
-                    return v;
-
                 switch (_mode)
                 {
                     case VideoMode.P1080i50:
@@ -520,54 +402,38 @@ namespace LibAtem.ComparisonTests2
                 }
             }
 
-            public override double[] GoodValues()
+            public override double[] GoodValues
             {
-                switch (_mode)
+                get
                 {
-                    case VideoMode.P1080i50:
-                    case VideoMode.N720p5994:
-                        return new double[] { 0, 0.87, 18, 17.99, 0.01, 9.65 };
-                    case VideoMode.P625i50PAL:
-                        return new double[] { 0, 0.87, 6, 5.99, 0.01, 3.65 };
-                    default:
-                        throw new NotSupportedException();
+                    switch (_mode)
+                    {
+                        case VideoMode.P1080i50:
+                        case VideoMode.N720p5994:
+                            return new double[] { 0, 0.87, 18, 17.99, 0.01, 9.65 };
+                        case VideoMode.P625i50PAL:
+                            return new double[] { 0, 0.87, 6, 5.99, 0.01, 3.65 };
+                        default:
+                            throw new NotSupportedException();
+                    }
                 }
             }
 
-            public override double[] BadValues()
+            public override double[] BadValues
             {
-                switch (_mode)
+                get
                 {
-                    case VideoMode.P1080i50:
-                    case VideoMode.N720p5994:
-                        return new double[] { -0.01, 18.01, 18.1, -0.1, -29, 29 };
-                    case VideoMode.P625i50PAL:
-                        return new double[] { -0.01, 6.01, 6.1, -0.1, -15, 15 };
-                    default:
-                        throw new NotSupportedException();
+                    switch (_mode)
+                    {
+                        case VideoMode.P1080i50:
+                        case VideoMode.N720p5994:
+                            return new double[] { -0.01, 18.01, 18.1, -0.1, -29, 29 };
+                        case VideoMode.P625i50PAL:
+                            return new double[] { -0.01, 6.01, 6.1, -0.1, -15, 15 };
+                        default:
+                            throw new NotSupportedException();
+                    }
                 }
-            }
-        }
-
-        private class SuperSourceBoxCropTopTestDefinition : SuperSourceBoxCropYTestDefinition
-        {
-            public SuperSourceBoxCropTopTestDefinition(AtemComparisonHelper helper, VideoMode mode, Tuple<SuperSourceBoxId, IBMDSwitcherSuperSourceBox> box) : base(helper, mode, box)
-            {
-            }
-
-            public override ICommand GenerateCommand(double v)
-            {
-                return new SuperSourceBoxSetCommand
-                {
-                    Mask = SuperSourceBoxSetCommand.MaskFlags.CropTop,
-                    Index = _id,
-                    CropTop = v,
-                };
-            }
-
-            public override void UpdateExpectedState(ComparisonState state, bool goodValue, double v)
-            {
-                state.SuperSource.Boxes[_id].CropTop = ClampValueToRange(goodValue, v);
             }
         }
 
@@ -576,40 +442,12 @@ namespace LibAtem.ComparisonTests2
         {
             using (var helper = new AtemComparisonHelper(_client, _output))
             {
-                IBMDSwitcherInputSuperSource ssrc = GetSuperSource(helper);
-                Skip.If(ssrc == null, "Model does not support SuperSource");
-
                 foreach (var mode in SuperSourceBoxCropYTestDefinition.VideoModes())
                 {
                     helper.EnsureVideoMode(mode);
 
-                    foreach (var box in GetSuperSourceBoxes(helper))
-                    {
-                        new SuperSourceBoxCropTopTestDefinition(helper, mode, box).Run();
-                    }
+                    GetSuperSourceBoxes(helper).ToList().ForEach(b => new SuperSourceBoxCropYTestDefinition(helper, mode, b, "CropTop").Run());
                 }
-            }
-        }
-
-        private class SuperSourceBoxCropBottomTestDefinition : SuperSourceBoxCropYTestDefinition
-        {
-            public SuperSourceBoxCropBottomTestDefinition(AtemComparisonHelper helper, VideoMode mode, Tuple<SuperSourceBoxId, IBMDSwitcherSuperSourceBox> box) : base(helper, mode, box)
-            {
-            }
-
-            public override ICommand GenerateCommand(double v)
-            {
-                return new SuperSourceBoxSetCommand
-                {
-                    Mask = SuperSourceBoxSetCommand.MaskFlags.CropBottom,
-                    Index = _id,
-                    CropBottom = v,
-                };
-            }
-
-            public override void UpdateExpectedState(ComparisonState state, bool goodValue, double v)
-            {
-                state.SuperSource.Boxes[_id].CropBottom = ClampValueToRange(goodValue, v);
             }
         }
 
@@ -618,28 +456,25 @@ namespace LibAtem.ComparisonTests2
         {
             using (var helper = new AtemComparisonHelper(_client, _output))
             {
-                IBMDSwitcherInputSuperSource ssrc = GetSuperSource(helper);
-                Skip.If(ssrc == null, "Model does not support SuperSource");
-
                 foreach (var mode in SuperSourceBoxCropYTestDefinition.VideoModes())
                 {
                     helper.EnsureVideoMode(mode);
 
-                    foreach (var box in GetSuperSourceBoxes(helper))
-                    {
-                        new SuperSourceBoxCropBottomTestDefinition(helper, mode, box).Run();
-                    }
+                    GetSuperSourceBoxes(helper).ToList().ForEach(b => new SuperSourceBoxCropYTestDefinition(helper, mode, b, "CropBottom").Run());
                 }
             }
         }
 
-        private abstract class SuperSourceBoxCropXTestDefinition : SuperSourceBoxTestDefinition<double>
+        private class SuperSourceBoxCropXTestDefinition : SuperSourceBoxTestDefinition<double>
         {
             private readonly VideoMode _mode;
 
-            public SuperSourceBoxCropXTestDefinition(AtemComparisonHelper helper, VideoMode mode, Tuple<SuperSourceBoxId, IBMDSwitcherSuperSourceBox> box) : base(helper, box)
+            public override string PropertyName { get; }
+
+            public SuperSourceBoxCropXTestDefinition(AtemComparisonHelper helper, VideoMode mode, Tuple<SuperSourceBoxId, IBMDSwitcherSuperSourceBox> box, string propName) : base(helper, box)
             {
                 _mode = mode;
+                PropertyName = propName;
             }
 
             public static IEnumerable<VideoMode> VideoModes()
@@ -657,11 +492,8 @@ namespace LibAtem.ComparisonTests2
                 _helper.Sleep();
             }
 
-            protected double ClampValueToRange(bool goodValue, double v)
+            public override double MangleBadValue(double v)
             {
-                if (goodValue)
-                    return v;
-
                 switch (_mode)
                 {
                     case VideoMode.P1080i50:
@@ -674,54 +506,38 @@ namespace LibAtem.ComparisonTests2
                 }
             }
 
-            public override double[] GoodValues()
+            public override double[] GoodValues
             {
-                switch (_mode)
+                get
                 {
-                    case VideoMode.P1080i50:
-                    case VideoMode.N720p5994:
-                        return new double[] { 0, 0.87, 32, 31.99, 0.01, 9.65 };
-                    case VideoMode.P625i50PAL:
-                        return new double[] { 0, 0.87, 8, 7.99, 0.01, 3.65 };
-                    default:
-                        throw new NotSupportedException();
+                    switch (_mode)
+                    {
+                        case VideoMode.P1080i50:
+                        case VideoMode.N720p5994:
+                            return new double[] { 0, 0.87, 32, 31.99, 0.01, 9.65 };
+                        case VideoMode.P625i50PAL:
+                            return new double[] { 0, 0.87, 8, 7.99, 0.01, 3.65 };
+                        default:
+                            throw new NotSupportedException();
+                    }
                 }
             }
 
-            public override double[] BadValues()
+            public override double[] BadValues
             {
-                switch (_mode)
+                get
                 {
-                    case VideoMode.P1080i50:
-                    case VideoMode.N720p5994:
-                        return new double[] { -0.01, 32.01, 32.1, -0.1, -29 };
-                    case VideoMode.P625i50PAL:
-                        return new double[] { -0.01, 8.01, 8.1, -0.1, -15, 15 };
-                    default:
-                        throw new NotSupportedException();
+                    switch (_mode)
+                    {
+                        case VideoMode.P1080i50:
+                        case VideoMode.N720p5994:
+                            return new double[] { -0.01, 32.01, 32.1, -0.1, -29 };
+                        case VideoMode.P625i50PAL:
+                            return new double[] { -0.01, 8.01, 8.1, -0.1, -15, 15 };
+                        default:
+                            throw new NotSupportedException();
+                    }
                 }
-            }
-        }
-
-        private class SuperSourceBoxCropLeftTestDefinition : SuperSourceBoxCropXTestDefinition
-        {
-            public SuperSourceBoxCropLeftTestDefinition(AtemComparisonHelper helper, VideoMode mode, Tuple<SuperSourceBoxId, IBMDSwitcherSuperSourceBox> box) : base(helper, mode, box)
-            {
-            }
-
-            public override ICommand GenerateCommand(double v)
-            {
-                return new SuperSourceBoxSetCommand
-                {
-                    Mask = SuperSourceBoxSetCommand.MaskFlags.CropLeft,
-                    Index = _id,
-                    CropLeft = v,
-                };
-            }
-
-            public override void UpdateExpectedState(ComparisonState state, bool goodValue, double v)
-            {
-                state.SuperSource.Boxes[_id].CropLeft = ClampValueToRange(goodValue, v);
             }
         }
 
@@ -730,40 +546,12 @@ namespace LibAtem.ComparisonTests2
         {
             using (var helper = new AtemComparisonHelper(_client, _output))
             {
-                IBMDSwitcherInputSuperSource ssrc = GetSuperSource(helper);
-                Skip.If(ssrc == null, "Model does not support SuperSource");
-
                 foreach (var mode in SuperSourceBoxCropXTestDefinition.VideoModes())
                 {
                     helper.EnsureVideoMode(mode);
 
-                    foreach (var box in GetSuperSourceBoxes(helper))
-                    {
-                        new SuperSourceBoxCropLeftTestDefinition(helper, mode, box).Run();
-                    }
+                    GetSuperSourceBoxes(helper).ToList().ForEach(b => new SuperSourceBoxCropXTestDefinition(helper, mode, b, "CropLeft").Run());
                 }
-            }
-        }
-
-        private class SuperSourceBoxCropRightTestDefinition : SuperSourceBoxCropXTestDefinition
-        {
-            public SuperSourceBoxCropRightTestDefinition(AtemComparisonHelper helper, VideoMode mode, Tuple<SuperSourceBoxId, IBMDSwitcherSuperSourceBox> box) : base(helper, mode, box)
-            {
-            }
-
-            public override ICommand GenerateCommand(double v)
-            {
-                return new SuperSourceBoxSetCommand
-                {
-                    Mask = SuperSourceBoxSetCommand.MaskFlags.CropRight,
-                    Index = _id,
-                    CropRight = v,
-                };
-            }
-
-            public override void UpdateExpectedState(ComparisonState state, bool goodValue, double v)
-            {
-                state.SuperSource.Boxes[_id].CropRight = ClampValueToRange(goodValue, v);
             }
         }
 
@@ -772,17 +560,11 @@ namespace LibAtem.ComparisonTests2
         {
             using (var helper = new AtemComparisonHelper(_client, _output))
             {
-                IBMDSwitcherInputSuperSource ssrc = GetSuperSource(helper);
-                Skip.If(ssrc == null, "Model does not support SuperSource");
-
                 foreach (var mode in SuperSourceBoxCropXTestDefinition.VideoModes())
                 {
                     helper.EnsureVideoMode(mode);
 
-                    foreach (var box in GetSuperSourceBoxes(helper))
-                    {
-                        new SuperSourceBoxCropRightTestDefinition(helper, mode, box).Run();
-                    }
+                    GetSuperSourceBoxes(helper).ToList().ForEach(b => new SuperSourceBoxCropXTestDefinition(helper, mode, b, "CropRight").Run());
                 }
             }
         }

@@ -28,7 +28,9 @@ namespace LibAtem.ComparisonTests2
 
         private IBMDSwitcherInputSuperSource GetSuperSource(AtemComparisonHelper helper)
         {
-            return helper.GetSdkInputsOfType<IBMDSwitcherInputSuperSource>().Select(s => s.Value).FirstOrDefault();
+            var ssrc = helper.GetSdkInputsOfType<IBMDSwitcherInputSuperSource>().Select(s => s.Value).SingleOrDefault();
+            Skip.If(ssrc == null, "Model does not support SuperSource");
+            return ssrc;
         }
 
         [Fact]
@@ -42,13 +44,20 @@ namespace LibAtem.ComparisonTests2
             }
         }
 
-        private abstract class SuperSourceTestDefinition<T> : TestDefinitionBase<T>
+        private abstract class SuperSourceTestDefinition<T> : TestDefinitionBase2<SuperSourcePropertiesSetCommand, T>
         {
             protected readonly IBMDSwitcherInputSuperSource _sdk;
 
             public SuperSourceTestDefinition(AtemComparisonHelper helper, IBMDSwitcherInputSuperSource ssrc) : base(helper)
             {
                 _sdk = ssrc;
+            }
+
+            public abstract T MangleBadValue(T v);
+
+            public override void UpdateExpectedState(ComparisonState state, bool goodValue, T v)
+            {
+                SetCommandProperty(state.SuperSource, PropertyName, goodValue ? v : MangleBadValue(v));
             }
 
             public override IEnumerable<CommandQueueKey> ExpectedCommands(bool goodValue, T v)
@@ -61,32 +70,24 @@ namespace LibAtem.ComparisonTests2
         {
             public SuperSourceArtCutTestDefinition(AtemComparisonHelper helper, IBMDSwitcherInputSuperSource ssrc) : base(helper, ssrc)
             {
+                // GetInputAvailabilityMask is used when checking if another input can be used for this output.
+                // We track this another way
+                _BMDSwitcherInputAvailability availabilityMask = 0;
+                ssrc.GetCutInputAvailabilityMask(ref availabilityMask);
+                Assert.Equal(availabilityMask, _BMDSwitcherInputAvailability.bmdSwitcherInputAvailabilityInputCut | _BMDSwitcherInputAvailability.bmdSwitcherInputAvailabilitySuperSourceArt);
             }
 
-            public override void Prepare()
-            {
-                // Ensure the first value will have a change
-                _sdk.SetInputCut((long)VideoSource.ColorBars);
-            }
+            // Ensure the first value will have a change
+            public override void Prepare() => _sdk.SetInputCut((long)VideoSource.ColorBars);
 
-            public override VideoSource[] GoodValues()
-            {
-                return VideoSourceLists.All.Where(s => s.IsAvailable(_helper.Profile, InternalPortType.Mask) && s.IsAvailable(SourceAvailability.SuperSourceArt | SourceAvailability.KeySource)).ToArray();
-            }
+            public override string PropertyName => "ArtCutSource";
 
-            public override ICommand GenerateCommand(VideoSource v)
-            {
-                return new SuperSourcePropertiesSetCommand
-                {
-                    Mask = SuperSourcePropertiesSetCommand.MaskFlags.ArtCutSource,
-                    ArtCutSource = v,
-                };
-            }
+            public override VideoSource[] GoodValues => VideoSourceLists.All.Where(s => s.IsAvailable(_helper.Profile, InternalPortType.Mask) && s.IsAvailable(SourceAvailability.SuperSourceArt | SourceAvailability.KeySource)).ToArray();
 
+            public override VideoSource MangleBadValue(VideoSource v) => v;
             public override void UpdateExpectedState(ComparisonState state, bool goodValue, VideoSource v)
             {
-                if (goodValue)
-                    state.SuperSource.ArtKeyInput = v;
+                if (goodValue) base.UpdateExpectedState(state, goodValue, v);
             }
 
             public override IEnumerable<CommandQueueKey> ExpectedCommands(bool goodValue, VideoSource v)
@@ -102,46 +103,28 @@ namespace LibAtem.ComparisonTests2
         public void TestArtCut()
         {
             using (var helper = new AtemComparisonHelper(_client, _output))
-            {
-                IBMDSwitcherInputSuperSource ssrc = GetSuperSource(helper);
-                Skip.If(ssrc == null, "Model does not support SuperSource");
-
-                // GetInputAvailabilityMask is used when checking if another input can be used for this output.
-                // We track this another way
-                _BMDSwitcherInputAvailability availabilityMask = 0;
-                ssrc.GetCutInputAvailabilityMask(ref availabilityMask);
-                Assert.Equal(availabilityMask, _BMDSwitcherInputAvailability.bmdSwitcherInputAvailabilityInputCut | _BMDSwitcherInputAvailability.bmdSwitcherInputAvailabilitySuperSourceArt);
-
-                new SuperSourceArtCutTestDefinition(helper, ssrc).Run();
-            }
+                new SuperSourceArtCutTestDefinition(helper, GetSuperSource(helper)).Run();
         }
 
         private class SuperSourceArtFillTestDefinition : SuperSourceTestDefinition<VideoSource>
         {
             public SuperSourceArtFillTestDefinition(AtemComparisonHelper helper, IBMDSwitcherInputSuperSource ssrc) : base(helper, ssrc)
             {
+                // GetInputAvailabilityMask is used when checking if another input can be used for this output.
+                // We track this another way
+                _BMDSwitcherInputAvailability availabilityMask = 0;
+                ssrc.GetFillInputAvailabilityMask(ref availabilityMask);
+                Assert.Equal(_BMDSwitcherInputAvailability.bmdSwitcherInputAvailabilitySuperSourceArt, availabilityMask);
             }
 
-            public override void Prepare()
-            {
-                // Ensure the first value will have a change
-                _sdk.SetInputFill((long)VideoSource.ColorBars);
-            }
+            // Ensure the first value will have a change
+            public override void Prepare() => _sdk.SetInputFill((long)VideoSource.ColorBars);
 
-            public override VideoSource[] GoodValues()
-            {
-                return VideoSourceLists.All.Where(s => s.IsAvailable(_helper.Profile, InternalPortType.Mask) && s.IsAvailable(SourceAvailability.SuperSourceArt)).ToArray();
-            }
+            public override string PropertyName => "ArtFillSource";
 
-            public override ICommand GenerateCommand(VideoSource v)
-            {
-                return new SuperSourcePropertiesSetCommand
-                {
-                    Mask = SuperSourcePropertiesSetCommand.MaskFlags.ArtFillSource,
-                    ArtFillSource = v,
-                };
-            }
+            public override VideoSource[] GoodValues => VideoSourceLists.All.Where(s => s.IsAvailable(_helper.Profile, InternalPortType.Mask) && s.IsAvailable(SourceAvailability.SuperSourceArt)).ToArray();
 
+            public override VideoSource MangleBadValue(VideoSource v) => v;
             public override void UpdateExpectedState(ComparisonState state, bool goodValue, VideoSource v)
             {
                 if (goodValue)
@@ -165,18 +148,7 @@ namespace LibAtem.ComparisonTests2
         public void TestArtFill()
         {
             using (var helper = new AtemComparisonHelper(_client, _output))
-            {
-                IBMDSwitcherInputSuperSource ssrc = GetSuperSource(helper);
-                Skip.If(ssrc == null, "Model does not support SuperSource");
-
-                // GetInputAvailabilityMask is used when checking if another input can be used for this output.
-                // We track this another way
-                _BMDSwitcherInputAvailability availabilityMask = 0;
-                ssrc.GetFillInputAvailabilityMask(ref availabilityMask);
-                Assert.Equal(_BMDSwitcherInputAvailability.bmdSwitcherInputAvailabilitySuperSourceArt, availabilityMask);
-
-                new SuperSourceArtFillTestDefinition(helper, ssrc).Run();
-            }
+                new SuperSourceArtFillTestDefinition(helper, GetSuperSource(helper)).Run();
         }
 
         private class SuperSourceArtOptionTestDefinition : SuperSourceTestDefinition<SuperSourceArtOption>
@@ -185,46 +157,20 @@ namespace LibAtem.ComparisonTests2
             {
             }
 
-            public override void Prepare()
-            {
-                // Ensure the first value will have a change
-                _sdk.SetArtOption(_BMDSwitcherSuperSourceArtOption.bmdSwitcherSuperSourceArtOptionForeground);
-            }
+            // Ensure the first value will have a change
+            public override void Prepare() => _sdk.SetArtOption(_BMDSwitcherSuperSourceArtOption.bmdSwitcherSuperSourceArtOptionForeground);
 
-            public override SuperSourceArtOption[] GoodValues()
-            {
-                return new[]
-                {
-                    SuperSourceArtOption.Background,
-                    SuperSourceArtOption.Foreground
-                };
-            }
+            public override string PropertyName => "ArtOption";
+            public override SuperSourceArtOption MangleBadValue(SuperSourceArtOption v) => v;
 
-            public override ICommand GenerateCommand(SuperSourceArtOption v)
-            {
-                return new SuperSourcePropertiesSetCommand
-                {
-                    Mask = SuperSourcePropertiesSetCommand.MaskFlags.ArtOption,
-                    ArtOption = v,
-                };
-            }
-
-            public override void UpdateExpectedState(ComparisonState state, bool goodValue, SuperSourceArtOption v)
-            {
-                state.SuperSource.ArtOption = v;
-            }
+            public override SuperSourceArtOption[] GoodValues => Enum.GetValues(typeof(SuperSourceArtOption)).OfType<SuperSourceArtOption>().ToArray();
         }
 
         [SkippableFact]
         public void TestArtOption()
         {
             using (var helper = new AtemComparisonHelper(_client, _output))
-            {
-                IBMDSwitcherInputSuperSource ssrc = GetSuperSource(helper);
-                Skip.If(ssrc == null, "Model does not support SuperSource");
-
-                new SuperSourceArtOptionTestDefinition(helper, ssrc).Run();
-            }
+                new SuperSourceArtOptionTestDefinition(helper, GetSuperSource(helper)).Run();
         }
 
         private class SuperSourceArtPreMultipliedTestDefinition : SuperSourceTestDefinition<bool>
@@ -233,37 +179,18 @@ namespace LibAtem.ComparisonTests2
             {
             }
 
-            public override void Prepare()
-            {
-                // Ensure the first value will have a change
-                _sdk.SetPreMultiplied(0);
-            }
+            // Ensure the first value will have a change
+            public override void Prepare() => _sdk.SetPreMultiplied(0);
 
-            public override ICommand GenerateCommand(bool v)
-            {
-                return new SuperSourcePropertiesSetCommand
-                {
-                    Mask = SuperSourcePropertiesSetCommand.MaskFlags.ArtPreMultiplied,
-                    ArtPreMultiplied = v,
-                };
-            }
-
-            public override void UpdateExpectedState(ComparisonState state, bool goodValue, bool v)
-            {
-                state.SuperSource.ArtPreMultiplied = v;
-            }
+            public override string PropertyName => "ArtPreMultiplied";
+            public override bool MangleBadValue(bool v) => v;
         }
 
         [SkippableFact]
         public void TestArtPreMultiplied()
         {
             using (var helper = new AtemComparisonHelper(_client, _output))
-            {
-                IBMDSwitcherInputSuperSource ssrc = GetSuperSource(helper);
-                Skip.If(ssrc == null, "Model does not support SuperSource");
-
-                new SuperSourceArtPreMultipliedTestDefinition(helper, ssrc).Run();
-            }
+                new SuperSourceArtPreMultipliedTestDefinition(helper, GetSuperSource(helper)).Run();
         }
 
         private class SuperSourceArtClipTestDefinition : SuperSourceTestDefinition<double>
@@ -272,50 +199,21 @@ namespace LibAtem.ComparisonTests2
             {
             }
 
-            public override void Prepare()
-            {
-                // Ensure the first value will have a change
-                _sdk.SetClip(20);
-            }
+            // Ensure the first value will have a change
+            public override void Prepare() => _sdk.SetClip(20);
 
-            public override ICommand GenerateCommand(double v)
-            {
-                return new SuperSourcePropertiesSetCommand
-                {
-                    Mask = SuperSourcePropertiesSetCommand.MaskFlags.ArtClip,
-                    ArtClip= v,
-                };
-            }
+            public override string PropertyName => "ArtClip";
+            public override double MangleBadValue(double v) => v >= 100 ? 100 : 0;
 
-            public override void UpdateExpectedState(ComparisonState state, bool goodValue, double v)
-            {
-                if (goodValue)
-                    state.SuperSource.ArtClip = v;
-                else
-                    state.SuperSource.ArtClip = v >= 100 ? 100 : 0;
-            }
-
-            public override double[] GoodValues()
-            {
-                return new double[] { 0, 87.4, 14.7, 99.9, 100, 0.1 };
-            }
-
-            public override double[] BadValues()
-            {
-                return new double[] { 100.1, 110, 101, -0.01, -1, -10 };
-            }
+            public override double[] GoodValues => new double[] { 0, 87.4, 14.7, 99.9, 100, 0.1 };
+            public override double[] BadValues => new double[] { 100.1, 110, 101, -0.01, -1, -10 };
         }
 
         [SkippableFact]
         public void TestClip()
         {
             using (var helper = new AtemComparisonHelper(_client, _output))
-            {
-                IBMDSwitcherInputSuperSource ssrc = GetSuperSource(helper);
-                Skip.If(ssrc == null, "Model does not support SuperSource");
-
-                new SuperSourceArtClipTestDefinition(helper, ssrc).Run();
-            }
+                new SuperSourceArtClipTestDefinition(helper, GetSuperSource(helper)).Run();
         }
 
         private class SuperSourceArtGainTestDefinition : SuperSourceTestDefinition<double>
@@ -324,50 +222,21 @@ namespace LibAtem.ComparisonTests2
             {
             }
 
-            public override void Prepare()
-            {
-                // Ensure the first value will have a change
-                _sdk.SetGain(20);
-            }
+            // Ensure the first value will have a change
+            public override void Prepare() => _sdk.SetGain(20);
 
-            public override ICommand GenerateCommand(double v)
-            {
-                return new SuperSourcePropertiesSetCommand
-                {
-                    Mask = SuperSourcePropertiesSetCommand.MaskFlags.ArtGain,
-                    ArtGain = v,
-                };
-            }
+            public override string PropertyName => "ArtGain";
+            public override double MangleBadValue(double v) => v >= 100 ? 100 : 0;
 
-            public override void UpdateExpectedState(ComparisonState state, bool goodValue, double v)
-            {
-                if (goodValue)
-                    state.SuperSource.ArtGain = v;
-                else
-                    state.SuperSource.ArtGain = v >= 100 ? 100 : 0;
-            }
-
-            public override double[] GoodValues()
-            {
-                return new double[] { 0, 87.4, 14.7, 99.9, 100, 0.1 };
-            }
-
-            public override double[] BadValues()
-            {
-                return new double[] { 100.1, 110, 101, -0.01, -1, -10 };
-            }
+            public override double[] GoodValues => new double[] { 0, 87.4, 14.7, 99.9, 100, 0.1 };
+            public override double[] BadValues => new double[] { 100.1, 110, 101, -0.01, -1, -10 };
         }
 
         [SkippableFact]
         public void TestGain()
         {
             using (var helper = new AtemComparisonHelper(_client, _output))
-            {
-                IBMDSwitcherInputSuperSource ssrc = GetSuperSource(helper);
-                Skip.If(ssrc == null, "Model does not support SuperSource");
-
-                new SuperSourceArtGainTestDefinition(helper, ssrc).Run();
-            }
+                new SuperSourceArtGainTestDefinition(helper, GetSuperSource(helper)).Run();
         }
 
         private class SuperSourceArtInvertKeyTestDefinition : SuperSourceTestDefinition<bool>
@@ -376,37 +245,18 @@ namespace LibAtem.ComparisonTests2
             {
             }
 
-            public override void Prepare()
-            {
-                // Ensure the first value will have a change
-                _sdk.SetInverse(0);
-            }
+            // Ensure the first value will have a change
+            public override void Prepare() => _sdk.SetInverse(0);
 
-            public override ICommand GenerateCommand(bool v)
-            {
-                return new SuperSourcePropertiesSetCommand
-                {
-                    Mask = SuperSourcePropertiesSetCommand.MaskFlags.ArtInvertKey,
-                    ArtInvertKey = v,
-                };
-            }
-
-            public override void UpdateExpectedState(ComparisonState state, bool goodValue, bool v)
-            {
-                state.SuperSource.ArtInvertKey = v;
-            }
+            public override string PropertyName => "ArtInvertKey";
+            public override bool MangleBadValue(bool v) => v;
         }
 
         [SkippableFact]
         public void TestArtInvertKey()
         {
             using (var helper = new AtemComparisonHelper(_client, _output))
-            {
-                IBMDSwitcherInputSuperSource ssrc = GetSuperSource(helper);
-                Skip.If(ssrc == null, "Model does not support SuperSource");
-
-                new SuperSourceArtInvertKeyTestDefinition(helper, ssrc).Run();
-            }
+                new SuperSourceArtInvertKeyTestDefinition(helper, GetSuperSource(helper)).Run();
         }
 
         private class SuperSourceBorderEnabledTestDefinition : SuperSourceTestDefinition<bool>
@@ -415,37 +265,18 @@ namespace LibAtem.ComparisonTests2
             {
             }
 
-            public override void Prepare()
-            {
-                // Ensure the first value will have a change
-                _sdk.SetBorderEnabled(0);
-            }
+            // Ensure the first value will have a change
+            public override void Prepare() => _sdk.SetBorderEnabled(0);
 
-            public override ICommand GenerateCommand(bool v)
-            {
-                return new SuperSourcePropertiesSetCommand
-                {
-                    Mask = SuperSourcePropertiesSetCommand.MaskFlags.BorderEnabled,
-                    BorderEnabled = v,
-                };
-            }
-
-            public override void UpdateExpectedState(ComparisonState state, bool goodValue, bool v)
-            {
-                state.SuperSource.BorderEnabled = v;
-            }
+            public override string PropertyName => "BorderEnabled";
+            public override bool MangleBadValue(bool v) => v;
         }
 
         [SkippableFact]
         public void TestBorderEnabled()
         {
             using (var helper = new AtemComparisonHelper(_client, _output))
-            {
-                IBMDSwitcherInputSuperSource ssrc = GetSuperSource(helper);
-                Skip.If(ssrc == null, "Model does not support SuperSource");
-
-                new SuperSourceBorderEnabledTestDefinition(helper, ssrc).Run();
-            }
+                new SuperSourceBorderEnabledTestDefinition(helper, GetSuperSource(helper)).Run();
         }
 
         private class SuperSourceBorderBevelTestDefinition : SuperSourceTestDefinition<BorderBevel>
@@ -454,57 +285,32 @@ namespace LibAtem.ComparisonTests2
             {
             }
 
-            public override void Prepare()
-            {
-                // Ensure the first value will have a change
-                _sdk.SetBorderBevel(_BMDSwitcherBorderBevelOption.bmdSwitcherBorderBevelOptionInOut);
-            }
+            // Ensure the first value will have a change
+            public override void Prepare() => _sdk.SetBorderBevel(_BMDSwitcherBorderBevelOption.bmdSwitcherBorderBevelOptionInOut);
 
-            public override BorderBevel[] GoodValues()
-            {
-                return new[]
-                {
-                    BorderBevel.In,
-                    BorderBevel.InOut,
-                    BorderBevel.None,
-                    BorderBevel.Out
-                };
-            }
+            public override string PropertyName => "BorderBevel";
+            public override BorderBevel MangleBadValue(BorderBevel v) => v;
 
-            public override ICommand GenerateCommand(BorderBevel v)
-            {
-                return new SuperSourcePropertiesSetCommand
-                {
-                    Mask = SuperSourcePropertiesSetCommand.MaskFlags.BorderBevel,
-                    BorderBevel = v,
-                };
-            }
-
-            public override void UpdateExpectedState(ComparisonState state, bool goodValue, BorderBevel v)
-            {
-                state.SuperSource.BorderBevel = v;
-            }
+            public override BorderBevel[] GoodValues => Enum.GetValues(typeof(BorderBevel)).OfType<BorderBevel>().ToArray();
         }
 
         [SkippableFact]
         public void TestBorderBevel()
         {
             using (var helper = new AtemComparisonHelper(_client, _output))
-            {
-                IBMDSwitcherInputSuperSource ssrc = GetSuperSource(helper);
-                Skip.If(ssrc == null, "Model does not support SuperSource");
-
-                new SuperSourceBorderBevelTestDefinition(helper, ssrc).Run();
-            }
+                new SuperSourceBorderBevelTestDefinition(helper, GetSuperSource(helper)).Run();
         }
 
-        private abstract class SuperSourceBorderWidthTestDefinition : SuperSourceTestDefinition<double>
+        private class SuperSourceBorderWidthTestDefinition : SuperSourceTestDefinition<double>
         {
             private readonly VideoMode _mode;
 
-            public SuperSourceBorderWidthTestDefinition(AtemComparisonHelper helper, VideoMode mode, IBMDSwitcherInputSuperSource ssrc) : base(helper, ssrc)
+            public override string PropertyName { get; }
+
+            public SuperSourceBorderWidthTestDefinition(AtemComparisonHelper helper, VideoMode mode, IBMDSwitcherInputSuperSource ssrc, string propName) : base(helper, ssrc)
             {
                 _mode = mode;
+                PropertyName = propName;
             }
 
             public static IEnumerable<VideoMode> VideoModes()
@@ -522,11 +328,8 @@ namespace LibAtem.ComparisonTests2
                 _helper.Sleep();
             }
 
-            protected double ClampValueToRange(bool goodValue, double v)
+            public override double MangleBadValue(double v)
             {
-                if (goodValue)
-                    return v;
-
                 ushort v2 = (ushort)(v * 100);
                 switch (_mode)
                 {
@@ -540,31 +343,37 @@ namespace LibAtem.ComparisonTests2
                 }
             }
 
-            public override double[] GoodValues()
+            public override double[] GoodValues
             {
-                switch (_mode)
+                get
                 {
-                    case VideoMode.P1080i50:
-                    case VideoMode.N720p5994:
-                        return new double[] { 0, 0.01, 1, 15.99, 15.9, 15, 9.4, 12.7, 16 };
-                    case VideoMode.P625i50PAL:
-                        return new double[] { 0, 0.01, 1, 3.99, 3.9, 3, 2.7, 4 };
-                    default:
-                        throw new NotSupportedException();
+                    switch (_mode)
+                    {
+                        case VideoMode.P1080i50:
+                        case VideoMode.N720p5994:
+                            return new double[] { 0, 0.01, 1, 15.99, 15.9, 15, 9.4, 12.7, 16 };
+                        case VideoMode.P625i50PAL:
+                            return new double[] { 0, 0.01, 1, 3.99, 3.9, 3, 2.7, 4 };
+                        default:
+                            throw new NotSupportedException();
+                    }
                 }
             }
 
-            public override double[] BadValues()
+            public override double[] BadValues
             {
-                switch (_mode)
+                get
                 {
-                    case VideoMode.P1080i50:
-                    case VideoMode.N720p5994:
-                        return new double[] { -0.01, -1, 16.1, 16.01, 17 };
-                    case VideoMode.P625i50PAL:
-                        return new double[] { -0.01, -1, 4.1, 4.01, 6 };
-                    default:
-                        throw new NotSupportedException();
+                    switch (_mode)
+                    {
+                        case VideoMode.P1080i50:
+                        case VideoMode.N720p5994:
+                            return new double[] { -0.01, -1, 16.1, 16.01, 17 };
+                        case VideoMode.P625i50PAL:
+                            return new double[] { -0.01, -1, 4.1, 4.01, 6 };
+                        default:
+                            throw new NotSupportedException();
+                    }
                 }
             }
 
@@ -577,62 +386,19 @@ namespace LibAtem.ComparisonTests2
             }
         }
 
-        private class SuperSourceBorderWidthInTestDefinition : SuperSourceBorderWidthTestDefinition
-        {
-            public SuperSourceBorderWidthInTestDefinition(AtemComparisonHelper helper, VideoMode mode, IBMDSwitcherInputSuperSource ssrc) : base(helper, mode, ssrc)
-            {
-            }
-
-            public override ICommand GenerateCommand(double v)
-            {
-                return new SuperSourcePropertiesSetCommand
-                {
-                    Mask = SuperSourcePropertiesSetCommand.MaskFlags.BorderInnerWidth,
-                    BorderInnerWidth = v,
-                };
-            }
-
-            public override void UpdateExpectedState(ComparisonState state, bool goodValue, double v)
-            {
-                state.SuperSource.BorderWidthIn = ClampValueToRange(goodValue, v);
-            }
-        }
-
         [SkippableFact]
         public void TestBorderWidthIn()
         {
             using (var helper = new AtemComparisonHelper(_client, _output))
             {
                 IBMDSwitcherInputSuperSource ssrc = GetSuperSource(helper);
-                Skip.If(ssrc == null, "Model does not support SuperSource");
 
                 foreach (var mode in SuperSourceBorderWidthTestDefinition.VideoModes())
                 {
                     helper.EnsureVideoMode(mode);
 
-                    new SuperSourceBorderWidthInTestDefinition(helper, mode, ssrc).Run();
+                    new SuperSourceBorderWidthTestDefinition(helper, mode, ssrc, "BorderInnerWidth").Run();
                 }
-            }
-        }
-
-        private class SuperSourceBorderWidthOutTestDefinition : SuperSourceBorderWidthTestDefinition
-        {
-            public SuperSourceBorderWidthOutTestDefinition(AtemComparisonHelper helper, VideoMode mode, IBMDSwitcherInputSuperSource ssrc) : base(helper, mode, ssrc)
-            {
-            }
-
-            public override ICommand GenerateCommand(double v)
-            {
-                return new SuperSourcePropertiesSetCommand
-                {
-                    Mask = SuperSourcePropertiesSetCommand.MaskFlags.BorderOuterWidth,
-                    BorderOuterWidth = v,
-                };
-            }
-
-            public override void UpdateExpectedState(ComparisonState state, bool goodValue, double v)
-            {
-                state.SuperSource.BorderWidthOut = ClampValueToRange(goodValue, v);
             }
         }
 
@@ -642,21 +408,23 @@ namespace LibAtem.ComparisonTests2
             using (var helper = new AtemComparisonHelper(_client, _output))
             {
                 IBMDSwitcherInputSuperSource ssrc = GetSuperSource(helper);
-                Skip.If(ssrc == null, "Model does not support SuperSource");
 
                 foreach (var mode in SuperSourceBorderWidthTestDefinition.VideoModes())
                 {
                     helper.EnsureVideoMode(mode);
 
-                    new SuperSourceBorderWidthOutTestDefinition(helper, mode, ssrc).Run();
+                    new SuperSourceBorderWidthTestDefinition(helper, mode, ssrc, "BorderOuterWidth").Run();
                 }
             }
         }
 
-        private abstract class SuperSourceUint100TestDefinition : SuperSourceTestDefinition<uint>
+        private class SuperSourceUint100TestDefinition : SuperSourceTestDefinition<uint>
         {
-            public SuperSourceUint100TestDefinition(AtemComparisonHelper helper, IBMDSwitcherInputSuperSource ssrc) : base(helper, ssrc)
+            public override string PropertyName { get; }
+
+            public SuperSourceUint100TestDefinition(AtemComparisonHelper helper, IBMDSwitcherInputSuperSource ssrc, string propName) : base(helper, ssrc)
             {
+                PropertyName = propName;
             }
 
             public override void Prepare()
@@ -669,155 +437,38 @@ namespace LibAtem.ComparisonTests2
                 _helper.Sleep();
             }
 
-            protected uint ClampValueToRange(bool goodValue, uint v)
-            {
-                if (goodValue)
-                    return v;
+            public override uint MangleBadValue(uint v) => v > 100 ? 100 : (uint)0;
 
-                return v > 100 ? 100 : (uint)0;
-            }
-
-            public override uint[] GoodValues()
-            {
-                return new uint[]{ 0, 87, 14, 99, 100, 1 };
-            }
-
-            public override uint[] BadValues()
-            {
-                return new uint[] { 101, 110 };
-            }
-        }
-
-        private class SuperSourceBorderSoftnessOutTestDefinition : SuperSourceUint100TestDefinition
-        {
-            public SuperSourceBorderSoftnessOutTestDefinition(AtemComparisonHelper helper, IBMDSwitcherInputSuperSource ssrc) : base(helper, ssrc)
-            {
-            }
-
-            public override ICommand GenerateCommand(uint v)
-            {
-                return new SuperSourcePropertiesSetCommand
-                {
-                    Mask = SuperSourcePropertiesSetCommand.MaskFlags.BorderOuterSoftness,
-                    BorderOuterSoftness = v,
-                };
-            }
-
-            public override void UpdateExpectedState(ComparisonState state, bool goodValue, uint v)
-            {
-                state.SuperSource.BorderSoftnessOut = ClampValueToRange(goodValue, v);
-            }
+            public override uint[] GoodValues => new uint[]{ 0, 87, 14, 99, 100, 1 };
+            public override uint[] BadValues => new uint[] { 101, 110 };
         }
 
         [SkippableFact]
         public void TestBorderSoftnessOut()
         {
             using (var helper = new AtemComparisonHelper(_client, _output))
-            {
-                IBMDSwitcherInputSuperSource ssrc = GetSuperSource(helper);
-                Skip.If(ssrc == null, "Model does not support SuperSource");
-
-                new SuperSourceBorderSoftnessOutTestDefinition(helper, ssrc).Run();
-            }
-        }
-
-        private class SuperSourceBorderSoftnessInTestDefinition : SuperSourceUint100TestDefinition
-        {
-            public SuperSourceBorderSoftnessInTestDefinition(AtemComparisonHelper helper, IBMDSwitcherInputSuperSource ssrc) : base(helper, ssrc)
-            {
-            }
-
-            public override ICommand GenerateCommand(uint v)
-            {
-                return new SuperSourcePropertiesSetCommand
-                {
-                    Mask = SuperSourcePropertiesSetCommand.MaskFlags.BorderInnerSoftness,
-                    BorderInnerSoftness = v,
-                };
-            }
-
-            public override void UpdateExpectedState(ComparisonState state, bool goodValue, uint v)
-            {
-                state.SuperSource.BorderSoftnessIn = ClampValueToRange(goodValue, v);
-            }
+                new SuperSourceUint100TestDefinition(helper, GetSuperSource(helper), "BorderOuterSoftness").Run();
         }
 
         [SkippableFact]
         public void TestBorderSoftnessIn()
         {
             using (var helper = new AtemComparisonHelper(_client, _output))
-            {
-                IBMDSwitcherInputSuperSource ssrc = GetSuperSource(helper);
-                Skip.If(ssrc == null, "Model does not support SuperSource");
-
-                new SuperSourceBorderSoftnessInTestDefinition(helper, ssrc).Run();
-            }
-        }
-
-        private class SuperSourceBorderBevelSoftnessTestDefinition : SuperSourceUint100TestDefinition
-        {
-            public SuperSourceBorderBevelSoftnessTestDefinition(AtemComparisonHelper helper, IBMDSwitcherInputSuperSource ssrc) : base(helper, ssrc)
-            {
-            }
-
-            public override ICommand GenerateCommand(uint v)
-            {
-                return new SuperSourcePropertiesSetCommand
-                {
-                    Mask = SuperSourcePropertiesSetCommand.MaskFlags.BorderBevelSoftness,
-                    BorderBevelSoftness = v,
-                };
-            }
-
-            public override void UpdateExpectedState(ComparisonState state, bool goodValue, uint v)
-            {
-                state.SuperSource.BorderBevelSoftness = ClampValueToRange(goodValue, v);
-            }
+                new SuperSourceUint100TestDefinition(helper, GetSuperSource(helper), "BorderInnerSoftness").Run();
         }
 
         [SkippableFact]
         public void TestBorderBevelSoftness()
         {
             using (var helper = new AtemComparisonHelper(_client, _output))
-            {
-                IBMDSwitcherInputSuperSource ssrc = GetSuperSource(helper);
-                Skip.If(ssrc == null, "Model does not support SuperSource");
-
-                new SuperSourceBorderBevelSoftnessTestDefinition(helper, ssrc).Run();
-            }
-        }
-
-        private class SuperSourceBorderBevelPositionTestDefinition : SuperSourceUint100TestDefinition
-        {
-            public SuperSourceBorderBevelPositionTestDefinition(AtemComparisonHelper helper, IBMDSwitcherInputSuperSource ssrc) : base(helper, ssrc)
-            {
-            }
-
-            public override ICommand GenerateCommand(uint v)
-            {
-                return new SuperSourcePropertiesSetCommand
-                {
-                    Mask = SuperSourcePropertiesSetCommand.MaskFlags.BorderBevelPosition,
-                    BorderBevelPosition = v,
-                };
-            }
-
-            public override void UpdateExpectedState(ComparisonState state, bool goodValue, uint v)
-            {
-                state.SuperSource.BorderBevelPosition = ClampValueToRange(goodValue, v);
-            }
+                new SuperSourceUint100TestDefinition(helper, GetSuperSource(helper), "BorderBevelSoftness").Run();
         }
 
         [SkippableFact]
         public void TestBorderBevelPosition()
         {
             using (var helper = new AtemComparisonHelper(_client, _output))
-            {
-                IBMDSwitcherInputSuperSource ssrc = GetSuperSource(helper);
-                Skip.If(ssrc == null, "Model does not support SuperSource");
-
-                new SuperSourceBorderBevelPositionTestDefinition(helper, ssrc).Run();
-            }
+                new SuperSourceUint100TestDefinition(helper, GetSuperSource(helper), "BorderBevelPosition").Run();
         }
 
         private class SuperSourceBorderHueTestDefinition : SuperSourceTestDefinition<double>
@@ -826,54 +477,25 @@ namespace LibAtem.ComparisonTests2
             {
             }
 
-            public override void Prepare()
+            // Ensure the first value will have a change
+            public override void Prepare() => _sdk.SetBorderHue(20);
+
+            public override string PropertyName => "BorderHue";
+            public override double MangleBadValue(double v)
             {
-                // Ensure the first value will have a change
-                _sdk.SetBorderHue(20);
+                ushort ui = (ushort)((ushort)(v * 10) % 3600);
+                return ui / 10d;
             }
 
-            public override double[] GoodValues()
-            {
-                return new double[] { 0, 123, 233.4, 359.9 };
-            }
-            public override double[] BadValues()
-            {
-                return new double[] { 360, 360.1, 361, -1, -0.01 };
-            }
-
-            public override ICommand GenerateCommand(double v)
-            {
-                return new SuperSourcePropertiesSetCommand
-                {
-                    Mask = SuperSourcePropertiesSetCommand.MaskFlags.BorderHue,
-                    BorderHue = v,
-                };
-            }
-
-            public override void UpdateExpectedState(ComparisonState state, bool goodValue, double v)
-            {
-                if (goodValue)
-                {
-                    state.SuperSource.BorderHue = v;
-                }
-                else
-                {
-                    ushort ui = (ushort)((ushort)(v * 10) % 3600);
-                    state.SuperSource.BorderHue = ui / 10d;
-                }
-            }
+            public override double[] GoodValues => new double[] { 0, 123, 233.4, 359.9 };
+            public override double[] BadValues => new double[] { 360, 360.1, 361, -1, -0.01 };
         }
 
         [SkippableFact]
         public void TestBorderHue()
         {
             using (var helper = new AtemComparisonHelper(_client, _output))
-            {
-                IBMDSwitcherInputSuperSource ssrc = GetSuperSource(helper);
-                Skip.If(ssrc == null, "Model does not support SuperSource");
-
-                new SuperSourceBorderHueTestDefinition(helper, ssrc).Run();
-            }
+                new SuperSourceBorderHueTestDefinition(helper, GetSuperSource(helper)).Run();
         }
 
         private class SuperSourceBorderSaturationTestDefinition : SuperSourceTestDefinition<double>
@@ -882,53 +504,21 @@ namespace LibAtem.ComparisonTests2
             {
             }
 
-            public override void Prepare()
-            {
-                // Ensure the first value will have a change
-                _sdk.SetBorderSaturation(20);
-            }
+            // Ensure the first value will have a change
+            public override void Prepare() => _sdk.SetBorderSaturation(20);
 
-            public override double[] GoodValues()
-            {
-                return new double[] { 0, 87.4, 14.7, 99.9, 100, 0.1 };
-            }
-            public override double[] BadValues()
-            {
-                return new double[] { 100.1, 110, 101, -0.01, -1, -10 };
-            }
+            public override string PropertyName => "BorderSaturation";
+            public override double MangleBadValue(double v) => v >= 100 ? 100 : 0;
 
-            public override ICommand GenerateCommand(double v)
-            {
-                return new SuperSourcePropertiesSetCommand
-                {
-                    Mask = SuperSourcePropertiesSetCommand.MaskFlags.BorderSaturation,
-                    BorderSaturation = v,
-                };
-            }
-
-            public override void UpdateExpectedState(ComparisonState state, bool goodValue, double v)
-            {
-                if (goodValue)
-                {
-                    state.SuperSource.BorderSaturation = v;
-                }
-                else
-                {
-                    state.SuperSource.BorderSaturation = v >= 100 ? 100 : 0;
-                }
-            }
+            public override double[] GoodValues => new double[] { 0, 87.4, 14.7, 99.9, 100, 0.1 };
+            public override double[] BadValues => new double[] { 100.1, 110, 101, -0.01, -1, -10 };
         }
 
         [SkippableFact]
         public void TestBorderSaturation()
         {
             using (var helper = new AtemComparisonHelper(_client, _output))
-            {
-                IBMDSwitcherInputSuperSource ssrc = GetSuperSource(helper);
-                Skip.If(ssrc == null, "Model does not support SuperSource");
-
-                new SuperSourceBorderSaturationTestDefinition(helper, ssrc).Run();
-            }
+                new SuperSourceBorderSaturationTestDefinition(helper, GetSuperSource(helper)).Run();
         }
 
         private class SuperSourceBorderLumaTestDefinition : SuperSourceTestDefinition<double>
@@ -937,53 +527,21 @@ namespace LibAtem.ComparisonTests2
             {
             }
 
-            public override void Prepare()
-            {
-                // Ensure the first value will have a change
-                _sdk.SetBorderLuma(20);
-            }
+            // Ensure the first value will have a change
+            public override void Prepare() => _sdk.SetBorderLuma(20);
 
-            public override double[] GoodValues()
-            {
-                return new double[] { 0, 87.4, 14.7, 99.9, 100, 0.1 };
-            }
-            public override double[] BadValues()
-            {
-                return new double[] { 100.1, 110, 101, -0.01, -1, -10 };
-            }
+            public override string PropertyName => "BorderLuma";
+            public override double MangleBadValue(double v) => v >= 100 ? 100 : 0;
 
-            public override ICommand GenerateCommand(double v)
-            {
-                return new SuperSourcePropertiesSetCommand
-                {
-                    Mask = SuperSourcePropertiesSetCommand.MaskFlags.BorderLuma,
-                    BorderLuma = v,
-                };
-            }
-
-            public override void UpdateExpectedState(ComparisonState state, bool goodValue, double v)
-            {
-                if (goodValue)
-                {
-                    state.SuperSource.BorderLuma = v;
-                }
-                else
-                {
-                    state.SuperSource.BorderLuma = v >= 100 ? 100 : 0;
-                }
-            }
+            public override double[] GoodValues => new double[] { 0, 87.4, 14.7, 99.9, 100, 0.1 };
+            public override double[] BadValues => new double[] { 100.1, 110, 101, -0.01, -1, -10 };
         }
 
         [SkippableFact]
         public void TestBorderLuma()
         {
             using (var helper = new AtemComparisonHelper(_client, _output))
-            {
-                IBMDSwitcherInputSuperSource ssrc = GetSuperSource(helper);
-                Skip.If(ssrc == null, "Model does not support SuperSource");
-
-                new SuperSourceBorderLumaTestDefinition(helper, ssrc).Run();
-            }
+                new SuperSourceBorderLumaTestDefinition(helper, GetSuperSource(helper)).Run();
         }
 
         private class SuperSourceBorderLightSourceDirectionTestDefinition : SuperSourceTestDefinition<double>
@@ -992,53 +550,21 @@ namespace LibAtem.ComparisonTests2
             {
             }
 
-            public override void Prepare()
-            {
-                // Ensure the first value will have a change
-                _sdk.SetBorderLightSourceDirection(20);
-            }
+            // Ensure the first value will have a change
+            public override void Prepare() => _sdk.SetBorderLightSourceDirection(20);
 
-            public override double[] GoodValues()
-            {
-                return new double[] { 0, 123, 233.4, 359.9 };
-            }
-            public override double[] BadValues()
-            {
-                return new double[] { 360, 360.1, 361, -1, -0.01 };
-            }
+            public override string PropertyName => "BorderLightSourceDirection";
+            public override double MangleBadValue(double v) => 0;
 
-            public override ICommand GenerateCommand(double v)
-            {
-                return new SuperSourcePropertiesSetCommand
-                {
-                    Mask = SuperSourcePropertiesSetCommand.MaskFlags.BorderLightSourceDirection,
-                    BorderLightSourceDirection = v,
-                };
-            }
-
-            public override void UpdateExpectedState(ComparisonState state, bool goodValue, double v)
-            {
-                if (goodValue)
-                {
-                    state.SuperSource.BorderLightSourceDirection = v;
-                }
-                else
-                {
-                    state.SuperSource.BorderLightSourceDirection = 0;
-                }
-            }
+            public override double[] GoodValues => new double[] { 0, 123, 233.4, 359.9 };
+            public override double[] BadValues => new double[] { 360, 360.1, 361, -1, -0.01 };
         }
 
         [SkippableFact]
         public void TestBorderLightSourceDirection()
         {
             using (var helper = new AtemComparisonHelper(_client, _output))
-            {
-                IBMDSwitcherInputSuperSource ssrc = GetSuperSource(helper);
-                Skip.If(ssrc == null, "Model does not support SuperSource");
-
-                new SuperSourceBorderLightSourceDirectionTestDefinition(helper, ssrc).Run();
-            }
+                new SuperSourceBorderLightSourceDirectionTestDefinition(helper, GetSuperSource(helper)).Run();
         }
 
         private class SuperSourceBorderLightSourceAltitudeTestDefinition : SuperSourceTestDefinition<uint>
@@ -1047,53 +573,21 @@ namespace LibAtem.ComparisonTests2
             {
             }
 
-            public override void Prepare()
-            {
-                // Ensure the first value will have a change
-                _sdk.SetBorderLightSourceAltitude(20);
-            }
+            // Ensure the first value will have a change
+            public override void Prepare() => _sdk.SetBorderLightSourceAltitude(20);
 
-            public override uint[] GoodValues()
-            {
-                return new uint[] { 10, 100, 34, 99, 11, 78 };
-            }
-            public override uint[] BadValues()
-            {
-                return new uint[] { 101, 110, 0, 9 };
-            }
+            public override string PropertyName => "BorderLightSourceAltitude";
+            public override uint MangleBadValue(uint v) => v < 10 ? (uint)10 : 100;
 
-            public override ICommand GenerateCommand(uint v)
-            {
-                return new SuperSourcePropertiesSetCommand
-                {
-                    Mask = SuperSourcePropertiesSetCommand.MaskFlags.BorderLightSourceAltitude,
-                    BorderLightSourceAltitude = v,
-                };
-            }
-
-            public override void UpdateExpectedState(ComparisonState state, bool goodValue, uint v)
-            {
-                if (goodValue)
-                {
-                    state.SuperSource.BorderLightSourceAltitude = v;
-                }
-                else
-                {
-                    state.SuperSource.BorderLightSourceAltitude = v < 10 ? 10 : 100;
-                }
-            }
+            public override uint[] GoodValues => new uint[] { 10, 100, 34, 99, 11, 78 };
+            public override uint[] BadValues => new uint[] { 101, 110, 0, 9 };
         }
 
         [SkippableFact]
         public void TestBorderLightSourceAltitude()
         {
             using (var helper = new AtemComparisonHelper(_client, _output))
-            {
-                IBMDSwitcherInputSuperSource ssrc = GetSuperSource(helper);
-                Skip.If(ssrc == null, "Model does not support SuperSource");
-
-                new SuperSourceBorderLightSourceAltitudeTestDefinition(helper, ssrc).Run();
-            }
+                new SuperSourceBorderLightSourceAltitudeTestDefinition(helper, GetSuperSource(helper)).Run();
         }
     }
 }

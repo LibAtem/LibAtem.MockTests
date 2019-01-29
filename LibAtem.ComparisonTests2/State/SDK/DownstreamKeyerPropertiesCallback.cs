@@ -67,7 +67,7 @@ namespace LibAtem.ComparisonTests2.State.SDK
                     break;
                 case _BMDSwitcherDownstreamKeyEventType.bmdSwitcherDownstreamKeyEventTypePreMultipliedChanged:
                     _props.GetPreMultiplied(out int preMultiplied);
-                    _state.PreMultipliedKey = preMultiplied != 0;
+                    _state.PreMultiply = preMultiplied != 0;
                     _onChange(new CommandQueueKey(new DownstreamKeyPropertiesGetCommand() { Index = _id }));
                     break;
                 case _BMDSwitcherDownstreamKeyEventType.bmdSwitcherDownstreamKeyEventTypeClipChanged:
