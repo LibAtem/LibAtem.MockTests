@@ -21,7 +21,7 @@ namespace LibAtem.ComparisonTests2.MixEffects
         {
         }
 
-        private abstract class DipTransitionTestDefinition<T> : TestDefinitionBase2<TransitionDipSetCommand, T>
+        private abstract class DipTransitionTestDefinition<T> : TestDefinitionBase<TransitionDipSetCommand, T>
         {
             protected readonly MixEffectBlockId _id;
             protected readonly IBMDSwitcherTransitionDipParameters _sdk;

@@ -75,7 +75,7 @@ namespace LibAtem.ComparisonTests2
         }
 
 
-        private class MacroLoopTestDefinition : TestDefinitionBase2<MacroRunStatusSetCommand, bool>
+        private class MacroLoopTestDefinition : TestDefinitionBase<MacroRunStatusSetCommand, bool>
         {
             private readonly IBMDSwitcherMacroControl _sdk;
 

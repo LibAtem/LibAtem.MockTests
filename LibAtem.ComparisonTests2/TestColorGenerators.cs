@@ -34,7 +34,7 @@ namespace LibAtem.ComparisonTests2
             }
         }
 
-        private abstract class ColorGeneratorTestDefinition : TestDefinitionBase2<ColorGeneratorSetCommand, double>
+        private abstract class ColorGeneratorTestDefinition : TestDefinitionBase<ColorGeneratorSetCommand, double>
         {
             protected readonly IBMDSwitcherInputColor _sdk;
             protected readonly ColorGeneratorId _colId;

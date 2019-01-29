@@ -18,7 +18,7 @@ namespace LibAtem.ComparisonTests2.MixEffects
         {
         }
 
-        private abstract class ChromaKeyerTestDefinition<T> : TestDefinitionBase2<MixEffectKeyChromaSetCommand, T>
+        private abstract class ChromaKeyerTestDefinition<T> : TestDefinitionBase<MixEffectKeyChromaSetCommand, T>
         {
             private readonly MixEffectBlockId _meId;
             private readonly UpstreamKeyId _keyId;

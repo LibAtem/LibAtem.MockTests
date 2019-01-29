@@ -21,7 +21,7 @@ namespace LibAtem.ComparisonTests2.MixEffects
         {
         }
 
-        private abstract class DVETransitionTestDefinition<T> : TestDefinitionBase2<TransitionDVESetCommand, T>
+        private abstract class DVETransitionTestDefinition<T> : TestDefinitionBase<TransitionDVESetCommand, T>
         {
             protected readonly MixEffectBlockId _id;
             protected readonly IBMDSwitcherTransitionDVEParameters _sdk;

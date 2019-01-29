@@ -62,7 +62,7 @@ namespace LibAtem.ComparisonTests2.Audio
             }
         }
 
-        private abstract class AudioMonitorTestDefinition<T> : TestDefinitionBase2<AudioMixerMonitorSetCommand, T>
+        private abstract class AudioMonitorTestDefinition<T> : TestDefinitionBase<AudioMixerMonitorSetCommand, T>
         {
             protected readonly IBMDSwitcherAudioMonitorOutput _sdk;
 

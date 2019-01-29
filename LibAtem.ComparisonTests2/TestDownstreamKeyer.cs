@@ -43,7 +43,7 @@ namespace LibAtem.ComparisonTests2
             return result;
         }
 
-        private class DownstreamKeyerCutSourceTestDefinition : TestDefinitionBase2<DownstreamKeyCutSourceSetCommand, VideoSource>
+        private class DownstreamKeyerCutSourceTestDefinition : TestDefinitionBase<DownstreamKeyCutSourceSetCommand, VideoSource>
         {
             protected readonly IBMDSwitcherDownstreamKey _sdk;
             protected readonly DownstreamKeyId _keyId;
@@ -95,7 +95,7 @@ namespace LibAtem.ComparisonTests2
                 GetKeyers().ForEach(k => new DownstreamKeyerCutSourceTestDefinition(helper, k).Run());
         }
 
-        private class DownstreamKeyerFillSourceTestDefinition : TestDefinitionBase2<DownstreamKeyFillSourceSetCommand, VideoSource>
+        private class DownstreamKeyerFillSourceTestDefinition : TestDefinitionBase<DownstreamKeyFillSourceSetCommand, VideoSource>
         {
             protected readonly IBMDSwitcherDownstreamKey _sdk;
             protected readonly DownstreamKeyId _keyId;
@@ -151,7 +151,7 @@ namespace LibAtem.ComparisonTests2
                 GetKeyers().ForEach(k => new DownstreamKeyerFillSourceTestDefinition(helper, k).Run());
         }
 
-        private abstract class DownstreamKeyerTestDefinition<T> : TestDefinitionBase2<DownstreamKeyGeneralSetCommand, T>
+        private abstract class DownstreamKeyerTestDefinition<T> : TestDefinitionBase<DownstreamKeyGeneralSetCommand, T>
         {
             protected readonly IBMDSwitcherDownstreamKey _sdk;
             protected readonly DownstreamKeyId _keyId;
@@ -180,7 +180,7 @@ namespace LibAtem.ComparisonTests2
             }
         }
 
-        private class DownstreamKeyerTieTestDefinition : TestDefinitionBase2<DownstreamKeyTieSetCommand, bool>
+        private class DownstreamKeyerTieTestDefinition : TestDefinitionBase<DownstreamKeyTieSetCommand, bool>
         {
             protected readonly IBMDSwitcherDownstreamKey _sdk;
             protected readonly DownstreamKeyId _keyId;
@@ -230,7 +230,7 @@ namespace LibAtem.ComparisonTests2
                 GetKeyers().ForEach(k => new DownstreamKeyerTieTestDefinition(helper, k).Run());
         }
 
-        private class DownstreamKeyerRateTestDefinition : TestDefinitionBase2<DownstreamKeyRateSetCommand, uint>
+        private class DownstreamKeyerRateTestDefinition : TestDefinitionBase<DownstreamKeyRateSetCommand, uint>
         {
             protected readonly IBMDSwitcherDownstreamKey _sdk;
             protected readonly DownstreamKeyId _keyId;
@@ -277,7 +277,7 @@ namespace LibAtem.ComparisonTests2
                 GetKeyers().ForEach(k => new DownstreamKeyerRateTestDefinition(helper, k).Run());
         }
 
-        private class DownstreamKeyerOnAirTestDefinition : TestDefinitionBase2<DownstreamKeyOnAirSetCommand, bool>
+        private class DownstreamKeyerOnAirTestDefinition : TestDefinitionBase<DownstreamKeyOnAirSetCommand, bool>
         {
             protected readonly IBMDSwitcherDownstreamKey _sdk;
             protected readonly DownstreamKeyId _keyId;
@@ -475,7 +475,7 @@ namespace LibAtem.ComparisonTests2
                 GetKeyers().ForEach(k => new DownstreamKeyerInverseTestDefinition(helper, k).Run());
         }
 
-        private abstract class DownstreamKeyerMaskTestDefinition<T> : TestDefinitionBase2<DownstreamKeyMaskSetCommand, T>
+        private abstract class DownstreamKeyerMaskTestDefinition<T> : TestDefinitionBase<DownstreamKeyMaskSetCommand, T>
         {
             protected readonly IBMDSwitcherDownstreamKey _sdk;
             protected readonly DownstreamKeyId _keyId;

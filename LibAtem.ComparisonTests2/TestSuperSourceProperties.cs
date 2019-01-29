@@ -44,7 +44,7 @@ namespace LibAtem.ComparisonTests2
             }
         }
 
-        private abstract class SuperSourceTestDefinition<T> : TestDefinitionBase2<SuperSourcePropertiesSetCommand, T>
+        private abstract class SuperSourceTestDefinition<T> : TestDefinitionBase<SuperSourcePropertiesSetCommand, T>
         {
             protected readonly IBMDSwitcherInputSuperSource _sdk;
 

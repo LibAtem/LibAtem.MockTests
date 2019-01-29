@@ -35,7 +35,7 @@ namespace LibAtem.ComparisonTests2.Audio
             }
         }
 
-        private class AudioMixerTalkbackMuteSDITestDefinition : TestDefinitionBase2<AudioMixerTalkbackPropertiesSetCommand, bool>
+        private class AudioMixerTalkbackMuteSDITestDefinition : TestDefinitionBase<AudioMixerTalkbackPropertiesSetCommand, bool>
         {
             private readonly IBMDSwitcherTalkback _sdk;
 

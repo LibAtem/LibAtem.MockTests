@@ -61,7 +61,7 @@ namespace LibAtem.ComparisonTests2.Settings
             }
         }
 
-        private abstract class MultiviewTestDefinition<T> : TestDefinitionBase2<MultiviewPropertiesSetCommand, T>
+        private abstract class MultiviewTestDefinition<T> : TestDefinitionBase<MultiviewPropertiesSetCommand, T>
         {
             protected readonly uint _id;
             protected readonly IBMDSwitcherMultiView _sdk;
@@ -191,7 +191,7 @@ namespace LibAtem.ComparisonTests2.Settings
                 GetMultiviewers().ForEach(k => new MultiviewToggleSafeAreaTestDefinition(helper, k).Run());
         }
 
-        private class MultiviewUnroutableWindowSourcesTestDefinition : TestDefinitionBase2<MultiviewWindowInputSetCommand, VideoSource>
+        private class MultiviewUnroutableWindowSourcesTestDefinition : TestDefinitionBase<MultiviewWindowInputSetCommand, VideoSource>
         {
             private readonly uint _id;
             private readonly uint _window;
@@ -239,7 +239,7 @@ namespace LibAtem.ComparisonTests2.Settings
             }
         }
 
-        private class MultiviewPvwPgmSetVuMeterTestDefinition : TestDefinitionBase2<MultiviewWindowVuMeterSetCommand, bool>
+        private class MultiviewPvwPgmSetVuMeterTestDefinition : TestDefinitionBase<MultiviewWindowVuMeterSetCommand, bool>
         {
             private readonly uint _id;
             private readonly uint _window;
@@ -279,7 +279,7 @@ namespace LibAtem.ComparisonTests2.Settings
                 yield break;
             }
         }
-        private class MultiviewRoutableWindowSourcesTestDefinition : TestDefinitionBase2<MultiviewWindowInputSetCommand, VideoSource>
+        private class MultiviewRoutableWindowSourcesTestDefinition : TestDefinitionBase<MultiviewWindowInputSetCommand, VideoSource>
         {
             private readonly uint _id;
             private readonly uint _window;
@@ -338,7 +338,7 @@ namespace LibAtem.ComparisonTests2.Settings
                     yield return new CommandQueueKey(new MultiviewWindowInputGetCommand() { MultiviewIndex = _id, WindowIndex = _window });
             }
         }
-        private class MultiviewRoutableWindowVuMeterTestDefinition : TestDefinitionBase2<MultiviewWindowVuMeterSetCommand, bool>
+        private class MultiviewRoutableWindowVuMeterTestDefinition : TestDefinitionBase<MultiviewWindowVuMeterSetCommand, bool>
         {
             private readonly uint _id;
             private readonly uint _window;
@@ -441,7 +441,7 @@ namespace LibAtem.ComparisonTests2.Settings
             }
         }
 
-        private class MultiviewVuOpacityTestDefinition : TestDefinitionBase2<MultiviewVuOpacityCommand, double>
+        private class MultiviewVuOpacityTestDefinition : TestDefinitionBase<MultiviewVuOpacityCommand, double>
         {
             private readonly uint _id;
             private readonly IBMDSwitcherMultiView _sdk;

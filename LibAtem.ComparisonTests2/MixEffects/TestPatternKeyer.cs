@@ -19,7 +19,7 @@ namespace LibAtem.ComparisonTests2.MixEffects
         {
         }
 
-        private abstract class PatternKeyerTestDefinition<T> : TestDefinitionBase2<MixEffectKeyPatternSetCommand, T>
+        private abstract class PatternKeyerTestDefinition<T> : TestDefinitionBase<MixEffectKeyPatternSetCommand, T>
         {
             protected readonly MixEffectBlockId _meId;
             protected readonly UpstreamKeyId _keyId;

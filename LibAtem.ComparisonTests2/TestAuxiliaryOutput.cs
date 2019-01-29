@@ -36,7 +36,7 @@ namespace LibAtem.ComparisonTests2
             }
         }
 
-        private class AuxSourceTestDefinition : TestDefinitionBase2<AuxSourceSetCommand, VideoSource>
+        private class AuxSourceTestDefinition : TestDefinitionBase<AuxSourceSetCommand, VideoSource>
         {
             private readonly IBMDSwitcherInputAux _sdk;
             private readonly AuxiliaryId _auxId;

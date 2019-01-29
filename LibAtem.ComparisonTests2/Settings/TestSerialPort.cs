@@ -49,7 +49,7 @@ namespace LibAtem.ComparisonTests2.Settings
             }
         }
 
-        private class SerialPortFunctionTestDefinition : TestDefinitionBase2<SerialPortModeCommand, SerialMode>
+        private class SerialPortFunctionTestDefinition : TestDefinitionBase<SerialPortModeCommand, SerialMode>
         {
             private readonly IBMDSwitcherSerialPort _sdk;
 

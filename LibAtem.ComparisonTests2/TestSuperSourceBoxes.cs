@@ -52,7 +52,7 @@ namespace LibAtem.ComparisonTests2
             }
         }
 
-        private abstract class SuperSourceBoxTestDefinition<T> : TestDefinitionBase2<SuperSourceBoxSetCommand, T>
+        private abstract class SuperSourceBoxTestDefinition<T> : TestDefinitionBase<SuperSourceBoxSetCommand, T>
         {
             protected readonly SuperSourceBoxId _id;
             protected readonly IBMDSwitcherSuperSourceBox _sdk;

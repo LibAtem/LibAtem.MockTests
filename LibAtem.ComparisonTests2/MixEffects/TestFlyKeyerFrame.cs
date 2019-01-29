@@ -33,7 +33,7 @@ namespace LibAtem.ComparisonTests2.MixEffects
             return res;
         }
 
-        private abstract class FlyKeyFrameTestDefinition<T> : TestDefinitionBase2<MixEffectKeyFlyKeyframeSetCommand, T>
+        private abstract class FlyKeyFrameTestDefinition<T> : TestDefinitionBase<MixEffectKeyFlyKeyframeSetCommand, T>
         {
             private readonly MixEffectBlockId _meId;
             private readonly UpstreamKeyId _keyId;

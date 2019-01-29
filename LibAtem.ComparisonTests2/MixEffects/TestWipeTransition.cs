@@ -21,7 +21,7 @@ namespace LibAtem.ComparisonTests2.MixEffects
         {
         }
 
-        private abstract class WipeTransitionTestDefinition<T> : TestDefinitionBase2<TransitionWipeSetCommand, T>
+        private abstract class WipeTransitionTestDefinition<T> : TestDefinitionBase<TransitionWipeSetCommand, T>
         {
             protected readonly MixEffectBlockId _id;
             protected readonly IBMDSwitcherTransitionWipeParameters _sdk;

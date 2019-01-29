@@ -10,16 +10,16 @@ using LibAtem.Util;
 
 namespace LibAtem.ComparisonTests2.Util
 {
-    internal abstract class TestDefinitionBase2<Tc, T> where Tc : ICommand, new()
+    internal abstract class TestDefinitionBase<Tc, T> where Tc : ICommand, new()
     {
         protected readonly AtemComparisonHelper _helper;
 
-        public TestDefinitionBase2(AtemComparisonHelper helper)
+        public TestDefinitionBase(AtemComparisonHelper helper)
         {
             _helper = helper;
         }
 
-        public static void Run(TestDefinitionBase2<Tc, T> def)
+        public static void Run(TestDefinitionBase<Tc, T> def)
         {
             def.Run();
         }
@@ -29,8 +29,8 @@ namespace LibAtem.ComparisonTests2.Util
             Prepare();
             _helper.Sleep();
 
-            ValueTypeComparer2<Tc, T>.Run(_helper, this);
-            ValueTypeComparer2<Tc, T>.Fail(_helper, this);
+            ValueTypeComparer<Tc, T>.Run(_helper, this);
+            ValueTypeComparer<Tc, T>.Fail(_helper, this);
         }
 
         public abstract void Prepare();
@@ -111,7 +111,7 @@ namespace LibAtem.ComparisonTests2.Util
         public abstract void UpdateExpectedState(ComparisonState state, bool goodValue, T v);
     }
 
-    internal static class ValueTypeComparer2<Tc, T> where Tc : ICommand, new()
+    internal static class ValueTypeComparer<Tc, T> where Tc : ICommand, new()
     {
         private static void LogErrors(AtemComparisonHelper helper, string identifier, T val, ComparisonState origSdk, ComparisonState origLib)
         {
@@ -145,13 +145,13 @@ namespace LibAtem.ComparisonTests2.Util
             }
         }
 
-        public static void Run(AtemComparisonHelper helper, TestDefinitionBase2<Tc, T> definition)
+        public static void Run(AtemComparisonHelper helper, TestDefinitionBase<Tc, T> definition)
         {
             var newVals = definition.GoodValues;
             newVals.ForEach(v => Run(helper, definition, v));
         }
 
-        public static void Run(AtemComparisonHelper helper, TestDefinitionBase2<Tc, T> definition, T newVal)
+        public static void Run(AtemComparisonHelper helper, TestDefinitionBase<Tc, T> definition, T newVal)
         {
             ComparisonState origSdk = helper.SdkState;
             ComparisonState origLib = helper.LibState;
@@ -171,13 +171,13 @@ namespace LibAtem.ComparisonTests2.Util
             }
         }
 
-        public static void Fail(AtemComparisonHelper helper, TestDefinitionBase2<Tc, T> definition)
+        public static void Fail(AtemComparisonHelper helper, TestDefinitionBase<Tc, T> definition)
         {
             var newVals = definition.BadValues;
             newVals.ForEach(v => Fail(helper, definition, v));
         }
 
-        public static void Fail(AtemComparisonHelper helper, TestDefinitionBase2<Tc, T> definition, T newVal)
+        public static void Fail(AtemComparisonHelper helper, TestDefinitionBase<Tc, T> definition, T newVal)
         {
             ComparisonState origSdk = helper.SdkState;
             ComparisonState origLib = helper.LibState;

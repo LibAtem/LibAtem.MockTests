@@ -18,7 +18,7 @@ namespace LibAtem.ComparisonTests2.MixEffects
         {
         }
 
-        private abstract class LumaKeyerTestDefinition<T> : TestDefinitionBase2<MixEffectKeyLumaSetCommand, T>
+        private abstract class LumaKeyerTestDefinition<T> : TestDefinitionBase<MixEffectKeyLumaSetCommand, T>
         {
             private readonly MixEffectBlockId _meId;
             private readonly UpstreamKeyId _keyId;

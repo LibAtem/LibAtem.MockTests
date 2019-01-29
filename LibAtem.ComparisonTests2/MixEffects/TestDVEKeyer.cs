@@ -19,7 +19,7 @@ namespace LibAtem.ComparisonTests2.MixEffects
         {
         }
 
-        private abstract class DVEKeyerTestDefinition<T> : TestDefinitionBase2<MixEffectKeyDVESetCommand, T>
+        private abstract class DVEKeyerTestDefinition<T> : TestDefinitionBase<MixEffectKeyDVESetCommand, T>
         {
             protected readonly MixEffectBlockId _meId;
             protected readonly UpstreamKeyId _keyId;
