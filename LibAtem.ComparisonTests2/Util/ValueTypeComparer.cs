@@ -24,13 +24,22 @@ namespace LibAtem.ComparisonTests2.Util
             def.Run();
         }
 
-        public void Run()
+        public TestDefinitionBase<Tc, T> Run()
         {
             Prepare();
             _helper.Sleep();
 
             ValueTypeComparer<Tc, T>.Run(_helper, this);
             ValueTypeComparer<Tc, T>.Fail(_helper, this);
+            
+            return this;
+        }
+
+        public TestDefinitionBase<Tc, T> RunSingle(T val)
+        {
+            ValueTypeComparer<Tc, T>.Run(_helper, this, val);
+
+            return this;
         }
 
         public abstract void Prepare();
