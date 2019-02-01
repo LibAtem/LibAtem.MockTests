@@ -27,7 +27,7 @@ namespace LibAtem.ComparisonTests2.State.SDK
             {
                 case _BMDSwitcherAudioInputEventType.bmdSwitcherAudioInputEventTypeCurrentExternalPortTypeChanged:
                     _props.GetCurrentExternalPortType(out _BMDSwitcherExternalPortType type);
-                    _state.ExternalPortType = AtemEnumMaps.ExternalPortTypeMap.FindByValue(type);
+                    _state.ExternalPortType = (ExternalPortTypeFlags)type;
                     _onChange(new CommandQueueKey(new AudioMixerInputGetCommand() { Index = _id }));
                     break;
                 case _BMDSwitcherAudioInputEventType.bmdSwitcherAudioInputEventTypeMixOptionChanged:

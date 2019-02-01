@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using LibAtem.Commands;
 using LibAtem.Commands.Audio;
 using LibAtem.Commands.DeviceProfile;
@@ -676,7 +677,7 @@ namespace LibAtem.ComparisonTests2.State
             if (!state.Audio.Inputs.TryGetValue((long)cmd.Index, out props))
                 props = state.Audio.Inputs[(long)cmd.Index] = new ComparisonAudioInputState();
             
-            props.ExternalPortType = cmd.PortType;
+            props.ExternalPortType = cmd.PortType.ToExternalPortType();
             props.Gain = cmd.Gain;
             props.Balance = cmd.Balance;
             props.MixOption = cmd.MixOption;

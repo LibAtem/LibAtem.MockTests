@@ -52,7 +52,7 @@ namespace LibAtem.ComparisonTests2.State.SDK
                     break;
                 case _BMDSwitcherInputEventType.bmdSwitcherInputEventTypeCurrentExternalPortTypeChanged:
                     _props.GetCurrentExternalPortType(out _BMDSwitcherExternalPortType value);
-                    _state.CurrentExternalPortType = AtemEnumMaps.ExternalPortTypeMap.FindFlagsByValue(value);
+                    _state.CurrentExternalPortType = (ExternalPortTypeFlags)value;
                     break;
                 default:
                     throw new ArgumentOutOfRangeException(nameof(eventType), eventType, null);

@@ -169,7 +169,7 @@ namespace LibAtem.ComparisonTests2.State
         public bool ProgramTally { get; set; }
         public bool PreviewTally { get; set; }
         public ExternalPortTypeFlags AvailableExternalPortTypes { get; set; }
-        public ExternalPortType CurrentExternalPortType { get; set; }
+        public ExternalPortTypeFlags CurrentExternalPortType { get; set; }
     }
 
     [Serializable]
@@ -323,7 +323,7 @@ namespace LibAtem.ComparisonTests2.State
     [Serializable]
     public class ComparisonAudioInputState
     {
-        public ExternalPortType ExternalPortType { get; set; }
+        public ExternalPortTypeFlags ExternalPortType { get; set; }
         public AudioMixOption MixOption { get; set; }
         [DecibelTolerance(5)]
         public double Gain { get; set; }
