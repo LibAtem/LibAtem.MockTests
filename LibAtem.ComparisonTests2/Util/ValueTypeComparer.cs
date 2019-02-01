@@ -233,5 +233,19 @@ namespace LibAtem.ComparisonTests2.Util
             _act(false);
         }
     }
+    internal sealed class IgnoreStateNodeEnabler : IDisposable
+    {
+        private readonly string _name;
+        public IgnoreStateNodeEnabler(string name)
+        {
+            _name = name;
+            ComparisonStateSettings.IgnoreNodes.Add(name);
+        }
+
+        public void Dispose()
+        {
+            ComparisonStateSettings.IgnoreNodes.Remove(_name);
+        }
+    }
 
 }

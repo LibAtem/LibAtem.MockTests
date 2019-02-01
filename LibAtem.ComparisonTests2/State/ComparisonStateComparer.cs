@@ -11,11 +11,13 @@ namespace LibAtem.ComparisonTests2.State
     {
         public static List<string> AreEqual(ComparisonState state1, ComparisonState state2)
         {
-            return CompareObject("", state1, state2).ToList();
+            IReadOnlyList<string> ignoreNodes = ComparisonStateSettings.IgnoreNodes.ToList();
+            return CompareObject("", ignoreNodes, state1, state2).ToList();
         }
         public static bool AreEqual(ITestOutputHelper output, ComparisonState state1, ComparisonState state2)
         {
-            List<string> res = CompareObject("", state1, state2).ToList();
+            IReadOnlyList<string> ignoreNodes = ComparisonStateSettings.IgnoreNodes.ToList();
+            List<string> res = CompareObject("", ignoreNodes, state1, state2).ToList();
 
             foreach (string r in res)
                 output.WriteLine(r);
@@ -23,7 +25,7 @@ namespace LibAtem.ComparisonTests2.State
             return res.Count == 0;
         }
 
-        private static IEnumerable<string> CompareObject( string name, object state1, object state2)
+        private static IEnumerable<string> CompareObject(string name, IReadOnlyList<string> ignoreNodes, object state1, object state2)
         {
             if (state1 == null || state2 == null)
             {
@@ -36,6 +38,9 @@ namespace LibAtem.ComparisonTests2.State
 
             foreach (PropertyInfo prop in state1.GetType().GetProperties())
             {
+                if (ignoreNodes.Contains(name + prop.Name))
+                    continue;
+
                 object newVal = prop.GetValue(state2);
                 if (newVal == null)
                     continue;
@@ -114,7 +119,7 @@ namespace LibAtem.ComparisonTests2.State
 
                         string newInnerName = name + prop.Name + "." + newInner.Key + ".";
 
-                        IEnumerable<string> res = CompareObject(newInnerName, oldInner, newInner.Value);
+                        IEnumerable<string> res = CompareObject(newInnerName, ignoreNodes, oldInner, newInner.Value);
                         foreach (string r in res)
                             yield return r;
                     }
@@ -127,7 +132,7 @@ namespace LibAtem.ComparisonTests2.State
                     string newName = name + prop.Name + ".";
                     for (int i=0; i < newList.Count; i++)
                     {
-                        IEnumerable<string> res = CompareObject(newName, oldList[i], newList[i]);
+                        IEnumerable<string> res = CompareObject(newName, ignoreNodes, oldList[i], newList[i]);
                         foreach (string r in res)
                             yield return r;
                     }
@@ -135,7 +140,7 @@ namespace LibAtem.ComparisonTests2.State
                 else
                 {
                     string newName = name + prop.Name + ".";
-                    IEnumerable<string> res = CompareObject(newName, oldVal, newVal);
+                    IEnumerable<string> res = CompareObject(newName, ignoreNodes, oldVal, newVal);
                     foreach (string r in res)
                         yield return r;
                 }

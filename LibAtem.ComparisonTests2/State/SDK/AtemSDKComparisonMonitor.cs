@@ -40,7 +40,7 @@ namespace LibAtem.ComparisonTests2.State.SDK
             SetupMacroPool(switcher);
             SetupAudio(switcher);
 
-            var cb = new SwitcherPropertiesCallback(State, switcher);
+            var cb = new SwitcherPropertiesCallback(State, switcher, FireCommandKey);
             switcher.AddCallback(cb);
             _cleanupCallbacks.Add(() => switcher.RemoveCallback(cb));
             TriggerAllChanged(cb);
