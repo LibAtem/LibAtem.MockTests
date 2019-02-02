@@ -69,7 +69,7 @@ namespace LibAtem.ComparisonTests2.State.SDK
         {
             var mixer = switcher as IBMDSwitcherAudioMixer;
 
-            var cb = new AudioMixerCallback(State.Audio, mixer, FireCommandKey);
+            var cb = new AudioMixerCallback(State.Audio.ProgramOut, mixer, FireCommandKey);
             mixer.AddCallback(cb);
             _cleanupCallbacks.Add(() => mixer.RemoveCallback(cb));
             TriggerAllChanged(cb);

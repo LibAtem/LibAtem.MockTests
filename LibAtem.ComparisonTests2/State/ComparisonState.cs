@@ -277,25 +277,31 @@ namespace LibAtem.ComparisonTests2.State
     [Serializable]
     public class ComparisonAudioState
     {
-        [DecibelTolerance(5)]
-        public double ProgramOutGain { get; set; }
-        [Tolerance(0.01)]
-        public double ProgramOutBalance { get; set; }
-        public bool ProgramOutFollowFadeToBlack { get; set; }
+        public ComparisonAudioProgramOutState ProgramOut { get; set; } = new ComparisonAudioProgramOutState();
 
         public ComparisonTalkbackState Talkback { get; set; } = new ComparisonTalkbackState();
 
-        [DecibelTolerance(5)]
-        public double ProgramLeft { get; set; } = double.NegativeInfinity;
-        [DecibelTolerance(5)]
-        public double ProgramRight { get; set; } = double.NegativeInfinity;
-        [DecibelTolerance(5)]
-        public double ProgramPeakLeft { get; set; } = double.NegativeInfinity;
-        [DecibelTolerance(5)]
-        public double ProgramPeakRight { get; set; } = double.NegativeInfinity;
-
         public Dictionary<long, ComparisonAudioInputState> Inputs { get; set; } = new Dictionary<long, ComparisonAudioInputState>();
         public Dictionary<uint, ComparisonAudioMonitorOutputState> Monitors { get; set; } = new Dictionary<uint, ComparisonAudioMonitorOutputState>();
+    }
+
+    [Serializable]
+    public class ComparisonAudioProgramOutState
+    {
+        [DecibelTolerance(5)]
+        public double Gain { get; set; }
+        [Tolerance(0.01)]
+        public double Balance { get; set; }
+        public bool FollowFadeToBlack { get; set; }
+
+        [DecibelTolerance(5)]
+        public double LevelLeft { get; set; } = double.NegativeInfinity;
+        [DecibelTolerance(5)]
+        public double LevelRight { get; set; } = double.NegativeInfinity;
+        [DecibelTolerance(5)]
+        public double PeakLeft { get; set; } = double.NegativeInfinity;
+        [DecibelTolerance(5)]
+        public double PeakRight { get; set; } = double.NegativeInfinity;
     }
 
     [Serializable]

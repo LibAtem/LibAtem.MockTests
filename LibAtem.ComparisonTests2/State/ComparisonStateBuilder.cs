@@ -664,10 +664,10 @@ namespace LibAtem.ComparisonTests2.State
         {
             var cmd = (AudioMixerMasterGetCommand)rawCmd;
 
-            var props = state.Audio;
-            props.ProgramOutFollowFadeToBlack = cmd.ProgramOutFollowFadeToBlack;
-            props.ProgramOutGain = cmd.Gain;
-            props.ProgramOutBalance = cmd.Balance;
+            var props = state.Audio.ProgramOut;
+            props.FollowFadeToBlack = cmd.ProgramOutFollowFadeToBlack;
+            props.Gain = cmd.Gain;
+            props.Balance = cmd.Balance;
         }
         private static void UpdateAudioMixerInputState(LibAtem.DeviceProfile.DeviceProfile profile, ComparisonState state, ICommand rawCmd)
         {
@@ -721,17 +721,17 @@ namespace LibAtem.ComparisonTests2.State
         {
             var cmd = (AudioMixerLevelsCommand)rawCmd;
 
-            var props = state.Audio;
-            props.ProgramLeft = cmd.MasterLeftLevel;
-            props.ProgramRight = cmd.MasterRightLevel;
-            props.ProgramPeakLeft = cmd.MasterLeftPeak;
-            props.ProgramPeakRight = cmd.MasterRightPeak;
+            var props = state.Audio.ProgramOut;
+            props.LevelLeft = cmd.MasterLeftLevel;
+            props.LevelRight = cmd.MasterRightLevel;
+            props.PeakLeft = cmd.MasterLeftPeak;
+            props.PeakRight = cmd.MasterRightPeak;
 
             // TODO more
             foreach (AudioMixerLevelInput inp in cmd.Inputs)
             {
-                if (!props.Inputs.TryGetValue((long)inp.Source, out ComparisonAudioInputState inProps))
-                    inProps = props.Inputs[(long)inp.Source];
+                if (!state.Audio.Inputs.TryGetValue((long)inp.Source, out ComparisonAudioInputState inProps))
+                    inProps = state.Audio.Inputs[(long)inp.Source];
 
                 inProps.LevelLeft = inp.LeftLevel;
                 inProps.LevelRight = inp.RightLevel;

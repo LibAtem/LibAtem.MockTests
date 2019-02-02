@@ -4,7 +4,6 @@ using System.Linq;
 using BMDSwitcherAPI;
 using LibAtem.Commands;
 using LibAtem.Commands.DownstreamKey;
-using LibAtem.Commands.MixEffects;
 using LibAtem.Commands.MixEffects.Transition;
 using LibAtem.Commands.Settings;
 using LibAtem.Common;
