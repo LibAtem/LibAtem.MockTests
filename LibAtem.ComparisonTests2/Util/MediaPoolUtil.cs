@@ -94,6 +94,8 @@ namespace LibAtem.ComparisonTests2.Util
             {
                 _helper = helper;
 
+                Skip.If(helper.Profile.MediaPoolClips == 0, "Profile does not have clip playback");
+
                 VideoModeResolution res = helper.SdkState.Settings.VideoMode.GetResolution();
                 byte[] frame = SolidColour(res, r, g, b, a);
                 byte[][] frames = Enumerable.Repeat(frame, (int)frameCount).ToArray();

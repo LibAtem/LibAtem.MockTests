@@ -127,7 +127,7 @@ namespace LibAtem.ComparisonTests2.State
         public MediaPlayerSource SourceType { get; set; }
         public uint SourceIndex { get; set; }
         public bool IsPlaying { get; set; }
-        public bool IsLooped { get; set; }
+        public bool Loop { get; set; }
         public bool AtBeginning { get; set; }
         public uint ClipFrame { get; set; }
     }

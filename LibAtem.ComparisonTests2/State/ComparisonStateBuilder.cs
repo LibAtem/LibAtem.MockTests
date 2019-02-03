@@ -573,7 +573,7 @@ namespace LibAtem.ComparisonTests2.State
             ComparisonMediaPlayerState props = state.MediaPlayers[cmd.Index];
 
             props.IsPlaying = cmd.Playing;
-            props.IsLooped = cmd.Loop;
+            props.Loop = cmd.Loop;
 
             if (!ComparisonStateSettings.TrackMediaClipFrames)
                 return;

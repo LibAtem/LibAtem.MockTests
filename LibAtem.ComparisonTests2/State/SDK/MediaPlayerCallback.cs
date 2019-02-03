@@ -48,7 +48,7 @@ namespace LibAtem.ComparisonTests2.State.SDK
         public void LoopChanged()
         {
             _props.GetLoop(out int loop);
-            _state.IsLooped = loop != 0;
+            _state.Loop = loop != 0;
             _onChange(new CommandQueueKey(new MediaPlayerClipStatusGetCommand() { Index = _id }));
         }
 
