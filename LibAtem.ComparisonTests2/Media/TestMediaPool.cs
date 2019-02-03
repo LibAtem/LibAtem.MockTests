@@ -4,16 +4,19 @@ using System.Diagnostics;
 using System.Runtime.InteropServices;
 using System.Threading;
 using BMDSwitcherAPI;
+using LibAtem.Commands;
+using LibAtem.Commands.DataTransfer;
 using LibAtem.Commands.Media;
 using LibAtem.Common;
-using LibAtem.ComparisonTests.Util;
+using LibAtem.ComparisonTests2.Util;
+using LibAtem.Net;
 using LibAtem.Net.DataTransfer;
 using LibAtem.Util.Media;
 using NAudio.Wave;
 using Xunit;
 using Xunit.Abstractions;
 
-namespace LibAtem.ComparisonTests.Media
+namespace LibAtem.ComparisonTests2.Media
 {
     [Collection("Client")]
     public class TestMediaPool
@@ -40,11 +43,11 @@ namespace LibAtem.ComparisonTests.Media
 
                 var sw = Stopwatch.StartNew();
                 byte[] rawData = MediaPoolUtil.EnsureStillExists(_client, VideoModeResolution._1080, stillIndex);
-                _output.WriteLine("Elapsed={0}", sw.ElapsedMilliseconds);
+                _output.WriteLine("Elapsed1={0}", sw.ElapsedMilliseconds);
 
                 sw.Restart();
                 IBMDSwitcherFrame frame = DownloadStillSDK(stillIndex);
-                _output.WriteLine("Elapsed={0}", sw.ElapsedMilliseconds);
+                _output.WriteLine("Elapsed2={0}", sw.ElapsedMilliseconds);
                 Assert.NotNull(frame);
 
                 int bytes = frame.GetRowBytes() * frame.GetHeight();
@@ -54,17 +57,23 @@ namespace LibAtem.ComparisonTests.Media
 
                 sw.Restart();
                 AtemFrame libYuv = DownloadStillLib(stillIndex, VideoModeResolution._1080);
-                _output.WriteLine("Elapsed={0}", sw.ElapsedMilliseconds);
+                _output.WriteLine("Elapsed3={0}", sw.ElapsedMilliseconds);
 
                 // Ensure downloads match
-                Assert.Equal(sdkYuv.Length, libYuv.GetYCbCrData().Length);
-                Assert.Equal(sdkYuv, libYuv.GetYCbCrData());
+                sw.Restart();
+                byte[] libData = libYuv.GetYCbCrData();
+                Assert.Equal(sdkYuv.Length, libData.Length);
+                Assert.Equal(sdkYuv, libData);
+                _output.WriteLine("Elapsed4={0}", sw.ElapsedMilliseconds);
 
                 // Ensure matches upload
+                sw.Restart();
                 Assert.Equal(sdkYuv.Length, rawData.Length);
                 Assert.Equal(sdkYuv, rawData);
+                _output.WriteLine("Elapsed5={0}", sw.ElapsedMilliseconds);
 
                 // Ensure frame hash matches
+                sw.Restart();
                 var pool = _client.SdkSwitcher as IBMDSwitcherMediaPool;
                 Assert.NotNull(pool);
 
@@ -73,9 +82,10 @@ namespace LibAtem.ComparisonTests.Media
 
                 stills.GetHash(stillIndex, out BMDSwitcherHash hash);
                 Assert.Equal(hash.data, libYuv.GetHash());
+                _output.WriteLine("Elapsed6={0}", sw.ElapsedMilliseconds);
             }
         }
-        
+
         [Fact]
         public void TestStillUploadSD()
         {
@@ -87,7 +97,7 @@ namespace LibAtem.ComparisonTests.Media
                 string name = Guid.NewGuid().ToString();
                 byte[] b = MediaPoolUtil.RandomFrame(VideoModeResolution.PAL);
                 var frame = AtemFrame.FromYCbCr(name, b);
-                
+
                 AutoResetEvent evt = new AutoResetEvent(false);
                 bool success = false;
                 _client.Client.DataTransfer.QueueJob(new UploadMediaStillJob(stillIndex, frame, res =>
@@ -202,7 +212,6 @@ namespace LibAtem.ComparisonTests.Media
 
         #endregion Still Transfer
 
-
         [Fact]
         public void TestClipUploadHD()
         {
@@ -218,7 +227,7 @@ namespace LibAtem.ComparisonTests.Media
                 List<AtemFrame> frames = new List<AtemFrame>();
                 for (int i = 0; i < frameCount; i++)
                 {
-                    byte col = (byte) (i * 255 / frameCount);
+                    byte col = (byte)(i * 255 / frameCount);
                     byte[] b = MediaPoolUtil.SolidColour(VideoModeResolution._1080, col, col, col, 255);
                     frames.Add(AtemFrame.FromRGBA("", b, ColourSpace.BT709));
                 }
@@ -256,7 +265,6 @@ namespace LibAtem.ComparisonTests.Media
             }
         }
 
-
         [Fact]
         public void TestAudioUpload()
         {
@@ -281,7 +289,7 @@ namespace LibAtem.ComparisonTests.Media
 
                 timer.Restart();
                 byte[] buffer2 = new byte[buffer.Length];
-                for (int i = 0; i < buffer.Length; i+=3)
+                for (int i = 0; i < buffer.Length; i += 3)
                 {
                     // 24bit samples, change endian
                     buffer2[i] = buffer[i + 2];
@@ -330,7 +338,7 @@ namespace LibAtem.ComparisonTests.Media
                 helper.Sleep();
 
                 Assert.True(helper.LibState.MediaPool.Stills[stillIndex].IsUsed);
-                helper.SendCommand(new MediaPoolClearStillCommand{Index = stillIndex });
+                helper.SendCommand(new MediaPoolClearStillCommand { Index = stillIndex });
                 helper.Sleep();
 
                 Assert.False(helper.LibState.MediaPool.Stills[stillIndex].IsUsed);

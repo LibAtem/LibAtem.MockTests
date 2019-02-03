@@ -179,6 +179,7 @@ namespace LibAtem.ComparisonTests2.Util
                     Mask = MediaPlayerClipStatusSetCommand.MaskFlags.Playing,
                     Playing = false
                 });
+                _helper.Sleep();
             }
         }
 

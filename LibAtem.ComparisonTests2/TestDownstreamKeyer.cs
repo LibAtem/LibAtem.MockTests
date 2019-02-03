@@ -334,57 +334,72 @@ namespace LibAtem.ComparisonTests2
             {
                 foreach (var key in GetKeyers())
                 {
-                    key.Item2.SetRate(30);
-                    key.Item2.SetOnAir(0);
-                    key.Item2.SetTie(0);
-                    key.Item2.SetInputFill((long)VideoSource.MediaPlayer1);
+                    try
+                    {
+                        key.Item2.SetRate(30);
+                        key.Item2.SetOnAir(0);
+                        key.Item2.SetTie(0);
+                        key.Item2.SetInputFill((long)VideoSource.MediaPlayer1);
 
-                    helper.Sleep(500);
+                        helper.Sleep(500);
 
-                    ComparisonState beforeState = helper.LibState;
-                    Assert.True(ComparisonStateComparer.AreEqual(helper.Output, helper.SdkState, beforeState));
+                        ComparisonState beforeState = helper.LibState;
+                        Assert.True(ComparisonStateComparer.AreEqual(helper.Output, helper.SdkState, beforeState));
 
-                    var props = beforeState.DownstreamKeyers[key.Item1];
-                    bool origOnAir = props.OnAir;
-                    Assert.False(props.InTransition);
-                    Assert.False(props.IsAuto);
-                    Assert.Equal((uint) 30, props.RemainingFrames);
+                        var props = beforeState.DownstreamKeyers[key.Item1];
+                        bool origOnAir = props.OnAir;
+                        Assert.False(props.InTransition);
+                        Assert.False(props.IsAuto);
+                        Assert.Equal((uint)30, props.RemainingFrames);
 
-                    helper.SendCommand(new DownstreamKeyAutoCommand {Index = key.Item1});
-                    helper.Sleep(500);
+                        helper.SendCommand(new DownstreamKeyAutoCommand { Index = key.Item1 });
+                        helper.Sleep(500);
 
-                    // Get states, they will change still during this test
-                    ComparisonState libState = helper.LibState;
-                    ComparisonState sdkState = helper.SdkState;
-                    props = libState.DownstreamKeyers[key.Item1];
-                    Assert.True(props.RemainingFrames > 0 && props.RemainingFrames < 30);
+                        // Get states, they will change still during this test
+                        ComparisonState libState = helper.LibState;
+                        ComparisonState sdkState = helper.SdkState;
+                        props = libState.DownstreamKeyers[key.Item1];
+                        Assert.True(props.RemainingFrames > 0 && props.RemainingFrames < 30);
 
-                    // Update expected
-                    props = beforeState.DownstreamKeyers[key.Item1];
-                    props.RemainingFrames = libState.DownstreamKeyers[key.Item1].RemainingFrames;
-                    props.IsAuto = true;
-                    props.InTransition = true;
-                    props.OnAir = true;
-                    beforeState.Inputs[VideoSource.MediaPlayer1].ProgramTally = true;
-                    beforeState.Inputs[VideoSource.MediaPlayer1Key].ProgramTally = true;
+                        // Update expected
+                        props = beforeState.DownstreamKeyers[key.Item1];
+                        props.RemainingFrames = libState.DownstreamKeyers[key.Item1].RemainingFrames;
+                        props.IsAuto = true;
+                        props.InTransition = true;
+                        props.OnAir = true;
+                        beforeState.Inputs[VideoSource.MediaPlayer1].ProgramTally = true;
+                        beforeState.Inputs[VideoSource.MediaPlayer1Key].ProgramTally = true;
 
-                    // Ensure remaining is correct within a frame
-                    Assert.True(Math.Abs(beforeState.DownstreamKeyers[key.Item1].RemainingFrames - libState.DownstreamKeyers[key.Item1].RemainingFrames) <= 1);
-                    Assert.True(Math.Abs(beforeState.DownstreamKeyers[key.Item1].RemainingFrames - sdkState.DownstreamKeyers[key.Item1].RemainingFrames) <= 1);
-                    libState.DownstreamKeyers[key.Item1].RemainingFrames = sdkState.DownstreamKeyers[key.Item1].RemainingFrames = beforeState.DownstreamKeyers[key.Item1].RemainingFrames;
+                        // Ensure remaining is correct within a frame
+                        Assert.True(Math.Abs(beforeState.DownstreamKeyers[key.Item1].RemainingFrames - libState.DownstreamKeyers[key.Item1].RemainingFrames) <= 1);
+                        Assert.True(Math.Abs(beforeState.DownstreamKeyers[key.Item1].RemainingFrames - sdkState.DownstreamKeyers[key.Item1].RemainingFrames) <= 1);
+                        libState.DownstreamKeyers[key.Item1].RemainingFrames = sdkState.DownstreamKeyers[key.Item1].RemainingFrames = beforeState.DownstreamKeyers[key.Item1].RemainingFrames;
 
-                    Assert.True(ComparisonStateComparer.AreEqual(helper.Output, beforeState, sdkState));
-                    Assert.True(ComparisonStateComparer.AreEqual(helper.Output, beforeState, libState));
+                        Assert.True(ComparisonStateComparer.AreEqual(helper.Output, beforeState, sdkState));
+                        Assert.True(ComparisonStateComparer.AreEqual(helper.Output, beforeState, libState));
 
-                    helper.Sleep(1000);
-                    // back to normal
-                    props = beforeState.DownstreamKeyers[key.Item1];
-                    props.RemainingFrames = 30;
-                    props.IsAuto = false;
-                    props.InTransition = false;
-                    props.OnAir = !origOnAir;
-                    Assert.True(ComparisonStateComparer.AreEqual(helper.Output, beforeState, helper.SdkState));
-                    Assert.True(ComparisonStateComparer.AreEqual(helper.Output, beforeState, helper.LibState));
+                        helper.Sleep(1000);
+                        // back to normal
+                        props = beforeState.DownstreamKeyers[key.Item1];
+                        props.RemainingFrames = 30;
+                        props.IsAuto = false;
+                        props.InTransition = false;
+                        props.OnAir = !origOnAir;
+                        Assert.True(ComparisonStateComparer.AreEqual(helper.Output, beforeState, helper.SdkState));
+                        Assert.True(ComparisonStateComparer.AreEqual(helper.Output, beforeState, helper.LibState));
+
+                    }
+                    finally
+                    {
+                        // Sleep until transition has definitely ended
+                        var props = helper.LibState.DownstreamKeyers[key.Item1];
+
+                        int sleepDuration = 90;
+                        if (props.InTransition)
+                            sleepDuration += (int)(40 * props.RemainingFrames);
+
+                        helper.Sleep(sleepDuration);
+                    }
                 }
             }
         }

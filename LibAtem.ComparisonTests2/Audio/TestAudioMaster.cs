@@ -217,6 +217,19 @@ namespace LibAtem.ComparisonTests2.Audio
             using (var player = new MediaPoolUtil.MediaPlayingHelper(helper, MediaPlayerId.One, 0))
             using (new SendAudioLevelsHelper(helper))
             {
+                helper.SendCommand(new ProgramInputSetCommand
+                {
+                    Index = MixEffectBlockId.One,
+                    Source = VideoSource.MediaPlayer1
+                },
+                new AudioMixerMasterSetCommand
+                {
+                    Mask = AudioMixerMasterSetCommand.MaskFlags.Gain | AudioMixerMasterSetCommand.MaskFlags.Balance | AudioMixerMasterSetCommand.MaskFlags.FollowFadeToBlack,
+                    Gain = 0,
+                    Balance = 0,
+                    FollowFadeToBlack = false
+                });
+
                 var levelsKey = new CommandQueueKey(new AudioMixerLevelsCommand());
                 helper.Sleep(240);
                 helper.SendAndWaitForMatching(levelsKey, null);
