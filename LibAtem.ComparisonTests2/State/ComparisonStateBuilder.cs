@@ -56,6 +56,7 @@ namespace LibAtem.ComparisonTests2.State
                 {typeof(MultiviewWindowInputGetCommand), UpdateSettingsMultiviewerWindowInputProperties},
                 {typeof(MultiviewWindowVuMeterGetCommand), UpdateSettingsMultiviewerWindowVuMeterProperties},
                 {typeof(SuperSourcePropertiesGetCommand), UpdateSuperSourceProperties},
+                {typeof(SuperSourceBorderGetCommand), UpdateSuperSourceBorder},
                 {typeof(SuperSourceBoxGetCommand), UpdateSuperSourceBoxProperties},
                 {typeof(DownstreamKeyPropertiesGetCommand), UpdateDownstreamKeyerProperties},
                 {typeof(DownstreamKeySourceGetCommand), UpdateDownstreamKeyerSource},
@@ -402,7 +403,7 @@ namespace LibAtem.ComparisonTests2.State
 
             props.Layout = cmd.Layout;
             //props.SafeAreaEnabled = cmd.SafeAreaEnabled;
-            props.ProgramPreviewSwapped = cmd.ProgramPreviewSwapped;
+            //props.ProgramPreviewSwapped = cmd.ProgramPreviewSwapped;
 
             if (profile.MultiView.VuMeters)
             {
@@ -453,6 +454,11 @@ namespace LibAtem.ComparisonTests2.State
             props.ArtClip = cmd.ArtClip;
             props.ArtGain = cmd.ArtGain;
             props.ArtInvertKey = cmd.ArtInvertKey;
+        }
+        private static void UpdateSuperSourceBorder(LibAtem.DeviceProfile.DeviceProfile profile, ComparisonState state, ICommand rawCmd)
+        {
+            var cmd = (SuperSourceBorderGetCommand)rawCmd;
+            var props = state.SuperSource;
 
             props.BorderEnabled = cmd.BorderEnabled;
             props.BorderBevel = cmd.BorderBevel;
@@ -471,7 +477,7 @@ namespace LibAtem.ComparisonTests2.State
         private static void UpdateSuperSourceBoxProperties(LibAtem.DeviceProfile.DeviceProfile profile, ComparisonState state, ICommand rawCmd)
         {
             var cmd = (SuperSourceBoxGetCommand)rawCmd;
-            var props = state.SuperSource.Boxes[cmd.Index] = new ComparisonSuperSourceBoxState();
+            var props = state.SuperSource.Boxes[cmd.BoxIndex] = new ComparisonSuperSourceBoxState();
 
             props.Enabled = cmd.Enabled;
             props.InputSource = cmd.InputSource;
@@ -548,7 +554,7 @@ namespace LibAtem.ComparisonTests2.State
         private static void UpdateSourceTally(LibAtem.DeviceProfile.DeviceProfile profile, ComparisonState state, ICommand rawCmd)
         {
             var cmd = (TallyBySourceCommand)rawCmd;
-            foreach (var inp in cmd.Tally)
+            foreach (KeyValuePair<VideoSource, Tuple<bool, bool>> inp in cmd.Tally)
             {
                 state.Inputs[inp.Key].ProgramTally = inp.Value.Item1;
                 state.Inputs[inp.Key].PreviewTally = inp.Value.Item2;

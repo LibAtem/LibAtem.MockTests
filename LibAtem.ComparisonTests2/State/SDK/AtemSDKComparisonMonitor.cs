@@ -539,12 +539,20 @@ namespace LibAtem.ComparisonTests2.State.SDK
 
         private void SetupSuperSource(IBMDSwitcherInputSuperSource ssrc)
         {
+            // TODO - properly
+            SuperSourceId ssrcId = SuperSourceId.One;
+
             State.SuperSource = new ComparisonSuperSourceState();
             var cb = new SuperSourceCallback(State.SuperSource, ssrc, FireCommandKey);
             ssrc.AddCallback(cb);
             _cleanupCallbacks.Add(() => ssrc.RemoveCallback(cb));
-
             TriggerAllChanged(cb);
+
+            var ssrc2 = ssrc as IBMDSwitcherSuperSourceBorder;
+            var cb3 = new SuperSourceBorderCallback(State.SuperSource, ssrc2, FireCommandKey);
+            ssrc2.AddCallback(cb3);
+            _cleanupCallbacks.Add(() => ssrc2.RemoveCallback(cb3));
+            TriggerAllChanged(cb3);
 
             Guid itId = typeof(IBMDSwitcherSuperSourceBoxIterator).GUID;
             ssrc.CreateIterator(ref itId, out var itPtr);
@@ -554,7 +562,7 @@ namespace LibAtem.ComparisonTests2.State.SDK
             for (iterator.Next(out IBMDSwitcherSuperSourceBox box); box != null; iterator.Next(out box))
             {
                 State.SuperSource.Boxes[id] = new ComparisonSuperSourceBoxState();
-                var cb2 = new SuperSourceBoxCallback(State.SuperSource.Boxes[id], id, box, FireCommandKey);
+                var cb2 = new SuperSourceBoxCallback(State.SuperSource.Boxes[id], ssrcId, id, box, FireCommandKey);
                 box.AddCallback(cb2);
                 _cleanupCallbacks.Add(() => box.RemoveCallback(cb2));
 

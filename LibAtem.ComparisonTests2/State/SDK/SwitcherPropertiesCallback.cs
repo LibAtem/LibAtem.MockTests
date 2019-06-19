@@ -40,6 +40,12 @@ namespace LibAtem.ComparisonTests2.State.SDK
                     break;
                 case _BMDSwitcherEventType.bmdSwitcherEventType3GSDIOutputLevelChanged:
                     break;
+                case _BMDSwitcherEventType.bmdSwitcherEventTypeTimeCodeChanged:
+                    break;
+                case _BMDSwitcherEventType.bmdSwitcherEventTypeTimeCodeLockedChanged:
+                    break;
+                case _BMDSwitcherEventType.bmdSwitcherEventTypeSuperSourceCascadeChanged:
+                    break;
                 default:
                     throw new ArgumentOutOfRangeException(nameof(eventType), eventType, null);
             }

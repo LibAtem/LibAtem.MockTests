@@ -251,13 +251,13 @@ namespace LibAtem.ComparisonTests2.Settings
                 iterator.Next(out IBMDSwitcherMixEffectBlock meBlock);
                 Assert.NotNull(meBlock);
 
-                meBlock.SetInt(_BMDSwitcherMixEffectBlockPropertyId.bmdSwitcherMixEffectBlockPropertyIdProgramInput, (long)VideoSource.Black);
+                meBlock.SetProgramInput((long)VideoSource.Black);
                 helper.Sleep();
 
                 Dictionary<VideoSource, ComparisonInputState> inputs = helper.LibState.Inputs;
                 foreach (var input in inputs)
                 {
-                    meBlock.SetInt(_BMDSwitcherMixEffectBlockPropertyId.bmdSwitcherMixEffectBlockPropertyIdProgramInput, (long)input.Key);
+                    meBlock.SetProgramInput((long)input.Key);
                     helper.Sleep();
 
                     List<string> before = ComparisonStateComparer.AreEqual(helper.SdkState, helper.LibState);

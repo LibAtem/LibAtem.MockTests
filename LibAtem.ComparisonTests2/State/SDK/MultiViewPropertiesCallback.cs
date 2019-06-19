@@ -51,8 +51,8 @@ namespace LibAtem.ComparisonTests2.State.SDK
                     _state.Layout = AtemEnumMaps.MultiViewLayoutMap.FindByValue(layout);
                     break;
                 case _BMDSwitcherMultiViewEventType.bmdSwitcherMultiViewEventTypeWindowChanged:
-                    _props.GetWindowInput((uint) window, out long input);
-                    _state.Windows[window].Source = (VideoSource) input;
+                    _props.GetWindowInput((uint)window, out long input);
+                    _state.Windows[window].Source = (VideoSource)input;
                     break;
                 case _BMDSwitcherMultiViewEventType.bmdSwitcherMultiViewEventTypeCurrentInputSupportsVuMeterChanged:
                     _props.SupportsVuMeters(out int supportsVu);
@@ -74,8 +74,10 @@ namespace LibAtem.ComparisonTests2.State.SDK
                     //_state.SafeAreaEnabled = enabled != 0;
                     break;
                 case _BMDSwitcherMultiViewEventType.bmdSwitcherMultiViewEventTypeProgramPreviewSwappedChanged:
-                    //_props.GetProgramPreviewSwapped(out int swapped);
-                    //_state.ProgramPreviewSwapped = swapped != 0;
+                    _props.GetProgramPreviewSwapped(out int swapped);
+                    _state.ProgramPreviewSwapped = swapped != 0;
+                    break;
+                case _BMDSwitcherMultiViewEventType.bmdSwitcherMultiViewEventTypeCurrentInputSupportsSafeAreaChanged:
                     break;
                 default:
                     throw new ArgumentOutOfRangeException(nameof(eventType), eventType, null);

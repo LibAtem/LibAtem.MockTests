@@ -73,7 +73,7 @@ namespace LibAtem.ComparisonTests2.Audio
 
             public abstract T MangleBadValue(T v);
 
-            public sealed override void UpdateExpectedState(ComparisonState state, bool goodValue, T v)
+            public override void UpdateExpectedState(ComparisonState state, bool goodValue, T v)
             {
                 ComparisonAudioMonitorOutputState obj = state.Audio.Monitors[0];
                 SetCommandProperty(obj, PropertyName, goodValue ? v : MangleBadValue(v));
@@ -202,7 +202,16 @@ namespace LibAtem.ComparisonTests2.Audio
             public override void Prepare() => _sdk.SetSoloInput((long)AudioSource.XLR);
 
             public override string PropertyName => "SoloSource";
-            public override AudioSource MangleBadValue(AudioSource v) => AudioSource.Input1;
+            public override void UpdateExpectedState(ComparisonState state, bool goodValue, AudioSource v)
+            {
+                ComparisonAudioMonitorOutputState obj = state.Audio.Monitors[0];
+                if (goodValue)
+                {
+                    SetCommandProperty(obj, PropertyName, v);
+                }
+            }
+
+            public override AudioSource MangleBadValue(AudioSource v) => v;
 
             public override AudioSource[] GoodValues =>  _helper.LibState.Audio.Inputs.Keys.Select(i => (AudioSource)i).ToArray();
             public override AudioSource[] BadValues => Enum.GetValues(typeof(AudioSource)).OfType<AudioSource>().Except(GoodValues).ToArray();

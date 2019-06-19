@@ -149,6 +149,12 @@ namespace LibAtem.ComparisonTests2
                 {VideoMode.N4KHDp2997, _BMDSwitcherVideoMode.bmdSwitcherVideoMode4KHDp2997},
                 {VideoMode.P4KHDp5000, _BMDSwitcherVideoMode.bmdSwitcherVideoMode4KHDp50},
                 {VideoMode.N4KHDp5994, _BMDSwitcherVideoMode.bmdSwitcherVideoMode4KHDp5994},
+                {VideoMode.N8KHDp2398, _BMDSwitcherVideoMode.bmdSwitcherVideoMode8KHDp2398},
+                {VideoMode.N8KHDp24, _BMDSwitcherVideoMode.bmdSwitcherVideoMode8KHDp24},
+                {VideoMode.P8KHDp25, _BMDSwitcherVideoMode.bmdSwitcherVideoMode8KHDp25},
+                {VideoMode.N8KHDp2997, _BMDSwitcherVideoMode.bmdSwitcherVideoMode8KHDp2997},
+                {VideoMode.P8KHDp50, _BMDSwitcherVideoMode.bmdSwitcherVideoMode8KHDp50},
+                {VideoMode.N8KHDp5994, _BMDSwitcherVideoMode.bmdSwitcherVideoMode8KHDp5994},
             };
 
             SDDownconvertModesMap = new Dictionary<DownConvertMode, _BMDSwitcherDownConversionMethod>()
@@ -171,6 +177,11 @@ namespace LibAtem.ComparisonTests2
                 {MultiViewLayout.ProgramLeft, _BMDSwitcherMultiViewLayout.bmdSwitcherMultiViewLayoutProgramLeft},
                 {MultiViewLayout.ProgramRight, _BMDSwitcherMultiViewLayout.bmdSwitcherMultiViewLayoutProgramRight},
                 {MultiViewLayout.ProgramTop, _BMDSwitcherMultiViewLayout.bmdSwitcherMultiViewLayoutProgramTop},
+
+                {MultiViewLayout.TopLeftSmall, _BMDSwitcherMultiViewLayout.bmdSwitcherMultiViewLayoutTopLeftSmall},
+                {MultiViewLayout.TopRightSmall, _BMDSwitcherMultiViewLayout.bmdSwitcherMultiViewLayoutTopRightSmall},
+                {MultiViewLayout.BottomLeftSmall, _BMDSwitcherMultiViewLayout.bmdSwitcherMultiViewLayoutBottomLeftSmall},
+                {MultiViewLayout.BottomRightSmall, _BMDSwitcherMultiViewLayout.bmdSwitcherMultiViewLayoutBottomRightSmall},
             };
 
             InternalPortTypeMap = new Dictionary<InternalPortType, _BMDSwitcherPortType>
@@ -200,6 +211,8 @@ namespace LibAtem.ComparisonTests2
                 {ExternalPortType.AESEBU, _BMDSwitcherExternalPortType.bmdSwitcherExternalPortTypeAESEBU},
                 {ExternalPortType.RCA, _BMDSwitcherExternalPortType.bmdSwitcherExternalPortTypeRCA},
                 {ExternalPortType.TSJack, _BMDSwitcherExternalPortType.bmdSwitcherExternalPortTypeTSJack},
+                {ExternalPortType.MADI, _BMDSwitcherExternalPortType.bmdSwitcherExternalPortTypeMADI},
+                {ExternalPortType.TRS, _BMDSwitcherExternalPortType.bmdSwitcherExternalPortTypeTRS},
             };
 
             SuperSourceArtOptionMap = new Dictionary<SuperSourceArtOption, _BMDSwitcherSuperSourceArtOption>

@@ -54,36 +54,39 @@ namespace LibAtem.ComparisonTests2
 
         private abstract class SuperSourceBoxTestDefinition<T> : TestDefinitionBase<SuperSourceBoxSetCommand, T>
         {
-            protected readonly SuperSourceBoxId _id;
+            protected readonly SuperSourceId _ssrcId;
+            protected readonly SuperSourceBoxId _boxId;
             protected readonly IBMDSwitcherSuperSourceBox _sdk;
 
-            public SuperSourceBoxTestDefinition(AtemComparisonHelper helper, Tuple<SuperSourceBoxId, IBMDSwitcherSuperSourceBox> box) : base(helper)
+            public SuperSourceBoxTestDefinition(AtemComparisonHelper helper, SuperSourceId ssrcId, Tuple<SuperSourceBoxId, IBMDSwitcherSuperSourceBox> box) : base(helper)
             {
-                _id = box.Item1;
+                _ssrcId = ssrcId;
+                _boxId = box.Item1;
                 _sdk = box.Item2;
             }
 
             public override void SetupCommand(SuperSourceBoxSetCommand cmd)
             {
-                cmd.Index = _id;
+                cmd.SSrcId = _ssrcId;
+                cmd.BoxIndex = _boxId;
             }
 
             public abstract T MangleBadValue(T v);
 
             public override void UpdateExpectedState(ComparisonState state, bool goodValue, T v)
             {
-                SetCommandProperty(state.SuperSource.Boxes[_id], PropertyName, goodValue ? v : MangleBadValue(v));
+                SetCommandProperty(state.SuperSource.Boxes[_boxId], PropertyName, goodValue ? v : MangleBadValue(v));
             }
 
             public override IEnumerable<CommandQueueKey> ExpectedCommands(bool goodValue, T v)
             {
-                yield return new CommandQueueKey(new SuperSourceBoxGetCommand() { Index = _id });
+                yield return new CommandQueueKey(new SuperSourceBoxGetCommand() { SSrcId = _ssrcId, BoxIndex = _boxId });
             }
         }
 
         private class SuperSourceBoxEnabledTestDefinition : SuperSourceBoxTestDefinition<bool>
         {
-            public SuperSourceBoxEnabledTestDefinition(AtemComparisonHelper helper, Tuple<SuperSourceBoxId, IBMDSwitcherSuperSourceBox> box) : base(helper, box)
+            public SuperSourceBoxEnabledTestDefinition(AtemComparisonHelper helper, SuperSourceId ssrcId, Tuple<SuperSourceBoxId, IBMDSwitcherSuperSourceBox> box) : base(helper, ssrcId, box)
             {
             }
 
@@ -98,17 +101,16 @@ namespace LibAtem.ComparisonTests2
         public void TestBoxEnabled()
         {
             using (var helper = new AtemComparisonHelper(_client, _output))
-                GetSuperSourceBoxes(helper).ToList().ForEach(b => new SuperSourceBoxEnabledTestDefinition(helper, b).Run());
+                GetSuperSourceBoxes(helper).ToList().ForEach(b => new SuperSourceBoxEnabledTestDefinition(helper, SuperSourceId.One, b).Run());
         }
 
         private class SuperSourceBoxInputTestDefinition : SuperSourceBoxTestDefinition<VideoSource>
         {
-            public SuperSourceBoxInputTestDefinition(AtemComparisonHelper helper, Tuple<SuperSourceBoxId, IBMDSwitcherSuperSourceBox> box) : base(helper, box)
+            public SuperSourceBoxInputTestDefinition(AtemComparisonHelper helper, SuperSourceId ssrcId, Tuple<SuperSourceBoxId, IBMDSwitcherSuperSourceBox> box) : base(helper, ssrcId, box)
             {
                 // GetInputAvailabilityMask is used when checking if another input can be used for this output.
                 // We track this another way
-                _BMDSwitcherInputAvailability availabilityMask = 0;
-                box.Item2.GetInputAvailabilityMask(ref availabilityMask);
+                box.Item2.GetInputAvailabilityMask(out _BMDSwitcherInputAvailability availabilityMask);
                 Assert.Equal(_BMDSwitcherInputAvailability.bmdSwitcherInputAvailabilitySuperSourceBox, availabilityMask);
             }
 
@@ -123,7 +125,7 @@ namespace LibAtem.ComparisonTests2
             public override void UpdateExpectedState(ComparisonState state, bool goodValue, VideoSource v)
             {
                 if (goodValue)
-                    state.SuperSource.Boxes[_id].InputSource = v;
+                    state.SuperSource.Boxes[_boxId].InputSource = v;
             }
 
             public override IEnumerable<CommandQueueKey> ExpectedCommands(bool goodValue, VideoSource v)
@@ -139,14 +141,14 @@ namespace LibAtem.ComparisonTests2
         public void TestBoxInputSource()
         {
             using (var helper = new AtemComparisonHelper(_client, _output))
-                GetSuperSourceBoxes(helper).ToList().ForEach(b => new SuperSourceBoxInputTestDefinition(helper, b).Run());
+                GetSuperSourceBoxes(helper).ToList().ForEach(b => new SuperSourceBoxInputTestDefinition(helper, SuperSourceId.One, b).Run());
         }
 
         private class SuperSourceBoxPositionXTestDefinition : SuperSourceBoxTestDefinition<double>
         {
             private readonly VideoMode _mode;
 
-            public SuperSourceBoxPositionXTestDefinition(AtemComparisonHelper helper, VideoMode mode, Tuple<SuperSourceBoxId, IBMDSwitcherSuperSourceBox> box) : base(helper, box)
+            public SuperSourceBoxPositionXTestDefinition(AtemComparisonHelper helper, VideoMode mode, SuperSourceId ssrcId, Tuple<SuperSourceBoxId, IBMDSwitcherSuperSourceBox> box) : base(helper, ssrcId, box)
             {
                 _mode = mode;
             }
@@ -215,7 +217,8 @@ namespace LibAtem.ComparisonTests2
                 return new SuperSourceBoxSetCommand
                 {
                     Mask = SuperSourceBoxSetCommand.MaskFlags.PositionX,
-                    Index = _id,
+                    SSrcId = _ssrcId,
+                    BoxIndex = _boxId,
                     PositionX = v,
                 };
             }
@@ -230,7 +233,7 @@ namespace LibAtem.ComparisonTests2
                 {
                     helper.EnsureVideoMode(mode);
 
-                    GetSuperSourceBoxes(helper).ToList().ForEach(b => new SuperSourceBoxPositionXTestDefinition(helper, mode, b).Run());
+                    GetSuperSourceBoxes(helper).ToList().ForEach(b => new SuperSourceBoxPositionXTestDefinition(helper, mode, SuperSourceId.One, b).Run());
                 }
             }
         }
@@ -239,7 +242,7 @@ namespace LibAtem.ComparisonTests2
         {
             private readonly VideoMode _mode;
 
-            public SuperSourceBoxPositionYTestDefinition(AtemComparisonHelper helper, VideoMode mode, Tuple<SuperSourceBoxId, IBMDSwitcherSuperSourceBox> box) : base(helper, box)
+            public SuperSourceBoxPositionYTestDefinition(AtemComparisonHelper helper, VideoMode mode, SuperSourceId ssrcId, Tuple<SuperSourceBoxId, IBMDSwitcherSuperSourceBox> box) : base(helper, ssrcId, box)
             {
                 _mode = mode;
             }
@@ -313,14 +316,14 @@ namespace LibAtem.ComparisonTests2
                 {
                     helper.EnsureVideoMode(mode);
 
-                    GetSuperSourceBoxes(helper).ToList().ForEach(b => new SuperSourceBoxPositionYTestDefinition(helper, mode, b).Run());
+                    GetSuperSourceBoxes(helper).ToList().ForEach(b => new SuperSourceBoxPositionYTestDefinition(helper, mode, SuperSourceId.One, b).Run());
                 }
             }
         }
 
         private class SuperSourceBoxSizeTestDefinition : SuperSourceBoxTestDefinition<double>
         {
-            public SuperSourceBoxSizeTestDefinition(AtemComparisonHelper helper, Tuple<SuperSourceBoxId, IBMDSwitcherSuperSourceBox> box) : base(helper, box)
+            public SuperSourceBoxSizeTestDefinition(AtemComparisonHelper helper, SuperSourceId ssrcId, Tuple<SuperSourceBoxId, IBMDSwitcherSuperSourceBox> box) : base(helper, ssrcId, box)
             {
             }
 
@@ -338,12 +341,12 @@ namespace LibAtem.ComparisonTests2
         public void TestBoxSize()
         {
             using (var helper = new AtemComparisonHelper(_client, _output))
-                GetSuperSourceBoxes(helper).ToList().ForEach(b => new SuperSourceBoxSizeTestDefinition(helper, b).Run());
+                GetSuperSourceBoxes(helper).ToList().ForEach(b => new SuperSourceBoxSizeTestDefinition(helper, SuperSourceId.One, b).Run());
         }
 
         private class SuperSourceBoxCroppedTestDefinition : SuperSourceBoxTestDefinition<bool>
         {
-            public SuperSourceBoxCroppedTestDefinition(AtemComparisonHelper helper, Tuple<SuperSourceBoxId, IBMDSwitcherSuperSourceBox> box) : base(helper, box)
+            public SuperSourceBoxCroppedTestDefinition(AtemComparisonHelper helper, SuperSourceId ssrcId, Tuple<SuperSourceBoxId, IBMDSwitcherSuperSourceBox> box) : base(helper, ssrcId, box)
             {
             }
 
@@ -358,7 +361,7 @@ namespace LibAtem.ComparisonTests2
         public void TestBoxCropped()
         {
             using (var helper = new AtemComparisonHelper(_client, _output))
-                GetSuperSourceBoxes(helper).ToList().ForEach(b => new SuperSourceBoxCroppedTestDefinition(helper, b).Run());
+                GetSuperSourceBoxes(helper).ToList().ForEach(b => new SuperSourceBoxCroppedTestDefinition(helper, SuperSourceId.One, b).Run());
         }
 
         private class SuperSourceBoxCropYTestDefinition : SuperSourceBoxTestDefinition<double>
@@ -367,7 +370,7 @@ namespace LibAtem.ComparisonTests2
 
             public override string PropertyName { get; }
 
-            public SuperSourceBoxCropYTestDefinition(AtemComparisonHelper helper, VideoMode mode, Tuple<SuperSourceBoxId, IBMDSwitcherSuperSourceBox> box, string propName) : base(helper, box)
+            public SuperSourceBoxCropYTestDefinition(AtemComparisonHelper helper, VideoMode mode, SuperSourceId ssrcId, Tuple<SuperSourceBoxId, IBMDSwitcherSuperSourceBox> box, string propName) : base(helper, ssrcId, box)
             {
                 _mode = mode;
                 PropertyName = propName;
@@ -446,7 +449,7 @@ namespace LibAtem.ComparisonTests2
                 {
                     helper.EnsureVideoMode(mode);
 
-                    GetSuperSourceBoxes(helper).ToList().ForEach(b => new SuperSourceBoxCropYTestDefinition(helper, mode, b, "CropTop").Run());
+                    GetSuperSourceBoxes(helper).ToList().ForEach(b => new SuperSourceBoxCropYTestDefinition(helper, mode, SuperSourceId.One, b, "CropTop").Run());
                 }
             }
         }
@@ -460,7 +463,7 @@ namespace LibAtem.ComparisonTests2
                 {
                     helper.EnsureVideoMode(mode);
 
-                    GetSuperSourceBoxes(helper).ToList().ForEach(b => new SuperSourceBoxCropYTestDefinition(helper, mode, b, "CropBottom").Run());
+                    GetSuperSourceBoxes(helper).ToList().ForEach(b => new SuperSourceBoxCropYTestDefinition(helper, mode, SuperSourceId.One, b, "CropBottom").Run());
                 }
             }
         }
@@ -471,7 +474,7 @@ namespace LibAtem.ComparisonTests2
 
             public override string PropertyName { get; }
 
-            public SuperSourceBoxCropXTestDefinition(AtemComparisonHelper helper, VideoMode mode, Tuple<SuperSourceBoxId, IBMDSwitcherSuperSourceBox> box, string propName) : base(helper, box)
+            public SuperSourceBoxCropXTestDefinition(AtemComparisonHelper helper, VideoMode mode, SuperSourceId ssrcId, Tuple<SuperSourceBoxId, IBMDSwitcherSuperSourceBox> box, string propName) : base(helper, ssrcId, box)
             {
                 _mode = mode;
                 PropertyName = propName;
@@ -550,7 +553,7 @@ namespace LibAtem.ComparisonTests2
                 {
                     helper.EnsureVideoMode(mode);
 
-                    GetSuperSourceBoxes(helper).ToList().ForEach(b => new SuperSourceBoxCropXTestDefinition(helper, mode, b, "CropLeft").Run());
+                    GetSuperSourceBoxes(helper).ToList().ForEach(b => new SuperSourceBoxCropXTestDefinition(helper, mode, SuperSourceId.One, b, "CropLeft").Run());
                 }
             }
         }
@@ -564,7 +567,7 @@ namespace LibAtem.ComparisonTests2
                 {
                     helper.EnsureVideoMode(mode);
 
-                    GetSuperSourceBoxes(helper).ToList().ForEach(b => new SuperSourceBoxCropXTestDefinition(helper, mode, b, "CropRight").Run());
+                    GetSuperSourceBoxes(helper).ToList().ForEach(b => new SuperSourceBoxCropXTestDefinition(helper, mode, SuperSourceId.One, b, "CropRight").Run());
                 }
             }
         }

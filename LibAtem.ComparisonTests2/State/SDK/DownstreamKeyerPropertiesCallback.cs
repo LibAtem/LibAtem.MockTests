@@ -81,8 +81,7 @@ namespace LibAtem.ComparisonTests2.State.SDK
                     _onChange(new CommandQueueKey(new DownstreamKeyPropertiesGetCommand() { Index = _id }));
                     break;
                 case _BMDSwitcherDownstreamKeyEventType.bmdSwitcherDownstreamKeyEventTypeInverseChanged:
-                    int inverse = 0;
-                    _props.GetInverse(ref inverse);
+                    _props.GetInverse(out int inverse);
                     _state.Invert = inverse != 0;
                     _onChange(new CommandQueueKey(new DownstreamKeyPropertiesGetCommand() { Index = _id }));
                     break;

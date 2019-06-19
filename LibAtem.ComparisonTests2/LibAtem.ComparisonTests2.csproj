@@ -20,13 +20,8 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\LibAtem.DeviceProfile\LibAtem.DeviceProfile\LibAtem.DeviceProfile.csproj" />
+    <ProjectReference Include="..\..\LibAtem\LibAtem.Test\LibAtem.Test.csproj" />
     <ProjectReference Include="..\..\LibAtem\LibAtem\LibAtem.csproj" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Reference Include="Interop.BMDSwitcherAPI">
-      <HintPath>..\LibAtem.ComparisonTests\lib\Interop.BMDSwitcherAPI.dll</HintPath>
-    </Reference>
   </ItemGroup>
 
   <ItemGroup>
@@ -39,6 +34,16 @@
     <None Update="TestFiles\wipe24bit.wav">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
+  </ItemGroup>
+  <ItemGroup>
+    <COMReference Include="BMDSwitcherAPI">
+      <Guid>{8A92B919-156C-4D61-94EF-03F9BE4004B0}</Guid>
+      <VersionMajor>1</VersionMajor>
+      <VersionMinor>0</VersionMinor>
+      <Lcid>0</Lcid>
+      <WrapperTool>tlbimp</WrapperTool>
+      <Isolated>False</Isolated>
+    </COMReference>
   </ItemGroup>
 
 </Project>

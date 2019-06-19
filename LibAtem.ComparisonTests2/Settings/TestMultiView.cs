@@ -169,6 +169,7 @@ namespace LibAtem.ComparisonTests2.Settings
             }
         }
 
+        /*
         private class MultiviewToggleSafeAreaTestDefinition : MultiviewTestDefinition<bool>
         {
             public MultiviewToggleSafeAreaTestDefinition(AtemComparisonHelper helper, Tuple<uint, IBMDSwitcherMultiView> mv) : base(helper, mv)
@@ -189,7 +190,7 @@ namespace LibAtem.ComparisonTests2.Settings
         {
             using (var helper = new AtemComparisonHelper(_client, _output))
                 GetMultiviewers().ForEach(k => new MultiviewToggleSafeAreaTestDefinition(helper, k).Run());
-        }
+        }*/
 
         private class MultiviewUnroutableWindowSourcesTestDefinition : TestDefinitionBase<MultiviewWindowInputSetCommand, VideoSource>
         {

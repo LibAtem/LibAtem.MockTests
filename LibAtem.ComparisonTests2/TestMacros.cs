@@ -51,7 +51,7 @@ namespace LibAtem.ComparisonTests2
             using (new StopMacroRecord(ctrl)) // Hopefully this will stop recording if it exceptions
             {
                 ctrl.Record(index, "dummy", "");
-                me.SetInt(_BMDSwitcherMixEffectBlockEventType.bmdSwitcherMixEffectBlockPropertyIdProgramInput, (long)VideoSource.Input1);
+                me.SetProgramInput((long)VideoSource.Input1);
             }
         }
 
@@ -214,7 +214,7 @@ namespace LibAtem.ComparisonTests2
                 Assert.Equal((uint)2, helper.LibState.Macros.RecordIndex);
                 helper.AssertStatesMatch();
 
-                me.SetInt(_BMDSwitcherMixEffectBlockEventType.bmdSwitcherMixEffectBlockPropertyIdProgramInput, (long)VideoSource.Input1);
+                me.SetProgramInput((long)VideoSource.Input1);
 
                 helper.SendCommand(new MacroActionCommand()
                 {

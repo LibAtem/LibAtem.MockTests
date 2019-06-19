@@ -204,8 +204,7 @@ namespace LibAtem.ComparisonTests2.MixEffects
             {
                 foreach (var me in GetMixEffects<IBMDSwitcherTransitionDVEParameters>())
                 {
-                    _BMDSwitcherInputAvailability availability = 0;
-                    me.Item2.GetFillInputAvailabilityMask(ref availability);
+                    me.Item2.GetFillInputAvailabilityMask(out _BMDSwitcherInputAvailability availability);
                     Assert.Equal((_BMDSwitcherInputAvailability)me.Item1 + 1, availability);
 
                     new DVETransitionFillSourceTestDefinition(helper, me).Run();
@@ -248,8 +247,7 @@ namespace LibAtem.ComparisonTests2.MixEffects
             {
                 foreach (var me in GetMixEffects<IBMDSwitcherTransitionDVEParameters>())
                 {
-                    _BMDSwitcherInputAvailability availability = 0;
-                    me.Item2.GetFillInputAvailabilityMask(ref availability);
+                    me.Item2.GetFillInputAvailabilityMask(out _BMDSwitcherInputAvailability availability);
                     Assert.Equal((_BMDSwitcherInputAvailability)me.Item1 + 1, availability);
 
                     new DVETransitionCutSourceTestDefinition(helper, me).Run();
