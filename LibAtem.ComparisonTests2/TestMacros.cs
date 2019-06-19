@@ -5,10 +5,14 @@ using LibAtem.Common;
 using LibAtem.ComparisonTests2.MixEffects;
 using LibAtem.ComparisonTests2.State;
 using LibAtem.ComparisonTests2.Util;
+using LibAtem.DeviceProfile;
+using LibAtem.MacroOperations;
 using LibAtem.Net.DataTransfer;
+using LibAtem.Test.Util;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Security.Cryptography;
 using System.Threading;
@@ -47,7 +51,7 @@ namespace LibAtem.ComparisonTests2
             using (new StopMacroRecord(ctrl)) // Hopefully this will stop recording if it exceptions
             {
                 ctrl.Record(index, "dummy", "");
-                me.SetInt(_BMDSwitcherMixEffectBlockPropertyId.bmdSwitcherMixEffectBlockPropertyIdProgramInput, (long)VideoSource.Input1);
+                me.SetInt(_BMDSwitcherMixEffectBlockEventType.bmdSwitcherMixEffectBlockPropertyIdProgramInput, (long)VideoSource.Input1);
             }
         }
 
@@ -210,7 +214,7 @@ namespace LibAtem.ComparisonTests2
                 Assert.Equal((uint)2, helper.LibState.Macros.RecordIndex);
                 helper.AssertStatesMatch();
 
-                me.SetInt(_BMDSwitcherMixEffectBlockPropertyId.bmdSwitcherMixEffectBlockPropertyIdProgramInput, (long)VideoSource.Input1);
+                me.SetInt(_BMDSwitcherMixEffectBlockEventType.bmdSwitcherMixEffectBlockPropertyIdProgramInput, (long)VideoSource.Input1);
 
                 helper.SendCommand(new MacroActionCommand()
                 {
@@ -424,5 +428,65 @@ namespace LibAtem.ComparisonTests2
                 helper.AssertStatesMatch();
             }
         }
+
+        //[Fact]
+        public void AutoTestMacroOps()
+        {
+            using (var helper = new AtemComparisonHelper(Client, Output))
+            {
+                IBMDSwitcherMacroControl ctrl = GetMacroControl();
+
+                var failures = new List<string>();
+
+                Assembly assembly = typeof(ICommand).GetTypeInfo().Assembly;
+                IEnumerable<Type> types = assembly.GetTypes().Where(t => typeof(SerializableCommandBase).GetTypeInfo().IsAssignableFrom(t));
+                foreach (Type type in types)
+                {
+                    if (type == typeof(SerializableCommandBase))
+                        continue;
+/*
+                    if (type != typeof(AuxSourceSetCommand))
+                        continue;*/
+
+                    try
+                    {
+                        Output.WriteLine("Testing: {0}", type.Name);
+                        for (int i = 0; i < 10; i++)
+                        {
+                            SerializableCommandBase raw = (SerializableCommandBase)RandomPropertyGenerator.Create(type, (o) => AvailabilityChecker.IsAvailable(helper.Profile, o)); // TODO - wants to be ICommand
+                            IEnumerable<MacroOpBase> expectedOps = raw.ToMacroOps();
+                            if (expectedOps == null)
+                            {
+                                Output.WriteLine("Skipping");
+                                break;
+                            } 
+
+                            using (new StopMacroRecord(ctrl)) // Hopefully this will stop recording if it exceptions
+                            {
+                                ctrl.Record(0, string.Format("record-{0}-{1}", type.Name, i), "");
+                                helper.SendCommand(raw);
+                                helper.Sleep(20);
+                            }
+
+                            helper.Sleep(40);
+                            byte[] r = DownloadMacro(0);
+                            if (r.Length == 0) throw new Exception("Macro has no operations");
+
+                            MacroOpBase decoded = MacroOpManager.CreateFromData(r, false); // This is assuming that there is a single macro op
+                            RandomPropertyGenerator.AssertAreTheSame(expectedOps.Single(), decoded);
+
+                        }
+                    }
+                    catch (Exception e)
+                    {
+                        var msg = string.Format("{0}: {1}", type.Name, e.Message);
+                        Output.WriteLine(msg);
+                        failures.Add(msg);
+                    }
+                }
+
+                Assert.Empty(failures);
+            }
         }
+    }
 }
