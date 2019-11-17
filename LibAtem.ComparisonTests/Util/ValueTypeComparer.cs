@@ -14,10 +14,12 @@ namespace LibAtem.ComparisonTests.Util
     internal abstract class TestDefinitionBase<Tc, T> where Tc : ICommand, new()
     {
         protected readonly AtemComparisonHelper _helper;
+        private readonly bool _skipBad;
 
-        public TestDefinitionBase(AtemComparisonHelper helper)
+        public TestDefinitionBase(AtemComparisonHelper helper, bool skipBad = false)
         {
             _helper = helper;
+            _skipBad = skipBad;
         }
 
         public static void Run(TestDefinitionBase<Tc, T> def)
@@ -31,7 +33,8 @@ namespace LibAtem.ComparisonTests.Util
             _helper.Sleep();
 
             ValueTypeComparer<Tc, T>.Run(_helper, this);
-            ValueTypeComparer<Tc, T>.Fail(_helper, this);
+            if (!_skipBad) // Allow skipping the bad values for some, to improve speed
+                ValueTypeComparer<Tc, T>.Fail(_helper, this);
             
             return this;
         }

@@ -21,5 +21,11 @@ namespace LibAtem.ComparisonTests
         {
             Assert.NotEqual(ModelId.Unknown, _client.Profile.Model);
         }
+
+        [Fact]
+        public void TestProductName()
+        {
+            Assert.NotEqual("", _client.Profile.Product);
+        }
     }
 }

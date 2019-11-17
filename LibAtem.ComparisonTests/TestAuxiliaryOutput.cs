@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using BMDSwitcherAPI;
 using LibAtem.Commands;
@@ -23,13 +22,25 @@ namespace LibAtem.ComparisonTests
             _client = client;
             _output = output;
         }
-        
+
+        [Fact]
+        public void TestAuxCount()
+        {
+            using (var helper = new AtemComparisonHelper(_client, _output))
+            {
+                Dictionary<VideoSource, IBMDSwitcherInputAux> sdkAuxes = helper.GetSdkInputsOfType<IBMDSwitcherInputAux>();
+                Assert.Equal((int)helper.Profile.Auxiliaries, sdkAuxes.Count);
+
+                Assert.True(sdkAuxes.Keys.All(k => k.GetPortType() == InternalPortType.Auxiliary));
+            }
+        }
+
         private class AuxSourceTestDefinition : TestDefinitionBase<AuxSourceSetCommand, VideoSource>
         {
             private readonly IBMDSwitcherInputAux _sdk;
             private readonly AuxiliaryId _auxId;
 
-            public AuxSourceTestDefinition(AtemComparisonHelper helper, IBMDSwitcherInputAux sdk, AuxiliaryId id) : base(helper)
+            public AuxSourceTestDefinition(AtemComparisonHelper helper, IBMDSwitcherInputAux sdk, AuxiliaryId id) : base(helper, id != AuxiliaryId.One)
             {
                 _sdk = sdk;
                 _auxId = id;
@@ -45,12 +56,14 @@ namespace LibAtem.ComparisonTests
 
             public override string PropertyName => "Source";
 
-            public override VideoSource[] GoodValues => VideoSourceLists.All.Where(s => s.IsAvailable(_helper.Profile, InternalPortType.Mask) && s.IsAvailable(SourceAvailability.Auxiliary)).ToArray();
-            
+            private VideoSource[] ValidSources => VideoSourceLists.All.Where(s => s.IsAvailable(_helper.Profile, InternalPortType.Mask) && s.IsAvailable(SourceAvailability.Auxiliary)).ToArray();
+            public override VideoSource[] GoodValues => VideoSourceUtil.TakeSelection(ValidSources);
+            public override VideoSource[] BadValues => VideoSourceUtil.TakeBadSelection(ValidSources);
+
             public override void UpdateExpectedState(AtemState state, bool goodValue, VideoSource v)
             {
                 if (goodValue)
-                    state.Auxiliaries[(int)_auxId].Source = (VideoSource)v;
+                    state.Auxiliaries[(int)_auxId].Source = v;
             }
 
             public override IEnumerable<CommandQueueKey> ExpectedCommands(bool goodValue, VideoSource v)

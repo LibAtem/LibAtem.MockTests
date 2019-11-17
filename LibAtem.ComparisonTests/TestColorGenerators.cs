@@ -40,7 +40,7 @@ namespace LibAtem.ComparisonTests
             protected readonly IBMDSwitcherInputColor _sdk;
             protected readonly ColorGeneratorId _colId;
 
-            public ColorGeneratorTestDefinition(AtemComparisonHelper helper, IBMDSwitcherInputColor sdk, VideoSource id) : base(helper)
+            public ColorGeneratorTestDefinition(AtemComparisonHelper helper, IBMDSwitcherInputColor sdk, VideoSource id) : base(helper, id != VideoSource.Color1)
             {
                 _sdk = sdk;
                 _colId = AtemEnumMaps.GetSourceIdForGen(id);

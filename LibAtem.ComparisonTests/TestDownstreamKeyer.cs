@@ -49,7 +49,7 @@ namespace LibAtem.ComparisonTests
             protected readonly IBMDSwitcherDownstreamKey _sdk;
             protected readonly DownstreamKeyId _keyId;
 
-            public DownstreamKeyerCutSourceTestDefinition(AtemComparisonHelper helper, Tuple<DownstreamKeyId, IBMDSwitcherDownstreamKey> keyer) : base(helper)
+            public DownstreamKeyerCutSourceTestDefinition(AtemComparisonHelper helper, Tuple<DownstreamKeyId, IBMDSwitcherDownstreamKey> keyer) : base(helper, keyer.Item1 != DownstreamKeyId.One)
             {
                 _sdk = keyer.Item2;
                 _keyId = keyer.Item1;
@@ -74,7 +74,9 @@ namespace LibAtem.ComparisonTests
 
             public override string PropertyName => "Source";
 
-            public override VideoSource[] GoodValues => VideoSourceLists.All.Where(s => s.IsAvailable(_helper.Profile) && s.IsAvailable(MixEffectBlockId.One) && s.IsAvailable(SourceAvailability.KeySource)).ToArray();
+            private VideoSource[] ValidSources => VideoSourceLists.All.Where(s => s.IsAvailable(_helper.Profile) && s.IsAvailable(MixEffectBlockId.One) && s.IsAvailable(SourceAvailability.KeySource)).ToArray();
+            public override VideoSource[] GoodValues => VideoSourceUtil.TakeSelection(ValidSources);
+            public override VideoSource[] BadValues => VideoSourceUtil.TakeBadSelection(ValidSources);
 
             public override void UpdateExpectedState(AtemState state, bool goodValue, VideoSource v)
             {
@@ -101,7 +103,7 @@ namespace LibAtem.ComparisonTests
             protected readonly IBMDSwitcherDownstreamKey _sdk;
             protected readonly DownstreamKeyId _keyId;
 
-            public DownstreamKeyerFillSourceTestDefinition(AtemComparisonHelper helper, Tuple<DownstreamKeyId, IBMDSwitcherDownstreamKey> keyer) : base(helper)
+            public DownstreamKeyerFillSourceTestDefinition(AtemComparisonHelper helper, Tuple<DownstreamKeyId, IBMDSwitcherDownstreamKey> keyer) : base(helper, keyer.Item1 != DownstreamKeyId.One)
             {
                 _sdk = keyer.Item2;
                 _keyId = keyer.Item1;
@@ -126,7 +128,9 @@ namespace LibAtem.ComparisonTests
 
             public override string PropertyName => "Source";
 
-            public override VideoSource[] GoodValues => VideoSourceLists.All.Where(s => s.IsAvailable(_helper.Profile) && s.IsAvailable(MixEffectBlockId.One)).ToArray();
+            private VideoSource[] ValidSources => VideoSourceLists.All.Where(s => s.IsAvailable(_helper.Profile) && s.IsAvailable(MixEffectBlockId.One)).ToArray();
+            public override VideoSource[] GoodValues => VideoSourceUtil.TakeSelection(ValidSources);
+            public override VideoSource[] BadValues => VideoSourceUtil.TakeBadSelection(ValidSources);
 
             public override void UpdateExpectedState(AtemState state, bool goodValue, VideoSource v)
             {
@@ -157,7 +161,7 @@ namespace LibAtem.ComparisonTests
             protected readonly IBMDSwitcherDownstreamKey _sdk;
             protected readonly DownstreamKeyId _keyId;
 
-            public DownstreamKeyerTestDefinition(AtemComparisonHelper helper, Tuple<DownstreamKeyId, IBMDSwitcherDownstreamKey> keyer) : base(helper)
+            public DownstreamKeyerTestDefinition(AtemComparisonHelper helper, Tuple<DownstreamKeyId, IBMDSwitcherDownstreamKey> keyer) : base(helper, keyer.Item1 != DownstreamKeyId.One)
             {
                 _sdk = keyer.Item2;
                 _keyId = keyer.Item1;
@@ -172,7 +176,7 @@ namespace LibAtem.ComparisonTests
 
             public override void UpdateExpectedState(AtemState state, bool goodValue, T v)
             {
-                SetCommandProperty(state.DownstreamKeyers[(int)_keyId], PropertyName, goodValue ? v : MangleBadValue(v));
+                SetCommandProperty(state.DownstreamKeyers[(int)_keyId].Properties, PropertyName, goodValue ? v : MangleBadValue(v));
             }
 
             public override IEnumerable<CommandQueueKey> ExpectedCommands(bool goodValue, T v)
@@ -317,7 +321,7 @@ namespace LibAtem.ComparisonTests
 
             public override IEnumerable<CommandQueueKey> ExpectedCommands(bool goodValue, bool v)
             {
-                yield return new CommandQueueKey(new DownstreamKeyPropertiesGetCommand() { Index = _keyId });
+                yield return new CommandQueueKey(new DownstreamKeyStateGetV8Command() { Index = _keyId });
             }
         }
 
@@ -414,7 +418,7 @@ namespace LibAtem.ComparisonTests
             // Ensure the first value will have a change
             public override void Prepare() => _sdk.SetPreMultiplied(0);
 
-            public override string PropertyName => "PreMultiply";
+            public override string PropertyName => "PreMultipliedKey";
             public override bool MangleBadValue(bool v) => v;
         }
 
@@ -496,7 +500,7 @@ namespace LibAtem.ComparisonTests
             protected readonly IBMDSwitcherDownstreamKey _sdk;
             protected readonly DownstreamKeyId _keyId;
 
-            public DownstreamKeyerMaskTestDefinition(AtemComparisonHelper helper, Tuple<DownstreamKeyId, IBMDSwitcherDownstreamKey> keyer) : base(helper)
+            public DownstreamKeyerMaskTestDefinition(AtemComparisonHelper helper, Tuple<DownstreamKeyId, IBMDSwitcherDownstreamKey> keyer) : base(helper, keyer.Item1 != DownstreamKeyId.One)
             {
                 _sdk = keyer.Item2;
                 _keyId = keyer.Item1;
@@ -511,7 +515,7 @@ namespace LibAtem.ComparisonTests
 
             public override void UpdateExpectedState(AtemState state, bool goodValue, T v)
             {
-                SetCommandProperty(state.DownstreamKeyers[(int)_keyId], PropertyName, goodValue ? v : MangleBadValue(v));
+                SetCommandProperty(state.DownstreamKeyers[(int)_keyId].Properties, PropertyName, goodValue ? v : MangleBadValue(v));
             }
 
             public override IEnumerable<CommandQueueKey> ExpectedCommands(bool goodValue, T v)
