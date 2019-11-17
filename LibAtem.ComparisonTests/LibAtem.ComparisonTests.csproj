@@ -19,9 +19,10 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\LibAtem.DeviceProfile\LibAtem.DeviceProfile\LibAtem.DeviceProfile.csproj" />
-    <ProjectReference Include="..\..\LibAtem\LibAtem.Test\LibAtem.Test.csproj" />
-    <ProjectReference Include="..\..\LibAtem\LibAtem\LibAtem.csproj" />
+    <ProjectReference Include="..\LibAtem\LibAtem.DeviceProfile\LibAtem.DeviceProfile.csproj" />
+    <ProjectReference Include="..\LibAtem\LibAtem.State\LibAtem.State.csproj" />
+    <ProjectReference Include="..\LibAtem\LibAtem.Test\LibAtem.Test.csproj" />
+    <ProjectReference Include="..\LibAtem\LibAtem\LibAtem.csproj" />
   </ItemGroup>
 
   <ItemGroup>

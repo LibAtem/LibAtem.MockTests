@@ -9,6 +9,7 @@ using LibAtem.Common;
 using LibAtem.ComparisonTests2.State;
 using LibAtem.ComparisonTests2.Util;
 using LibAtem.DeviceProfile;
+using LibAtem.State;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -75,10 +76,10 @@ namespace LibAtem.ComparisonTests2
 
             public override VideoSource[] GoodValues => VideoSourceLists.All.Where(s => s.IsAvailable(_helper.Profile) && s.IsAvailable(MixEffectBlockId.One) && s.IsAvailable(SourceAvailability.KeySource)).ToArray();
 
-            public override void UpdateExpectedState(ComparisonState state, bool goodValue, VideoSource v)
+            public override void UpdateExpectedState(AtemState state, bool goodValue, VideoSource v)
             {
                 if (goodValue)
-                    state.DownstreamKeyers[_keyId].CutSource = v;
+                    state.DownstreamKeyers[(int)_keyId].Sources.CutSource = v;
             }
 
             public override IEnumerable<CommandQueueKey> ExpectedCommands(bool goodValue, VideoSource v)
@@ -127,13 +128,13 @@ namespace LibAtem.ComparisonTests2
 
             public override VideoSource[] GoodValues => VideoSourceLists.All.Where(s => s.IsAvailable(_helper.Profile) && s.IsAvailable(MixEffectBlockId.One)).ToArray();
 
-            public override void UpdateExpectedState(ComparisonState state, bool goodValue, VideoSource v)
+            public override void UpdateExpectedState(AtemState state, bool goodValue, VideoSource v)
             {
                 if (goodValue)
                 {
-                    state.DownstreamKeyers[_keyId].FillSource = v;
+                    state.DownstreamKeyers[(int)_keyId].Sources.FillSource = v;
                     if (v.GetPortType() == InternalPortType.MediaPlayerFill)
-                        state.DownstreamKeyers[_keyId].CutSource = v + 1;
+                        state.DownstreamKeyers[(int)_keyId].Sources.CutSource = v + 1;
                 }
             }
 
@@ -169,9 +170,9 @@ namespace LibAtem.ComparisonTests2
 
             public abstract T MangleBadValue(T v);
 
-            public override void UpdateExpectedState(ComparisonState state, bool goodValue, T v)
+            public override void UpdateExpectedState(AtemState state, bool goodValue, T v)
             {
-                SetCommandProperty(state.DownstreamKeyers[_keyId], PropertyName, goodValue ? v : MangleBadValue(v));
+                SetCommandProperty(state.DownstreamKeyers[(int)_keyId], PropertyName, goodValue ? v : MangleBadValue(v));
             }
 
             public override IEnumerable<CommandQueueKey> ExpectedCommands(bool goodValue, T v)
@@ -207,13 +208,13 @@ namespace LibAtem.ComparisonTests2
 
             public override string PropertyName => "Tie";
 
-            public override void UpdateExpectedState(ComparisonState state, bool goodValue, bool v)
+            public override void UpdateExpectedState(AtemState state, bool goodValue, bool v)
             {
                 if (goodValue)
                 {
-                    state.DownstreamKeyers[_keyId].Tie = v;
-                    state.Inputs[VideoSource.MediaPlayer1].PreviewTally = v;
-                    state.Inputs[VideoSource.MediaPlayer1Key].PreviewTally = v;
+                    state.DownstreamKeyers[(int)_keyId].Properties.Tie = v;
+                    state.Settings.Inputs[VideoSource.MediaPlayer1].Tally.PreviewTally = v;
+                    state.Settings.Inputs[VideoSource.MediaPlayer1Key].Tally.PreviewTally = v;
                 }
             }
 
@@ -255,10 +256,10 @@ namespace LibAtem.ComparisonTests2
             public override string PropertyName => "Rate";
 
             private uint MangleBadValue(uint v) => v >= 250 ? 250 : (uint)1;
-            public override void UpdateExpectedState(ComparisonState state, bool goodValue, uint v)
+            public override void UpdateExpectedState(AtemState state, bool goodValue, uint v)
             {
-                state.DownstreamKeyers[_keyId].Rate = goodValue ? v : MangleBadValue(v);
-                state.DownstreamKeyers[_keyId].RemainingFrames = goodValue ? v : MangleBadValue(v);
+                state.DownstreamKeyers[(int)_keyId].Properties.Rate = goodValue ? v : MangleBadValue(v);
+                state.DownstreamKeyers[(int)_keyId].State.RemainingFrames = goodValue ? v : MangleBadValue(v);
             }
 
             public override uint[] GoodValues => new uint[] { 1, 18, 28, 95, 234, 244, 250 };
@@ -304,13 +305,13 @@ namespace LibAtem.ComparisonTests2
 
             public override string PropertyName => "OnAir";
             
-            public override void UpdateExpectedState(ComparisonState state, bool goodValue, bool v)
+            public override void UpdateExpectedState(AtemState state, bool goodValue, bool v)
             {
                 if (goodValue)
                 {
-                    state.DownstreamKeyers[_keyId].OnAir = v;
-                    state.Inputs[VideoSource.MediaPlayer1].ProgramTally = v;
-                    state.Inputs[VideoSource.MediaPlayer1Key].ProgramTally = v;
+                    state.DownstreamKeyers[(int)_keyId].State.OnAir = v;
+                    state.Settings.Inputs[VideoSource.MediaPlayer1].Tally.ProgramTally = v;
+                    state.Settings.Inputs[VideoSource.MediaPlayer1Key].Tally.ProgramTally = v;
                 }
             }
 
@@ -343,60 +344,60 @@ namespace LibAtem.ComparisonTests2
 
                         helper.Sleep(500);
 
-                        ComparisonState beforeState = helper.LibState;
-                        Assert.True(ComparisonStateComparer.AreEqual(helper.Output, helper.SdkState, beforeState));
+                        AtemState beforeState = helper.LibState;
+                        Assert.True(AtemStateComparer.AreEqual(helper.Output, helper.SdkState, beforeState));
 
-                        var props = beforeState.DownstreamKeyers[key.Item1];
-                        bool origOnAir = props.OnAir;
-                        Assert.False(props.InTransition);
-                        Assert.False(props.IsAuto);
-                        Assert.Equal((uint)30, props.RemainingFrames);
+                        var props = beforeState.DownstreamKeyers[(int)key.Item1];
+                        bool origOnAir = props.State.OnAir;
+                        Assert.False(props.State.InTransition);
+                        Assert.False(props.State.IsAuto);
+                        Assert.Equal((uint)30, props.State.RemainingFrames);
 
                         helper.SendCommand(new DownstreamKeyAutoCommand { Index = key.Item1 });
                         helper.Sleep(500);
 
                         // Get states, they will change still during this test
-                        ComparisonState libState = helper.LibState;
-                        ComparisonState sdkState = helper.SdkState;
-                        props = libState.DownstreamKeyers[key.Item1];
-                        Assert.True(props.RemainingFrames > 0 && props.RemainingFrames < 30);
+                        AtemState libState = helper.LibState;
+                        AtemState sdkState = helper.SdkState;
+                        props = libState.DownstreamKeyers[(int)key.Item1];
+                        Assert.True(props.State.RemainingFrames > 0 && props.State.RemainingFrames < 30);
 
                         // Update expected
-                        props = beforeState.DownstreamKeyers[key.Item1];
-                        props.RemainingFrames = libState.DownstreamKeyers[key.Item1].RemainingFrames;
-                        props.IsAuto = true;
-                        props.InTransition = true;
-                        props.OnAir = true;
-                        beforeState.Inputs[VideoSource.MediaPlayer1].ProgramTally = true;
-                        beforeState.Inputs[VideoSource.MediaPlayer1Key].ProgramTally = true;
+                        props = beforeState.DownstreamKeyers[(int)key.Item1];
+                        props.State.RemainingFrames = libState.DownstreamKeyers[(int)key.Item1].State.RemainingFrames;
+                        props.State.IsAuto = true;
+                        props.State.InTransition = true;
+                        props.State.OnAir = true;
+                        beforeState.Settings.Inputs[VideoSource.MediaPlayer1].Tally.ProgramTally = true;
+                        beforeState.Settings.Inputs[VideoSource.MediaPlayer1Key].Tally.ProgramTally = true;
 
                         // Ensure remaining is correct within a frame
-                        Assert.True(Math.Abs(beforeState.DownstreamKeyers[key.Item1].RemainingFrames - libState.DownstreamKeyers[key.Item1].RemainingFrames) <= 1);
-                        Assert.True(Math.Abs(beforeState.DownstreamKeyers[key.Item1].RemainingFrames - sdkState.DownstreamKeyers[key.Item1].RemainingFrames) <= 1);
-                        libState.DownstreamKeyers[key.Item1].RemainingFrames = sdkState.DownstreamKeyers[key.Item1].RemainingFrames = beforeState.DownstreamKeyers[key.Item1].RemainingFrames;
+                        Assert.True(Math.Abs(beforeState.DownstreamKeyers[(int)key.Item1].State.RemainingFrames - libState.DownstreamKeyers[(int)key.Item1].State.RemainingFrames) <= 1);
+                        Assert.True(Math.Abs(beforeState.DownstreamKeyers[(int)key.Item1].State.RemainingFrames - sdkState.DownstreamKeyers[(int)key.Item1].State.RemainingFrames) <= 1);
+                        libState.DownstreamKeyers[(int)key.Item1].State.RemainingFrames = sdkState.DownstreamKeyers[(int)key.Item1].State.RemainingFrames = beforeState.DownstreamKeyers[(int)key.Item1].State.RemainingFrames;
 
-                        Assert.True(ComparisonStateComparer.AreEqual(helper.Output, beforeState, sdkState));
-                        Assert.True(ComparisonStateComparer.AreEqual(helper.Output, beforeState, libState));
+                        Assert.True(AtemStateComparer.AreEqual(helper.Output, beforeState, sdkState));
+                        Assert.True(AtemStateComparer.AreEqual(helper.Output, beforeState, libState));
 
                         helper.Sleep(1000);
                         // back to normal
-                        props = beforeState.DownstreamKeyers[key.Item1];
-                        props.RemainingFrames = 30;
-                        props.IsAuto = false;
-                        props.InTransition = false;
-                        props.OnAir = !origOnAir;
-                        Assert.True(ComparisonStateComparer.AreEqual(helper.Output, beforeState, helper.SdkState));
-                        Assert.True(ComparisonStateComparer.AreEqual(helper.Output, beforeState, helper.LibState));
+                        props = beforeState.DownstreamKeyers[(int)key.Item1];
+                        props.State.RemainingFrames = 30;
+                        props.State.IsAuto = false;
+                        props.State.InTransition = false;
+                        props.State.OnAir = !origOnAir;
+                        Assert.True(AtemStateComparer.AreEqual(helper.Output, beforeState, helper.SdkState));
+                        Assert.True(AtemStateComparer.AreEqual(helper.Output, beforeState, helper.LibState));
 
                     }
                     finally
                     {
                         // Sleep until transition has definitely ended
-                        var props = helper.LibState.DownstreamKeyers[key.Item1];
+                        var props = helper.LibState.DownstreamKeyers[(int)key.Item1];
 
                         int sleepDuration = 90;
-                        if (props.InTransition)
-                            sleepDuration += (int)(40 * props.RemainingFrames);
+                        if (props.State.InTransition)
+                            sleepDuration += (int)(40 * props.State.RemainingFrames);
 
                         helper.Sleep(sleepDuration);
                     }
@@ -508,9 +509,9 @@ namespace LibAtem.ComparisonTests2
 
             public abstract T MangleBadValue(T v);
 
-            public override void UpdateExpectedState(ComparisonState state, bool goodValue, T v)
+            public override void UpdateExpectedState(AtemState state, bool goodValue, T v)
             {
-                SetCommandProperty(state.DownstreamKeyers[_keyId], PropertyName, goodValue ? v : MangleBadValue(v));
+                SetCommandProperty(state.DownstreamKeyers[(int)_keyId], PropertyName, goodValue ? v : MangleBadValue(v));
             }
 
             public override IEnumerable<CommandQueueKey> ExpectedCommands(bool goodValue, T v)

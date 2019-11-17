@@ -2,16 +2,17 @@
 using BMDSwitcherAPI;
 using LibAtem.Commands;
 using LibAtem.Commands.Audio;
+using LibAtem.State;
 
 namespace LibAtem.ComparisonTests2.State.SDK
 {
     public sealed class AudioMixerCallback : IBMDSwitcherAudioMixerCallback, INotify<_BMDSwitcherAudioMixerEventType>
     {
-        private readonly ComparisonAudioProgramOutState _state;
+        private readonly AudioState.ProgramOutState _state;
         private readonly IBMDSwitcherAudioMixer _props;
         private readonly Action<CommandQueueKey> _onChange;
 
-        public AudioMixerCallback(ComparisonAudioProgramOutState state, IBMDSwitcherAudioMixer props, Action<CommandQueueKey> onChange)
+        public AudioMixerCallback(AudioState.ProgramOutState state, IBMDSwitcherAudioMixer props, Action<CommandQueueKey> onChange)
         {
             _state = state;
             _props = props;

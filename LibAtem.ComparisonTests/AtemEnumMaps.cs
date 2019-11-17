@@ -19,7 +19,7 @@ namespace LibAtem.ComparisonTests2
         public static readonly IReadOnlyDictionary<VideoMode, _BMDSwitcherVideoMode> VideoModesMap;
         public static readonly IReadOnlyDictionary<DownConvertMode, _BMDSwitcherDownConversionMethod> SDDownconvertModesMap;
         public static readonly IReadOnlyDictionary<SerialMode, _BMDSwitcherSerialPortFunction> SerialModeMap;
-        public static readonly IReadOnlyDictionary<MultiViewLayout, _BMDSwitcherMultiViewLayout> MultiViewLayoutMap;
+        public static readonly IReadOnlyDictionary<MultiViewLayoutV8, _BMDSwitcherMultiViewLayout> MultiViewLayoutMap;
         public static readonly IReadOnlyDictionary<InternalPortType, _BMDSwitcherPortType> InternalPortTypeMap;
         public static readonly IReadOnlyDictionary<ExternalPortType, _BMDSwitcherExternalPortType> ExternalPortTypeMap;
         public static readonly IReadOnlyDictionary<SuperSourceArtOption, _BMDSwitcherSuperSourceArtOption> SuperSourceArtOptionMap;
@@ -171,17 +171,17 @@ namespace LibAtem.ComparisonTests2
                 {SerialMode.PtzVisca, _BMDSwitcherSerialPortFunction.bmdSwitcherSerialPortFunctionPtzVisca},
             };
 
-            MultiViewLayoutMap = new Dictionary<MultiViewLayout, _BMDSwitcherMultiViewLayout>
+            MultiViewLayoutMap = new Dictionary<MultiViewLayoutV8, _BMDSwitcherMultiViewLayout>
             {
-                {MultiViewLayout.ProgramBottom, _BMDSwitcherMultiViewLayout.bmdSwitcherMultiViewLayoutProgramBottom},
-                {MultiViewLayout.ProgramLeft, _BMDSwitcherMultiViewLayout.bmdSwitcherMultiViewLayoutProgramLeft},
-                {MultiViewLayout.ProgramRight, _BMDSwitcherMultiViewLayout.bmdSwitcherMultiViewLayoutProgramRight},
-                {MultiViewLayout.ProgramTop, _BMDSwitcherMultiViewLayout.bmdSwitcherMultiViewLayoutProgramTop},
+                {MultiViewLayoutV8.ProgramBottom, _BMDSwitcherMultiViewLayout.bmdSwitcherMultiViewLayoutProgramBottom},
+                {MultiViewLayoutV8.ProgramLeft, _BMDSwitcherMultiViewLayout.bmdSwitcherMultiViewLayoutProgramLeft},
+                {MultiViewLayoutV8.ProgramRight, _BMDSwitcherMultiViewLayout.bmdSwitcherMultiViewLayoutProgramRight},
+                {MultiViewLayoutV8.ProgramTop, _BMDSwitcherMultiViewLayout.bmdSwitcherMultiViewLayoutProgramTop},
 
-                {MultiViewLayout.TopLeftSmall, _BMDSwitcherMultiViewLayout.bmdSwitcherMultiViewLayoutTopLeftSmall},
-                {MultiViewLayout.TopRightSmall, _BMDSwitcherMultiViewLayout.bmdSwitcherMultiViewLayoutTopRightSmall},
-                {MultiViewLayout.BottomLeftSmall, _BMDSwitcherMultiViewLayout.bmdSwitcherMultiViewLayoutBottomLeftSmall},
-                {MultiViewLayout.BottomRightSmall, _BMDSwitcherMultiViewLayout.bmdSwitcherMultiViewLayoutBottomRightSmall},
+                {MultiViewLayoutV8.TopLeftSmall, _BMDSwitcherMultiViewLayout.bmdSwitcherMultiViewLayoutTopLeftSmall},
+                {MultiViewLayoutV8.TopRightSmall, _BMDSwitcherMultiViewLayout.bmdSwitcherMultiViewLayoutTopRightSmall},
+                {MultiViewLayoutV8.BottomLeftSmall, _BMDSwitcherMultiViewLayout.bmdSwitcherMultiViewLayoutBottomLeftSmall},
+                {MultiViewLayoutV8.BottomRightSmall, _BMDSwitcherMultiViewLayout.bmdSwitcherMultiViewLayoutBottomRightSmall},
             };
 
             InternalPortTypeMap = new Dictionary<InternalPortType, _BMDSwitcherPortType>

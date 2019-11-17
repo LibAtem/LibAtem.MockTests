@@ -6,6 +6,7 @@ using LibAtem.Commands;
 using LibAtem.Common;
 using LibAtem.ComparisonTests2.State;
 using LibAtem.DeviceProfile;
+using LibAtem.State;
 using LibAtem.Util;
 
 namespace LibAtem.ComparisonTests2.Util
@@ -117,16 +118,16 @@ namespace LibAtem.ComparisonTests2.Util
         }
 
         public abstract IEnumerable<CommandQueueKey> ExpectedCommands(bool goodValue, T v);
-        public abstract void UpdateExpectedState(ComparisonState state, bool goodValue, T v);
+        public abstract void UpdateExpectedState(AtemState state, bool goodValue, T v);
     }
 
     internal static class ValueTypeComparer<Tc, T> where Tc : ICommand, new()
     {
-        private static void LogErrors(AtemComparisonHelper helper, string identifier, T val, ComparisonState origSdk, ComparisonState origLib)
+        private static void LogErrors(AtemComparisonHelper helper, string identifier, T val, AtemState origSdk, AtemState origLib)
         {
-            List<string> before = ComparisonStateComparer.AreEqual(origSdk, origLib);
-            List<string> sdk = ComparisonStateComparer.AreEqual(origSdk, helper.SdkState);
-            List<string> lib = ComparisonStateComparer.AreEqual(origLib, helper.LibState);
+            List<string> before = AtemStateComparer.AreEqual(origSdk, origLib);
+            List<string> sdk = AtemStateComparer.AreEqual(origSdk, helper.SdkState);
+            List<string> lib = AtemStateComparer.AreEqual(origLib, helper.LibState);
 
             if (before.Count > 0 || sdk.Count > 0 || lib.Count > 0)
             {
@@ -162,8 +163,8 @@ namespace LibAtem.ComparisonTests2.Util
 
         public static void Run(AtemComparisonHelper helper, TestDefinitionBase<Tc, T> definition, T newVal)
         {
-            ComparisonState origSdk = helper.SdkState;
-            ComparisonState origLib = helper.LibState;
+            AtemState origSdk = helper.SdkState;
+            AtemState origLib = helper.LibState;
             definition.UpdateExpectedState(origSdk, true, newVal);
             definition.UpdateExpectedState(origLib, true, newVal);
 
@@ -188,8 +189,8 @@ namespace LibAtem.ComparisonTests2.Util
 
         public static void Fail(AtemComparisonHelper helper, TestDefinitionBase<Tc, T> definition, T newVal)
         {
-            ComparisonState origSdk = helper.SdkState;
-            ComparisonState origLib = helper.LibState;
+            AtemState origSdk = helper.SdkState;
+            AtemState origLib = helper.LibState;
 
             definition.UpdateExpectedState(origSdk, false, newVal);
             definition.UpdateExpectedState(origLib, false, newVal);
@@ -239,12 +240,12 @@ namespace LibAtem.ComparisonTests2.Util
         public IgnoreStateNodeEnabler(string name)
         {
             _name = name;
-            ComparisonStateSettings.IgnoreNodes.Add(name);
+            AtemStateSettings.IgnoreNodes.Add(name);
         }
 
         public void Dispose()
         {
-            ComparisonStateSettings.IgnoreNodes.Remove(_name);
+            AtemStateSettings.IgnoreNodes.Remove(_name);
         }
     }
 

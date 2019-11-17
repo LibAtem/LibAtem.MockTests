@@ -10,6 +10,7 @@ using LibAtem.Common;
 using LibAtem.ComparisonTests2.State;
 using LibAtem.ComparisonTests2.Util;
 using LibAtem.DeviceProfile;
+using LibAtem.State;
 using LibAtem.Util;
 using Xunit;
 using Xunit.Abstractions;
@@ -69,7 +70,7 @@ namespace LibAtem.ComparisonTests2.Settings
 
             public override string PropertyName => "VideoMode";
 
-            public override void UpdateExpectedState(ComparisonState state, bool goodValue, VideoMode v)
+            public override void UpdateExpectedState(AtemState state, bool goodValue, VideoMode v)
             {
                 if (goodValue)
                 {
@@ -79,60 +80,60 @@ namespace LibAtem.ComparisonTests2.Settings
                     if (rate > 30) rate /= 2;
                     if (rate == 24) rate = 25;
 
-                    state.MixEffects.SelectMany(me => me.Value.Keyers).ForEach(k => { k.Value.Fly.Rate = rate; });
+                    state.MixEffects.SelectMany(me => me.Keyers).ForEach(k => { k.DVE.Rate = rate; });
                     state.MixEffects.ForEach(k =>
                     {
-                        k.Value.Transition.Mix.Rate = rate;
-                        k.Value.Transition.Dip.Rate = rate;
-                        k.Value.Transition.Wipe.Rate = rate;
-                        k.Value.Transition.DVE.Rate = rate;
-                        k.Value.Transition.DVE.LogoRate = rate;
+                        k.Transition.Mix.Rate = rate;
+                        k.Transition.Dip.Rate = rate;
+                        k.Transition.Wipe.Rate = rate;
+                        k.Transition.DVE.Rate = rate;
+                        k.Transition.DVE.LogoRate = rate;
                     });
                     state.DownstreamKeyers.ForEach(k =>
                     {
-                        k.Value.Rate = rate;
-                        k.Value.RemainingFrames = rate;
+                        k.Properties.Rate = rate;
+                        k.State.RemainingFrames = rate;
                     });
 
                     switch (v)
                     {
                         case VideoMode.N525i5994NTSC:
                         case VideoMode.P625i50PAL:
-                            state.MixEffects.SelectMany(me => me.Value.Keyers).ForEach(k =>
+                            state.MixEffects.SelectMany(me => me.Keyers).ForEach(k =>
                             {
-                                k.Value.MaskBottom = -3;
-                                k.Value.MaskTop = 3;
-                                k.Value.MaskLeft = -4;
-                                k.Value.MaskRight = 4;
+                                k.Properties.MaskBottom = -3;
+                                k.Properties.MaskTop = 3;
+                                k.Properties.MaskLeft = -4;
+                                k.Properties.MaskRight = 4;
 
-                                k.Value.DVE.BorderOuterWidth = 0.12;
-                                k.Value.DVE.BorderInnerWidth = 0.12;
+                                k.DVE.BorderOuterWidth = 0.12;
+                                k.DVE.BorderInnerWidth = 0.12;
                             });
                             state.DownstreamKeyers.ForEach(k =>
                             {
-                                k.Value.MaskBottom = -3;
-                                k.Value.MaskTop = 3;
-                                k.Value.MaskLeft = -4;
-                                k.Value.MaskRight = 4;
+                                k.Properties.MaskBottom = -3;
+                                k.Properties.MaskTop = 3;
+                                k.Properties.MaskLeft = -4;
+                                k.Properties.MaskRight = 4;
                             });
                             break;
                         default:
-                            state.MixEffects.SelectMany(me => me.Value.Keyers).ForEach(k =>
+                            state.MixEffects.SelectMany(me => me.Keyers).ForEach(k =>
                             {
-                                k.Value.MaskBottom = -9;
-                                k.Value.MaskTop = 9;
-                                k.Value.MaskLeft = -16;
-                                k.Value.MaskRight = 16;
+                                k.Properties.MaskBottom = -9;
+                                k.Properties.MaskTop = 9;
+                                k.Properties.MaskLeft = -16;
+                                k.Properties.MaskRight = 16;
 
-                                k.Value.DVE.BorderOuterWidth = 0.5;
-                                k.Value.DVE.BorderInnerWidth = 0.5;
+                                k.DVE.BorderOuterWidth = 0.5;
+                                k.DVE.BorderInnerWidth = 0.5;
                             });
                             state.DownstreamKeyers.ForEach(k =>
                             {
-                                k.Value.MaskBottom = -9;
-                                k.Value.MaskTop = 9;
-                                k.Value.MaskLeft = -16;
-                                k.Value.MaskRight = 16;
+                                k.Properties.MaskBottom = -9;
+                                k.Properties.MaskTop = 9;
+                                k.Properties.MaskLeft = -16;
+                                k.Properties.MaskRight = 16;
                             });
                             break;
                     }
@@ -145,16 +146,18 @@ namespace LibAtem.ComparisonTests2.Settings
                 {
                     yield return new CommandQueueKey(new VideoModeGetCommand());
 
-                    foreach (var dsk in _helper.LibState.DownstreamKeyers)
-                        yield return new CommandQueueKey(new DownstreamKeyStateGetCommand() { Index = dsk.Key});
-                    foreach (var me in _helper.LibState.MixEffects)
+                    for (var i = 0; i < _helper.LibState.DownstreamKeyers.Count; i++)
+                        yield return new CommandQueueKey(new DownstreamKeyStateGetCommand() { Index = (DownstreamKeyId)i });
+                    for (var i = 0; i < _helper.LibState.MixEffects.Count; i++)
                     {
-                        yield return new CommandQueueKey(new TransitionMixGetCommand() { Index = me.Key });
-                        yield return new CommandQueueKey(new TransitionDipGetCommand() { Index = me.Key });
-                        yield return new CommandQueueKey(new TransitionWipeGetCommand() { Index = me.Key });
+                        var id = (MixEffectBlockId)i;
+                        yield return new CommandQueueKey(new TransitionMixGetCommand() { Index = id });
+                        yield return new CommandQueueKey(new TransitionDipGetCommand() { Index = id });
+                        yield return new CommandQueueKey(new TransitionWipeGetCommand() { Index = id });
 
-                        if (me.Value.Transition.DVE != null)
-                            yield return new CommandQueueKey(new TransitionDVEGetCommand() { Index = me.Key });
+                        var me = _helper.LibState.MixEffects[i];
+                        if (me != null && me.Transition.DVE != null)
+                            yield return new CommandQueueKey(new TransitionDVEGetCommand() { Index = id });
                     }
                 }
             }

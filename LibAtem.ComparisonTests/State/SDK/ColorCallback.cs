@@ -2,17 +2,18 @@
 using BMDSwitcherAPI;
 using LibAtem.Commands;
 using LibAtem.Common;
+using LibAtem.State;
 
 namespace LibAtem.ComparisonTests2.State.SDK
 {
     public sealed class ColorCallback : IBMDSwitcherInputColorCallback, INotify<_BMDSwitcherInputColorEventType>
     {
-        private readonly ComparisonColorState _state;
+        private readonly ColorState _state;
         private readonly ColorGeneratorId _id;
         private readonly IBMDSwitcherInputColor _color;
         private readonly Action<CommandQueueKey> _onChange;
 
-        public ColorCallback(ComparisonColorState state, ColorGeneratorId id, IBMDSwitcherInputColor color, Action<CommandQueueKey> onChange)
+        public ColorCallback(ColorState state, ColorGeneratorId id, IBMDSwitcherInputColor color, Action<CommandQueueKey> onChange)
         {
             _state = state;
             _id = id;

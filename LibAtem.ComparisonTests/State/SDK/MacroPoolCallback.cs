@@ -2,16 +2,17 @@
 using BMDSwitcherAPI;
 using LibAtem.Commands;
 using LibAtem.Commands.Macro;
+using LibAtem.State;
 
 namespace LibAtem.ComparisonTests2.State.SDK
 {
     public sealed class MacroPoolCallback : IBMDSwitcherMacroPoolCallback
     {
-        private readonly ComparisonMacroState _state;
+        private readonly MacroState _state;
         private readonly IBMDSwitcherMacroPool _props;
         private readonly Action<CommandQueueKey> _onChange;
 
-        public MacroPoolCallback(ComparisonMacroState state, IBMDSwitcherMacroPool props, Action<CommandQueueKey> onChange)
+        public MacroPoolCallback(MacroState state, IBMDSwitcherMacroPool props, Action<CommandQueueKey> onChange)
         {
             _state = state;
             _props = props;
@@ -24,17 +25,17 @@ namespace LibAtem.ComparisonTests2.State.SDK
             {
                 case _BMDSwitcherMacroPoolEventType.bmdSwitcherMacroPoolEventTypeValidChanged:
                     _props.IsValid(index, out int valid);
-                    _state.Pool[index].IsUsed = valid != 0;
+                    _state.Pool[(int)index].IsUsed = valid != 0;
                     break;
                 case _BMDSwitcherMacroPoolEventType.bmdSwitcherMacroPoolEventTypeHasUnsupportedOpsChanged:
                     break;
                 case _BMDSwitcherMacroPoolEventType.bmdSwitcherMacroPoolEventTypeNameChanged:
                     _props.GetName(index, out string name);
-                    _state.Pool[index].Name = name;
+                    _state.Pool[(int)index].Name = name;
                     break;
                 case _BMDSwitcherMacroPoolEventType.bmdSwitcherMacroPoolEventTypeDescriptionChanged:
                     _props.GetDescription(index, out string description);
-                    _state.Pool[index].Description = description;
+                    _state.Pool[(int)index].Description = description;
                     break;
                 case _BMDSwitcherMacroPoolEventType.bmdSwitcherMacroPoolEventTypeTransferCompleted:
                     break;

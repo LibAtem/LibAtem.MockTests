@@ -252,7 +252,7 @@ namespace LibAtem.ComparisonTests2.Media
                 Assert.True(success);
                 _output.WriteLine("Elapsed upload: {0}", timer.ElapsedMilliseconds);
 
-                /* TODO - need to track clips in ComparisonState first
+                /* TODO - need to track clips in AtemState first
                 // Wait and ensure that we got a notify of the new still
                 helper.Sleep(2000);
                 var cmd = helper.FindWithMatching(new MediaPoolFileCommand { Type = MediaPoolFileType.Still, Index = stillIndex });
@@ -311,7 +311,7 @@ namespace LibAtem.ComparisonTests2.Media
                 Assert.True(success);
                 _output.WriteLine("Elapsed upload: {0}", timer.ElapsedMilliseconds);
 
-                /* TODO - need to track clips in ComparisonState first
+                /* TODO - need to track clips in AtemState first
                 // Wait and ensure that we got a notify of the new still
                 helper.Sleep(2000);
                 var cmd = helper.FindWithMatching(new MediaPoolFileCommand { Type = MediaPoolFileType.Still, Index = stillIndex });
@@ -337,22 +337,22 @@ namespace LibAtem.ComparisonTests2.Media
                 MediaPoolUtil.EnsureStillExists(_client, VideoModeResolution._1080, stillIndex);
                 helper.Sleep();
 
-                Assert.True(helper.LibState.MediaPool.Stills[stillIndex].IsUsed);
+                Assert.True(helper.LibState.MediaPool.Stills[(int)stillIndex].IsUsed);
                 helper.SendCommand(new MediaPoolClearStillCommand { Index = stillIndex });
                 helper.Sleep();
 
-                Assert.False(helper.LibState.MediaPool.Stills[stillIndex].IsUsed);
+                Assert.False(helper.LibState.MediaPool.Stills[(int)stillIndex].IsUsed);
                 helper.AssertStatesMatch();
 
                 const uint stillIndex2 = 8;
                 MediaPoolUtil.EnsureStillExists(_client, VideoModeResolution._1080, stillIndex2);
                 helper.Sleep();
 
-                Assert.True(helper.LibState.MediaPool.Stills[stillIndex2].IsUsed);
+                Assert.True(helper.LibState.MediaPool.Stills[(int)stillIndex2].IsUsed);
                 helper.SendCommand(new MediaPoolClearStillCommand { Index = stillIndex2 });
                 helper.Sleep();
 
-                Assert.False(helper.LibState.MediaPool.Stills[stillIndex2].IsUsed);
+                Assert.False(helper.LibState.MediaPool.Stills[(int)stillIndex2].IsUsed);
                 helper.AssertStatesMatch();
             }
         }

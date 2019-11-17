@@ -7,6 +7,7 @@ using LibAtem.Commands.Media;
 using LibAtem.Common;
 using LibAtem.ComparisonTests2.State;
 using LibAtem.ComparisonTests2.Util;
+using LibAtem.State;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -62,18 +63,18 @@ namespace LibAtem.ComparisonTests2.Media
                 };
             }
 
-            public override void UpdateExpectedState(ComparisonState state, bool goodValue, Tuple<MediaPlayerSource, uint> v)
+            public override void UpdateExpectedState(AtemState state, bool goodValue, Tuple<MediaPlayerSource, uint> v)
             {
-                ComparisonMediaPlayerState obj = state.MediaPlayers[_id];
+                MediaPlayerState obj = state.MediaPlayers[(int)_id];
                 if (goodValue)
                 {
-                    state.MediaPlayers[_id].SourceType = v.Item1;
-                    state.MediaPlayers[_id].SourceIndex = v.Item2;
+                    obj.Source.SourceType = v.Item1;
+                    obj.Source.SourceIndex = v.Item2;
                 }
                 else
                 {
-                    state.MediaPlayers[_id].SourceType = v.Item1;
-                    state.MediaPlayers[_id].SourceIndex = v.Item1 == MediaPlayerSource.Clip
+                    obj.Source.SourceType = v.Item1;
+                    obj.Source.SourceIndex = v.Item1 == MediaPlayerSource.Clip
                         ? _helper.Profile.MediaPoolClips - 1
                         : _helper.Profile.MediaPoolStills - 1;
                 }
@@ -141,9 +142,9 @@ namespace LibAtem.ComparisonTests2.Media
 
             public abstract T MangleBadValue(T v);
 
-            public override void UpdateExpectedState(ComparisonState state, bool goodValue, T v)
+            public override void UpdateExpectedState(AtemState state, bool goodValue, T v)
             {
-                ComparisonMediaPlayerState obj = state.MediaPlayers[_id];
+                MediaPlayerState obj = state.MediaPlayers[(int)_id];
                 SetCommandProperty(obj, PropertyName, goodValue ? v : MangleBadValue(v));
             }
 
@@ -189,12 +190,12 @@ namespace LibAtem.ComparisonTests2.Media
 
             public override string PropertyName => "ClipFrame";
             public override uint MangleBadValue(uint v) => 7;
-            public override void UpdateExpectedState(ComparisonState state, bool goodValue, uint v)
+            public override void UpdateExpectedState(AtemState state, bool goodValue, uint v)
             {
                 base.UpdateExpectedState(state, goodValue, v);
 
-                ComparisonMediaPlayerState obj = state.MediaPlayers[_id];
-                obj.AtBeginning = (v == 0);
+                MediaPlayerState obj = state.MediaPlayers[(int)_id];
+                obj.Status.AtBeginning = (v == 0);
             }
 
             public override uint[] GoodValues => new uint[] { 0, 1, 5, 7 };
@@ -204,7 +205,7 @@ namespace LibAtem.ComparisonTests2.Media
         public void TestClipFrame() // Also covers AtBeginning
         {
             using (var helper = new AtemComparisonHelper(_client, _output))
-            using (new SettingEnabler(v => ComparisonStateSettings.TrackMediaClipFrames = v))
+            using (new SettingEnabler(v => AtemStateSettings.TrackMediaClipFrames = v))
             using (new MediaPoolUtil.SolidClipUploadHelper(helper, 0, "black", 8, 0, 0, 0, 0))
             {
                 EnsureMediaPlayerHasClip();

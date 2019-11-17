@@ -3,16 +3,17 @@ using BMDSwitcherAPI;
 using LibAtem.Commands;
 using LibAtem.Commands.SuperSource;
 using LibAtem.Common;
+using LibAtem.State;
 
 namespace LibAtem.ComparisonTests2.State.SDK
 {
     public sealed class SuperSourceCallback : IBMDSwitcherInputSuperSourceCallback, INotify<_BMDSwitcherInputSuperSourceEventType>
     {
-        private readonly ComparisonSuperSourceState _state;
+        private readonly SuperSourceState.PropertiesState _state;
         private readonly IBMDSwitcherInputSuperSource _props;
         private readonly Action<CommandQueueKey> _onChange;
 
-        public SuperSourceCallback(ComparisonSuperSourceState state, IBMDSwitcherInputSuperSource props, Action<CommandQueueKey> onChange)
+        public SuperSourceCallback(SuperSourceState.PropertiesState state, IBMDSwitcherInputSuperSource props, Action<CommandQueueKey> onChange)
         {
             _state = state;
             _props = props;
@@ -61,11 +62,11 @@ namespace LibAtem.ComparisonTests2.State.SDK
 
     public sealed class SuperSourceBorderCallback : IBMDSwitcherSuperSourceBorderCallback, INotify<_BMDSwitcherSuperSourceBorderEventType>
     {
-        private readonly ComparisonSuperSourceState _state;
+        private readonly SuperSourceState.BorderState _state;
         private readonly IBMDSwitcherSuperSourceBorder _props;
         private readonly Action<CommandQueueKey> _onChange;
 
-        public SuperSourceBorderCallback(ComparisonSuperSourceState state, IBMDSwitcherSuperSourceBorder props, Action<CommandQueueKey> onChange)
+        public SuperSourceBorderCallback(SuperSourceState.BorderState state, IBMDSwitcherSuperSourceBorder props, Action<CommandQueueKey> onChange)
         {
             _state = state;
             _props = props;
@@ -78,55 +79,55 @@ namespace LibAtem.ComparisonTests2.State.SDK
             {
             case _BMDSwitcherSuperSourceBorderEventType.bmdSwitcherSuperSourceBorderEventTypeEnabledChanged:
                 _props.GetBorderEnabled(out int enabled);
-                _state.BorderEnabled = enabled != 0;
+                _state.Enabled = enabled != 0;
                 break;
             case _BMDSwitcherSuperSourceBorderEventType.bmdSwitcherSuperSourceBorderEventTypeBevelChanged:
                 _props.GetBorderBevel(out _BMDSwitcherBorderBevelOption bevelOption);
-                _state.BorderBevel = AtemEnumMaps.BorderBevelMap.FindByValue(bevelOption);
+                _state.Bevel = AtemEnumMaps.BorderBevelMap.FindByValue(bevelOption);
                 break;
             case _BMDSwitcherSuperSourceBorderEventType.bmdSwitcherSuperSourceBorderEventTypeWidthOutChanged:
                 _props.GetBorderWidthOut(out double widthOut);
-                _state.BorderOuterWidth = widthOut;
+                _state.OuterWidth = widthOut;
                 break;
             case _BMDSwitcherSuperSourceBorderEventType.bmdSwitcherSuperSourceBorderEventTypeWidthInChanged:
                 _props.GetBorderWidthIn(out double widthIn);
-                _state.BorderInnerWidth = widthIn;
+                _state.InnerWidth = widthIn;
                 break;
             case _BMDSwitcherSuperSourceBorderEventType.bmdSwitcherSuperSourceBorderEventTypeSoftnessOutChanged:
                 _props.GetBorderSoftnessOut(out double softnessOut);
-                _state.BorderOuterSoftness = (uint) (softnessOut * 100);
+                _state.OuterSoftness = (uint) (softnessOut * 100);
                 break;
             case _BMDSwitcherSuperSourceBorderEventType.bmdSwitcherSuperSourceBorderEventTypeSoftnessInChanged:
                 _props.GetBorderSoftnessIn(out double softnessIn);
-                _state.BorderInnerSoftness = (uint) (softnessIn * 100);
+                _state.InnerSoftness = (uint) (softnessIn * 100);
                 break;
             case _BMDSwitcherSuperSourceBorderEventType.bmdSwitcherSuperSourceBorderEventTypeBevelSoftnessChanged:
                 _props.GetBorderBevelSoftness(out double bevelSoftness);
-                _state.BorderBevelSoftness = (uint) (bevelSoftness * 100);
+                _state.BevelSoftness = (uint) (bevelSoftness * 100);
                 break;
             case _BMDSwitcherSuperSourceBorderEventType.bmdSwitcherSuperSourceBorderEventTypeBevelPositionChanged:
                 _props.GetBorderBevelPosition(out double bevelPosition);
-                _state.BorderBevelPosition = (uint) (bevelPosition * 100);
+                _state.BevelPosition = (uint) (bevelPosition * 100);
                 break;
             case _BMDSwitcherSuperSourceBorderEventType.bmdSwitcherSuperSourceBorderEventTypeHueChanged:
                 _props.GetBorderHue(out double hue);
-                _state.BorderHue = hue;
+                _state.Hue = hue;
                 break;
             case _BMDSwitcherSuperSourceBorderEventType.bmdSwitcherSuperSourceBorderEventTypeSaturationChanged:
                 _props.GetBorderSaturation(out double sat);
-                _state.BorderSaturation = sat * 100;
+                _state.Saturation = sat * 100;
                 break;
             case _BMDSwitcherSuperSourceBorderEventType.bmdSwitcherSuperSourceBorderEventTypeLumaChanged:
                 _props.GetBorderLuma(out double luma);
-                _state.BorderLuma = luma * 100;
+                _state.Luma = luma * 100;
                 break;
             case _BMDSwitcherSuperSourceBorderEventType.bmdSwitcherSuperSourceBorderEventTypeLightSourceDirectionChanged:
                 _props.GetBorderLightSourceDirection(out double deg);
-                _state.BorderLightSourceDirection = deg;
+                _state.LightSourceDirection = deg;
                 break;
             case _BMDSwitcherSuperSourceBorderEventType.bmdSwitcherSuperSourceBorderEventTypeLightSourceAltitudeChanged:
                 _props.GetBorderLightSourceAltitude(out double alt);
-                _state.BorderLightSourceAltitude = alt * 100;
+                _state.LightSourceAltitude = alt * 100;
                 break;
                 default:
                     throw new ArgumentOutOfRangeException(nameof(eventType), eventType, null);
@@ -138,13 +139,13 @@ namespace LibAtem.ComparisonTests2.State.SDK
 
     public sealed class SuperSourceBoxCallback : IBMDSwitcherSuperSourceBoxCallback, INotify<_BMDSwitcherSuperSourceBoxEventType>
     {
-        private readonly ComparisonSuperSourceBoxState _state;
+        private readonly SuperSourceState.BoxState _state;
         private readonly SuperSourceId _ssrcIndex;
         private readonly SuperSourceBoxId _boxIndex;
         private readonly IBMDSwitcherSuperSourceBox _props;
         private readonly Action<CommandQueueKey> _onChange;
 
-        public SuperSourceBoxCallback(ComparisonSuperSourceBoxState state, SuperSourceId ssrcIndex, SuperSourceBoxId boxIndex, IBMDSwitcherSuperSourceBox props, Action<CommandQueueKey> onChange)
+        public SuperSourceBoxCallback(SuperSourceState.BoxState state, SuperSourceId ssrcIndex, SuperSourceBoxId boxIndex, IBMDSwitcherSuperSourceBox props, Action<CommandQueueKey> onChange)
         {
             _state = state;
             _ssrcIndex = ssrcIndex;
@@ -201,7 +202,7 @@ namespace LibAtem.ComparisonTests2.State.SDK
                     throw new ArgumentOutOfRangeException(nameof(eventType), eventType, null);
             }
 
-            _onChange(new CommandQueueKey(new SuperSourceBoxGetCommand() { SSrcId = _ssrcIndex, BoxIndex = _boxIndex }));
+            _onChange(new CommandQueueKey(new SuperSourceBoxGetV8Command() { SSrcId = _ssrcIndex, BoxIndex = _boxIndex }));
         }
     }
 }

@@ -5,6 +5,7 @@ using LibAtem.Common;
 using LibAtem.ComparisonTests2.MixEffects;
 using LibAtem.ComparisonTests2.State;
 using LibAtem.ComparisonTests2.Util;
+using LibAtem.State;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -73,9 +74,9 @@ namespace LibAtem.ComparisonTests2.Audio
 
             public abstract T MangleBadValue(T v);
 
-            public override void UpdateExpectedState(ComparisonState state, bool goodValue, T v)
+            public override void UpdateExpectedState(AtemState state, bool goodValue, T v)
             {
-                ComparisonAudioMonitorOutputState obj = state.Audio.Monitors[0];
+                AudioState.MonitorOutputState obj = state.Audio.Monitors[0];
                 SetCommandProperty(obj, PropertyName, goodValue ? v : MangleBadValue(v));
             }
 
@@ -202,9 +203,9 @@ namespace LibAtem.ComparisonTests2.Audio
             public override void Prepare() => _sdk.SetSoloInput((long)AudioSource.XLR);
 
             public override string PropertyName => "SoloSource";
-            public override void UpdateExpectedState(ComparisonState state, bool goodValue, AudioSource v)
+            public override void UpdateExpectedState(AtemState state, bool goodValue, AudioSource v)
             {
-                ComparisonAudioMonitorOutputState obj = state.Audio.Monitors[0];
+                AudioState.MonitorOutputState obj = state.Audio.Monitors[0];
                 if (goodValue)
                 {
                     SetCommandProperty(obj, PropertyName, v);

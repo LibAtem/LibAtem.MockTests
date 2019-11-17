@@ -4,18 +4,19 @@ using BMDSwitcherAPI;
 using LibAtem.Commands;
 using LibAtem.Commands.Settings.Multiview;
 using LibAtem.Common;
+using LibAtem.State;
 using LibAtem.Util;
 
 namespace LibAtem.ComparisonTests2.State.SDK
 {
     public sealed class MultiViewPropertiesCallback : IBMDSwitcherMultiViewCallback, INotify<_BMDSwitcherMultiViewEventType>
     {
-        private readonly ComparisonSettingsMultiViewState _state;
+        private readonly MultiViewerState _state;
         private readonly uint _id;
         private readonly IBMDSwitcherMultiView _props;
         private readonly Action<CommandQueueKey> _onChange;
 
-        public MultiViewPropertiesCallback(ComparisonSettingsMultiViewState state, uint id, IBMDSwitcherMultiView props, Action<CommandQueueKey> onChange)
+        public MultiViewPropertiesCallback(MultiViewerState state, uint id, IBMDSwitcherMultiView props, Action<CommandQueueKey> onChange)
         {
             _state = state;
             _id = id;
@@ -31,7 +32,7 @@ namespace LibAtem.ComparisonTests2.State.SDK
                 case _BMDSwitcherMultiViewEventType.bmdSwitcherMultiViewEventTypeVuMeterEnabledChanged:
                 case _BMDSwitcherMultiViewEventType.bmdSwitcherMultiViewEventTypeVuMeterOpacityChanged:
                 case _BMDSwitcherMultiViewEventType.bmdSwitcherMultiViewEventTypeCurrentInputSupportsVuMeterChanged:
-                    Enumerable.Range(0, (int)Constants.MultiViewWindowCount).ForEach(i => Notify(eventType, i));
+                    Enumerable.Range(0, _state.Windows.Count).ForEach(i => Notify(eventType, i));
                     break;
                 default:
                     Notify(eventType, 0);
@@ -48,7 +49,7 @@ namespace LibAtem.ComparisonTests2.State.SDK
             {
                 case _BMDSwitcherMultiViewEventType.bmdSwitcherMultiViewEventTypeLayoutChanged:
                     _props.GetLayout(out _BMDSwitcherMultiViewLayout layout);
-                    _state.Layout = AtemEnumMaps.MultiViewLayoutMap.FindByValue(layout);
+                    _state.Properties.Layout = AtemEnumMaps.MultiViewLayoutMap.FindByValue(layout);
                     break;
                 case _BMDSwitcherMultiViewEventType.bmdSwitcherMultiViewEventTypeWindowChanged:
                     _props.GetWindowInput((uint)window, out long input);
@@ -75,7 +76,7 @@ namespace LibAtem.ComparisonTests2.State.SDK
                     break;
                 case _BMDSwitcherMultiViewEventType.bmdSwitcherMultiViewEventTypeProgramPreviewSwappedChanged:
                     _props.GetProgramPreviewSwapped(out int swapped);
-                    _state.ProgramPreviewSwapped = swapped != 0;
+                    _state.Properties.ProgramPreviewSwapped = swapped != 0;
                     break;
                 case _BMDSwitcherMultiViewEventType.bmdSwitcherMultiViewEventTypeCurrentInputSupportsSafeAreaChanged:
                     break;

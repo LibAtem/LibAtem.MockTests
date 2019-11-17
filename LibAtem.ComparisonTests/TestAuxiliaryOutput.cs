@@ -7,6 +7,7 @@ using LibAtem.Common;
 using LibAtem.ComparisonTests2.State;
 using LibAtem.ComparisonTests2.Util;
 using LibAtem.DeviceProfile;
+using LibAtem.State;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -59,10 +60,10 @@ namespace LibAtem.ComparisonTests2
 
             public override VideoSource[] GoodValues => VideoSourceLists.All.Where(s => s.IsAvailable(_helper.Profile, InternalPortType.Mask) && s.IsAvailable(SourceAvailability.Auxiliary)).ToArray();
             
-            public override void UpdateExpectedState(ComparisonState state, bool goodValue, VideoSource v)
+            public override void UpdateExpectedState(AtemState state, bool goodValue, VideoSource v)
             {
                 if (goodValue)
-                    state.Auxiliaries[_auxId].Source = (VideoSource)v;
+                    state.Auxiliaries[(int)_auxId].Source = (VideoSource)v;
             }
 
             public override IEnumerable<CommandQueueKey> ExpectedCommands(bool goodValue, VideoSource v)

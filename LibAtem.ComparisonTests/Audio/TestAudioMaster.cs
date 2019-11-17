@@ -5,6 +5,7 @@ using LibAtem.Commands.MixEffects;
 using LibAtem.Common;
 using LibAtem.ComparisonTests2.State;
 using LibAtem.ComparisonTests2.Util;
+using LibAtem.State;
 using System;
 using System.Collections.Generic;
 using Xunit;
@@ -35,9 +36,9 @@ namespace LibAtem.ComparisonTests2.Audio
 
             public abstract T MangleBadValue(T v);
 
-            public sealed override void UpdateExpectedState(ComparisonState state, bool goodValue, T v)
+            public sealed override void UpdateExpectedState(AtemState state, bool goodValue, T v)
             {
-                ComparisonAudioProgramOutState obj = state.Audio.ProgramOut;
+                AudioState.ProgramOutState obj = state.Audio.ProgramOut;
                 SetCommandProperty(obj, PropertyName, goodValue ? v : MangleBadValue(v));
             }
 
@@ -143,7 +144,7 @@ namespace LibAtem.ComparisonTests2.Audio
                 helper.SendAndWaitForMatching(levelsKey, null);
 
 
-                ComparisonAudioProgramOutState mixer = helper.SdkState.Audio.ProgramOut;
+                AudioState.ProgramOutState mixer = helper.SdkState.Audio.ProgramOut;
                 Assert.False(double.IsNegativeInfinity(mixer.LevelLeft));
                 Assert.False(double.IsNegativeInfinity(mixer.LevelRight));
                 Assert.False(double.IsNegativeInfinity(mixer.PeakLeft));
@@ -163,7 +164,7 @@ namespace LibAtem.ComparisonTests2.Audio
                 helper.Sleep(240);
                 helper.SendAndWaitForMatching(levelsKey, null);
 
-                ComparisonAudioProgramOutState mixer2 = helper.SdkState.Audio.ProgramOut;
+                AudioState.ProgramOutState mixer2 = helper.SdkState.Audio.ProgramOut;
                 Assert.Equal(-10.3, mixer2.LevelLeft, 1);
                 Assert.Equal(mixer2.LevelLeft, mixer2.LevelRight, 1);
                 Assert.Equal(mixer2.PeakLeft, mixer2.PeakRight, 1);
@@ -178,7 +179,7 @@ namespace LibAtem.ComparisonTests2.Audio
                 helper.Sleep(240);
                 helper.SendAndWaitForMatching(levelsKey, null);
 
-                ComparisonAudioProgramOutState mixer3 = helper.SdkState.Audio.ProgramOut;
+                AudioState.ProgramOutState mixer3 = helper.SdkState.Audio.ProgramOut;
                 Assert.Equal(mixer2.LevelLeft, mixer3.LevelLeft, 1); // Shouldnt have changed
                 Assert.Equal(mixer3.LevelLeft, mixer3.LevelRight, 1);
                 Assert.Equal(-10.3, mixer3.PeakLeft, 1);
@@ -200,7 +201,7 @@ namespace LibAtem.ComparisonTests2.Audio
                 helper.Sleep(240);
                 helper.SendAndWaitForMatching(levelsKey, null);
 
-                ComparisonAudioProgramOutState mixer4 = helper.LibState.Audio.ProgramOut;
+                AudioState.ProgramOutState mixer4 = helper.LibState.Audio.ProgramOut;
                 Assert.True(mixer4.LevelLeft < -70);
                 Assert.True(mixer4.LevelRight < -70);
                 Assert.True(mixer4.PeakLeft < -70);
@@ -234,8 +235,8 @@ namespace LibAtem.ComparisonTests2.Audio
                 helper.Sleep(240);
                 helper.SendAndWaitForMatching(levelsKey, null);
 
-                ComparisonAudioProgramOutState mixer = helper.SdkState.Audio.ProgramOut;
-                ComparisonAudioInputState input = helper.SdkState.Audio.Inputs[(long)AudioSource.MP1];
+                AudioState.ProgramOutState mixer = helper.SdkState.Audio.ProgramOut;
+                AudioState.InputState input = helper.SdkState.Audio.Inputs[(long)AudioSource.MP1];
                 Assert.False(double.IsNegativeInfinity(mixer.PeakLeft));
                 Assert.False(double.IsNegativeInfinity(mixer.PeakRight));
                 Assert.False(double.IsNegativeInfinity(input.PeakLeft));
@@ -248,8 +249,8 @@ namespace LibAtem.ComparisonTests2.Audio
                 helper.SendAndWaitForMatching(levelsKey, null);
 
                 // Ensure peaks are still high
-                ComparisonAudioProgramOutState mixer2 = helper.SdkState.Audio.ProgramOut;
-                ComparisonAudioInputState input2 = helper.SdkState.Audio.Inputs[(long)AudioSource.MP1];
+                AudioState.ProgramOutState mixer2 = helper.SdkState.Audio.ProgramOut;
+                AudioState.InputState input2 = helper.SdkState.Audio.Inputs[(long)AudioSource.MP1];
                 Assert.False(mixer2.PeakLeft < -60);
                 Assert.False(mixer2.PeakRight < -60);
                 Assert.False(input2.PeakLeft < -60);
@@ -264,8 +265,8 @@ namespace LibAtem.ComparisonTests2.Audio
                 helper.Sleep(240);
                 helper.SendAndWaitForMatching(levelsKey, null);
 
-                ComparisonAudioProgramOutState mixer3 = helper.SdkState.Audio.ProgramOut;
-                ComparisonAudioInputState input3 = helper.SdkState.Audio.Inputs[(long)AudioSource.MP1];
+                AudioState.ProgramOutState mixer3 = helper.SdkState.Audio.ProgramOut;
+                AudioState.InputState input3 = helper.SdkState.Audio.Inputs[(long)AudioSource.MP1];
                 Assert.True(mixer3.PeakLeft < -60);
                 Assert.True(mixer3.PeakRight < -60);
                 Assert.True(input3.PeakLeft < -60);

@@ -9,6 +9,7 @@ using LibAtem.Common;
 using LibAtem.ComparisonTests2.State;
 using LibAtem.ComparisonTests2.Util;
 using LibAtem.DeviceProfile;
+using LibAtem.State;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -57,14 +58,14 @@ namespace LibAtem.ComparisonTests2
 
             public abstract T MangleBadValue(T v);
 
-            public override void UpdateExpectedState(ComparisonState state, bool goodValue, T v)
+            public override void UpdateExpectedState(AtemState state, bool goodValue, T v)
             {
-                SetCommandProperty(state.SuperSource, PropertyName, goodValue ? v : MangleBadValue(v));
+                SetCommandProperty(state.SuperSources[(int)_ssrcId], PropertyName, goodValue ? v : MangleBadValue(v));
             }
 
             public override IEnumerable<CommandQueueKey> ExpectedCommands(bool goodValue, T v)
             {
-                yield return new CommandQueueKey(new SuperSourcePropertiesGetCommand() { SSrcId = _ssrcId });
+                yield return new CommandQueueKey(new SuperSourcePropertiesGetV8Command() { SSrcId = _ssrcId });
             }
         }
 
@@ -86,9 +87,9 @@ namespace LibAtem.ComparisonTests2
             public override VideoSource[] GoodValues => VideoSourceLists.All.Where(s => s.IsAvailable(_helper.Profile, InternalPortType.Mask) && s.IsAvailable(SourceAvailability.SuperSourceArt | SourceAvailability.KeySource)).ToArray();
 
             public override VideoSource MangleBadValue(VideoSource v) => v;
-            public override void UpdateExpectedState(ComparisonState state, bool goodValue, VideoSource v)
+            public override void UpdateExpectedState(AtemState state, bool goodValue, VideoSource v)
             {
-                if (goodValue) state.SuperSource.ArtKeyInput = v;
+                if (goodValue) state.SuperSources[(int)_ssrcId].Properties.ArtKeyInput = v;
             }
 
             public override IEnumerable<CommandQueueKey> ExpectedCommands(bool goodValue, VideoSource v)
@@ -125,13 +126,13 @@ namespace LibAtem.ComparisonTests2
             public override VideoSource[] GoodValues => VideoSourceLists.All.Where(s => s.IsAvailable(_helper.Profile, InternalPortType.Mask) && s.IsAvailable(SourceAvailability.SuperSourceArt)).ToArray();
 
             public override VideoSource MangleBadValue(VideoSource v) => v;
-            public override void UpdateExpectedState(ComparisonState state, bool goodValue, VideoSource v)
+            public override void UpdateExpectedState(AtemState state, bool goodValue, VideoSource v)
             {
                 if (goodValue)
                 {
-                    state.SuperSource.ArtFillInput = v;
+                    state.SuperSources[(int)_ssrcId].Properties.ArtFillInput = v;
                     if (VideoSourceLists.MediaPlayers.Contains(v))
-                        state.SuperSource.ArtKeyInput = v + 1;
+                        state.SuperSources[(int)_ssrcId].Properties.ArtKeyInput = v + 1;
                 }
             }
 

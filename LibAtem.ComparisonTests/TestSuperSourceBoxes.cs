@@ -9,6 +9,7 @@ using LibAtem.Common;
 using LibAtem.ComparisonTests2.State;
 using LibAtem.ComparisonTests2.Util;
 using LibAtem.DeviceProfile;
+using LibAtem.State;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -52,7 +53,7 @@ namespace LibAtem.ComparisonTests2
             }
         }
 
-        private abstract class SuperSourceBoxTestDefinition<T> : TestDefinitionBase<SuperSourceBoxSetCommand, T>
+        private abstract class SuperSourceBoxTestDefinition<T> : TestDefinitionBase<SuperSourceBoxSetV8Command, T>
         {
             protected readonly SuperSourceId _ssrcId;
             protected readonly SuperSourceBoxId _boxId;
@@ -65,7 +66,7 @@ namespace LibAtem.ComparisonTests2
                 _sdk = box.Item2;
             }
 
-            public override void SetupCommand(SuperSourceBoxSetCommand cmd)
+            public override void SetupCommand(SuperSourceBoxSetV8Command cmd)
             {
                 cmd.SSrcId = _ssrcId;
                 cmd.BoxIndex = _boxId;
@@ -73,14 +74,14 @@ namespace LibAtem.ComparisonTests2
 
             public abstract T MangleBadValue(T v);
 
-            public override void UpdateExpectedState(ComparisonState state, bool goodValue, T v)
+            public override void UpdateExpectedState(AtemState state, bool goodValue, T v)
             {
-                SetCommandProperty(state.SuperSource.Boxes[_boxId], PropertyName, goodValue ? v : MangleBadValue(v));
+                SetCommandProperty(state.SuperSources[(int)_ssrcId].Boxes[(int)_boxId], PropertyName, goodValue ? v : MangleBadValue(v));
             }
 
             public override IEnumerable<CommandQueueKey> ExpectedCommands(bool goodValue, T v)
             {
-                yield return new CommandQueueKey(new SuperSourceBoxGetCommand() { SSrcId = _ssrcId, BoxIndex = _boxId });
+                yield return new CommandQueueKey(new SuperSourceBoxGetV8Command() { SSrcId = _ssrcId, BoxIndex = _boxId });
             }
         }
 
@@ -122,10 +123,10 @@ namespace LibAtem.ComparisonTests2
 
             public override VideoSource[] GoodValues => VideoSourceLists.All.Where(s => s.IsAvailable(_helper.Profile, InternalPortType.Mask) && s.IsAvailable(SourceAvailability.SuperSourceBox)).ToArray();
 
-            public override void UpdateExpectedState(ComparisonState state, bool goodValue, VideoSource v)
+            public override void UpdateExpectedState(AtemState state, bool goodValue, VideoSource v)
             {
                 if (goodValue)
-                    state.SuperSource.Boxes[_boxId].InputSource = v;
+                    state.SuperSources[(int)_ssrcId].Boxes[(int)_boxId].InputSource = v;
             }
 
             public override IEnumerable<CommandQueueKey> ExpectedCommands(bool goodValue, VideoSource v)
@@ -214,9 +215,9 @@ namespace LibAtem.ComparisonTests2
 
             public override ICommand GenerateCommand(double v)
             {
-                return new SuperSourceBoxSetCommand
+                return new SuperSourceBoxSetV8Command
                 {
-                    Mask = SuperSourceBoxSetCommand.MaskFlags.PositionX,
+                    Mask = SuperSourceBoxSetV8Command.MaskFlags.PositionX,
                     SSrcId = _ssrcId,
                     BoxIndex = _boxId,
                     PositionX = v,

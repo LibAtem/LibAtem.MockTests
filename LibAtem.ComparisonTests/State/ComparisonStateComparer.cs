@@ -1,4 +1,6 @@
-﻿using System;
+﻿using LibAtem.State;
+using LibAtem.State.Tolerance;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
@@ -7,16 +9,16 @@ using Xunit.Abstractions;
 
 namespace LibAtem.ComparisonTests2.State
 {
-    public static class ComparisonStateComparer
+    public static class AtemStateComparer
     {
-        public static List<string> AreEqual(ComparisonState state1, ComparisonState state2)
+        public static List<string> AreEqual(AtemState state1, AtemState state2)
         {
-            IReadOnlyList<string> ignoreNodes = ComparisonStateSettings.IgnoreNodes.ToList();
+            IReadOnlyList<string> ignoreNodes = AtemStateSettings.IgnoreNodes.ToList();
             return CompareObject("", ignoreNodes, state1, state2).ToList();
         }
-        public static bool AreEqual(ITestOutputHelper output, ComparisonState state1, ComparisonState state2)
+        public static bool AreEqual(ITestOutputHelper output, AtemState state1, AtemState state2)
         {
-            IReadOnlyList<string> ignoreNodes = ComparisonStateSettings.IgnoreNodes.ToList();
+            IReadOnlyList<string> ignoreNodes = AtemStateSettings.IgnoreNodes.ToList();
             List<string> res = CompareObject("", ignoreNodes, state1, state2).ToList();
 
             foreach (string r in res)

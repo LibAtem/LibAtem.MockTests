@@ -2,16 +2,17 @@
 using BMDSwitcherAPI;
 using LibAtem.Commands;
 using LibAtem.Commands.Settings;
+using LibAtem.State;
 
 namespace LibAtem.ComparisonTests2.State.SDK
 {
     public sealed class SwitcherPropertiesCallback : IBMDSwitcherCallback, INotify<_BMDSwitcherEventType>
     {
-        private readonly ComparisonState _state;
+        private readonly AtemState _state;
         private readonly IBMDSwitcher _props;
         private readonly Action<CommandQueueKey> _onChange;
 
-        public SwitcherPropertiesCallback(ComparisonState state, IBMDSwitcher props, Action<CommandQueueKey> onChange)
+        public SwitcherPropertiesCallback(AtemState state, IBMDSwitcher props, Action<CommandQueueKey> onChange)
         {
             _state = state;
             _props = props;

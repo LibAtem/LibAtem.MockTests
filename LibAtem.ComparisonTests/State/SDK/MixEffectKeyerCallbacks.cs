@@ -3,18 +3,19 @@ using BMDSwitcherAPI;
 using LibAtem.Commands;
 using LibAtem.Commands.MixEffects.Key;
 using LibAtem.Common;
+using LibAtem.State;
 
 namespace LibAtem.ComparisonTests2.State.SDK
 {
     public sealed class MixEffectKeyerCallback : IBMDSwitcherKeyCallback, INotify<_BMDSwitcherKeyEventType>
     {
-        private readonly ComparisonMixEffectKeyerState _state;
+        private readonly MixEffectState.KeyerState _state;
         private readonly MixEffectBlockId _meId;
         private readonly UpstreamKeyId _keyId;
         private readonly IBMDSwitcherKey _props;
         private readonly Action<CommandQueueKey> _onChange;
 
-        public MixEffectKeyerCallback(ComparisonMixEffectKeyerState state, MixEffectBlockId meId, UpstreamKeyId keyId, IBMDSwitcherKey props, Action<CommandQueueKey> onChange)
+        public MixEffectKeyerCallback(MixEffectState.KeyerState state, MixEffectBlockId meId, UpstreamKeyId keyId, IBMDSwitcherKey props, Action<CommandQueueKey> onChange)
         {
             _state = state;
             _meId = meId;
@@ -29,17 +30,17 @@ namespace LibAtem.ComparisonTests2.State.SDK
             {
                 case _BMDSwitcherKeyEventType.bmdSwitcherKeyEventTypeTypeChanged:
                     _props.GetType(out _BMDSwitcherKeyType type);
-                    _state.Type = AtemEnumMaps.MixEffectKeyTypeMap.FindByValue(type);
+                    _state.Properties.Mode= AtemEnumMaps.MixEffectKeyTypeMap.FindByValue(type);
                     _onChange(new CommandQueueKey(new MixEffectKeyPropertiesGetCommand() { MixEffectIndex = _meId, KeyerIndex = _keyId }));
                     break;
                 case _BMDSwitcherKeyEventType.bmdSwitcherKeyEventTypeInputCutChanged:
                     _props.GetInputCut(out long inputCut);
-                    _state.CutSource = (VideoSource)inputCut;
+                    _state.Properties.CutSource = (VideoSource)inputCut;
                     _onChange(new CommandQueueKey(new MixEffectKeyPropertiesGetCommand() { MixEffectIndex = _meId, KeyerIndex = _keyId }));
                     break;
                 case _BMDSwitcherKeyEventType.bmdSwitcherKeyEventTypeInputFillChanged:
                     _props.GetInputFill(out long input);
-                    _state.FillSource = (VideoSource)input;
+                    _state.Properties.FillSource = (VideoSource)input;
                     _onChange(new CommandQueueKey(new MixEffectKeyPropertiesGetCommand() { MixEffectIndex = _meId, KeyerIndex = _keyId }));
                     break;
                 case _BMDSwitcherKeyEventType.bmdSwitcherKeyEventTypeOnAirChanged:
@@ -49,27 +50,27 @@ namespace LibAtem.ComparisonTests2.State.SDK
                     break;
                 case _BMDSwitcherKeyEventType.bmdSwitcherKeyEventTypeMaskedChanged:
                     _props.GetMasked(out int masked);
-                    _state.MaskEnabled = masked != 0;
+                    _state.Properties.MaskEnabled = masked != 0;
                     _onChange(new CommandQueueKey(new MixEffectKeyPropertiesGetCommand() { MixEffectIndex = _meId, KeyerIndex = _keyId }));
                     break;
                 case _BMDSwitcherKeyEventType.bmdSwitcherKeyEventTypeMaskTopChanged:
                     _props.GetMaskTop(out double top);
-                    _state.MaskTop = top;
+                    _state.Properties.MaskTop = top;
                     _onChange(new CommandQueueKey(new MixEffectKeyPropertiesGetCommand() { MixEffectIndex = _meId, KeyerIndex = _keyId }));
                     break;
                 case _BMDSwitcherKeyEventType.bmdSwitcherKeyEventTypeMaskBottomChanged:
                     _props.GetMaskBottom(out double bottom);
-                    _state.MaskBottom = bottom;
+                    _state.Properties.MaskBottom = bottom;
                     _onChange(new CommandQueueKey(new MixEffectKeyPropertiesGetCommand() { MixEffectIndex = _meId, KeyerIndex = _keyId }));
                     break;
                 case _BMDSwitcherKeyEventType.bmdSwitcherKeyEventTypeMaskLeftChanged:
                     _props.GetMaskLeft(out double left);
-                    _state.MaskLeft = left;
+                    _state.Properties.MaskLeft = left;
                     _onChange(new CommandQueueKey(new MixEffectKeyPropertiesGetCommand() { MixEffectIndex = _meId, KeyerIndex = _keyId }));
                     break;
                 case _BMDSwitcherKeyEventType.bmdSwitcherKeyEventTypeMaskRightChanged:
                     _props.GetMaskRight(out double right);
-                    _state.MaskRight = right;
+                    _state.Properties.MaskRight = right;
                     _onChange(new CommandQueueKey(new MixEffectKeyPropertiesGetCommand() { MixEffectIndex = _meId, KeyerIndex = _keyId }));
                     break;
                 case _BMDSwitcherKeyEventType.bmdSwitcherKeyEventTypeCanBeDVEKeyChanged:
@@ -82,13 +83,13 @@ namespace LibAtem.ComparisonTests2.State.SDK
 
     public sealed class MixEffectKeyerLumaCallback : IBMDSwitcherKeyLumaParametersCallback, INotify<_BMDSwitcherKeyLumaParametersEventType>
     {
-        private readonly ComparisonMixEffectKeyerLumaState _state;
+        private readonly MixEffectState.KeyerLumaState _state;
         private readonly MixEffectBlockId _meId;
         private readonly UpstreamKeyId _keyId;
         private readonly IBMDSwitcherKeyLumaParameters _props;
         private readonly Action<CommandQueueKey> _onChange;
 
-        public MixEffectKeyerLumaCallback(ComparisonMixEffectKeyerLumaState state, MixEffectBlockId meId, UpstreamKeyId keyId, IBMDSwitcherKeyLumaParameters props, Action<CommandQueueKey> onChange)
+        public MixEffectKeyerLumaCallback(MixEffectState.KeyerLumaState state, MixEffectBlockId meId, UpstreamKeyId keyId, IBMDSwitcherKeyLumaParameters props, Action<CommandQueueKey> onChange)
         {
             _state = state;
             _meId = meId;
@@ -127,13 +128,13 @@ namespace LibAtem.ComparisonTests2.State.SDK
 
     public sealed class MixEffectKeyerChromaCallback : IBMDSwitcherKeyChromaParametersCallback, INotify<_BMDSwitcherKeyChromaParametersEventType>
     {
-        private readonly ComparisonMixEffectKeyerChromaState _state;
+        private readonly MixEffectState.KeyerChromaState _state;
         private readonly MixEffectBlockId _meId;
         private readonly UpstreamKeyId _keyId;
         private readonly IBMDSwitcherKeyChromaParameters _props;
         private readonly Action<CommandQueueKey> _onChange;
 
-        public MixEffectKeyerChromaCallback(ComparisonMixEffectKeyerChromaState state, MixEffectBlockId meId, UpstreamKeyId keyId, IBMDSwitcherKeyChromaParameters props, Action<CommandQueueKey> onChange)
+        public MixEffectKeyerChromaCallback(MixEffectState.KeyerChromaState state, MixEffectBlockId meId, UpstreamKeyId keyId, IBMDSwitcherKeyChromaParameters props, Action<CommandQueueKey> onChange)
         {
             _state = state;
             _meId = meId;
@@ -176,13 +177,13 @@ namespace LibAtem.ComparisonTests2.State.SDK
 
     public sealed class MixEffectKeyerPatternCallback : IBMDSwitcherKeyPatternParametersCallback, INotify<_BMDSwitcherKeyPatternParametersEventType>
     {
-        private readonly ComparisonMixEffectKeyerPatternState _state;
+        private readonly MixEffectState.KeyerPatternState _state;
         private readonly MixEffectBlockId _meId;
         private readonly UpstreamKeyId _keyId;
         private readonly IBMDSwitcherKeyPatternParameters _props;
         private readonly Action<CommandQueueKey> _onChange;
 
-        public MixEffectKeyerPatternCallback(ComparisonMixEffectKeyerPatternState state, MixEffectBlockId meId, UpstreamKeyId keyId, IBMDSwitcherKeyPatternParameters props, Action<CommandQueueKey> onChange)
+        public MixEffectKeyerPatternCallback(MixEffectState.KeyerPatternState state, MixEffectBlockId meId, UpstreamKeyId keyId, IBMDSwitcherKeyPatternParameters props, Action<CommandQueueKey> onChange)
         {
             _state = state;
             _meId = meId;
@@ -233,13 +234,13 @@ namespace LibAtem.ComparisonTests2.State.SDK
 
     public sealed class MixEffectKeyerDVECallback : IBMDSwitcherKeyDVEParametersCallback, INotify<_BMDSwitcherKeyDVEParametersEventType>
     {
-        private readonly ComparisonMixEffectKeyerDVEState _state;
+        private readonly MixEffectState.KeyerDVEState _state;
         private readonly MixEffectBlockId _meId;
         private readonly UpstreamKeyId _keyId;
         private readonly IBMDSwitcherKeyDVEParameters _props;
         private readonly Action<CommandQueueKey> _onChange;
 
-        public MixEffectKeyerDVECallback(ComparisonMixEffectKeyerDVEState state, MixEffectBlockId meId, UpstreamKeyId keyId, IBMDSwitcherKeyDVEParameters props, Action<CommandQueueKey> onChange)
+        public MixEffectKeyerDVECallback(MixEffectState.KeyerDVEState state, MixEffectBlockId meId, UpstreamKeyId keyId, IBMDSwitcherKeyDVEParameters props, Action<CommandQueueKey> onChange)
         {
             _state = state;
             _meId = meId;
@@ -342,13 +343,13 @@ namespace LibAtem.ComparisonTests2.State.SDK
 
     public sealed class MixEffectKeyerFlyCallback : IBMDSwitcherKeyFlyParametersCallback, INotify<_BMDSwitcherKeyFlyParametersEventType>
     {
-        private readonly ComparisonMixEffectKeyerFlyState _state;
+        private readonly MixEffectState.KeyerDVEState _state;
         private readonly MixEffectBlockId _meId;
         private readonly UpstreamKeyId _keyId;
         private readonly IBMDSwitcherKeyFlyParameters _props;
         private readonly Action<CommandQueueKey> _onChange;
 
-        public MixEffectKeyerFlyCallback(ComparisonMixEffectKeyerFlyState state, MixEffectBlockId meId, UpstreamKeyId keyId, IBMDSwitcherKeyFlyParameters props, Action<CommandQueueKey> onChange)
+        public MixEffectKeyerFlyCallback(MixEffectState.KeyerDVEState state, MixEffectBlockId meId, UpstreamKeyId keyId, IBMDSwitcherKeyFlyParameters props, Action<CommandQueueKey> onChange)
         {
             _state = state;
             _meId = meId;
@@ -410,14 +411,14 @@ namespace LibAtem.ComparisonTests2.State.SDK
 
     public sealed class MixEffectKeyerFlyKeyFrameCallback : IBMDSwitcherKeyFlyKeyFrameParametersCallback, INotify<_BMDSwitcherKeyFlyKeyFrameParametersEventType>
     {
-        private readonly ComparisonMixEffectKeyerFlyFrameState _state;
+        private readonly MixEffectState.KeyerFlyFrameState _state;
         private readonly MixEffectBlockId _meId;
         private readonly UpstreamKeyId _keyId;
         private readonly FlyKeyKeyFrameId _frameId;
         private readonly IBMDSwitcherKeyFlyKeyFrameParameters _props;
         private readonly Action<CommandQueueKey> _onChange;
 
-        public MixEffectKeyerFlyKeyFrameCallback(ComparisonMixEffectKeyerFlyFrameState state, MixEffectBlockId meId, UpstreamKeyId keyId, FlyKeyKeyFrameId frameId, IBMDSwitcherKeyFlyKeyFrameParameters props, Action<CommandQueueKey> onChange)
+        public MixEffectKeyerFlyKeyFrameCallback(MixEffectState.KeyerFlyFrameState state, MixEffectBlockId meId, UpstreamKeyId keyId, FlyKeyKeyFrameId frameId, IBMDSwitcherKeyFlyKeyFrameParameters props, Action<CommandQueueKey> onChange)
         {
             _state = state;
             _meId = meId;
@@ -447,19 +448,19 @@ namespace LibAtem.ComparisonTests2.State.SDK
             {
                 case _BMDSwitcherKeyFlyKeyFrameParametersEventType.bmdSwitcherKeyFlyKeyFrameParametersEventTypeSizeXChanged:
                     _props.GetSizeX(out double sizeX);
-                    _state.XSize = sizeX;
+                    _state.SizeX = sizeX;
                     break;
                 case _BMDSwitcherKeyFlyKeyFrameParametersEventType.bmdSwitcherKeyFlyKeyFrameParametersEventTypeSizeYChanged:
                     _props.GetSizeY(out double sizeY);
-                    _state.YSize = sizeY;
+                    _state.SizeY = sizeY;
                     break;
                 case _BMDSwitcherKeyFlyKeyFrameParametersEventType.bmdSwitcherKeyFlyKeyFrameParametersEventTypePositionXChanged:
                     _props.GetPositionX(out double positionX);
-                    _state.XPosition = positionX;
+                    _state.PositionX = positionX;
                     break;
                 case _BMDSwitcherKeyFlyKeyFrameParametersEventType.bmdSwitcherKeyFlyKeyFrameParametersEventTypePositionYChanged:
                     _props.GetPositionY(out double positionY);
-                    _state.YPosition = positionY;
+                    _state.PositionY = positionY;
                     break;
                 case _BMDSwitcherKeyFlyKeyFrameParametersEventType.bmdSwitcherKeyFlyKeyFrameParametersEventTypeRotationChanged:
                     _props.GetRotation(out double rotation);
@@ -467,27 +468,27 @@ namespace LibAtem.ComparisonTests2.State.SDK
                     break;
                 case _BMDSwitcherKeyFlyKeyFrameParametersEventType.bmdSwitcherKeyFlyKeyFrameParametersEventTypeBorderWidthOutChanged:
                     _props.GetBorderWidthOut(out double widthOut);
-                    _state.BorderOuterWidth = widthOut;
+                    _state.OuterWidth = widthOut;
                     break;
                 case _BMDSwitcherKeyFlyKeyFrameParametersEventType.bmdSwitcherKeyFlyKeyFrameParametersEventTypeBorderWidthInChanged:
                     _props.GetBorderWidthIn(out double widthIn);
-                    _state.BorderInnerWidth = widthIn;
+                    _state.InnerWidth = widthIn;
                     break;
                 case _BMDSwitcherKeyFlyKeyFrameParametersEventType.bmdSwitcherKeyFlyKeyFrameParametersEventTypeBorderSoftnessOutChanged:
                     _props.GetBorderSoftnessOut(out double borderSoftnessOut);
-                    _state.BorderOuterSoftness = (uint)(borderSoftnessOut * 100);
+                    _state.OuterSoftness = (uint)(borderSoftnessOut * 100);
                     break;
                 case _BMDSwitcherKeyFlyKeyFrameParametersEventType.bmdSwitcherKeyFlyKeyFrameParametersEventTypeBorderSoftnessInChanged:
                     _props.GetBorderSoftnessIn(out double borderSoftnessIn);
-                    _state.BorderInnerSoftness = (uint)(borderSoftnessIn * 100);
+                    _state.InnerSoftness = (uint)(borderSoftnessIn * 100);
                     break;
                 case _BMDSwitcherKeyFlyKeyFrameParametersEventType.bmdSwitcherKeyFlyKeyFrameParametersEventTypeBorderBevelSoftnessChanged:
                     _props.GetBorderBevelSoftness(out double borderBevelSoftness);
-                    _state.BorderBevelSoftness = (uint)(borderBevelSoftness * 100);
+                    _state.BevelSoftness = (uint)(borderBevelSoftness * 100);
                     break;
                 case _BMDSwitcherKeyFlyKeyFrameParametersEventType.bmdSwitcherKeyFlyKeyFrameParametersEventTypeBorderBevelPositionChanged:
                     _props.GetBorderBevelPosition(out double borderBevelPosition);
-                    _state.BorderBevelPosition = (uint)(borderBevelPosition * 100);
+                    _state.BevelPosition = (uint)(borderBevelPosition * 100);
                     break;
                 case _BMDSwitcherKeyFlyKeyFrameParametersEventType.bmdSwitcherKeyFlyKeyFrameParametersEventTypeBorderHueChanged:
                     _props.GetBorderHue(out double hue);
@@ -503,11 +504,11 @@ namespace LibAtem.ComparisonTests2.State.SDK
                     break;
                 case _BMDSwitcherKeyFlyKeyFrameParametersEventType.bmdSwitcherKeyFlyKeyFrameParametersEventTypeBorderLightSourceDirectionChanged:
                     _props.GetBorderLightSourceDirection(out double deg);
-                    _state.BorderLightSourceDirection = deg;
+                    _state.LightSourceDirection = deg;
                     break;
                 case _BMDSwitcherKeyFlyKeyFrameParametersEventType.bmdSwitcherKeyFlyKeyFrameParametersEventTypeBorderLightSourceAltitudeChanged:
                     _props.GetBorderLightSourceAltitude(out double alt);
-                    _state.BorderLightSourceAltitude = (uint)(alt * 100);
+                    _state.LightSourceAltitude = (uint)(alt * 100);
                     break;
                 default:
                     throw new ArgumentOutOfRangeException(nameof(eventType), eventType, null);

@@ -9,6 +9,7 @@ using LibAtem.Common;
 using LibAtem.ComparisonTests2.State;
 using LibAtem.ComparisonTests2.Util;
 using LibAtem.DeviceProfile;
+using LibAtem.State;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -46,9 +47,9 @@ namespace LibAtem.ComparisonTests2.Settings
 
             public abstract T MangleBadValue(T v);
 
-            public override void UpdateExpectedState(ComparisonState state, bool goodValue, T v)
+            public override void UpdateExpectedState(AtemState state, bool goodValue, T v)
             {
-                ComparisonInputState obj = state.Inputs[_id];
+                InputState obj = state.Settings.Inputs[_id];
                 SetCommandProperty(obj, PropertyName, goodValue ? v : MangleBadValue(v));
             }
 
@@ -82,11 +83,11 @@ namespace LibAtem.ComparisonTests2.Settings
             }
             //public override ExternalPortType[] BadValues => Enum.GetValues(typeof(ExternalPortType)).OfType<ExternalPortType>().Except(GoodValues).ToArray();
 
-            public override void UpdateExpectedState(ComparisonState state, bool goodValue, ExternalPortTypeFlags v)
+            public override void UpdateExpectedState(AtemState state, bool goodValue, ExternalPortTypeFlags v)
             {
                 if (goodValue)
                 {
-                    state.Inputs[_id].CurrentExternalPortType = v;
+                    state.Settings.Inputs[_id].Properties.CurrentExternalPortType = v;
                     var audioId = (AudioSource)_id;
                     if (audioId.IsAvailable(_helper.Profile) && state.Audio.Inputs.ContainsKey((long)audioId))
                     {
@@ -168,12 +169,12 @@ namespace LibAtem.ComparisonTests2.Settings
 
             public override string PropertyName => "LongName";
             public override string MangleBadValue(string v) => v == null ? "" : v.Substring(0, 20);
-            public override void UpdateExpectedState(ComparisonState state, bool goodValue, string v)
+            public override void UpdateExpectedState(AtemState state, bool goodValue, string v)
             {
                 base.UpdateExpectedState(state, goodValue, v);
 
-                ComparisonInputState obj = state.Inputs[_id];
-                obj.AreNamesDefault = (obj.LongName == _defVal);
+                // InputState obj = state.Settings.Inputs[_id];
+                // obj.AreNamesDefault = (obj.Properties.LongName == _defVal);
             }
 
             public override string[] GoodValues => new string[] { "", "aaaa", Guid.NewGuid().ToString().Substring(0, 20), _defVal };
@@ -192,12 +193,12 @@ namespace LibAtem.ComparisonTests2.Settings
 
             public override string PropertyName => "ShortName";
             public override string MangleBadValue(string v) => v == null ? "" : v.Substring(0, 4);
-            public override void UpdateExpectedState(ComparisonState state, bool goodValue, string v)
+            public override void UpdateExpectedState(AtemState state, bool goodValue, string v)
             {
                 base.UpdateExpectedState(state, goodValue, v);
 
-                ComparisonInputState obj = state.Inputs[_id];
-                obj.AreNamesDefault = (obj.ShortName == _defVal);
+                // InputState obj = state.Inputs[_id];
+                // obj.AreNamesDefault = (obj.ShortName == _defVal);
             }
 
             public override string[] GoodValues => new string[] { "", "aaaa", _defVal };
@@ -217,17 +218,17 @@ namespace LibAtem.ComparisonTests2.Settings
                     input.Value.ResetNames();
                     helper.Sleep();
 
-                    if (!helper.LibState.Inputs.TryGetValue(input.Key, out ComparisonInputState libVal))
+                    if (!helper.LibState.Settings.Inputs.TryGetValue(input.Key, out InputState libVal))
                     {
                         failures.Add(string.Format("Missing LibAtem Input with Id: {0}", input.Key));
                         continue;
                     }
 
                     Tuple<string, string> defaults = input.Key.GetDefaultName(helper.Profile);
-                    if (defaults.Item1 != libVal.LongName)
-                        failures.Add(string.Format("Mismatch in long name default for input {0}. Expected: {1}, Got: {2}", input.Key, libVal.LongName, defaults.Item1));
-                    if (defaults.Item2 != libVal.ShortName)
-                        failures.Add(string.Format("Mismatch in short name default for input {0}. Expected: {1}, Got: {2}", input.Key, libVal.ShortName, defaults.Item2));
+                    if (defaults.Item1 != libVal.Properties.LongName)
+                        failures.Add(string.Format("Mismatch in long name default for input {0}. Expected: {1}, Got: {2}", input.Key, libVal.Properties.LongName, defaults.Item1));
+                    if (defaults.Item2 != libVal.Properties.ShortName)
+                        failures.Add(string.Format("Mismatch in short name default for input {0}. Expected: {1}, Got: {2}", input.Key, libVal.Properties.ShortName, defaults.Item2));
 
                     new InputShortNameTestDefinition(helper, input, defaults.Item2).Run();
                     new InputLongNameTestDefinition(helper, input, defaults.Item1).Run();
@@ -254,13 +255,13 @@ namespace LibAtem.ComparisonTests2.Settings
                 meBlock.SetProgramInput((long)VideoSource.Black);
                 helper.Sleep();
 
-                Dictionary<VideoSource, ComparisonInputState> inputs = helper.LibState.Inputs;
+                Dictionary<VideoSource, InputState> inputs = helper.LibState.Settings.Inputs;
                 foreach (var input in inputs)
                 {
                     meBlock.SetProgramInput((long)input.Key);
                     helper.Sleep();
 
-                    List<string> before = ComparisonStateComparer.AreEqual(helper.SdkState, helper.LibState);
+                    List<string> before = AtemStateComparer.AreEqual(helper.SdkState, helper.LibState);
                     if (before.Count != 0 && _output != null)
                     {
                         _output.WriteLine("New state wrong:");

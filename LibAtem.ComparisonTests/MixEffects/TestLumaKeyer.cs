@@ -4,6 +4,7 @@ using LibAtem.Commands.MixEffects.Key;
 using LibAtem.Common;
 using LibAtem.ComparisonTests2.State;
 using LibAtem.ComparisonTests2.Util;
+using LibAtem.State;
 using System;
 using System.Collections.Generic;
 using Xunit;
@@ -39,9 +40,9 @@ namespace LibAtem.ComparisonTests2.MixEffects
 
             public abstract T MangleBadValue(T v);
 
-            public sealed override void UpdateExpectedState(ComparisonState state, bool goodValue, T v)
+            public sealed override void UpdateExpectedState(AtemState state, bool goodValue, T v)
             {
-                ComparisonMixEffectKeyerLumaState obj = state.MixEffects[_meId].Keyers[_keyId].Luma;
+                MixEffectState.KeyerLumaState obj = state.MixEffects[(int)_meId].Keyers[(int)_keyId].Luma;
                 SetCommandProperty(obj, PropertyName, goodValue ? v : MangleBadValue(v));
             }
 

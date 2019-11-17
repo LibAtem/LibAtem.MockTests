@@ -8,6 +8,7 @@ using LibAtem.Common;
 using LibAtem.ComparisonTests2.State;
 using LibAtem.ComparisonTests2.Util;
 using LibAtem.DeviceProfile;
+using LibAtem.State;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -39,9 +40,9 @@ namespace LibAtem.ComparisonTests2.MixEffects
 
             public abstract T MangleBadValue(T v);
 
-            public override void UpdateExpectedState(ComparisonState state, bool goodValue, T v)
+            public override void UpdateExpectedState(AtemState state, bool goodValue, T v)
             {
-                ComparisonMixEffectTransitionDVEState obj = state.MixEffects[_id].Transition.DVE;
+                MixEffectState.TransitionDVEState obj = state.MixEffects[(int)_id].Transition.DVE;
                 SetCommandProperty(obj, PropertyName, goodValue ? v : MangleBadValue(v));
             }
 
@@ -123,10 +124,10 @@ namespace LibAtem.ComparisonTests2.MixEffects
             public override string PropertyName => "Reverse";
             public override bool MangleBadValue(bool v) => v;
 
-            public override void UpdateExpectedState(ComparisonState state, bool goodValue, bool v)
+            public override void UpdateExpectedState(AtemState state, bool goodValue, bool v)
             {
-                state.MixEffects[_id].Transition.DVE.Reverse = v;
-                state.MixEffects[_id].Transition.Wipe.ReverseDirection = v;
+                state.MixEffects[(int)_id].Transition.DVE.Reverse = v;
+                state.MixEffects[(int)_id].Transition.Wipe.ReverseDirection = v;
             }
         }
 
@@ -149,10 +150,10 @@ namespace LibAtem.ComparisonTests2.MixEffects
             public override string PropertyName => "FlipFlop";
             public override bool MangleBadValue(bool v) => v;
 
-            public override void UpdateExpectedState(ComparisonState state, bool goodValue, bool v)
+            public override void UpdateExpectedState(AtemState state, bool goodValue, bool v)
             {
-                state.MixEffects[_id].Transition.DVE.FlipFlop = v;
-                state.MixEffects[_id].Transition.Wipe.FlipFlop = v;
+                state.MixEffects[(int)_id].Transition.DVE.FlipFlop = v;
+                state.MixEffects[(int)_id].Transition.Wipe.FlipFlop = v;
             }
         }
 
@@ -179,13 +180,13 @@ namespace LibAtem.ComparisonTests2.MixEffects
             public override VideoSource[] GoodValues => VideoSourceLists.All.Where(s => s.IsAvailable(_helper.Profile, InternalPortType.Mask) && s.IsAvailable(_id)).ToArray();
             
             public override VideoSource MangleBadValue(VideoSource v) => v;
-            public override void UpdateExpectedState(ComparisonState state, bool goodValue, VideoSource v)
+            public override void UpdateExpectedState(AtemState state, bool goodValue, VideoSource v)
             {
                 if (goodValue)
                 {
-                    state.MixEffects[_id].Transition.DVE.FillSource = v;
+                    state.MixEffects[(int)_id].Transition.DVE.FillSource = v;
                     if (VideoSourceLists.MediaPlayers.Contains(v))
-                        state.MixEffects[_id].Transition.DVE.KeySource = v + 1;
+                        state.MixEffects[(int)_id].Transition.DVE.KeySource = v + 1;
                 }
             }
 
@@ -226,10 +227,10 @@ namespace LibAtem.ComparisonTests2.MixEffects
             public override VideoSource[] GoodValues => VideoSourceLists.All.Where(s => s.IsAvailable(_helper.Profile, InternalPortType.Mask) && s.IsAvailable(_id) && s.IsAvailable(SourceAvailability.KeySource)).ToArray();
 
             public override VideoSource MangleBadValue(VideoSource v) => v;
-            public override void UpdateExpectedState(ComparisonState state, bool goodValue, VideoSource v)
+            public override void UpdateExpectedState(AtemState state, bool goodValue, VideoSource v)
             {
                 if (goodValue)
-                    state.MixEffects[_id].Transition.DVE.KeySource = v;
+                    state.MixEffects[(int)_id].Transition.DVE.KeySource = v;
             }
 
             public override IEnumerable<CommandQueueKey> ExpectedCommands(bool goodValue, VideoSource v)
@@ -287,10 +288,10 @@ namespace LibAtem.ComparisonTests2.MixEffects
             public override string PropertyName => "PreMultiplied";
             public override bool MangleBadValue(bool v) => v;
 
-            public override void UpdateExpectedState(ComparisonState state, bool goodValue, bool v)
+            public override void UpdateExpectedState(AtemState state, bool goodValue, bool v)
             {
-                state.MixEffects[_id].Transition.DVE.PreMultiplied = v;
-                state.MixEffects[_id].Transition.Stinger.PreMultipliedKey = v;
+                state.MixEffects[(int)_id].Transition.DVE.PreMultiplied = v;
+                state.MixEffects[(int)_id].Transition.Stinger.PreMultipliedKey = v;
             }
         }
 
@@ -316,10 +317,10 @@ namespace LibAtem.ComparisonTests2.MixEffects
             public override double[] GoodValues => new double[] { 0, 87.4, 14.7, 99.9, 100, 0.1 };
             public override double[] BadValues => new double[] { 100.1, 110, 101, -0.01, -1, -10 };
 
-            public override void UpdateExpectedState(ComparisonState state, bool goodValue, double v)
+            public override void UpdateExpectedState(AtemState state, bool goodValue, double v)
             {
-                state.MixEffects[_id].Transition.DVE.Clip = goodValue ? v : v > 100 ? 100 : 0;
-                state.MixEffects[_id].Transition.Stinger.Clip = goodValue ? v : v > 100 ? 100 : 0;
+                state.MixEffects[(int)_id].Transition.DVE.Clip = goodValue ? v : v > 100 ? 100 : 0;
+                state.MixEffects[(int)_id].Transition.Stinger.Clip = goodValue ? v : v > 100 ? 100 : 0;
             }
         }
 
@@ -345,10 +346,10 @@ namespace LibAtem.ComparisonTests2.MixEffects
             public override double[] GoodValues => new double[] { 0, 87.4, 14.7, 99.9, 100, 0.1 };
             public override double[] BadValues => new double[] { 100.1, 110, 101, -0.01, -1, -10 };
             
-            public override void UpdateExpectedState(ComparisonState state, bool goodValue, double v)
+            public override void UpdateExpectedState(AtemState state, bool goodValue, double v)
             {
-                state.MixEffects[_id].Transition.DVE.Gain = goodValue ? v : v > 100 ? 100 : 0;
-                state.MixEffects[_id].Transition.Stinger.Gain = goodValue ? v : v > 100 ? 100 : 0;
+                state.MixEffects[(int)_id].Transition.DVE.Gain = goodValue ? v : v > 100 ? 100 : 0;
+                state.MixEffects[(int)_id].Transition.Stinger.Gain = goodValue ? v : v > 100 ? 100 : 0;
             }
         }
 
@@ -371,10 +372,10 @@ namespace LibAtem.ComparisonTests2.MixEffects
             public override string PropertyName => "InvertKey";
             public override bool MangleBadValue(bool v) => v;
 
-            public override void UpdateExpectedState(ComparisonState state, bool goodValue, bool v)
+            public override void UpdateExpectedState(AtemState state, bool goodValue, bool v)
             {
-                state.MixEffects[_id].Transition.DVE.InvertKey = v;
-                state.MixEffects[_id].Transition.Stinger.Invert = v;
+                state.MixEffects[(int)_id].Transition.DVE.InvertKey = v;
+                state.MixEffects[(int)_id].Transition.Stinger.Invert = v;
             }
         }
 

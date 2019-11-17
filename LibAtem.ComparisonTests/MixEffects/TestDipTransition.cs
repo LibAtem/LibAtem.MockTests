@@ -8,6 +8,7 @@ using LibAtem.Common;
 using LibAtem.ComparisonTests2.State;
 using LibAtem.ComparisonTests2.Util;
 using LibAtem.DeviceProfile;
+using LibAtem.State;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -39,9 +40,9 @@ namespace LibAtem.ComparisonTests2.MixEffects
 
             public abstract T MangleBadValue(T v);
 
-            public override void UpdateExpectedState(ComparisonState state, bool goodValue, T v)
+            public override void UpdateExpectedState(AtemState state, bool goodValue, T v)
             {
-                ComparisonMixEffectTransitionDipState obj = state.MixEffects[_id].Transition.Dip;
+                MixEffectState.TransitionDipState obj = state.MixEffects[(int)_id].Transition.Dip;
                 SetCommandProperty(obj, PropertyName, goodValue ? v : MangleBadValue(v));
             }
 
@@ -89,7 +90,7 @@ namespace LibAtem.ComparisonTests2.MixEffects
 
             public override VideoSource[] GoodValues => VideoSourceLists.All.Where(s => s.IsAvailable(_helper.Profile) && s.IsAvailable(_id)).ToArray();
 
-            public override void UpdateExpectedState(ComparisonState state, bool goodValue, VideoSource v)
+            public override void UpdateExpectedState(AtemState state, bool goodValue, VideoSource v)
             {
                 if (goodValue)
                     base.UpdateExpectedState(state, goodValue, v);

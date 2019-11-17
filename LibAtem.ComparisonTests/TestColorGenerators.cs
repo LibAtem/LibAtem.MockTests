@@ -7,6 +7,7 @@ using LibAtem.Common;
 using LibAtem.ComparisonTests2.State;
 using Xunit;
 using Xunit.Abstractions;
+using LibAtem.State;
 
 namespace LibAtem.ComparisonTests2
 {
@@ -55,9 +56,9 @@ namespace LibAtem.ComparisonTests2
 
             public abstract double MangleBadValue(double v);
 
-            public override void UpdateExpectedState(ComparisonState state, bool goodValue, double v)
+            public override void UpdateExpectedState(AtemState state, bool goodValue, double v)
             {
-                ComparisonColorState obj = state.Colors[_colId];
+                ColorState obj = state.ColorGenerators[(int)_colId];
                 SetCommandProperty(obj, PropertyName, goodValue ? v : MangleBadValue(v));
             }
 

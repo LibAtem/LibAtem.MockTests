@@ -8,6 +8,7 @@ using LibAtem.Common;
 using LibAtem.ComparisonTests2.State;
 using LibAtem.ComparisonTests2.Util;
 using LibAtem.DeviceProfile;
+using LibAtem.State;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -59,11 +60,11 @@ namespace LibAtem.ComparisonTests2.MixEffects
 
             public override string PropertyName => "Style";
 
-            public override void UpdateExpectedState(ComparisonState state, bool goodValue, TStyle v)
+            public override void UpdateExpectedState(AtemState state, bool goodValue, TStyle v)
             {
                 if (goodValue)
                 {
-                    ComparisonMixEffectTransitionState obj = state.MixEffects[_meId].Transition;
+                    MixEffectState.TransitionState obj = state.MixEffects[(int)_meId].Transition;
 
                     if (!_inTransition) SetCommandProperty(obj, "Style", v);
                     SetCommandProperty(obj, "NextStyle", v);
@@ -112,7 +113,7 @@ namespace LibAtem.ComparisonTests2.MixEffects
                     }
 
                     // Check it updated properly after the timeout
-                    Assert.True(ComparisonStateComparer.AreEqual(Output, helper.LibState, helper.SdkState));
+                    Assert.True(AtemStateComparer.AreEqual(Output, helper.LibState, helper.SdkState));
                 }
             }
         }
@@ -133,9 +134,9 @@ namespace LibAtem.ComparisonTests2.MixEffects
 
             public override string PropertyName => "Selection";
 
-            public override void UpdateExpectedState(ComparisonState state, bool goodValue, TransitionLayer v)
+            public override void UpdateExpectedState(AtemState state, bool goodValue, TransitionLayer v)
             {
-                ComparisonMixEffectTransitionState obj = state.MixEffects[_meId].Transition;
+                MixEffectState.TransitionState obj = state.MixEffects[(int)_meId].Transition;
 
                 if (goodValue)
                 {
@@ -199,7 +200,7 @@ namespace LibAtem.ComparisonTests2.MixEffects
                     }
 
                     // Check it updated properly after the timeout
-                    Assert.True(ComparisonStateComparer.AreEqual(Output, helper.LibState, helper.SdkState));
+                    Assert.True(AtemStateComparer.AreEqual(Output, helper.LibState, helper.SdkState));
                 }
             }
         }

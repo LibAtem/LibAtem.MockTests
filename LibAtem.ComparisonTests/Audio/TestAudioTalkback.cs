@@ -5,6 +5,7 @@ using LibAtem.Common;
 using LibAtem.ComparisonTests2.MixEffects;
 using LibAtem.ComparisonTests2.State;
 using LibAtem.ComparisonTests2.Util;
+using LibAtem.State;
 using System;
 using System.Collections.Generic;
 using Xunit;
@@ -29,7 +30,7 @@ namespace LibAtem.ComparisonTests2.Audio
             try
             {
                 return (IBMDSwitcherTalkback)_client.SdkSwitcher;
-            } catch (InvalidCastException e)
+            } catch (InvalidCastException)
             {
                 return null;
             }
@@ -48,7 +49,7 @@ namespace LibAtem.ComparisonTests2.Audio
             public override void Prepare() => _sdk.SetMuteSDI(0);
 
             public override string PropertyName => "MuteSDI";
-            public override void UpdateExpectedState(ComparisonState state, bool goodValue, bool v) => SetCommandProperty(state, PropertyName, v);
+            public override void UpdateExpectedState(AtemState state, bool goodValue, bool v) => SetCommandProperty(state, PropertyName, v);
 
             public override IEnumerable<CommandQueueKey> ExpectedCommands(bool goodValue, bool v)
             {

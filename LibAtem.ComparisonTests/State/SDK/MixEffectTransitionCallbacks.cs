@@ -3,17 +3,18 @@ using BMDSwitcherAPI;
 using LibAtem.Commands;
 using LibAtem.Commands.MixEffects.Transition;
 using LibAtem.Common;
+using LibAtem.State;
 
 namespace LibAtem.ComparisonTests2.State.SDK
 {
     public sealed class MixEffectTransitionPropertiesCallback : IBMDSwitcherTransitionParametersCallback, INotify<_BMDSwitcherTransitionParametersEventType>
     {
-        private readonly ComparisonMixEffectTransitionState _state;
+        private readonly MixEffectState.TransitionState _state;
         private readonly MixEffectBlockId _id;
         private readonly IBMDSwitcherTransitionParameters _props;
         private readonly Action<CommandQueueKey> _onChange;
 
-        public MixEffectTransitionPropertiesCallback(ComparisonMixEffectTransitionState state, MixEffectBlockId id, IBMDSwitcherTransitionParameters props, Action<CommandQueueKey> onChange)
+        public MixEffectTransitionPropertiesCallback(MixEffectState.TransitionState state, MixEffectBlockId id, IBMDSwitcherTransitionParameters props, Action<CommandQueueKey> onChange)
         {
             _state = state;
             _id = id;
@@ -27,15 +28,15 @@ namespace LibAtem.ComparisonTests2.State.SDK
             {
                 case _BMDSwitcherTransitionParametersEventType.bmdSwitcherTransitionParametersEventTypeTransitionStyleChanged:
                     _props.GetTransitionStyle(out _BMDSwitcherTransitionStyle style);
-                    _state.Style = AtemEnumMaps.TransitionStyleMap.FindByValue(style);
+                    _state.Properties.Style = AtemEnumMaps.TransitionStyleMap.FindByValue(style);
                     break;
                 case _BMDSwitcherTransitionParametersEventType.bmdSwitcherTransitionParametersEventTypeNextTransitionStyleChanged:
                     _props.GetNextTransitionStyle(out _BMDSwitcherTransitionStyle nextStyle);
-                    _state.NextStyle = AtemEnumMaps.TransitionStyleMap.FindByValue(nextStyle);
+                    _state.Properties.NextStyle = AtemEnumMaps.TransitionStyleMap.FindByValue(nextStyle);
                     break;
                 case _BMDSwitcherTransitionParametersEventType.bmdSwitcherTransitionParametersEventTypeTransitionSelectionChanged:
                     _props.GetTransitionSelection(out _BMDSwitcherTransitionSelection selection);
-                    _state.Selection = (TransitionLayer)selection;
+                    _state.Properties.Selection = (TransitionLayer)selection;
                     break;
                 case _BMDSwitcherTransitionParametersEventType.bmdSwitcherTransitionParametersEventTypeNextTransitionSelectionChanged:
                     // TODO - this doesnt appear to be fired, but putting the code below works
@@ -44,19 +45,19 @@ namespace LibAtem.ComparisonTests2.State.SDK
                     throw new ArgumentOutOfRangeException(nameof(eventType), eventType, null);
             }
             _props.GetNextTransitionSelection(out _BMDSwitcherTransitionSelection nextSelection);
-            _state.NextSelection = (TransitionLayer)nextSelection;
+            _state.Properties.NextSelection = (TransitionLayer)nextSelection;
 
             _onChange(new CommandQueueKey(new TransitionPropertiesGetCommand() { Index = _id }));
         }
     }
     public sealed class MixEffectTransitionMixCallback : IBMDSwitcherTransitionMixParametersCallback, INotify<_BMDSwitcherTransitionMixParametersEventType>
     {
-        private readonly ComparisonMixEffectTransitionMixState _state;
+        private readonly MixEffectState.TransitionMixState _state;
         private readonly MixEffectBlockId _id;
         private readonly IBMDSwitcherTransitionMixParameters _props;
         private readonly Action<CommandQueueKey> _onChange;
 
-        public MixEffectTransitionMixCallback(ComparisonMixEffectTransitionMixState state, MixEffectBlockId id, IBMDSwitcherTransitionMixParameters props, Action<CommandQueueKey> onChange)
+        public MixEffectTransitionMixCallback(MixEffectState.TransitionMixState state, MixEffectBlockId id, IBMDSwitcherTransitionMixParameters props, Action<CommandQueueKey> onChange)
         {
             _state = state;
             _id = id;
@@ -82,12 +83,12 @@ namespace LibAtem.ComparisonTests2.State.SDK
 
     public sealed class MixEffectTransitionDipCallback : IBMDSwitcherTransitionDipParametersCallback, INotify<_BMDSwitcherTransitionDipParametersEventType>
     {
-        private readonly ComparisonMixEffectTransitionDipState _state;
+        private readonly MixEffectState.TransitionDipState _state;
         private readonly MixEffectBlockId _id;
         private readonly IBMDSwitcherTransitionDipParameters _props;
         private readonly Action<CommandQueueKey> _onChange;
 
-        public MixEffectTransitionDipCallback(ComparisonMixEffectTransitionDipState state, MixEffectBlockId id, IBMDSwitcherTransitionDipParameters props, Action<CommandQueueKey> onChange)
+        public MixEffectTransitionDipCallback(MixEffectState.TransitionDipState state, MixEffectBlockId id, IBMDSwitcherTransitionDipParameters props, Action<CommandQueueKey> onChange)
         {
             _state = state;
             _id = id;
@@ -117,12 +118,12 @@ namespace LibAtem.ComparisonTests2.State.SDK
 
     public sealed class MixEffectTransitionWipeCallback : IBMDSwitcherTransitionWipeParametersCallback, INotify<_BMDSwitcherTransitionWipeParametersEventType>
     {
-        private readonly ComparisonMixEffectTransitionWipeState _state;
+        private readonly MixEffectState.TransitionWipeState _state;
         private readonly MixEffectBlockId _id;
         private readonly IBMDSwitcherTransitionWipeParameters _props;
         private readonly Action<CommandQueueKey> _onChange;
 
-        public MixEffectTransitionWipeCallback(ComparisonMixEffectTransitionWipeState state, MixEffectBlockId id, IBMDSwitcherTransitionWipeParameters props, Action<CommandQueueKey> onChange)
+        public MixEffectTransitionWipeCallback(MixEffectState.TransitionWipeState state, MixEffectBlockId id, IBMDSwitcherTransitionWipeParameters props, Action<CommandQueueKey> onChange)
         {
             _state = state;
             _id = id;
@@ -184,12 +185,12 @@ namespace LibAtem.ComparisonTests2.State.SDK
 
     public sealed class MixEffectTransitionStingerCallback : IBMDSwitcherTransitionStingerParametersCallback, INotify<_BMDSwitcherTransitionStingerParametersEventType>
     {
-        private readonly ComparisonMixEffectTransitionStingerState _state;
+        private readonly MixEffectState.TransitionStingerState _state;
         private readonly MixEffectBlockId _id;
         private readonly IBMDSwitcherTransitionStingerParameters _props;
         private readonly Action<CommandQueueKey> _onChange;
 
-        public MixEffectTransitionStingerCallback(ComparisonMixEffectTransitionStingerState state, MixEffectBlockId id, IBMDSwitcherTransitionStingerParameters props, Action<CommandQueueKey> onChange)
+        public MixEffectTransitionStingerCallback(MixEffectState.TransitionStingerState state, MixEffectBlockId id, IBMDSwitcherTransitionStingerParameters props, Action<CommandQueueKey> onChange)
         {
             _state = state;
             _id = id;
@@ -247,12 +248,12 @@ namespace LibAtem.ComparisonTests2.State.SDK
 
     public sealed class MixEffectTransitionDVECallback : IBMDSwitcherTransitionDVEParametersCallback, INotify<_BMDSwitcherTransitionDVEParametersEventType>
     {
-        private readonly ComparisonMixEffectTransitionDVEState _state;
+        private readonly MixEffectState.TransitionDVEState _state;
         private readonly MixEffectBlockId _id;
         private readonly IBMDSwitcherTransitionDVEParameters _props;
         private readonly Action<CommandQueueKey> _onChange;
 
-        public MixEffectTransitionDVECallback(ComparisonMixEffectTransitionDVEState state, MixEffectBlockId id, IBMDSwitcherTransitionDVEParameters props, Action<CommandQueueKey> onChange)
+        public MixEffectTransitionDVECallback(MixEffectState.TransitionDVEState state, MixEffectBlockId id, IBMDSwitcherTransitionDVEParameters props, Action<CommandQueueKey> onChange)
         {
             _state = state;
             _id = id;

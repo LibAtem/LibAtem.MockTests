@@ -3,17 +3,18 @@ using BMDSwitcherAPI;
 using LibAtem.Commands;
 using LibAtem.Commands.MixEffects;
 using LibAtem.Common;
+using LibAtem.State;
 
 namespace LibAtem.ComparisonTests2.State.SDK
 {
     public sealed class MixEffectPropertiesCallback : IBMDSwitcherMixEffectBlockCallback, INotify<_BMDSwitcherMixEffectBlockEventType>
     {
-        private readonly ComparisonMixEffectState _state;
+        private readonly MixEffectState _state;
         private readonly MixEffectBlockId _meId;
         private readonly IBMDSwitcherMixEffectBlock _props;
         private readonly Action<CommandQueueKey> _onChange;
 
-        public MixEffectPropertiesCallback(ComparisonMixEffectState state, MixEffectBlockId meId, IBMDSwitcherMixEffectBlock props, Action<CommandQueueKey> onChange)
+        public MixEffectPropertiesCallback(MixEffectState state, MixEffectBlockId meId, IBMDSwitcherMixEffectBlock props, Action<CommandQueueKey> onChange)
         {
             _state = state;
             _meId = meId;
@@ -32,12 +33,12 @@ namespace LibAtem.ComparisonTests2.State.SDK
             {
                 case _BMDSwitcherMixEffectBlockEventType.bmdSwitcherMixEffectBlockEventTypeProgramInputChanged:
                     _props.GetProgramInput(out long program);
-                    _state.Program = (VideoSource) program;
+                    _state.Sources.Program = (VideoSource) program;
                     _onChange(new CommandQueueKey(new ProgramInputGetCommand() { Index = _meId }));
                     break;
                 case _BMDSwitcherMixEffectBlockEventType.bmdSwitcherMixEffectBlockEventTypePreviewInputChanged:
                     _props.GetPreviewInput(out long preview);
-                    _state.Preview = (VideoSource) preview;
+                    _state.Sources.Preview = (VideoSource) preview;
                     _onChange(new CommandQueueKey(new PreviewInputGetCommand() { Index = _meId }));
                     break;
                 // TODO - remainder

@@ -7,6 +7,7 @@ using BMDSwitcherAPI;
 using LibAtem.Commands;
 using LibAtem.Common;
 using LibAtem.ComparisonTests2.State;
+using LibAtem.State;
 using LibAtem.Util;
 using Xunit;
 using Xunit.Abstractions;
@@ -39,7 +40,7 @@ namespace LibAtem.ComparisonTests2
 
         public void AssertStatesMatch()
         {
-            List<string> before = ComparisonStateComparer.AreEqual(SdkState, LibState);
+            List<string> before = AtemStateComparer.AreEqual(SdkState, LibState);
             if (before.Count != 0 && Output != null)
             {
                 Output.WriteLine("state mismatch:");
@@ -58,8 +59,8 @@ namespace LibAtem.ComparisonTests2
 
         public ITestOutputHelper Output { get; }
 
-        public ComparisonState SdkState => _client.SdkState;
-        public ComparisonState LibState => _client.LibState;
+        public AtemState SdkState => _client.SdkState;
+        public AtemState LibState => _client.LibState;
 
         public IBMDSwitcher SdkSwitcher => _client.SdkSwitcher;
 

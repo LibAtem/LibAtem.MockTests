@@ -1,14 +1,15 @@
 ﻿using System;
 using BMDSwitcherAPI;
+using LibAtem.State;
 
 namespace LibAtem.ComparisonTests2.State.SDK
 {
     public sealed class MediaPoolClipCallback : IBMDSwitcherClipCallback, INotify<_BMDSwitcherMediaPoolEventType>
     {
-        private readonly ComparisonMediaPoolClipState _state;
+        private readonly MediaPoolState.ClipState _state;
         private readonly IBMDSwitcherClip _props;
 
-        public MediaPoolClipCallback(ComparisonMediaPoolClipState state, IBMDSwitcherClip props)
+        public MediaPoolClipCallback(MediaPoolState.ClipState state, IBMDSwitcherClip props)
         {
             _state = state;
             _props = props;

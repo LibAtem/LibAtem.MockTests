@@ -8,6 +8,7 @@ using LibAtem.ComparisonTests2.Util;
 using LibAtem.DeviceProfile;
 using LibAtem.MacroOperations;
 using LibAtem.Net.DataTransfer;
+using LibAtem.State;
 using LibAtem.Test.Util;
 using System;
 using System.Collections.Generic;
@@ -92,7 +93,7 @@ namespace LibAtem.ComparisonTests2
             public override void Prepare() => _sdk.SetLoop(0);
 
             public override string PropertyName => "Loop";
-            public override void UpdateExpectedState(ComparisonState state, bool goodValue, bool v) => state.Macros.Loop = v;
+            public override void UpdateExpectedState(AtemState state, bool goodValue, bool v) => state.Macros.RunStatus.Loop = v;
 
             public override IEnumerable<CommandQueueKey> ExpectedCommands(bool goodValue, bool v)
             {
@@ -210,8 +211,8 @@ namespace LibAtem.ComparisonTests2
                     Description = "d2"
                 });
                 helper.Sleep();
-                Assert.True(helper.LibState.Macros.IsRecording);
-                Assert.Equal((uint)2, helper.LibState.Macros.RecordIndex);
+                Assert.True(helper.LibState.Macros.RecordStatus.IsRecording);
+                Assert.Equal((uint)2, helper.LibState.Macros.RecordStatus.RecordIndex);
                 helper.AssertStatesMatch();
 
                 me.SetProgramInput((long)VideoSource.Input1);
@@ -221,7 +222,7 @@ namespace LibAtem.ComparisonTests2
                     Action = MacroActionCommand.MacroAction.StopRecord
                 });
                 helper.Sleep();
-                Assert.False(helper.LibState.Macros.IsRecording);
+                Assert.False(helper.LibState.Macros.RecordStatus.IsRecording);
                 helper.AssertStatesMatch();
 
                 // Verify macro
@@ -259,8 +260,8 @@ namespace LibAtem.ComparisonTests2
                     Description = "d2"
                 });
                 helper.Sleep();
-                Assert.True(helper.LibState.Macros.IsRecording);
-                Assert.Equal((uint)2, helper.LibState.Macros.RecordIndex);
+                Assert.True(helper.LibState.Macros.RecordStatus.IsRecording);
+                Assert.Equal((uint)2, helper.LibState.Macros.RecordStatus.RecordIndex);
                 helper.AssertStatesMatch();
 
                 helper.SendCommand(new MacroAddTimedPauseCommand()
@@ -281,7 +282,7 @@ namespace LibAtem.ComparisonTests2
                     Action = MacroActionCommand.MacroAction.StopRecord
                 });
                 helper.Sleep();
-                Assert.False(helper.LibState.Macros.IsRecording);
+                Assert.False(helper.LibState.Macros.RecordStatus.IsRecording);
                 helper.AssertStatesMatch();
 
                 // Verify macro
@@ -361,7 +362,7 @@ namespace LibAtem.ComparisonTests2
                 CreateSleepingMacro(1);
                 helper.Sleep();
                 Assert.True(helper.LibState.Macros.Pool[1].IsUsed);
-                Assert.Equal(MacroRunStatus.Idle, helper.LibState.Macros.RunStatus);
+                Assert.Equal(MacroState.MacroRunStatus.Idle, helper.LibState.Macros.RunStatus.RunStatus);
                 helper.AssertStatesMatch();
 
                 helper.SendCommand(new MacroActionCommand()
@@ -370,14 +371,14 @@ namespace LibAtem.ComparisonTests2
                     Index = 1,
                 });
                 helper.Sleep();
-                Assert.Equal((uint)1, helper.LibState.Macros.RunIndex);
-                Assert.Equal(MacroRunStatus.Running, helper.LibState.Macros.RunStatus);
+                Assert.Equal((uint)1, helper.LibState.Macros.RunStatus.RunIndex);
+                Assert.Equal(MacroState.MacroRunStatus.Running, helper.LibState.Macros.RunStatus.RunStatus);
                 helper.AssertStatesMatch();
 
                 // Sleep until we should be in user wait
                 helper.Sleep(2200);
-                Assert.Equal((uint)1, helper.LibState.Macros.RunIndex);
-                Assert.Equal(MacroRunStatus.UserWait, helper.LibState.Macros.RunStatus);
+                Assert.Equal((uint)1, helper.LibState.Macros.RunStatus.RunIndex);
+                Assert.Equal(MacroState.MacroRunStatus.UserWait, helper.LibState.Macros.RunStatus.RunStatus);
                 helper.AssertStatesMatch();
 
                 // Fire the user continue op
@@ -386,13 +387,13 @@ namespace LibAtem.ComparisonTests2
                     Action = MacroActionCommand.MacroAction.Continue,
                 });
                 helper.Sleep();
-                Assert.Equal((uint)1, helper.LibState.Macros.RunIndex);
-                Assert.Equal(MacroRunStatus.Running, helper.LibState.Macros.RunStatus);
+                Assert.Equal((uint)1, helper.LibState.Macros.RunStatus.RunIndex);
+                Assert.Equal(MacroState.MacroRunStatus.Running, helper.LibState.Macros.RunStatus.RunStatus);
                 helper.AssertStatesMatch();
 
                 // wait until the end
                 helper.Sleep(1200);
-                Assert.Equal(MacroRunStatus.Idle, helper.LibState.Macros.RunStatus);
+                Assert.Equal(MacroState.MacroRunStatus.Idle, helper.LibState.Macros.RunStatus.RunStatus);
                 helper.AssertStatesMatch();
             }
         }
@@ -406,7 +407,7 @@ namespace LibAtem.ComparisonTests2
                 CreateSleepingMacro(1);
                 helper.Sleep();
                 Assert.True(helper.LibState.Macros.Pool[1].IsUsed);
-                Assert.Equal(MacroRunStatus.Idle, helper.LibState.Macros.RunStatus);
+                Assert.Equal(MacroState.MacroRunStatus.Idle, helper.LibState.Macros.RunStatus.RunStatus);
                 helper.AssertStatesMatch();
 
                 helper.SendCommand(new MacroActionCommand()
@@ -415,8 +416,8 @@ namespace LibAtem.ComparisonTests2
                     Index = 1,
                 });
                 helper.Sleep();
-                Assert.Equal((uint)1, helper.LibState.Macros.RunIndex);
-                Assert.Equal(MacroRunStatus.Running, helper.LibState.Macros.RunStatus);
+                Assert.Equal((uint)1, helper.LibState.Macros.RunStatus.RunIndex);
+                Assert.Equal(MacroState.MacroRunStatus.Running, helper.LibState.Macros.RunStatus.RunStatus);
                 helper.AssertStatesMatch();
 
                 helper.SendCommand(new MacroActionCommand()
@@ -424,12 +425,12 @@ namespace LibAtem.ComparisonTests2
                     Action = MacroActionCommand.MacroAction.Stop
                 });
                 helper.Sleep();
-                Assert.Equal(MacroRunStatus.Idle, helper.LibState.Macros.RunStatus);
+                Assert.Equal(MacroState.MacroRunStatus.Idle, helper.LibState.Macros.RunStatus.RunStatus);
                 helper.AssertStatesMatch();
             }
         }
 
-        //[Fact]
+        [Fact]
         public void AutoTestMacroOps()
         {
             using (var helper = new AtemComparisonHelper(Client, Output))
@@ -454,7 +455,7 @@ namespace LibAtem.ComparisonTests2
                         for (int i = 0; i < 10; i++)
                         {
                             SerializableCommandBase raw = (SerializableCommandBase)RandomPropertyGenerator.Create(type, (o) => AvailabilityChecker.IsAvailable(helper.Profile, o)); // TODO - wants to be ICommand
-                            IEnumerable<MacroOpBase> expectedOps = raw.ToMacroOps();
+                            IEnumerable<MacroOpBase> expectedOps = raw.ToMacroOps(ProtocolVersion.Latest);
                             if (expectedOps == null)
                             {
                                 Output.WriteLine("Skipping");

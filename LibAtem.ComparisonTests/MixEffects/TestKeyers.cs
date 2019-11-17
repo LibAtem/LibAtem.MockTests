@@ -8,6 +8,7 @@ using LibAtem.Common;
 using LibAtem.ComparisonTests2.State;
 using LibAtem.ComparisonTests2.Util;
 using LibAtem.DeviceProfile;
+using LibAtem.State;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -93,9 +94,9 @@ namespace LibAtem.ComparisonTests2.MixEffects
 
             public override string PropertyName => "KeyType";
 
-            public override void UpdateExpectedState(ComparisonState state, bool goodValue, MixEffectKeyType v)
+            public override void UpdateExpectedState(AtemState state, bool goodValue, MixEffectKeyType v)
             {
-                ComparisonMixEffectKeyerState obj = state.MixEffects[_meId].Keyers[_keyId];
+                MixEffectState.KeyerState obj = state.MixEffects[(int)_meId].Keyers[(int)_keyId];
                 if (goodValue) SetCommandProperty(obj, "Type", v);
             }
 
@@ -293,9 +294,9 @@ namespace LibAtem.ComparisonTests2.MixEffects
 
             public override string PropertyName => "CutSource";
 
-            public override void UpdateExpectedState(ComparisonState state, bool goodValue, VideoSource v)
+            public override void UpdateExpectedState(AtemState state, bool goodValue, VideoSource v)
             {
-                ComparisonMixEffectKeyerState obj = state.MixEffects[_meId].Keyers[_keyId];
+                MixEffectState.KeyerState obj = state.MixEffects[(int)_meId].Keyers[(int)_keyId];
                 if (goodValue) SetCommandProperty(obj, PropertyName, v);
             }
 
@@ -340,9 +341,9 @@ namespace LibAtem.ComparisonTests2.MixEffects
 
             public override string PropertyName => "FillSource";
 
-            public override void UpdateExpectedState(ComparisonState state, bool goodValue, VideoSource v)
+            public override void UpdateExpectedState(AtemState state, bool goodValue, VideoSource v)
             {
-                ComparisonMixEffectKeyerState obj = state.MixEffects[_meId].Keyers[_keyId];
+                MixEffectState.KeyerState obj = state.MixEffects[(int)_meId].Keyers[(int)_keyId];
                 if (goodValue)
                 {
                     SetCommandProperty(obj, PropertyName, v);
@@ -385,7 +386,7 @@ namespace LibAtem.ComparisonTests2.MixEffects
             public override void Prepare()
             {
                 // Find inputs to use as sources, to ensure tally
-                var validInputs = _helper.LibState.Inputs.Where(i => i.Key.IsAvailable(_meId) && i.Key.IsAvailable(SourceAvailability.KeySource) && !i.Value.ProgramTally && !i.Value.PreviewTally).Take(1).ToList();
+                var validInputs = _helper.LibState.Settings.Inputs.Where(i => i.Key.IsAvailable(_meId) && i.Key.IsAvailable(SourceAvailability.KeySource) && !i.Value.Tally.ProgramTally && !i.Value.Tally.PreviewTally).Take(1).ToList();
                 Assert.Single(validInputs);
                 _sdk.SetInputCut((long)validInputs[0].Key);
                 _sdk.SetInputFill((long)validInputs[0].Key);
@@ -401,13 +402,13 @@ namespace LibAtem.ComparisonTests2.MixEffects
 
             public override string PropertyName => "OnAir";
 
-            public override void UpdateExpectedState(ComparisonState state, bool goodValue, bool v)
+            public override void UpdateExpectedState(AtemState state, bool goodValue, bool v)
             {
-                ComparisonMixEffectKeyerState obj = state.MixEffects[_meId].Keyers[_keyId];
+                MixEffectState.KeyerState obj = state.MixEffects[(int)_meId].Keyers[(int)_keyId];
                 SetCommandProperty(obj, PropertyName, v);
 
-                state.Inputs[obj.FillSource].ProgramTally = v;
-                state.Inputs[obj.FillSource].PreviewTally = v;
+                state.Settings.Inputs[obj.Properties.FillSource].Tally.ProgramTally = v;
+                state.Settings.Inputs[obj.Properties.FillSource].Tally.PreviewTally = v;
             }
 
             public override IEnumerable<CommandQueueKey> ExpectedCommands(bool goodValue, bool v)
@@ -477,9 +478,9 @@ namespace LibAtem.ComparisonTests2.MixEffects
 
             public abstract T MangleBadValue(T v);
 
-            public override void UpdateExpectedState(ComparisonState state, bool goodValue, T v)
+            public override void UpdateExpectedState(AtemState state, bool goodValue, T v)
             {
-                ComparisonMixEffectKeyerState obj = state.MixEffects[_meId].Keyers[_keyId];
+                MixEffectState.KeyerState obj = state.MixEffects[(int)_meId].Keyers[(int)_keyId];
                 SetCommandProperty(obj, PropertyName, goodValue ? v : MangleBadValue(v));
             }
 

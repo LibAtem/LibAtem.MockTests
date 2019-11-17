@@ -9,6 +9,7 @@ using LibAtem.Common;
 using LibAtem.ComparisonTests2.State;
 using LibAtem.ComparisonTests2.Util;
 using LibAtem.DeviceProfile;
+using LibAtem.State;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -50,17 +51,6 @@ namespace LibAtem.ComparisonTests2.Settings
             List<Tuple<uint, IBMDSwitcherMultiView>> multiviewers = GetMultiviewers();
             Assert.Equal((int) _client.Profile.MultiView.Count, multiviewers.Count);
         }
-
-        [Fact]
-        public void TestMultiviewWindowCount()
-        {
-            foreach (Tuple<uint, IBMDSwitcherMultiView> sdkProps in GetMultiviewers())
-            {
-                sdkProps.Item2.GetWindowCount(out uint count);
-                Assert.Equal(Constants.MultiViewWindowCount, count);
-            }
-        }
-
         private abstract class MultiviewTestDefinition<T> : TestDefinitionBase<MultiviewPropertiesSetCommand, T>
         {
             protected readonly uint _id;
@@ -79,9 +69,9 @@ namespace LibAtem.ComparisonTests2.Settings
 
             public abstract T MangleBadValue(T v);
 
-            public override void UpdateExpectedState(ComparisonState state, bool goodValue, T v)
+            public override void UpdateExpectedState(AtemState state, bool goodValue, T v)
             {
-                ComparisonSettingsMultiViewState obj = state.Settings.MultiViews[_id];
+                MultiViewerState obj = state.Settings.MultiViewers[(int)_id];
                 SetCommandProperty(obj, PropertyName, goodValue ? v : MangleBadValue(v));
             }
 
@@ -137,10 +127,10 @@ namespace LibAtem.ComparisonTests2.Settings
             public override string PropertyName => "ProgramPreviewSwapped";
             public override bool MangleBadValue(bool v) => v;
 
-            public override void UpdateExpectedState(ComparisonState state, bool goodValue, bool v)
+            public override void UpdateExpectedState(AtemState state, bool goodValue, bool v)
             {
-                var props = state.Settings.MultiViews[_id];
-                props.ProgramPreviewSwapped = v;
+                var props = state.Settings.MultiViewers[(int)_id];
+                props.Properties.ProgramPreviewSwapped = v;
 
                 var tmp = props.Windows[0].Source;
                 props.Windows[0].Source = props.Windows[1].Source;
@@ -219,7 +209,7 @@ namespace LibAtem.ComparisonTests2.Settings
                 cmd.WindowIndex = _window;
             }
 
-            public override void UpdateExpectedState(ComparisonState state, bool goodValue, VideoSource v)
+            public override void UpdateExpectedState(AtemState state, bool goodValue, VideoSource v)
             {
             }
 
@@ -265,13 +255,13 @@ namespace LibAtem.ComparisonTests2.Settings
                 cmd.WindowIndex = _window;
             }
 
-            public override void UpdateExpectedState(ComparisonState state, bool goodValue, bool v)
+            public override void UpdateExpectedState(AtemState state, bool goodValue, bool v)
             {
                 _sdk.SupportsVuMeters(out int supportVuMeters);
                 if (supportVuMeters != 0)
                 {
-                    var mv = state.Settings.MultiViews[_id];
-                    mv.Windows[(int)_window].VuMeter = mv.ProgramPreviewSwapped ? (_window == 0) && v : (_window == 1) && v;
+                    var mv = state.Settings.MultiViewers[(int)_id];
+                    mv.Windows[(int)_window].VuMeter = mv.Properties.ProgramPreviewSwapped ? (_window == 0) && v : (_window == 1) && v;
                 }
             }
 
@@ -305,10 +295,10 @@ namespace LibAtem.ComparisonTests2.Settings
 
             public override void Prepare() => _sdk.SetWindowInput(_window, (long)VideoSource.ColorBars);
 
-            public override void UpdateExpectedState(ComparisonState state, bool goodValue, VideoSource v)
+            public override void UpdateExpectedState(AtemState state, bool goodValue, VideoSource v)
             {
                 if (goodValue)
-                    state.Settings.MultiViews[_id].Windows[(int)_window].Source = v;
+                    state.Settings.MultiViewers[(int)_id].Windows[(int)_window].Source = v;
             }
 
             public override VideoSource[] GoodValues
@@ -362,12 +352,12 @@ namespace LibAtem.ComparisonTests2.Settings
                 cmd.WindowIndex = _window;
             }
 
-            public override void UpdateExpectedState(ComparisonState state, bool goodValue, bool v)
+            public override void UpdateExpectedState(AtemState state, bool goodValue, bool v)
             {
                 _sdk.SupportsVuMeters(out int supportsVuMeter);
                 if (supportsVuMeter != 0) _sdk.CurrentInputSupportsVuMeter(_window, out supportsVuMeter);
 
-                state.Settings.MultiViews[_id].Windows[(int)_window].VuMeter = supportsVuMeter != 0 ? v : false;
+                state.Settings.MultiViewers[(int)_id].Windows[(int)_window].VuMeter = supportsVuMeter != 0 ? v : false;
             }
 
             public override IEnumerable<CommandQueueKey> ExpectedCommands(bool goodValue, bool v)
@@ -381,7 +371,10 @@ namespace LibAtem.ComparisonTests2.Settings
         {
             using (var helper = new AtemComparisonHelper(_client, _output))
             {
-                uint unroutableWindows = _client.Profile.MultiView.CanRouteInputs ? 2 : Constants.MultiViewWindowCount;
+                Skip.If(_client.SdkState.Settings.MultiViewers.Count == 0, "Model does not support Multiviewers");
+
+                uint windowCount = (uint)_client.SdkState.Settings.MultiViewers.First().Windows.Count;
+                uint unroutableWindows = _client.Profile.MultiView.CanRouteInputs ? 2 : windowCount;
 
                 var multiViewers = GetMultiviewers();
                 {
@@ -398,7 +391,7 @@ namespace LibAtem.ComparisonTests2.Settings
                     }
 
                     // Quick test for every routable window (we assume they are all equal)
-                    for (uint i = unroutableWindows; i < Constants.MultiViewWindowCount; i++)
+                    for (uint i = unroutableWindows; i < windowCount; i++)
                     {
                         new MultiviewRoutableWindowSourcesTestDefinition(helper, mv, i, true).Run();
                         new MultiviewRoutableWindowVuMeterTestDefinition(helper, mv, i).Run();
@@ -423,7 +416,7 @@ namespace LibAtem.ComparisonTests2.Settings
                     }
                     
                     // Quick test for every routable window (we assume they are all equal)
-                    for (uint i = unroutableWindows; i < Constants.MultiViewWindowCount; i++)
+                    for (uint i = unroutableWindows; i < windowCount; i++)
                     {
                         new MultiviewRoutableWindowSourcesTestDefinition(helper, mv, i, true).Run();
                         new MultiviewRoutableWindowVuMeterTestDefinition(helper, mv, i).Run();
@@ -467,12 +460,12 @@ namespace LibAtem.ComparisonTests2.Settings
                 cmd.MultiviewIndex = _id;
             }
             
-            public override void UpdateExpectedState(ComparisonState state, bool goodValue, double v)
+            public override void UpdateExpectedState(AtemState state, bool goodValue, double v)
             {
                 if (goodValue)
-                    state.Settings.MultiViews[_id].VuMeterOpacity = v;
+                    state.Settings.MultiViewers[(int)_id].VuMeterOpacity = v;
                 else
-                    state.Settings.MultiViews[_id].VuMeterOpacity = v <= 10 && v >= -0.1 ? 10 : 100;
+                    state.Settings.MultiViewers[(int)_id].VuMeterOpacity = v <= 10 && v >= -0.1 ? 10 : 100;
             }
 
             public override IEnumerable<CommandQueueKey> ExpectedCommands(bool goodValue, double v)

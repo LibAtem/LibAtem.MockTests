@@ -2,16 +2,17 @@
 using System.Collections.Generic;
 using BMDSwitcherAPI;
 using LibAtem.Common;
+using LibAtem.State;
 using Xunit;
 
 namespace LibAtem.ComparisonTests2.State.SDK
 {
     public sealed class TalkbackCallback : IBMDSwitcherTalkbackCallback
     {
-        private readonly ComparisonTalkbackState _state;
+        private readonly AudioState.TalkbackState _state;
         private readonly IBMDSwitcherTalkback _props;
 
-        public TalkbackCallback(ComparisonTalkbackState state, IBMDSwitcherTalkback props)
+        public TalkbackCallback(AudioState.TalkbackState state, IBMDSwitcherTalkback props)
         {
             _state = state;
             _props = props;

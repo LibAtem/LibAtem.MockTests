@@ -14,6 +14,8 @@ using LibAtem.ComparisonTests2.State.SDK;
 using LibAtem.DeviceProfile;
 using LibAtem.Net;
 using Xunit;
+using LibAtem.State;
+using LibAtem.State.Builder;
 
 namespace LibAtem.ComparisonTests2
 {
@@ -46,7 +48,7 @@ namespace LibAtem.ComparisonTests2
         public LibAtem.DeviceProfile.DeviceProfile Profile => _profile.Profile;
 
         private readonly AtemSDKComparisonMonitor _sdkState;
-        private readonly ComparisonState _libState;
+        private readonly AtemState _libState;
 
         public delegate void CommandKeyHandler(object sender, CommandQueueKey key);
         public event CommandKeyHandler OnCommandKey;
@@ -68,7 +70,7 @@ namespace LibAtem.ComparisonTests2
             _disposeEvent = new AutoResetEvent(false);
             _handshakeEvent = new AutoResetEvent(false);
 
-            _libState = new ComparisonState();
+            _libState = new AtemState();
 
             ConnectLibAtem(address);
             
@@ -95,8 +97,8 @@ namespace LibAtem.ComparisonTests2
             WaitForHandshake();
         }
 
-        public ComparisonState SdkState => _sdkState.State.Clone();
-        public ComparisonState LibState => _libState.Clone();
+        public AtemState SdkState => _sdkState.State.Clone();
+        public AtemState LibState => _libState.Clone();
 
         private void ConnectLibAtem(string address)
         {
@@ -121,9 +123,13 @@ namespace LibAtem.ComparisonTests2
                 _disposeEvent.Set();
             };
             _client.OnReceive += _profile.HandleCommands;
-            _client.OnReceive += (s, commands) => ComparisonStateBuilder.Update(Profile, _libState, commands);
             _client.OnReceive += (s, commands) =>
             {
+                foreach (ICommand cmd in commands)
+                {
+                    // TODO - handle result?
+                    AtemStateBuilder.Update(_libState, cmd);
+                }
                 lock (_lastReceivedLibAtem)
                 {
                     foreach (ICommand cmd in commands)

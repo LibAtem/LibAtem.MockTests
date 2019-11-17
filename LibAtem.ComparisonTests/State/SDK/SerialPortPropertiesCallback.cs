@@ -2,16 +2,17 @@
 using BMDSwitcherAPI;
 using LibAtem.Commands;
 using LibAtem.Commands.Settings;
+using LibAtem.State;
 
 namespace LibAtem.ComparisonTests2.State.SDK
 {
     public sealed class SerialPortPropertiesCallback : IBMDSwitcherSerialPortCallback, INotify<_BMDSwitcherSerialPortEventType>
     {
-        private readonly ComparisonSettingsState _state;
+        private readonly SettingsState _state;
         private readonly IBMDSwitcherSerialPort _props;
         private readonly Action<CommandQueueKey> _onChange;
 
-        public SerialPortPropertiesCallback(ComparisonSettingsState state, IBMDSwitcherSerialPort props, Action<CommandQueueKey> onChange)
+        public SerialPortPropertiesCallback(SettingsState state, IBMDSwitcherSerialPort props, Action<CommandQueueKey> onChange)
         {
             _state = state;
             _props = props;

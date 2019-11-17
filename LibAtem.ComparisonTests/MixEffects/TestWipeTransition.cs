@@ -8,6 +8,7 @@ using LibAtem.Common;
 using LibAtem.ComparisonTests2.State;
 using LibAtem.ComparisonTests2.Util;
 using LibAtem.DeviceProfile;
+using LibAtem.State;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -39,9 +40,9 @@ namespace LibAtem.ComparisonTests2.MixEffects
 
             public abstract T MangleBadValue(T v);
 
-            public override void UpdateExpectedState(ComparisonState state, bool goodValue, T v)
+            public override void UpdateExpectedState(AtemState state, bool goodValue, T v)
             {
-                ComparisonMixEffectTransitionWipeState obj = state.MixEffects[_id].Transition.Wipe;
+                MixEffectState.TransitionWipeState obj = state.MixEffects[(int)_id].Transition.Wipe;
                 SetCommandProperty(obj, PropertyName, goodValue ? v : MangleBadValue(v));
             }
 
@@ -89,9 +90,9 @@ namespace LibAtem.ComparisonTests2.MixEffects
 
             public override Pattern[] GoodValues => Enum.GetValues(typeof(Pattern)).OfType<Pattern>().ToArray();
 
-            public override void UpdateExpectedState(ComparisonState state, bool goodValue, Pattern v)
+            public override void UpdateExpectedState(AtemState state, bool goodValue, Pattern v)
             {
-                var props = state.MixEffects[_id].Transition.Wipe;
+                var props = state.MixEffects[(int)_id].Transition.Wipe;
                 props.Pattern = v;
                 props.XPosition = 0.5;
                 props.YPosition = 0.5;
@@ -143,10 +144,10 @@ namespace LibAtem.ComparisonTests2.MixEffects
 
             public override VideoSource[] GoodValues => VideoSourceLists.All.Where(s => s.IsAvailable(_helper.Profile) && s.IsAvailable(_id)).ToArray();
             
-            public override void UpdateExpectedState(ComparisonState state, bool goodValue, VideoSource v)
+            public override void UpdateExpectedState(AtemState state, bool goodValue, VideoSource v)
             {
                 if (goodValue)
-                    state.MixEffects[_id].Transition.Wipe.BorderInput = v;
+                    state.MixEffects[(int)_id].Transition.Wipe.BorderInput = v;
             }
         }
 
@@ -276,10 +277,10 @@ namespace LibAtem.ComparisonTests2.MixEffects
             public override string PropertyName => "ReverseDirection";
             public override bool MangleBadValue(bool v) => v;
 
-            public override void UpdateExpectedState(ComparisonState state, bool goodValue, bool v)
+            public override void UpdateExpectedState(AtemState state, bool goodValue, bool v)
             {
-                state.MixEffects[_id].Transition.Wipe.ReverseDirection = v;
-                state.MixEffects[_id].Transition.DVE.Reverse = v;
+                state.MixEffects[(int)_id].Transition.Wipe.ReverseDirection = v;
+                state.MixEffects[(int)_id].Transition.DVE.Reverse = v;
             }
         }
 
@@ -302,10 +303,10 @@ namespace LibAtem.ComparisonTests2.MixEffects
             public override string PropertyName => "FlipFlop";
             public override bool MangleBadValue(bool v) => v;
 
-            public override void UpdateExpectedState(ComparisonState state, bool goodValue, bool v)
+            public override void UpdateExpectedState(AtemState state, bool goodValue, bool v)
             {
-                state.MixEffects[_id].Transition.Wipe.FlipFlop = v;
-                state.MixEffects[_id].Transition.DVE.FlipFlop = v;
+                state.MixEffects[(int)_id].Transition.Wipe.FlipFlop = v;
+                state.MixEffects[(int)_id].Transition.DVE.FlipFlop = v;
             }
         }
 

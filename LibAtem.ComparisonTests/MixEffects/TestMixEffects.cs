@@ -10,6 +10,7 @@ using LibAtem.Common;
 using LibAtem.ComparisonTests2.State;
 using LibAtem.ComparisonTests2.Util;
 using LibAtem.DeviceProfile;
+using LibAtem.State;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -44,12 +45,12 @@ namespace LibAtem.ComparisonTests2.MixEffects
             }
 
             public override string PropertyName => "Source";
-            public override void UpdateExpectedState(ComparisonState state, bool goodValue, VideoSource v)
+            public override void UpdateExpectedState(AtemState state, bool goodValue, VideoSource v)
             {
                 if (goodValue)
                 {
-                    state.MixEffects[_meId].Program = v;
-                    ComparisonStateUtil.UpdateVideoTally(state);
+                    state.MixEffects[(int)_meId].Sources.Program = v;
+                    AtemStateUtil.UpdateVideoTally(state);
                 }
             }
 
@@ -95,12 +96,12 @@ namespace LibAtem.ComparisonTests2.MixEffects
             }
 
             public override string PropertyName => "Source";
-            public override void UpdateExpectedState(ComparisonState state, bool goodValue, VideoSource v)
+            public override void UpdateExpectedState(AtemState state, bool goodValue, VideoSource v)
             {
                 if (goodValue)
                 {
-                    state.MixEffects[_meId].Preview = v;
-                    ComparisonStateUtil.UpdateVideoTally(state);
+                    state.MixEffects[(int)_meId].Sources.Preview = v;
+                    AtemStateUtil.UpdateVideoTally(state);
                 }
             }
 

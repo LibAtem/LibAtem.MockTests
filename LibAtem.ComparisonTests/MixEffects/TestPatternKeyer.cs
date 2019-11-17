@@ -7,6 +7,7 @@ using LibAtem.Commands.MixEffects.Key;
 using LibAtem.Common;
 using LibAtem.ComparisonTests2.State;
 using LibAtem.ComparisonTests2.Util;
+using LibAtem.State;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -40,9 +41,9 @@ namespace LibAtem.ComparisonTests2.MixEffects
 
             public abstract T MangleBadValue(T v);
 
-            public override void UpdateExpectedState(ComparisonState state, bool goodValue, T v)
+            public override void UpdateExpectedState(AtemState state, bool goodValue, T v)
             {
-                ComparisonMixEffectKeyerPatternState obj = state.MixEffects[_meId].Keyers[_keyId].Pattern;
+                MixEffectState.KeyerPatternState obj = state.MixEffects[(int)_meId].Keyers[(int)_keyId].Pattern;
                 SetCommandProperty(obj, PropertyName, goodValue ? v : MangleBadValue(v));
             }
 
@@ -64,9 +65,9 @@ namespace LibAtem.ComparisonTests2.MixEffects
             public override string PropertyName => "Pattern";
             public override Pattern MangleBadValue(Pattern v) => v;
 
-            public override void UpdateExpectedState(ComparisonState state, bool goodValue, Pattern v)
+            public override void UpdateExpectedState(AtemState state, bool goodValue, Pattern v)
             {
-                var props = state.MixEffects[_meId].Keyers[_keyId].Pattern;
+                var props = state.MixEffects[(int)_meId].Keyers[(int)_keyId].Pattern;
                 props.Style = v;
                 props.XPosition = 0.5;
                 props.YPosition = 0.5;

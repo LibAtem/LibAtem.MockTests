@@ -8,6 +8,7 @@ using LibAtem.Commands.Settings;
 using LibAtem.Common;
 using LibAtem.ComparisonTests2.State;
 using LibAtem.ComparisonTests2.Util;
+using LibAtem.State;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -65,7 +66,7 @@ namespace LibAtem.ComparisonTests2.Settings
 
             public override SerialMode[] GoodValues => AtemEnumMaps.SerialModeMap.Keys.ToArray();
 
-            public override void UpdateExpectedState(ComparisonState state, bool goodValue, SerialMode v)
+            public override void UpdateExpectedState(AtemState state, bool goodValue, SerialMode v)
             {
                 state.Settings.SerialMode = v;
             }

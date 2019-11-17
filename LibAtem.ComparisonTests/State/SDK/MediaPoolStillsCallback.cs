@@ -1,14 +1,16 @@
 ﻿using System;
+using System.Collections.Generic;
 using BMDSwitcherAPI;
+using LibAtem.State;
 
 namespace LibAtem.ComparisonTests2.State.SDK
 {
     public sealed class MediaPoolStillsCallback : IBMDSwitcherStillsCallback, INotify<_BMDSwitcherMediaPoolEventType>
     {
-        private readonly ComparisonMediaPoolState _state;
+        private readonly MediaPoolState _state;
         private readonly IBMDSwitcherStills _props;
 
-        public MediaPoolStillsCallback(ComparisonMediaPoolState state, IBMDSwitcherStills props)
+        public MediaPoolStillsCallback(MediaPoolState state, IBMDSwitcherStills props)
         {
             _state = state;
             _props = props;
@@ -21,15 +23,15 @@ namespace LibAtem.ComparisonTests2.State.SDK
             {
                 case _BMDSwitcherMediaPoolEventType.bmdSwitcherMediaPoolEventTypeValidChanged:
                     _props.IsValid(index, out int valid);
-                    _state.Stills[index].IsUsed = valid != 0;
+                    _state.Stills[(int)index].IsUsed = valid != 0;
                     break;
                 case _BMDSwitcherMediaPoolEventType.bmdSwitcherMediaPoolEventTypeNameChanged:
                     _props.GetName(index, out string name);
-                    _state.Stills[index].Name = name;
+                    _state.Stills[(int)index].Filename = name;
                     break;
                 case _BMDSwitcherMediaPoolEventType.bmdSwitcherMediaPoolEventTypeHashChanged:
                     _props.GetHash(index, out BMDSwitcherHash hash);
-                    _state.Stills[index].Hash = hash.data;
+                    _state.Stills[(int)index].Hash = hash.data;
                     break;
                 case _BMDSwitcherMediaPoolEventType.bmdSwitcherMediaPoolEventTypeLockBusy:
                     break;
@@ -49,8 +51,11 @@ namespace LibAtem.ComparisonTests2.State.SDK
         public void Init()
         {
             _props.GetCount(out uint count);
-            for (uint i = 0; i < count; i++)
-                _state.Stills[i] = new ComparisonMediaPoolStillState();
+
+            var stills = new List<MediaPoolState.StillState>();
+            for (int i = 0; i < count; i++)
+                stills.Add(new MediaPoolState.StillState());
+            _state.Stills = stills;
         }
 
         public void Notify(_BMDSwitcherMediaPoolEventType eventType)
