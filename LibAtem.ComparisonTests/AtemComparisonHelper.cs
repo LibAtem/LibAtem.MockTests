@@ -8,6 +8,7 @@ using LibAtem.Commands;
 using LibAtem.Common;
 using LibAtem.ComparisonTests2.State;
 using LibAtem.State;
+using LibAtem.State.Builder;
 using LibAtem.Util;
 using Xunit;
 using Xunit.Abstractions;
@@ -20,6 +21,7 @@ namespace LibAtem.ComparisonTests2
 
         private readonly AtemClientWrapper _client;
         public AtemClientWrapper Client => _client;
+        public AtemStateBuilderSettings StateSettings => _client.StateSettings;
 
         private readonly List<ICommand> _receivedCommands;
 

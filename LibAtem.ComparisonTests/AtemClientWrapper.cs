@@ -44,8 +44,11 @@ namespace LibAtem.ComparisonTests2
 
         public IBMDSwitcher SdkSwitcher => _sdkSwitcher;
         public AtemClient Client => _client;
+        public AtemStateBuilderSettings StateSettings => _updateSettings;
 
         public LibAtem.DeviceProfile.DeviceProfile Profile => _profile.Profile;
+
+        private readonly AtemStateBuilderSettings _updateSettings;
 
         private readonly AtemSDKComparisonMonitor _sdkState;
         private readonly AtemState _libState;
@@ -70,6 +73,8 @@ namespace LibAtem.ComparisonTests2
             _disposeEvent = new AutoResetEvent(false);
             _handshakeEvent = new AutoResetEvent(false);
 
+            _updateSettings = new AtemStateBuilderSettings();
+
             _libState = new AtemState();
 
             ConnectLibAtem(address);
@@ -90,7 +95,7 @@ namespace LibAtem.ComparisonTests2
             }
 
             _sdkSwitcher.AddCallback(new SwitcherConnectionMonitor()); // TODO - make this monitor work better!
-            _sdkState = new AtemSDKComparisonMonitor(_sdkSwitcher);
+            _sdkState = new AtemSDKComparisonMonitor(_sdkSwitcher, _updateSettings);
 
             _sdkState.OnStateChange += (s, e) => OnSdkStateChange?.Invoke(s, e);
 
@@ -128,7 +133,7 @@ namespace LibAtem.ComparisonTests2
                 foreach (ICommand cmd in commands)
                 {
                     // TODO - handle result?
-                    AtemStateBuilder.Update(_libState, cmd);
+                    AtemStateBuilder.Update(_libState, cmd, _updateSettings);
                 }
                 lock (_lastReceivedLibAtem)
                 {

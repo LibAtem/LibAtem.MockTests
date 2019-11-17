@@ -3,6 +3,7 @@ using LibAtem.Commands;
 using LibAtem.Commands.Media;
 using LibAtem.Common;
 using LibAtem.State;
+using LibAtem.State.Builder;
 using System;
 
 namespace LibAtem.ComparisonTests2.State.SDK
@@ -10,13 +11,15 @@ namespace LibAtem.ComparisonTests2.State.SDK
     public sealed class MediaPlayerCallback : IBMDSwitcherMediaPlayerCallback
     {
         private readonly MediaPlayerState _state;
+        private readonly AtemStateBuilderSettings _updateSettings;
         private readonly MediaPlayerId _id;
         private readonly IBMDSwitcherMediaPlayer _props;
         private readonly Action<CommandQueueKey> _onChange;
 
-        public MediaPlayerCallback(MediaPlayerState state, MediaPlayerId id, IBMDSwitcherMediaPlayer props, Action<CommandQueueKey> onChange)
+        public MediaPlayerCallback(MediaPlayerState state, AtemStateBuilderSettings updateSettings, MediaPlayerId id, IBMDSwitcherMediaPlayer props, Action<CommandQueueKey> onChange)
         {
             _state = state;
+            _updateSettings = updateSettings;
             _id = id;
             _props = props;
             _onChange = onChange;
@@ -55,7 +58,7 @@ namespace LibAtem.ComparisonTests2.State.SDK
 
         public void AtBeginningChanged()
         {
-            if (!AtemStateSettings.TrackMediaClipFrames)
+            if (!_updateSettings.TrackMediaClipFrames)
                 return;
 
             _props.GetAtBeginning(out int atBegining);
@@ -65,7 +68,7 @@ namespace LibAtem.ComparisonTests2.State.SDK
 
         public void ClipFrameChanged()
         {
-            if (!AtemStateSettings.TrackMediaClipFrames)
+            if (!_updateSettings.TrackMediaClipFrames)
                 return;
 
             _props.GetClipFrame(out uint clipFrame);

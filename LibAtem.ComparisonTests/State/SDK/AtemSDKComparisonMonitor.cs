@@ -6,6 +6,7 @@ using BMDSwitcherAPI;
 using LibAtem.Commands;
 using LibAtem.Common;
 using LibAtem.State;
+using LibAtem.State.Builder;
 using LibAtem.Util;
 using Xunit;
 
@@ -22,7 +23,7 @@ namespace LibAtem.ComparisonTests2.State.SDK
 
         private readonly List<Action> _cleanupCallbacks = new List<Action>();
 
-        public AtemSDKComparisonMonitor(IBMDSwitcher switcher)
+        public AtemSDKComparisonMonitor(IBMDSwitcher switcher, AtemStateBuilderSettings updateSettings)
         {
             State = new AtemState();
             
@@ -31,7 +32,7 @@ namespace LibAtem.ComparisonTests2.State.SDK
             SetupSerialPorts(switcher);
             SetupMultiViews(switcher);
             SetupDownstreamKeyers(switcher);
-            SetupMediaPlayers(switcher);
+            SetupMediaPlayers(switcher, updateSettings);
             SetupMediaPool(switcher);
             SetupMacroPool(switcher);
             SetupAudio(switcher);
@@ -156,6 +157,9 @@ namespace LibAtem.ComparisonTests2.State.SDK
                 mv.GetWindowCount(out uint count);
                 mvState.Windows = Enumerable.Repeat(0, (int)count).Select(i => new MultiViewerState.WindowState()).ToList();
 
+                mv.SupportsProgramPreviewSwap(out int canSwap);
+                mvState.SupportsProgramPreviewSwapped = canSwap != 0;
+
                 var cb = new MultiViewPropertiesCallback(mvState, id, mv, FireCommandKey);
                 mv.AddCallback(cb);
                 _cleanupCallbacks.Add(() => mv.RemoveCallback(cb));
@@ -166,7 +170,7 @@ namespace LibAtem.ComparisonTests2.State.SDK
             State.Settings.MultiViewers = mvs;
         }
 
-        private void SetupMediaPlayers(IBMDSwitcher switcher)
+        private void SetupMediaPlayers(IBMDSwitcher switcher, AtemStateBuilderSettings updateSettings)
         {
             Guid itId = typeof(IBMDSwitcherMediaPlayerIterator).GUID;
             switcher.CreateIterator(ref itId, out var itPtr);
@@ -179,7 +183,7 @@ namespace LibAtem.ComparisonTests2.State.SDK
                 var player = new MediaPlayerState();
                 players.Add(player);
 
-                var cb = new MediaPlayerCallback(player, id, media, FireCommandKey);
+                var cb = new MediaPlayerCallback(player, updateSettings, id, media, FireCommandKey);
                 media.AddCallback(cb);
                 _cleanupCallbacks.Add(() => media.RemoveCallback(cb));
                 cb.Notify();
@@ -494,12 +498,12 @@ namespace LibAtem.ComparisonTests2.State.SDK
                 new MixEffectState.KeyerFlyFrameState()
             };
 
-            var cb2 = new MixEffectKeyerFlyKeyFrameCallback(state.FlyFrames[(int)FlyKeyKeyFrameId.One], meId, keyId, FlyKeyKeyFrameId.One, keyframeA, FireCommandKey);
+            var cb2 = new MixEffectKeyerFlyKeyFrameCallback(state.FlyFrames[0], meId, keyId, FlyKeyKeyFrameId.One, keyframeA, FireCommandKey);
             keyframeA.AddCallback(cb2);
             _cleanupCallbacks.Add(() => keyframeA.RemoveCallback(cb2));
             TriggerAllChanged(cb2);
 
-            var cb3 = new MixEffectKeyerFlyKeyFrameCallback(state.FlyFrames[(int)FlyKeyKeyFrameId.Two], meId, keyId, FlyKeyKeyFrameId.Two, keyframeB, FireCommandKey);
+            var cb3 = new MixEffectKeyerFlyKeyFrameCallback(state.FlyFrames[1], meId, keyId, FlyKeyKeyFrameId.Two, keyframeB, FireCommandKey);
             keyframeB.AddCallback(cb3);
             _cleanupCallbacks.Add(() => keyframeB.RemoveCallback(cb3));
             TriggerAllChanged(cb3);

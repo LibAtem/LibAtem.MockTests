@@ -28,12 +28,12 @@ namespace LibAtem.ComparisonTests2.State.SDK
             {
                 case _BMDSwitcherDownstreamKeyEventType.bmdSwitcherDownstreamKeyEventTypeInputCutChanged:
                     _props.GetInputCut(out long cutInput);
-                    _state.Sources.CutSource = (VideoSource) cutInput;
+                    _state.Sources.CutSource = (VideoSource)cutInput;
                     _onChange(new CommandQueueKey(new DownstreamKeySourceGetCommand() { Index = _id }));
                     break;
                 case _BMDSwitcherDownstreamKeyEventType.bmdSwitcherDownstreamKeyEventTypeInputFillChanged:
                     _props.GetInputFill(out long input);
-                    _state.Sources.FillSource = (VideoSource) input;
+                    _state.Sources.FillSource = (VideoSource)input;
                     _onChange(new CommandQueueKey(new DownstreamKeySourceGetCommand() { Index = _id }));
                     break;
                 case _BMDSwitcherDownstreamKeyEventType.bmdSwitcherDownstreamKeyEventTypeTieChanged:
@@ -47,8 +47,8 @@ namespace LibAtem.ComparisonTests2.State.SDK
                     _onChange(new CommandQueueKey(new DownstreamKeyPropertiesGetCommand() { Index = _id }));
                     break;
                 case _BMDSwitcherDownstreamKeyEventType.bmdSwitcherDownstreamKeyEventTypeOnAirChanged:
-                     _props.GetOnAir(out int onAir);
-                     _state.State.OnAir = onAir != 0;
+                    _props.GetOnAir(out int onAir);
+                    _state.State.OnAir = onAir != 0;
                     _onChange(new CommandQueueKey(new DownstreamKeyStateGetCommand() { Index = _id }));
                     break;
                 case _BMDSwitcherDownstreamKeyEventType.bmdSwitcherDownstreamKeyEventTypeIsTransitioningChanged:
@@ -110,6 +110,11 @@ namespace LibAtem.ComparisonTests2.State.SDK
                     _props.GetMaskRight(out double right);
                     _state.Properties.MaskRight = right;
                     _onChange(new CommandQueueKey(new DownstreamKeyPropertiesGetCommand() { Index = _id }));
+                    break;
+                case _BMDSwitcherDownstreamKeyEventType.bmdSwitcherDownstreamKeyEventTypeIsTransitionTowardsOnAirChanged:
+                    _props.IsTransitionTowardsOnAir(out int isTowardsAir);
+                    _state.State.IsTowardsOnAir = isTowardsAir != 0;
+                    _onChange(new CommandQueueKey(new DownstreamKeyStateGetV8Command() { Index = _id }));
                     break;
                 default:
                     throw new ArgumentOutOfRangeException(nameof(eventType), eventType, null);

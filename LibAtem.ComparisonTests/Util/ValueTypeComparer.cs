@@ -240,12 +240,12 @@ namespace LibAtem.ComparisonTests2.Util
         public IgnoreStateNodeEnabler(string name)
         {
             _name = name;
-            AtemStateSettings.IgnoreNodes.Add(name);
+            AtemStateComparer.IgnoreNodes.Add(name);
         }
 
         public void Dispose()
         {
-            AtemStateSettings.IgnoreNodes.Remove(_name);
+            AtemStateComparer.IgnoreNodes.Remove(_name);
         }
     }
 

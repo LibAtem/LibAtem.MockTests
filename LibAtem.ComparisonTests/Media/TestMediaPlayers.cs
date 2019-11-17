@@ -205,7 +205,7 @@ namespace LibAtem.ComparisonTests2.Media
         public void TestClipFrame() // Also covers AtBeginning
         {
             using (var helper = new AtemComparisonHelper(_client, _output))
-            using (new SettingEnabler(v => AtemStateSettings.TrackMediaClipFrames = v))
+            using (new SettingEnabler(v => helper.StateSettings.TrackMediaClipFrames = v))
             using (new MediaPoolUtil.SolidClipUploadHelper(helper, 0, "black", 8, 0, 0, 0, 0))
             {
                 EnsureMediaPlayerHasClip();
