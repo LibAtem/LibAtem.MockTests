@@ -1,15 +1,15 @@
 using System.Collections.Generic;
 using System.Linq;
-using LibAtem.ComparisonTests2.Util;
+using LibAtem.ComparisonTests.Util;
 using BMDSwitcherAPI;
 using LibAtem.Commands;
 using LibAtem.Common;
-using LibAtem.ComparisonTests2.State;
+using LibAtem.ComparisonTests.State;
 using Xunit;
 using Xunit.Abstractions;
 using LibAtem.State;
 
-namespace LibAtem.ComparisonTests2
+namespace LibAtem.ComparisonTests
 {
     [Collection("Client")]
     public class TestColorGenerators

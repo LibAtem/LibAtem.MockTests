@@ -5,13 +5,13 @@ using BMDSwitcherAPI;
 using LibAtem.Commands;
 using LibAtem.Commands.Media;
 using LibAtem.Common;
-using LibAtem.ComparisonTests2.State;
-using LibAtem.ComparisonTests2.Util;
+using LibAtem.ComparisonTests.State;
+using LibAtem.ComparisonTests.Util;
 using LibAtem.State;
 using Xunit;
 using Xunit.Abstractions;
 
-namespace LibAtem.ComparisonTests2.Media
+namespace LibAtem.ComparisonTests.Media
 {
     [Collection("Client")]
     public class TestMediaPlayers

@@ -4,14 +4,13 @@ using System.Linq;
 using BMDSwitcherAPI;
 using LibAtem.Commands;
 using LibAtem.Common;
-using LibAtem.ComparisonTests2.State;
-using LibAtem.ComparisonTests2.Util;
+using LibAtem.ComparisonTests.Util;
 using LibAtem.DeviceProfile;
 using LibAtem.State;
 using Xunit;
 using Xunit.Abstractions;
 
-namespace LibAtem.ComparisonTests2
+namespace LibAtem.ComparisonTests
 {
     [Collection("Client")]
     public class TestAuxiliaryOutput
@@ -24,19 +23,7 @@ namespace LibAtem.ComparisonTests2
             _client = client;
             _output = output;
         }
-
-        [Fact]
-        public void TestAuxCount()
-        {
-            using (var helper = new AtemComparisonHelper(_client, _output))
-            {
-                Dictionary<VideoSource, IBMDSwitcherInputAux> sdkAux = helper.GetSdkInputsOfType<IBMDSwitcherInputAux>();
-                Assert.Equal((int)helper.Profile.Auxiliaries, sdkAux.Count);
-
-                Assert.True(sdkAux.Keys.All(k => k.GetPortType() == InternalPortType.Auxiliary));
-            }
-        }
-
+        
         private class AuxSourceTestDefinition : TestDefinitionBase<AuxSourceSetCommand, VideoSource>
         {
             private readonly IBMDSwitcherInputAux _sdk;

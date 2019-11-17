@@ -5,7 +5,7 @@ using LibAtem.Common;
 using LibAtem.State;
 using Xunit;
 
-namespace LibAtem.ComparisonTests2.State.SDK
+namespace LibAtem.ComparisonTests.State.SDK
 {
     public sealed class TalkbackCallback : IBMDSwitcherTalkbackCallback
     {

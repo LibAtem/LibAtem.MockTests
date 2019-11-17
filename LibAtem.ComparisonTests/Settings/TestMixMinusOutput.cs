@@ -5,7 +5,7 @@ using BMDSwitcherAPI;
 using Xunit;
 using Xunit.Abstractions;
 
-namespace LibAtem.ComparisonTests2.Settings
+namespace LibAtem.ComparisonTests.Settings
 {
     [Collection("Client")]
     public class TestMixMinusOutput

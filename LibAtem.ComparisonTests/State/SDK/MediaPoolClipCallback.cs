@@ -2,7 +2,7 @@
 using BMDSwitcherAPI;
 using LibAtem.State;
 
-namespace LibAtem.ComparisonTests2.State.SDK
+namespace LibAtem.ComparisonTests.State.SDK
 {
     public sealed class MediaPoolClipCallback : IBMDSwitcherClipCallback, INotify<_BMDSwitcherMediaPoolEventType>
     {

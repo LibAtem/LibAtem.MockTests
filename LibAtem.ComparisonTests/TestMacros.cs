@@ -2,9 +2,9 @@
 using LibAtem.Commands;
 using LibAtem.Commands.Macro;
 using LibAtem.Common;
-using LibAtem.ComparisonTests2.MixEffects;
-using LibAtem.ComparisonTests2.State;
-using LibAtem.ComparisonTests2.Util;
+using LibAtem.ComparisonTests.MixEffects;
+using LibAtem.ComparisonTests.State;
+using LibAtem.ComparisonTests.Util;
 using LibAtem.DeviceProfile;
 using LibAtem.MacroOperations;
 using LibAtem.Net.DataTransfer;
@@ -20,7 +20,7 @@ using System.Threading;
 using Xunit;
 using Xunit.Abstractions;
 
-namespace LibAtem.ComparisonTests2
+namespace LibAtem.ComparisonTests
 {
     [Collection("Client")]
     public class TestMacros : MixEffectsTestBase

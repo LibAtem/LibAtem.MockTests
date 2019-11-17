@@ -1,7 +1,7 @@
 ﻿using LibAtem.Commands.DeviceProfile;
 using Xunit;
 
-namespace LibAtem.ComparisonTests2.DeviceProfile
+namespace LibAtem.ComparisonTests.DeviceProfile
 {
     [Collection("Client")]
     public class TestProductName

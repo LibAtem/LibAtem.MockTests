@@ -4,7 +4,7 @@ using LibAtem.Commands;
 using LibAtem.Commands.Audio;
 using LibAtem.State;
 
-namespace LibAtem.ComparisonTests2.State.SDK
+namespace LibAtem.ComparisonTests.State.SDK
 {
     public sealed class AudioMixerCallback : IBMDSwitcherAudioMixerCallback, INotify<_BMDSwitcherAudioMixerEventType>
     {

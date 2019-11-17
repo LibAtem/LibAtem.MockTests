@@ -6,7 +6,7 @@ using LibAtem.State;
 using LibAtem.State.Builder;
 using System;
 
-namespace LibAtem.ComparisonTests2.State.SDK
+namespace LibAtem.ComparisonTests.State.SDK
 {
     public sealed class MediaPlayerCallback : IBMDSwitcherMediaPlayerCallback
     {

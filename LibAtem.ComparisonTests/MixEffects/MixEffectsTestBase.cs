@@ -1,13 +1,13 @@
 ﻿using BMDSwitcherAPI;
 using LibAtem.Common;
-using LibAtem.ComparisonTests2.Util;
+using LibAtem.ComparisonTests.Util;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.InteropServices;
 using Xunit.Abstractions;
 
-namespace LibAtem.ComparisonTests2.MixEffects
+namespace LibAtem.ComparisonTests.MixEffects
 {
     public abstract class MixEffectsTestBase
     {

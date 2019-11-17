@@ -3,10 +3,10 @@ using System.Collections.Generic;
 using System.Linq;
 using BMDSwitcherAPI;
 using LibAtem.Common;
-using LibAtem.ComparisonTests2.Util;
+using LibAtem.ComparisonTests.Util;
 using Xunit;
 
-namespace LibAtem.ComparisonTests2
+namespace LibAtem.ComparisonTests
 {
     public static class AtemEnumMaps
     {

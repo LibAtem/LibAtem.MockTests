@@ -2,7 +2,7 @@ using LibAtem.Common;
 using Xunit;
 using Xunit.Abstractions;
 
-namespace LibAtem.ComparisonTests2
+namespace LibAtem.ComparisonTests
 {
     [Collection("Client")]
     public class TestMisc

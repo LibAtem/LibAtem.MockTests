@@ -5,7 +5,7 @@ using LibAtem.Commands.Settings;
 using LibAtem.Common;
 using LibAtem.State;
 
-namespace LibAtem.ComparisonTests2.State.SDK
+namespace LibAtem.ComparisonTests.State.SDK
 {
     public sealed class InputCallback : IBMDSwitcherInputCallback, INotify<_BMDSwitcherInputEventType>
     {

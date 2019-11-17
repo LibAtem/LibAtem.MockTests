@@ -7,15 +7,15 @@ using LibAtem.Commands.DownstreamKey;
 using LibAtem.Commands.MixEffects.Transition;
 using LibAtem.Commands.Settings;
 using LibAtem.Common;
-using LibAtem.ComparisonTests2.State;
-using LibAtem.ComparisonTests2.Util;
+using LibAtem.ComparisonTests.State;
+using LibAtem.ComparisonTests.Util;
 using LibAtem.DeviceProfile;
 using LibAtem.State;
 using LibAtem.Util;
 using Xunit;
 using Xunit.Abstractions;
 
-namespace LibAtem.ComparisonTests2.Settings
+namespace LibAtem.ComparisonTests.Settings
 {
     [Collection("Client")]
     public class TestVideoMode

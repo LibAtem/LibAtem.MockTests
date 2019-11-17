@@ -5,7 +5,7 @@ using LibAtem.Commands.DownstreamKey;
 using LibAtem.Common;
 using LibAtem.State;
 
-namespace LibAtem.ComparisonTests2.State.SDK
+namespace LibAtem.ComparisonTests.State.SDK
 {
     public sealed class DownstreamKeyerPropertiesCallback : IBMDSwitcherDownstreamKeyCallback, INotify<_BMDSwitcherDownstreamKeyEventType>
     {

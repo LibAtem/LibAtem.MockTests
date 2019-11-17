@@ -4,12 +4,12 @@ using System.Linq;
 using System.Reflection;
 using LibAtem.Commands;
 using LibAtem.Common;
-using LibAtem.ComparisonTests2.State;
+using LibAtem.ComparisonTests.State;
 using LibAtem.DeviceProfile;
 using LibAtem.State;
 using LibAtem.Util;
 
-namespace LibAtem.ComparisonTests2.Util
+namespace LibAtem.ComparisonTests.Util
 {
     internal abstract class TestDefinitionBase<Tc, T> where Tc : ICommand, new()
     {

@@ -9,15 +9,15 @@ using BMDSwitcherAPI;
 using log4net;
 using log4net.Config;
 using LibAtem.Commands;
-using LibAtem.ComparisonTests2.State;
-using LibAtem.ComparisonTests2.State.SDK;
+using LibAtem.ComparisonTests.State;
+using LibAtem.ComparisonTests.State.SDK;
 using LibAtem.DeviceProfile;
 using LibAtem.Net;
 using Xunit;
 using LibAtem.State;
 using LibAtem.State.Builder;
 
-namespace LibAtem.ComparisonTests2
+namespace LibAtem.ComparisonTests
 {
     [CollectionDefinition("Client")]
     public class ClientCollection : ICollectionFixture<AtemClientWrapper>

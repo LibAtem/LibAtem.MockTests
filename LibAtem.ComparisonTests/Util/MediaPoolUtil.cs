@@ -10,7 +10,7 @@ using LibAtem.Common;
 using NAudio.Wave;
 using Xunit;
 
-namespace LibAtem.ComparisonTests2.Util
+namespace LibAtem.ComparisonTests.Util
 {
     public static class MediaPoolUtil
     {

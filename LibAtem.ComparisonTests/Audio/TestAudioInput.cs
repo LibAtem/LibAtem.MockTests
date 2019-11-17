@@ -3,8 +3,8 @@ using LibAtem.Commands;
 using LibAtem.Commands.Audio;
 using LibAtem.Commands.MixEffects;
 using LibAtem.Common;
-using LibAtem.ComparisonTests2.State;
-using LibAtem.ComparisonTests2.Util;
+using LibAtem.ComparisonTests.State;
+using LibAtem.ComparisonTests.Util;
 using LibAtem.State;
 using LibAtem.Util;
 using System;
@@ -14,7 +14,7 @@ using System.Runtime.InteropServices;
 using Xunit;
 using Xunit.Abstractions;
 
-namespace LibAtem.ComparisonTests2.Audio
+namespace LibAtem.ComparisonTests.Audio
 {
     [Collection("Client")]
     public class TestAudioInput

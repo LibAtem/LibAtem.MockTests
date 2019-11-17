@@ -3,7 +3,7 @@ using BMDSwitcherAPI;
 using LibAtem.Commands;
 using LibAtem.State;
 
-namespace LibAtem.ComparisonTests2.State.SDK
+namespace LibAtem.ComparisonTests.State.SDK
 {
     public sealed class MacroControlCallback : IBMDSwitcherMacroControlCallback, INotify<_BMDSwitcherMacroControlEventType>
     {

@@ -8,7 +8,7 @@ using LibAtem.Commands;
 using LibAtem.Commands.DataTransfer;
 using LibAtem.Commands.Media;
 using LibAtem.Common;
-using LibAtem.ComparisonTests2.Util;
+using LibAtem.ComparisonTests.Util;
 using LibAtem.Net;
 using LibAtem.Net.DataTransfer;
 using LibAtem.Util.Media;
@@ -16,7 +16,7 @@ using NAudio.Wave;
 using Xunit;
 using Xunit.Abstractions;
 
-namespace LibAtem.ComparisonTests2.Media
+namespace LibAtem.ComparisonTests.Media
 {
     [Collection("Client")]
     public class TestMediaPool

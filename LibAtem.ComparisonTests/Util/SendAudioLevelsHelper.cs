@@ -2,7 +2,7 @@
 using BMDSwitcherAPI;
 using LibAtem.Commands.Audio;
 
-namespace LibAtem.ComparisonTests2.Util
+namespace LibAtem.ComparisonTests.Util
 {
     public sealed class SendAudioLevelsHelper : IDisposable
     {

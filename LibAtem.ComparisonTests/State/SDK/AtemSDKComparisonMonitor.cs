@@ -10,7 +10,7 @@ using LibAtem.State.Builder;
 using LibAtem.Util;
 using Xunit;
 
-namespace LibAtem.ComparisonTests2.State.SDK
+namespace LibAtem.ComparisonTests.State.SDK
 {
     public interface INotify<in T>
     {

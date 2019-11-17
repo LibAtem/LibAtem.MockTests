@@ -7,7 +7,7 @@ using LibAtem.Common;
 using LibAtem.State;
 using LibAtem.Util;
 
-namespace LibAtem.ComparisonTests2.State.SDK
+namespace LibAtem.ComparisonTests.State.SDK
 {
     public sealed class MultiViewPropertiesCallback : IBMDSwitcherMultiViewCallback, INotify<_BMDSwitcherMultiViewEventType>
     {

@@ -6,14 +6,14 @@ using System.Threading;
 using BMDSwitcherAPI;
 using LibAtem.Commands;
 using LibAtem.Common;
-using LibAtem.ComparisonTests2.State;
+using LibAtem.ComparisonTests.State;
 using LibAtem.State;
 using LibAtem.State.Builder;
 using LibAtem.Util;
 using Xunit;
 using Xunit.Abstractions;
 
-namespace LibAtem.ComparisonTests2
+namespace LibAtem.ComparisonTests
 {
     public sealed class AtemComparisonHelper : IDisposable
     {

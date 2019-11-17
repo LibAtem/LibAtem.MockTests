@@ -4,7 +4,7 @@ using LibAtem.State;
 using Xunit;
 using Xunit.Abstractions;
 
-namespace LibAtem.ComparisonTests2.State
+namespace LibAtem.ComparisonTests.State
 {
     public class TestAtemStateComparer
     {

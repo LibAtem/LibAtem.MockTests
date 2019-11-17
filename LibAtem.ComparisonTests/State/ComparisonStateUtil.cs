@@ -5,7 +5,7 @@ using System.Collections.Generic;
 using System.Linq;
 using LibAtem.Util;
 
-namespace LibAtem.ComparisonTests2.State
+namespace LibAtem.ComparisonTests.State
 {
     public static class AtemStateUtil
     {

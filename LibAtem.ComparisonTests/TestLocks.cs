@@ -6,7 +6,7 @@ using LibAtem.Commands.DataTransfer;
 using Xunit;
 using Xunit.Abstractions;
 
-namespace LibAtem.ComparisonTests2
+namespace LibAtem.ComparisonTests
 {
     [Collection("Client")]
     public class TestLocks
