@@ -27,7 +27,7 @@ namespace LibAtem.ComparisonTests.MixEffects
             protected readonly MixEffectBlockId _id;
             protected readonly IBMDSwitcherTransitionDipParameters _sdk;
 
-            public DipTransitionTestDefinition(AtemComparisonHelper helper, Tuple<MixEffectBlockId, IBMDSwitcherTransitionDipParameters> me) : base(helper)
+            public DipTransitionTestDefinition(AtemComparisonHelper helper, Tuple<MixEffectBlockId, IBMDSwitcherTransitionDipParameters> me) : base(helper, me.Item1 != MixEffectBlockId.One)
             {
                 _id = me.Item1;
                 _sdk = me.Item2;
@@ -88,7 +88,9 @@ namespace LibAtem.ComparisonTests.MixEffects
             public override string PropertyName => "Input";
             public override VideoSource MangleBadValue(VideoSource v) => v;
 
-            public override VideoSource[] GoodValues => VideoSourceLists.All.Where(s => s.IsAvailable(_helper.Profile) && s.IsAvailable(_id)).ToArray();
+            private VideoSource[] ValidSources => VideoSourceLists.All.Where(s => s.IsAvailable(_helper.Profile) && s.IsAvailable(_id)).ToArray();
+            public override VideoSource[] GoodValues => VideoSourceUtil.TakeSelection(ValidSources);
+            public override VideoSource[] BadValues => VideoSourceUtil.TakeBadSelection(ValidSources);
 
             public override void UpdateExpectedState(AtemState state, bool goodValue, VideoSource v)
             {

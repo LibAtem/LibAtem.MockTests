@@ -27,7 +27,7 @@ namespace LibAtem.ComparisonTests.MixEffects
             protected readonly MixEffectBlockId _id;
             protected readonly IBMDSwitcherTransitionDVEParameters _sdk;
 
-            public DVETransitionTestDefinition(AtemComparisonHelper helper, Tuple<MixEffectBlockId, IBMDSwitcherTransitionDVEParameters> me) : base(helper)
+            public DVETransitionTestDefinition(AtemComparisonHelper helper, Tuple<MixEffectBlockId, IBMDSwitcherTransitionDVEParameters> me) : base(helper, me.Item1 != MixEffectBlockId.One)
             {
                 _id = me.Item1;
                 _sdk = me.Item2;
@@ -177,7 +177,9 @@ namespace LibAtem.ComparisonTests.MixEffects
 
             public override string PropertyName => "FillSource";
 
-            public override VideoSource[] GoodValues => VideoSourceLists.All.Where(s => s.IsAvailable(_helper.Profile, InternalPortType.Mask) && s.IsAvailable(_id)).ToArray();
+            private VideoSource[] ValidSources => VideoSourceLists.All.Where(s => s.IsAvailable(_helper.Profile, InternalPortType.Mask) && s.IsAvailable(_id)).ToArray();
+            public override VideoSource[] GoodValues => VideoSourceUtil.TakeSelection(ValidSources);
+            public override VideoSource[] BadValues => VideoSourceUtil.TakeBadSelection(ValidSources);
             
             public override VideoSource MangleBadValue(VideoSource v) => v;
             public override void UpdateExpectedState(AtemState state, bool goodValue, VideoSource v)
@@ -224,7 +226,9 @@ namespace LibAtem.ComparisonTests.MixEffects
 
             public override string PropertyName => "KeySource";
 
-            public override VideoSource[] GoodValues => VideoSourceLists.All.Where(s => s.IsAvailable(_helper.Profile, InternalPortType.Mask) && s.IsAvailable(_id) && s.IsAvailable(SourceAvailability.KeySource)).ToArray();
+            private VideoSource[] ValidSources => VideoSourceLists.All.Where(s => s.IsAvailable(_helper.Profile, InternalPortType.Mask) && s.IsAvailable(_id) && s.IsAvailable(SourceAvailability.KeySource)).ToArray();
+            public override VideoSource[] GoodValues => VideoSourceUtil.TakeSelection(ValidSources);
+            public override VideoSource[] BadValues => VideoSourceUtil.TakeBadSelection(ValidSources);
 
             public override VideoSource MangleBadValue(VideoSource v) => v;
             public override void UpdateExpectedState(AtemState state, bool goodValue, VideoSource v)

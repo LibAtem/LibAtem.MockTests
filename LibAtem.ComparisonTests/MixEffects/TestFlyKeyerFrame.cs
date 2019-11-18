@@ -41,7 +41,7 @@ namespace LibAtem.ComparisonTests.MixEffects
             private readonly FlyKeyKeyFrameId _frameId;
             protected readonly IBMDSwitcherKeyFlyKeyFrameParameters _sdk;
 
-            public FlyKeyFrameTestDefinition(AtemComparisonHelper helper, Tuple<MixEffectBlockId, UpstreamKeyId, FlyKeyKeyFrameId, IBMDSwitcherKeyFlyKeyFrameParameters> frame) : base(helper)
+            public FlyKeyFrameTestDefinition(AtemComparisonHelper helper, Tuple<MixEffectBlockId, UpstreamKeyId, FlyKeyKeyFrameId, IBMDSwitcherKeyFlyKeyFrameParameters> frame) : base(helper, frame.Item1 != MixEffectBlockId.One || frame.Item2 != UpstreamKeyId.One || frame.Item3 != FlyKeyKeyFrameId.One)
             {
                 _meId = frame.Item1;
                 _keyId = frame.Item2;

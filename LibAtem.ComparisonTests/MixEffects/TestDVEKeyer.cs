@@ -25,7 +25,7 @@ namespace LibAtem.ComparisonTests.MixEffects
             protected readonly UpstreamKeyId _keyId;
             protected readonly IBMDSwitcherKeyDVEParameters _sdk;
 
-            public DVEKeyerTestDefinition(AtemComparisonHelper helper, Tuple<MixEffectBlockId, UpstreamKeyId, IBMDSwitcherKeyDVEParameters> key) : base(helper)
+            public DVEKeyerTestDefinition(AtemComparisonHelper helper, Tuple<MixEffectBlockId, UpstreamKeyId, IBMDSwitcherKeyDVEParameters> key) : base(helper, key.Item1 != MixEffectBlockId.One || key.Item2 != UpstreamKeyId.One)
             {
                 _meId = key.Item1;
                 _keyId = key.Item2;
