@@ -136,7 +136,7 @@ namespace LibAtem.ComparisonTests.MixEffects
 
             public override void UpdateExpectedState(AtemState state, bool goodValue, TransitionLayer v)
             {
-                MixEffectState.TransitionState obj = state.MixEffects[(int)_meId].Transition;
+                MixEffectState.TransitionPropertiesState obj = state.MixEffects[(int)_meId].Transition.Properties;
 
                 if (goodValue)
                 {
@@ -145,8 +145,8 @@ namespace LibAtem.ComparisonTests.MixEffects
                 }
                 else
                 {
-                    foreach (TransitionLayer i in BadValues)
-                        v &= ~i;
+                    int maxAllowed = 1 << ((int)_helper.Profile.UpstreamKeys + 1);
+                    v &= (TransitionLayer)(maxAllowed - 1);
 
                     if (v != 0)
                     {

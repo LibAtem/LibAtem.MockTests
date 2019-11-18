@@ -75,7 +75,7 @@ namespace LibAtem.ComparisonTests.MixEffects
             protected readonly UpstreamKeyId _keyId;
             protected readonly IBMDSwitcherKey _sdk;
 
-            public KeyTypeTestDefinition(AtemComparisonHelper helper, Tuple<MixEffectBlockId, UpstreamKeyId, IBMDSwitcherKey> key) : base(helper)
+            public KeyTypeTestDefinition(AtemComparisonHelper helper, Tuple<MixEffectBlockId, UpstreamKeyId, IBMDSwitcherKey> key) : base(helper, key.Item1 != MixEffectBlockId.One || key.Item2 != UpstreamKeyId.One)
             {
                 _meId = key.Item1;
                 _keyId = key.Item2;
@@ -274,7 +274,7 @@ namespace LibAtem.ComparisonTests.MixEffects
             protected readonly UpstreamKeyId _keyId;
             protected readonly IBMDSwitcherKey _sdk;
 
-            public KeyCutSourceTestDefinition(AtemComparisonHelper helper, Tuple<MixEffectBlockId, UpstreamKeyId, IBMDSwitcherKey> key) : base(helper)
+            public KeyCutSourceTestDefinition(AtemComparisonHelper helper, Tuple<MixEffectBlockId, UpstreamKeyId, IBMDSwitcherKey> key) : base(helper, key.Item1 != MixEffectBlockId.One || key.Item2 != UpstreamKeyId.One)
             {
                 _meId = key.Item1;
                 _keyId = key.Item2;
@@ -306,7 +306,9 @@ namespace LibAtem.ComparisonTests.MixEffects
                     yield return $"MixEffects.{_meId:D}.Keyers.{_keyId:D}.Properties";
             }
 
-            public override VideoSource[] GoodValues => VideoSourceLists.All.Where(s => s.IsAvailable(_helper.Profile) && s.IsAvailable(_meId) && s.IsAvailable(SourceAvailability.KeySource)).ToArray();
+            private VideoSource[] ValidSources => VideoSourceLists.All.Where(s => s.IsAvailable(_helper.Profile) && s.IsAvailable(_meId) && s.IsAvailable(SourceAvailability.KeySource)).ToArray();
+            public override VideoSource[] GoodValues => VideoSourceUtil.TakeSelection(ValidSources);
+            public override VideoSource[] BadValues => VideoSourceUtil.TakeBadSelection(ValidSources);
         }
         [Fact]
         public void TestKeyerInputCut()
@@ -321,7 +323,7 @@ namespace LibAtem.ComparisonTests.MixEffects
             protected readonly UpstreamKeyId _keyId;
             protected readonly IBMDSwitcherKey _sdk;
 
-            public KeyFillSourceTestDefinition(AtemComparisonHelper helper, Tuple<MixEffectBlockId, UpstreamKeyId, IBMDSwitcherKey> key) : base(helper)
+            public KeyFillSourceTestDefinition(AtemComparisonHelper helper, Tuple<MixEffectBlockId, UpstreamKeyId, IBMDSwitcherKey> key) : base(helper, key.Item1 != MixEffectBlockId.One || key.Item2 != UpstreamKeyId.One)
             {
                 _meId = key.Item1;
                 _keyId = key.Item2;
@@ -358,7 +360,9 @@ namespace LibAtem.ComparisonTests.MixEffects
                     yield return $"MixEffects.{_meId:D}.Keyers.{_keyId:D}.Properties";
             }
 
-            public override VideoSource[] GoodValues => VideoSourceLists.All.Where(s => s.IsAvailable(_helper.Profile) && s.IsAvailable(_meId)).ToArray();
+            private VideoSource[] ValidSources => VideoSourceLists.All.Where(s => s.IsAvailable(_helper.Profile) && s.IsAvailable(_meId)).ToArray();
+            public override VideoSource[] GoodValues => VideoSourceUtil.TakeSelection(ValidSources);
+            public override VideoSource[] BadValues => VideoSourceUtil.TakeBadSelection(ValidSources);
         }
         [Fact]
         public void TestKeyerInputFill()
@@ -373,7 +377,7 @@ namespace LibAtem.ComparisonTests.MixEffects
             protected readonly UpstreamKeyId _keyId;
             protected readonly IBMDSwitcherKey _sdk;
 
-            public KeyOnAirTestDefinition(AtemComparisonHelper helper, Tuple<MixEffectBlockId, UpstreamKeyId, IBMDSwitcherKey> key) : base(helper)
+            public KeyOnAirTestDefinition(AtemComparisonHelper helper, Tuple<MixEffectBlockId, UpstreamKeyId, IBMDSwitcherKey> key) : base(helper, key.Item1 != MixEffectBlockId.One || key.Item2 != UpstreamKeyId.One)
             {
                 _meId = key.Item1;
                 _keyId = key.Item2;
@@ -446,7 +450,7 @@ namespace LibAtem.ComparisonTests.MixEffects
             protected readonly UpstreamKeyId _keyId;
             protected readonly IBMDSwitcherKey _sdk;
 
-            public KeyMaskTestDefinition(AtemComparisonHelper helper, Tuple<MixEffectBlockId, UpstreamKeyId, IBMDSwitcherKey> key) : base(helper)
+            public KeyMaskTestDefinition(AtemComparisonHelper helper, Tuple<MixEffectBlockId, UpstreamKeyId, IBMDSwitcherKey> key) : base(helper, key.Item1 != MixEffectBlockId.One || key.Item2 != UpstreamKeyId.One)
             {
                 _meId = key.Item1;
                 _keyId = key.Item2;

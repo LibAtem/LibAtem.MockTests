@@ -51,7 +51,7 @@ namespace LibAtem.ComparisonTests.Settings
             List<Tuple<uint, IBMDSwitcherMultiView>> multiviewers = GetMultiviewers();
             Assert.Equal((int) _client.Profile.MultiView.Count, multiviewers.Count);
         }
-        private abstract class MultiviewTestDefinition<T> : TestDefinitionBase<MultiviewPropertiesSetCommand, T>
+        private abstract class MultiviewTestDefinition<T> : TestDefinitionBase<MultiviewPropertiesSetV8Command, T>
         {
             protected readonly uint _id;
             protected readonly IBMDSwitcherMultiView _sdk;
@@ -62,7 +62,7 @@ namespace LibAtem.ComparisonTests.Settings
                 _sdk = mv.Item2;
             }
 
-            public override void SetupCommand(MultiviewPropertiesSetCommand cmd)
+            public override void SetupCommand(MultiviewPropertiesSetV8Command cmd)
             {
                 cmd.MultiviewIndex = _id;
             }
@@ -71,29 +71,54 @@ namespace LibAtem.ComparisonTests.Settings
 
             public override void UpdateExpectedState(AtemState state, bool goodValue, T v)
             {
-                MultiViewerState obj = state.Settings.MultiViewers[(int)_id];
+                MultiViewerState.PropertiesState obj = state.Settings.MultiViewers[(int)_id].Properties;
                 SetCommandProperty(obj, PropertyName, goodValue ? v : MangleBadValue(v));
             }
 
             public override IEnumerable<string> ExpectedCommands(bool goodValue, T v)
             {
-                yield return $"Settings.MultiViewers.{_id:D}";
+                yield return $"Settings.MultiViewers.{_id:D}.Properties";
             }
         }
 
-        private class MultiviewLayoutTestDefinition : MultiviewTestDefinition<MultiViewLayout>
+        private class MultiviewLayoutTestDefinition : MultiviewTestDefinition<MultiViewLayoutV8>
         {
             public MultiviewLayoutTestDefinition(AtemComparisonHelper helper, Tuple<uint, IBMDSwitcherMultiView> mv) : base(helper, mv)
             {
+                // mv.Item2.SupportsQuadrantLayout
             }
 
             // Ensure the first value will have a change
             public override void Prepare() => _sdk.SetLayout(_BMDSwitcherMultiViewLayout.bmdSwitcherMultiViewLayoutProgramRight);
 
             public override string PropertyName => "Layout";
-            public override MultiViewLayout MangleBadValue(MultiViewLayout v) => v;
+            public override MultiViewLayoutV8 MangleBadValue(MultiViewLayoutV8 v) => v;
 
-            public override MultiViewLayout[] GoodValues => Enum.GetValues(typeof(MultiViewLayout)).OfType<MultiViewLayout>().ToArray();
+            public override MultiViewLayoutV8[] GoodValues
+            {
+                get
+                {
+                    var rawValues = Enum.GetValues(typeof(MultiViewLayoutV8)).OfType<MultiViewLayoutV8>();
+
+                    _sdk.SupportsQuadrantLayout(out int supportsQuad);
+                    if (supportsQuad == 0)
+                    {
+                        // Only non-power of 2
+                        rawValues = rawValues.Where(x => x != 0 && (x & (x - 1)) != 0);
+                    }
+
+                    return rawValues.ToArray();
+                }
+            }
+            public override MultiViewLayoutV8[] BadValues => Enum.GetValues(typeof(MultiViewLayoutV8)).OfType<MultiViewLayoutV8>().Except(GoodValues).ToArray();
+
+            public override void UpdateExpectedState(AtemState state, bool goodValue, MultiViewLayoutV8 v)
+            {
+                if (goodValue)
+                {
+                    base.UpdateExpectedState(state, goodValue, v);
+                }
+            }
         }
 
         [Fact]
@@ -375,6 +400,8 @@ namespace LibAtem.ComparisonTests.Settings
 
                 uint windowCount = (uint)_client.SdkState.Settings.MultiViewers.First().Windows.Count;
                 uint unroutableWindows = _client.Profile.MultiView.CanRouteInputs ? 2 : windowCount;
+                if (windowCount > 10)
+                    unroutableWindows = 0;
 
                 var multiViewers = GetMultiviewers();
                 {

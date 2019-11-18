@@ -60,13 +60,13 @@ namespace LibAtem.ComparisonTests.MixEffects
 
             public sealed override void UpdateExpectedState(AtemState state, bool goodValue, T v)
             {
-                MixEffectState.KeyerFlyFrameState obj = state.MixEffects[(int)_meId].Keyers[(int)_keyId].FlyFrames[(int)_frameId];
+                MixEffectState.KeyerFlyFrameState obj = state.MixEffects[(int)_meId].Keyers[(int)_keyId].FlyFrames[(int)_frameId-1];
                 SetCommandProperty(obj, PropertyName, goodValue ? v : MangleBadValue(v));
             }
 
             public override IEnumerable<string> ExpectedCommands(bool goodValue, T v)
             {
-                yield return $"MixEffects.{_meId:D}.Keyers.{_keyId:D}.FlyFrames.{_frameId:D}";
+                yield return $"MixEffects.{_meId:D}.Keyers.{_keyId:D}.FlyFrames.{(_frameId - 1):D}";
             }
         }
 
@@ -79,7 +79,7 @@ namespace LibAtem.ComparisonTests.MixEffects
             // Ensure the first value will have a change
             public override void Prepare() => _sdk.SetSizeX(10);
 
-            public override string PropertyName => "XSize";
+            public override string PropertyName => "SizeX";
             public override double MangleBadValue(double v) => 0;
 
             public override double[] GoodValues => new double[] { 0, 87.4, 0.01, 100, 999.99, 1000, 9999.99, 10000, 31999.99, 32760, 32767.99 };
@@ -102,7 +102,7 @@ namespace LibAtem.ComparisonTests.MixEffects
             // Ensure the first value will have a change
             public override void Prepare() => _sdk.SetSizeY(10);
 
-            public override string PropertyName => "YSize";
+            public override string PropertyName => "SizeY";
             public override double MangleBadValue(double v) => 0;
 
             public override double[] GoodValues => new double[] { 0, 87.4, 0.01, 100, 999.99, 1000, 9999.99, 10000, 31999.99, 32760, 32767.99 };
@@ -125,7 +125,7 @@ namespace LibAtem.ComparisonTests.MixEffects
             // Ensure the first value will have a change
             public override void Prepare() => _sdk.SetPositionX(10);
 
-            public override string PropertyName => "XPosition";
+            public override string PropertyName => "PositionX";
             public override double MangleBadValue(double v) => v >= 32768 ? v - 2 * 32768 : v + 2 * 32768;
 
             public override double[] GoodValues => new double[] { -456, 0, 567, -32767.9, 32767.9 };
@@ -148,7 +148,7 @@ namespace LibAtem.ComparisonTests.MixEffects
             // Ensure the first value will have a change
             public override void Prepare() => _sdk.SetPositionY(10);
 
-            public override string PropertyName => "YPosition";
+            public override string PropertyName => "PositionY";
             public override double MangleBadValue(double v) => v >= 32768 ? v - 2 * 32768 : v + 2 * 32768;
 
             public override double[] GoodValues => new double[] { -456, 0, 567, -32767.9, 32767.9 };
@@ -194,7 +194,7 @@ namespace LibAtem.ComparisonTests.MixEffects
             // Ensure the first value will have a change
             public override void Prepare() => _sdk.SetBorderWidthIn(10);
 
-            public override string PropertyName => "BorderInnerWidth";
+            public override string PropertyName => "InnerWidth";
             public override double MangleBadValue(double v) => v < 0 ? v + 655.36 * 2 : v - 655.35;
 
             public override double[] GoodValues => new double[] { 0, 15.9, 0.01, 16, 655.35 };
@@ -217,7 +217,7 @@ namespace LibAtem.ComparisonTests.MixEffects
             // Ensure the first value will have a change
             public override void Prepare() => _sdk.SetBorderWidthOut(10);
 
-            public override string PropertyName => "BorderOuterWidth";
+            public override string PropertyName => "OuterWidth";
             public override double MangleBadValue(double v) => v < 0 ? v + 655.36 * 2 : v - 655.35;
 
             public override double[] GoodValues => new double[] { 0, 15.9, 0.01, 16, 655.35 };
@@ -240,7 +240,7 @@ namespace LibAtem.ComparisonTests.MixEffects
             // Ensure the first value will have a change
             public override void Prepare() => _sdk.SetBorderSoftnessOut(10);
 
-            public override string PropertyName => "BorderOuterSoftness";
+            public override string PropertyName => "OuterSoftness";
             public override uint MangleBadValue(uint v) => 254;
 
             public override uint[] GoodValues => new uint[] { 0, 15, 1, 99, 100, 101, 254 };
@@ -263,7 +263,7 @@ namespace LibAtem.ComparisonTests.MixEffects
             // Ensure the first value will have a change
             public override void Prepare() => _sdk.SetBorderSoftnessIn(10);
 
-            public override string PropertyName => "BorderInnerSoftness";
+            public override string PropertyName => "InnerSoftness";
             public override uint MangleBadValue(uint v) => 254;
 
             public override uint[] GoodValues => new uint[] { 0, 15, 1, 99, 100, 101, 254 };
@@ -286,7 +286,7 @@ namespace LibAtem.ComparisonTests.MixEffects
             // Ensure the first value will have a change
             public override void Prepare() => _sdk.SetBorderBevelSoftness(10);
 
-            public override string PropertyName => "BorderBevelSoftness";
+            public override string PropertyName => "BevelSoftness";
             public override uint MangleBadValue(uint v) => 254;
 
             public override uint[] GoodValues => new uint[] { 0, 15, 1, 99, 100, 101, 254 };
@@ -309,7 +309,7 @@ namespace LibAtem.ComparisonTests.MixEffects
             // Ensure the first value will have a change
             public override void Prepare() => _sdk.SetBorderBevelPosition(10);
 
-            public override string PropertyName => "BorderBevelPosition";
+            public override string PropertyName => "BevelPosition";
             public override uint MangleBadValue(uint v) => 254;
 
             public override uint[] GoodValues => new uint[] { 0, 15, 1, 99, 100, 101, 254 };
@@ -426,7 +426,7 @@ namespace LibAtem.ComparisonTests.MixEffects
             // Ensure the first value will have a change
             public override void Prepare() => _sdk.SetBorderLightSourceDirection(10);
 
-            public override string PropertyName => "BorderLightSourceDirection";
+            public override string PropertyName => "LightSourceDirection";
             public override double MangleBadValue(double v) => v > 0 ? v - 360 : v + 73.6;
 
             public override double[] GoodValues => new double[] { 0, 123, 233.4, 359.9 };
@@ -449,7 +449,7 @@ namespace LibAtem.ComparisonTests.MixEffects
             // Ensure the first value will have a change
             public override void Prepare() => _sdk.SetBorderLightSourceAltitude(10);
 
-            public override string PropertyName => "BorderLightSourceAltitude";
+            public override string PropertyName => "LightSourceAltitude";
             public override uint MangleBadValue(uint v) => 254;
 
             public override uint[] GoodValues => new uint[] { 0, 9, 10, 15, 11, 99, 100, 101, 254 };

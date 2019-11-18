@@ -79,7 +79,7 @@ namespace LibAtem.ComparisonTests.State.SDK
                 port.GetAudioInputId(out long inputId);
                 State.Audio.Inputs[inputId] = new AudioState.InputState();
 
-                var cbi = new AudioMixerInputCallback(State.Audio.Inputs[inputId], port, () => FireCommandKey($"Audio.Inputs.{inputId:D}"));
+                var cbi = new AudioMixerInputCallback(State.Audio.Inputs[inputId], port, str => FireCommandKey($"Audio.Inputs.{inputId:D}.{str}"));
                 port.AddCallback(cbi);
                 _cleanupCallbacks.Add(() => port.RemoveCallback(cbi));
                 TriggerAllChanged(cbi);

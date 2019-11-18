@@ -25,7 +25,7 @@ namespace LibAtem.ComparisonTests.MixEffects
             private readonly MixEffectBlockId _meId;
             protected readonly IBMDSwitcherTransitionMixParameters _sdk;
 
-            public MixTransitionTestDefinition(AtemComparisonHelper helper, Tuple<MixEffectBlockId, IBMDSwitcherTransitionMixParameters> me) : base(helper)
+            public MixTransitionTestDefinition(AtemComparisonHelper helper, Tuple<MixEffectBlockId, IBMDSwitcherTransitionMixParameters> me) : base(helper, me.Item1 != MixEffectBlockId.One)
             {
                 _meId = me.Item1;
                 _sdk = me.Item2;

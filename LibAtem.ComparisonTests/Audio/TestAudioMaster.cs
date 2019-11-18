@@ -236,7 +236,7 @@ namespace LibAtem.ComparisonTests.Audio
                 helper.SendAndWaitForMatching(levelsKey, null);
 
                 AudioState.ProgramOutState mixer = helper.SdkState.Audio.ProgramOut;
-                AudioState.InputState input = helper.SdkState.Audio.Inputs[(long)AudioSource.MP1];
+                AudioState.InputState.LevelsState input = helper.SdkState.Audio.Inputs[(long)AudioSource.MP1].Levels;
                 Assert.False(double.IsNegativeInfinity(mixer.PeakLeft));
                 Assert.False(double.IsNegativeInfinity(mixer.PeakRight));
                 Assert.False(double.IsNegativeInfinity(input.PeakLeft));
@@ -250,7 +250,7 @@ namespace LibAtem.ComparisonTests.Audio
 
                 // Ensure peaks are still high
                 AudioState.ProgramOutState mixer2 = helper.SdkState.Audio.ProgramOut;
-                AudioState.InputState input2 = helper.SdkState.Audio.Inputs[(long)AudioSource.MP1];
+                AudioState.InputState.LevelsState input2 = helper.SdkState.Audio.Inputs[(long)AudioSource.MP1].Levels;
                 Assert.False(mixer2.PeakLeft < -60);
                 Assert.False(mixer2.PeakRight < -60);
                 Assert.False(input2.PeakLeft < -60);
@@ -266,7 +266,7 @@ namespace LibAtem.ComparisonTests.Audio
                 helper.SendAndWaitForMatching(levelsKey, null);
 
                 AudioState.ProgramOutState mixer3 = helper.SdkState.Audio.ProgramOut;
-                AudioState.InputState input3 = helper.SdkState.Audio.Inputs[(long)AudioSource.MP1];
+                AudioState.InputState.LevelsState input3 = helper.SdkState.Audio.Inputs[(long)AudioSource.MP1].Levels;
                 Assert.True(mixer3.PeakLeft < -60);
                 Assert.True(mixer3.PeakRight < -60);
                 Assert.True(input3.PeakLeft < -60);

@@ -25,7 +25,7 @@ namespace LibAtem.ComparisonTests.MixEffects
             private readonly UpstreamKeyId _keyId;
             protected readonly IBMDSwitcherKeyLumaParameters _sdk;
 
-            public LumaKeyerTestDefinition(AtemComparisonHelper helper, Tuple<MixEffectBlockId, UpstreamKeyId, IBMDSwitcherKeyLumaParameters> key) : base(helper)
+            public LumaKeyerTestDefinition(AtemComparisonHelper helper, Tuple<MixEffectBlockId, UpstreamKeyId, IBMDSwitcherKeyLumaParameters> key) : base(helper, key.Item1 != MixEffectBlockId.One || key.Item2 != UpstreamKeyId.One)
             {
                 _meId = key.Item1;
                 _keyId = key.Item2;

@@ -49,13 +49,13 @@ namespace LibAtem.ComparisonTests.Settings
 
             public override void UpdateExpectedState(AtemState state, bool goodValue, T v)
             {
-                InputState obj = state.Settings.Inputs[_id];
+                InputState.PropertiesState obj = state.Settings.Inputs[_id].Properties;
                 SetCommandProperty(obj, PropertyName, goodValue ? v : MangleBadValue(v));
             }
 
             public override IEnumerable<string> ExpectedCommands(bool goodValue, T v)
             {
-                yield return $"Settings.Inputs.{_id:D}";
+                yield return $"Settings.Inputs.{_id:D}.Properties";
             }
         }
 
@@ -91,14 +91,21 @@ namespace LibAtem.ComparisonTests.Settings
                     var audioId = (AudioSource)_id;
                     if (audioId.IsAvailable(_helper.Profile) && state.Audio.Inputs.ContainsKey((long)audioId))
                     {
-                        state.Audio.Inputs[(long)audioId].ExternalPortType = v;
+                        state.Audio.Inputs[(long)audioId].Properties.PortType = v.ToAudioPortType();
                     }
                 }
             }
 
             public override IEnumerable<string> ExpectedCommands(bool goodValue, ExternalPortTypeFlags v)
             {
-                if (goodValue) return base.ExpectedCommands(goodValue, v);
+                if (goodValue)
+                {
+                    return base.ExpectedCommands(goodValue, v).Concat(new[]
+                    {
+                        $"Audio.Inputs.{_id:D}.Properties"
+                    }
+                    );
+                }
                 return new string[0];
             }
         }
@@ -232,6 +239,8 @@ namespace LibAtem.ComparisonTests.Settings
 
                     new InputShortNameTestDefinition(helper, input, defaults.Item2).Run();
                     new InputLongNameTestDefinition(helper, input, defaults.Item1).Run();
+
+                    input.Value.ResetNames();
                 }
 
                 _output.WriteLine(string.Join("\n", failures));

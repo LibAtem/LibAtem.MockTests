@@ -28,13 +28,14 @@ namespace LibAtem.ComparisonTests.MixEffects
             private readonly MixEffectBlockId _meId;
             private readonly IBMDSwitcherMixEffectBlock _sdk;
 
-            public ProgramInputTestDefinition(AtemComparisonHelper helper, Tuple<MixEffectBlockId, IBMDSwitcherMixEffectBlock> me) : base(helper)
+            public ProgramInputTestDefinition(AtemComparisonHelper helper, Tuple<MixEffectBlockId, IBMDSwitcherMixEffectBlock> me) : base(helper, me.Item1 != MixEffectBlockId.One)
             {
                 _meId = me.Item1;
                 _sdk = me.Item2;
 
                 _sdk.GetInputAvailabilityMask(out _BMDSwitcherInputAvailability availabilityMask);
-                Assert.Equal((long)SourceAvailability.Auxiliary, (long)availabilityMask);
+                var targetAvailability = me.Item1 == MixEffectBlockId.One ? SourceAvailability.Auxiliary : SourceAvailability.Multiviewer;
+                Assert.Equal((long)targetAvailability, (long)availabilityMask);
             }
 
             public override void Prepare() => _sdk.SetProgramInput((long)VideoSource.ColorBars);
@@ -60,7 +61,9 @@ namespace LibAtem.ComparisonTests.MixEffects
                     yield return $"MixEffects.{_meId:D}.Sources";
             }
 
-            public override VideoSource[] GoodValues => Enum.GetValues(typeof(VideoSource)).OfType<VideoSource>().Where(i => i.IsAvailable(_helper.Profile) && i.IsAvailable(_meId)).ToArray();
+            private VideoSource[] ValidSources => Enum.GetValues(typeof(VideoSource)).OfType<VideoSource>().Where(i => i.IsAvailable(_helper.Profile) && i.IsAvailable(_meId)).ToArray();
+            public override VideoSource[] GoodValues => VideoSourceUtil.TakeSelection(ValidSources);
+            public override VideoSource[] BadValues => VideoSourceUtil.TakeBadSelection(ValidSources);
         }
         [Fact]
         public void TestMixEffectProgram()
@@ -79,13 +82,14 @@ namespace LibAtem.ComparisonTests.MixEffects
             private readonly MixEffectBlockId _meId;
             private readonly IBMDSwitcherMixEffectBlock _sdk;
 
-            public PreviewInputTestDefinition(AtemComparisonHelper helper, Tuple<MixEffectBlockId, IBMDSwitcherMixEffectBlock> me) : base(helper)
+            public PreviewInputTestDefinition(AtemComparisonHelper helper, Tuple<MixEffectBlockId, IBMDSwitcherMixEffectBlock> me) : base(helper, me.Item1 != MixEffectBlockId.One)
             {
                 _meId = me.Item1;
                 _sdk = me.Item2;
 
                 _sdk.GetInputAvailabilityMask(out _BMDSwitcherInputAvailability availabilityMask);
-                Assert.Equal((long)SourceAvailability.Auxiliary, (long)availabilityMask);
+                var targetAvailability = me.Item1 == MixEffectBlockId.One ? SourceAvailability.Auxiliary : SourceAvailability.Multiviewer;
+                Assert.Equal((long)targetAvailability, (long)availabilityMask);
             }
 
             public override void Prepare() => _sdk.SetProgramInput((long)VideoSource.ColorBars);
@@ -111,7 +115,9 @@ namespace LibAtem.ComparisonTests.MixEffects
                     yield return $"MixEffects.{_meId:D}.Sources";
             }
 
-            public override VideoSource[] GoodValues => Enum.GetValues(typeof(VideoSource)).OfType<VideoSource>().Where(i => i.IsAvailable(_helper.Profile) && i.IsAvailable(_meId)).ToArray();
+            private VideoSource[] ValidSources => Enum.GetValues(typeof(VideoSource)).OfType<VideoSource>().Where(i => i.IsAvailable(_helper.Profile) && i.IsAvailable(_meId)).ToArray();
+            public override VideoSource[] GoodValues => VideoSourceUtil.TakeSelection(ValidSources);
+            public override VideoSource[] BadValues => VideoSourceUtil.TakeBadSelection(ValidSources);
         }
         [Fact]
         public void TestMixEffectPreview()

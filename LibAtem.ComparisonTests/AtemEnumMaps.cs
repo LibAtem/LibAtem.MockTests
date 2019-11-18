@@ -25,6 +25,7 @@ namespace LibAtem.ComparisonTests
         public static readonly IReadOnlyDictionary<SuperSourceArtOption, _BMDSwitcherSuperSourceArtOption> SuperSourceArtOptionMap;
         public static readonly IReadOnlyDictionary<MediaPlayerSource, _BMDSwitcherMediaPlayerSourceType> MediaPlayerSourceMap;
         public static readonly IReadOnlyDictionary<AudioMixOption, _BMDSwitcherAudioMixOption> AudioMixOptionMap;
+        public static readonly IReadOnlyDictionary<AudioSourceType, _BMDSwitcherAudioInputType> AudioSourceTypeMap;
 
         static AtemEnumMaps()
         {
@@ -233,6 +234,13 @@ namespace LibAtem.ComparisonTests
                 {AudioMixOption.On, _BMDSwitcherAudioMixOption.bmdSwitcherAudioMixOptionOn},
                 {AudioMixOption.AudioFollowVideo, _BMDSwitcherAudioMixOption.bmdSwitcherAudioMixOptionAudioFollowVideo},
             };
+
+            AudioSourceTypeMap = new Dictionary<AudioSourceType, _BMDSwitcherAudioInputType>
+            {
+                {AudioSourceType.ExternalAudio, _BMDSwitcherAudioInputType.bmdSwitcherAudioInputTypeAudioIn},
+                {AudioSourceType.ExternalVideo, _BMDSwitcherAudioInputType.bmdSwitcherAudioInputTypeEmbeddedWithVideo},
+                {AudioSourceType.MediaPlayer, _BMDSwitcherAudioInputType.bmdSwitcherAudioInputTypeMediaPlayer},
+            };
         }
 
         public static Tk FindByValue<Tk, Tv>(this IReadOnlyDictionary<Tk, Tv> dict, Tv value)
@@ -400,6 +408,12 @@ namespace LibAtem.ComparisonTests
         public void EnsureAudioMixOptionMapIsComplete()
         {
             EnumMap.EnsureIsComplete(AtemEnumMaps.AudioMixOptionMap);
+        }
+
+        [Fact]
+        public void EnsureAudioSourceTypeMapIsComplete()
+        {
+            EnumMap.EnsureIsComplete(AtemEnumMaps.AudioSourceTypeMap);
         }
     }
 }

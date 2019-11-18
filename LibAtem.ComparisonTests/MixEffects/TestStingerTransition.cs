@@ -39,7 +39,7 @@ namespace LibAtem.ComparisonTests.MixEffects
             protected readonly MixEffectBlockId _meId;
             protected readonly IBMDSwitcherTransitionStingerParameters _sdk;
 
-            public StingerTransitionTestDefinition(AtemComparisonHelper helper, Tuple<MixEffectBlockId, IBMDSwitcherTransitionStingerParameters> me) : base(helper)
+            public StingerTransitionTestDefinition(AtemComparisonHelper helper, Tuple<MixEffectBlockId, IBMDSwitcherTransitionStingerParameters> me) : base(helper, me.Item1 != MixEffectBlockId.One)
             {
                 _meId = me.Item1;
                 _sdk = me.Item2;
@@ -76,12 +76,17 @@ namespace LibAtem.ComparisonTests.MixEffects
             public override string PropertyName => "Source";
             public override StingerSource MangleBadValue(StingerSource v) => v;
 
-            public override StingerSource[] GoodValues => Enum.GetValues(typeof(StingerSource)).OfType<StingerSource>().Where(s => s.IsAvailable(_helper.Profile)).ToArray();
-            public override StingerSource[] BadValues => Enum.GetValues(typeof(StingerSource)).OfType<StingerSource>().Except(GoodValues).ToArray();
+            public override StingerSource[] GoodValues => Enum.GetValues(typeof(StingerSource)).OfType<StingerSource>().Where(s => s.IsAvailable(_helper.Profile) && s > 0).ToArray();
+            public override StingerSource[] BadValues => Enum.GetValues(typeof(StingerSource)).OfType<StingerSource>().Except(GoodValues).Where(s => s != 0).ToArray();
 
             public override void UpdateExpectedState(AtemState state, bool goodValue, StingerSource v)
             {
                 if (goodValue) base.UpdateExpectedState(state, goodValue, v);
+            }
+
+            public override IEnumerable<string> ExpectedCommands(bool goodValue, StingerSource v)
+            {
+                yield break;
             }
         }
         [Fact]
