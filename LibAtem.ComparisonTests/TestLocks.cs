@@ -122,7 +122,7 @@ namespace LibAtem.ComparisonTests
                     Assert.Empty(helper.GetReceivedCommands<LockObtainedCommand>());
 
                     // lock via lib
-                    helper.SendAndWaitForMatching($"Locks.{lck.Index}", new LockStateSetCommand() { Index = lck.Index, Locked = true });
+                    helper.SendAndWaitForMatching($"Locks.{lck.Index:D}", new LockStateSetCommand() { Index = lck.Index, Locked = true });
                     helper.Sleep();
 
                     // check stored lkst
@@ -133,7 +133,7 @@ namespace LibAtem.ComparisonTests
                     Assert.Equal(1, obCmd.Count);
 
                     // unlock via lib
-                    helper.SendAndWaitForMatching($"Locks.{lck.Index}", new LockStateSetCommand() { Index = lck.Index, Locked = false });
+                    helper.SendAndWaitForMatching($"Locks.{lck.Index:D}", new LockStateSetCommand() { Index = lck.Index, Locked = false });
 
                     // check stored lkst
                     // ensure no new lkob

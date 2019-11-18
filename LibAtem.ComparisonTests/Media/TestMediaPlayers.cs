@@ -99,7 +99,7 @@ namespace LibAtem.ComparisonTests.Media
 
             public override IEnumerable<string> ExpectedCommands(bool goodValue, Tuple<MediaPlayerSource, uint> v)
             {
-                yield return $"MediaPlayers.{_id}.Source";
+                yield return $"MediaPlayers.{_id:D}.Source";
             }
         }
 
@@ -150,7 +150,7 @@ namespace LibAtem.ComparisonTests.Media
 
             public override IEnumerable<string> ExpectedCommands(bool goodValue, T v)
             {
-                yield return $"MediaPlayers.{_id}.Status";
+                yield return $"MediaPlayers.{_id:D}.Status";
             }
         }
 

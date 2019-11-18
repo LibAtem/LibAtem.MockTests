@@ -25,7 +25,7 @@ namespace LibAtem.ComparisonTests.MixEffects
             private readonly UpstreamKeyId _keyId;
             protected readonly IBMDSwitcherKeyChromaParameters _sdk;
 
-            public ChromaKeyerTestDefinition(AtemComparisonHelper helper, Tuple<MixEffectBlockId, UpstreamKeyId, IBMDSwitcherKeyChromaParameters> key) : base(helper)
+            public ChromaKeyerTestDefinition(AtemComparisonHelper helper, Tuple<MixEffectBlockId, UpstreamKeyId, IBMDSwitcherKeyChromaParameters> key) : base(helper, key.Item1 != MixEffectBlockId.One || key.Item2 != UpstreamKeyId.One)
             {
                 _meId = key.Item1;
                 _keyId = key.Item2;
@@ -48,7 +48,7 @@ namespace LibAtem.ComparisonTests.MixEffects
 
             public override IEnumerable<string> ExpectedCommands(bool goodValue, T v)
             {
-                yield return $"MixEffect.{_meId}.Keyers.{_keyId}.Chroma";
+                yield return $"MixEffects.{_meId:D}.Keyers.{_keyId:D}.Chroma";
             }
         }
 

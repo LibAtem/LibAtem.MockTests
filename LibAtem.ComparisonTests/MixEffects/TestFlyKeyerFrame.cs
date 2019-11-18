@@ -66,7 +66,7 @@ namespace LibAtem.ComparisonTests.MixEffects
 
             public override IEnumerable<string> ExpectedCommands(bool goodValue, T v)
             {
-                yield return $"MixEffect.{_meId}.Keyers.{_keyId}.FlyFrames.{_frameId}";
+                yield return $"MixEffects.{_meId:D}.Keyers.{_keyId:D}.FlyFrames.{_frameId:D}";
             }
         }
 

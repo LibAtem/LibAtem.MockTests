@@ -87,7 +87,7 @@ namespace LibAtem.ComparisonTests
             public override IEnumerable<string> ExpectedCommands(bool goodValue, VideoSource v)
             {
                 if (goodValue)
-                    yield return $"DownstreamKeyers.{_keyId}.Sources";
+                    yield return $"DownstreamKeyers.{_keyId:D}.Sources";
             }
         }
 
@@ -145,7 +145,7 @@ namespace LibAtem.ComparisonTests
             public override IEnumerable<string> ExpectedCommands(bool goodValue, VideoSource v)
             {
                 if (goodValue)
-                    yield return $"DownstreamKeyers.{_keyId}.Sources";
+                    yield return $"DownstreamKeyers.{_keyId:D}.Sources";
             }
         }
 
@@ -181,7 +181,7 @@ namespace LibAtem.ComparisonTests
 
             public override IEnumerable<string> ExpectedCommands(bool goodValue, T v)
             {
-                yield return $"DownstreamKeyers.{_keyId}.Properties";
+                yield return $"DownstreamKeyers.{_keyId:D}.Properties";
             }
         }
 
@@ -224,7 +224,7 @@ namespace LibAtem.ComparisonTests
 
             public override IEnumerable<string> ExpectedCommands(bool goodValue, bool v)
             {
-                yield return $"DownstreamKeyers.{_keyId}.Properties";
+                yield return $"DownstreamKeyers.{_keyId:D}.Properties";
             }
         }
 
@@ -271,8 +271,8 @@ namespace LibAtem.ComparisonTests
 
             public override IEnumerable<string> ExpectedCommands(bool goodValue, uint v)
             {
-                yield return $"DownstreamKeyers.{_keyId}.Properties";
-                yield return $"DownstreamKeyers.{_keyId}.State";
+                yield return $"DownstreamKeyers.{_keyId:D}.Properties";
+                yield return $"DownstreamKeyers.{_keyId:D}.State";
             }
         }
 
@@ -315,6 +315,7 @@ namespace LibAtem.ComparisonTests
                 if (goodValue)
                 {
                     state.DownstreamKeyers[(int)_keyId].State.OnAir = v;
+                    state.DownstreamKeyers[(int)_keyId].State.IsTowardsOnAir = !v;
                     state.Settings.Inputs[VideoSource.MediaPlayer1].Tally.ProgramTally = v;
                     state.Settings.Inputs[VideoSource.MediaPlayer1Key].Tally.ProgramTally = v;
                 }
@@ -322,7 +323,7 @@ namespace LibAtem.ComparisonTests
 
             public override IEnumerable<string> ExpectedCommands(bool goodValue, bool v)
             {
-                yield return $"DownstreamKeyers.{_keyId}.State";
+                yield return $"DownstreamKeyers.{_keyId:D}.State";
             }
         }
 
@@ -521,7 +522,7 @@ namespace LibAtem.ComparisonTests
 
             public override IEnumerable<string> ExpectedCommands(bool goodValue, T v)
             {
-                yield return $"DownstreamKeyers.{_keyId}.Properties";
+                yield return $"DownstreamKeyers.{_keyId:D}.Properties";
             }
         }
 

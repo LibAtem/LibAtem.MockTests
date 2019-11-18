@@ -69,7 +69,7 @@ namespace LibAtem.ComparisonTests
             public override IEnumerable<string> ExpectedCommands(bool goodValue, VideoSource v)
             {
                 if (goodValue)
-                    yield return $"Auxiliaries.{_auxId}";
+                    yield return $"Auxiliaries.{_auxId:D}";
             }
         }
 

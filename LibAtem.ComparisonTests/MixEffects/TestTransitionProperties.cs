@@ -40,7 +40,7 @@ namespace LibAtem.ComparisonTests.MixEffects
 
             public override IEnumerable<string> ExpectedCommands(bool goodValue, T v)
             {
-                yield return $"MixEffect.{_meId}.Transition.Properties";
+                yield return $"MixEffects.{_meId:D}.Transition.Properties";
             }
         }
 

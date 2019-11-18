@@ -77,7 +77,7 @@ namespace LibAtem.ComparisonTests.Settings
 
             public override IEnumerable<string> ExpectedCommands(bool goodValue, T v)
             {
-                yield return $"Settings.MultiViewers.{_id}";
+                yield return $"Settings.MultiViewers.{_id:D}";
             }
         }
 
@@ -326,7 +326,7 @@ namespace LibAtem.ComparisonTests.Settings
             public override IEnumerable<string> ExpectedCommands(bool goodValue, VideoSource v)
             {
                 if (goodValue)
-                    yield return $"Settings.MultiViewers.{_id}.Windows.{_window}";
+                    yield return $"Settings.MultiViewers.{_id:D}.Windows.{_window:D}";
             }
         }
         private class MultiviewRoutableWindowVuMeterTestDefinition : TestDefinitionBase<MultiviewWindowVuMeterSetCommand, bool>
@@ -470,7 +470,7 @@ namespace LibAtem.ComparisonTests.Settings
 
             public override IEnumerable<string> ExpectedCommands(bool goodValue, double v)
             {
-                yield return $"Settings.MultiViewers.{_id}";
+                yield return $"Settings.MultiViewers.{_id:D}";
             }
 
             public override double[] GoodValues => new double[] { 10, 87, 14, 99, 100, 11 };

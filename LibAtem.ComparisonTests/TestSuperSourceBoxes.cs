@@ -59,7 +59,7 @@ namespace LibAtem.ComparisonTests
             protected readonly SuperSourceBoxId _boxId;
             protected readonly IBMDSwitcherSuperSourceBox _sdk;
 
-            public SuperSourceBoxTestDefinition(AtemComparisonHelper helper, SuperSourceId ssrcId, Tuple<SuperSourceBoxId, IBMDSwitcherSuperSourceBox> box) : base(helper)
+            public SuperSourceBoxTestDefinition(AtemComparisonHelper helper, SuperSourceId ssrcId, Tuple<SuperSourceBoxId, IBMDSwitcherSuperSourceBox> box) : base(helper, ssrcId != SuperSourceId.One || box.Item1 != SuperSourceBoxId.One)
             {
                 _ssrcId = ssrcId;
                 _boxId = box.Item1;
@@ -81,7 +81,7 @@ namespace LibAtem.ComparisonTests
 
             public override IEnumerable<string> ExpectedCommands(bool goodValue, T v)
             {
-                yield return $"SuperSources.{_ssrcId}.Boxes.{_boxId}";
+                yield return $"SuperSources.{_ssrcId:D}.Boxes.{_boxId:D}";
             }
         }
 
@@ -121,7 +121,9 @@ namespace LibAtem.ComparisonTests
             public override string PropertyName => "Source";
             public override VideoSource MangleBadValue(VideoSource v) => v;
 
-            public override VideoSource[] GoodValues => VideoSourceLists.All.Where(s => s.IsAvailable(_helper.Profile, InternalPortType.Mask) && s.IsAvailable(SourceAvailability.SuperSourceBox)).ToArray();
+            private VideoSource[] ValidSources => VideoSourceLists.All.Where(s => s.IsAvailable(_helper.Profile, InternalPortType.Mask) && s.IsAvailable(SourceAvailability.SuperSourceBox)).ToArray();
+            public override VideoSource[] GoodValues => VideoSourceUtil.TakeSelection(ValidSources);
+            public override VideoSource[] BadValues => VideoSourceUtil.TakeBadSelection(ValidSources);
 
             public override void UpdateExpectedState(AtemState state, bool goodValue, VideoSource v)
             {

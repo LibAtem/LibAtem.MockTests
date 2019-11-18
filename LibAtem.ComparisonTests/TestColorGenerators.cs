@@ -64,7 +64,7 @@ namespace LibAtem.ComparisonTests
 
             public override IEnumerable<string> ExpectedCommands(bool goodValue, double v)
             {
-                yield return $"ColorGenerators.{_colId}";
+                yield return $"ColorGenerators.{_colId:D}";
             }
         }
 

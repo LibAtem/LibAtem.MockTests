@@ -95,7 +95,7 @@ namespace LibAtem.ComparisonTests.State
                     string newName = name + prop.Name + ".";
                     for (int i = 0; i < newList.Count; i++)
                     {
-                        IEnumerable<string> res = CompareObject(newName, ignoreNodes, oldList[i], newList[i]);
+                        IEnumerable<string> res = CompareObject($"{newName}{i}.", ignoreNodes, oldList[i], newList[i]);
                         foreach (string r in res)
                             yield return r;
                     }

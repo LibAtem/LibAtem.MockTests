@@ -147,16 +147,16 @@ namespace LibAtem.ComparisonTests.Settings
                     yield return "Settings.VideoMode";
 
                     for (var i = 0; i < _helper.LibState.DownstreamKeyers.Count; i++)
-                        yield return $"DownstreamKeyers.{i}.State";
+                        yield return $"DownstreamKeyers.{i:D}.State";
                     for (var i = 0; i < _helper.LibState.MixEffects.Count; i++)
                     {
-                        yield return $"MixEffects.{i}.Transition.Mix";
-                        yield return $"MixEffects.{i}.Transition.Dip";
-                        yield return $"MixEffects.{i}.Transition.Wipe";
+                        yield return $"MixEffects.{i:D}.Transition.Mix";
+                        yield return $"MixEffects.{i:D}.Transition.Dip";
+                        yield return $"MixEffects.{i:D}.Transition.Wipe";
 
                         var me = _helper.LibState.MixEffects[i];
                         if (me != null && me.Transition.DVE != null)
-                            yield return $"MixEffects.{i}.Transition.DVE";
+                            yield return $"MixEffects.{i:D}.Transition.DVE";
                     }
                 }
             }

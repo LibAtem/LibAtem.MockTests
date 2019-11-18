@@ -1,4 +1,5 @@
 ﻿using LibAtem.Commands.DeviceProfile;
+using LibAtem.Common;
 using Xunit;
 
 namespace LibAtem.ComparisonTests.DeviceProfile
@@ -12,6 +13,14 @@ namespace LibAtem.ComparisonTests.DeviceProfile
         {
             _client = client;
         }
+
+
+        [Fact]
+        public void TestModelId()
+        {
+            Assert.NotEqual(ModelId.Unknown, _client.Profile.Model);
+        }
+
 
         [Fact]
         public void TestName()

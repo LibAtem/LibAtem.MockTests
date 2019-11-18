@@ -83,7 +83,7 @@ namespace LibAtem.ComparisonTests.Audio
 
             public override IEnumerable<string> ExpectedCommands(bool goodValue, T v)
             {
-                yield return $"Audio.Inputs.{_id}";
+                yield return $"Audio.Inputs.{_id:D}";
             }
         }
 
@@ -152,7 +152,7 @@ namespace LibAtem.ComparisonTests.Audio
                     yield return c;
 
                 if (goodValue)
-                    yield return $"Audio.Inputs.{_id}.Tally";
+                    yield return $"Audio.Inputs.{_id:D}.Tally";
             }
         }
         [Fact]
@@ -214,7 +214,7 @@ namespace LibAtem.ComparisonTests.Audio
             using (new MediaPoolUtil.MediaPlayingHelper(helper, MediaPlayerId.One, 0))
             using (new SendAudioLevelsHelper(helper))
             {
-                var levelsKey = $"Audio.Inputs.{AudioSource.MP1}.Levels";
+                var levelsKey = $"Audio.Inputs.{AudioSource.MP1:D}.Levels";
                 helper.Sleep(240);
                 helper.SendAndWaitForMatching(levelsKey, new ProgramInputSetCommand
                 {

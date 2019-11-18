@@ -48,19 +48,19 @@ namespace LibAtem.ComparisonTests.State.SDK
                 case _BMDSwitcherMultiViewEventType.bmdSwitcherMultiViewEventTypeWindowChanged:
                     _props.GetWindowInput((uint)window, out long input);
                     _state.Windows[window].Source = (VideoSource)input;
-                    _onChange($"Windows.{window}");
+                    _onChange($"Windows.{window:D}");
                     break;
                 case _BMDSwitcherMultiViewEventType.bmdSwitcherMultiViewEventTypeCurrentInputSupportsVuMeterChanged:
                     _props.SupportsVuMeters(out int supportsVu);
                     if (supportsVu != 0)
                         _props.CurrentInputSupportsVuMeter((uint)window, out supportsVu);
                     _state.Windows[window].SupportsVuMeter = supportsVu != 0;
-                    _onChange($"Windows.{window}");
+                    _onChange($"Windows.{window:D}");
                     break;
                 case _BMDSwitcherMultiViewEventType.bmdSwitcherMultiViewEventTypeVuMeterEnabledChanged:
                     //_props.GetVuMeterEnabled((uint)window, out int vuEnabled);
                     //_state.Windows[window].VuMeter = vuEnabled != 0;
-                    _onChange($"Windows.{window}");
+                    _onChange($"Windows.{window:D}");
                     break;
                 case _BMDSwitcherMultiViewEventType.bmdSwitcherMultiViewEventTypeVuMeterOpacityChanged:
                     //_props.GetVuMeterOpacity(out double opacity);

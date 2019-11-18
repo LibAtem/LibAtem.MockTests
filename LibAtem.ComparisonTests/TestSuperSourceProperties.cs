@@ -45,12 +45,12 @@ namespace LibAtem.ComparisonTests
             }
         }
 
-        private abstract class SuperSourceTestDefinition<T> : TestDefinitionBase<SuperSourcePropertiesSetCommand, T>
+        private abstract class SuperSourceTestDefinition<T> : TestDefinitionBase<SuperSourcePropertiesSetV8Command, T>
         {
             protected readonly SuperSourceId _ssrcId;
             protected readonly IBMDSwitcherInputSuperSource _sdk;
 
-            public SuperSourceTestDefinition(AtemComparisonHelper helper, SuperSourceId ssrcId, IBMDSwitcherInputSuperSource ssrc) : base(helper)
+            public SuperSourceTestDefinition(AtemComparisonHelper helper, SuperSourceId ssrcId, IBMDSwitcherInputSuperSource ssrc) : base(helper, ssrcId != SuperSourceId.One)
             {
                 _ssrcId = ssrcId;
                 _sdk = ssrc;
@@ -60,12 +60,12 @@ namespace LibAtem.ComparisonTests
 
             public override void UpdateExpectedState(AtemState state, bool goodValue, T v)
             {
-                SetCommandProperty(state.SuperSources[(int)_ssrcId], PropertyName, goodValue ? v : MangleBadValue(v));
+                SetCommandProperty(state.SuperSources[(int)_ssrcId].Properties, PropertyName, goodValue ? v : MangleBadValue(v));
             }
 
             public override IEnumerable<string> ExpectedCommands(bool goodValue, T v)
             {
-                yield return $"SuperSources.{_ssrcId}.Properties";
+                yield return $"SuperSources.{_ssrcId:D}.Properties";
             }
         }
 
@@ -84,7 +84,9 @@ namespace LibAtem.ComparisonTests
 
             public override string PropertyName => "ArtCutSource";
 
-            public override VideoSource[] GoodValues => VideoSourceLists.All.Where(s => s.IsAvailable(_helper.Profile, InternalPortType.Mask) && s.IsAvailable(SourceAvailability.SuperSourceArt | SourceAvailability.KeySource)).ToArray();
+            private VideoSource[] ValidSources => VideoSourceLists.All.Where(s => s.IsAvailable(_helper.Profile, InternalPortType.Mask) && s.IsAvailable(SourceAvailability.SuperSourceArt | SourceAvailability.KeySource)).ToArray();
+            public override VideoSource[] GoodValues => VideoSourceUtil.TakeSelection(ValidSources);
+            public override VideoSource[] BadValues => VideoSourceUtil.TakeBadSelection(ValidSources);
 
             public override VideoSource MangleBadValue(VideoSource v) => v;
             public override void UpdateExpectedState(AtemState state, bool goodValue, VideoSource v)
@@ -123,7 +125,9 @@ namespace LibAtem.ComparisonTests
 
             public override string PropertyName => "ArtFillSource";
 
-            public override VideoSource[] GoodValues => VideoSourceLists.All.Where(s => s.IsAvailable(_helper.Profile, InternalPortType.Mask) && s.IsAvailable(SourceAvailability.SuperSourceArt)).ToArray();
+            private VideoSource[] ValidSources => VideoSourceLists.All.Where(s => s.IsAvailable(_helper.Profile, InternalPortType.Mask) && s.IsAvailable(SourceAvailability.SuperSourceArt)).ToArray();
+            public override VideoSource[] GoodValues => VideoSourceUtil.TakeSelection(ValidSources);
+            public override VideoSource[] BadValues => VideoSourceUtil.TakeBadSelection(ValidSources);
 
             public override VideoSource MangleBadValue(VideoSource v) => v;
             public override void UpdateExpectedState(AtemState state, bool goodValue, VideoSource v)

@@ -18,13 +18,10 @@ namespace LibAtem.ComparisonTests.DeviceProfile
         public void TestStatus()
         {
             var cmd = _client.FindWithMatching(new PowerStatusCommand());
-            Assert.True(cmd.Pin1);
-            Assert.False(cmd.Pin2);
-
             _client.SdkSwitcher.GetPowerStatus(out _BMDSwitcherPowerStatus status);
 
-            Assert.True(status.HasFlag(_BMDSwitcherPowerStatus.bmdSwitcherPowerStatusSupply1));
-            Assert.False(status.HasFlag(_BMDSwitcherPowerStatus.bmdSwitcherPowerStatusSupply2));
+            Assert.Equal(cmd.Pin1, status.HasFlag(_BMDSwitcherPowerStatus.bmdSwitcherPowerStatusSupply1));
+            Assert.Equal(cmd.Pin2, status.HasFlag(_BMDSwitcherPowerStatus.bmdSwitcherPowerStatusSupply2));
         }
     }
 }

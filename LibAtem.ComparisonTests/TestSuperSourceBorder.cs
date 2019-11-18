@@ -2,12 +2,9 @@
 using System.Collections.Generic;
 using System.Linq;
 using BMDSwitcherAPI;
-using LibAtem.Commands;
 using LibAtem.Commands.SuperSource;
 using LibAtem.Common;
-using LibAtem.ComparisonTests.State;
 using LibAtem.ComparisonTests.Util;
-using LibAtem.DeviceProfile;
 using LibAtem.State;
 using Xunit;
 using Xunit.Abstractions;
@@ -39,7 +36,7 @@ namespace LibAtem.ComparisonTests
             protected readonly SuperSourceId _ssrcId;
             protected readonly IBMDSwitcherSuperSourceBorder _sdk;
 
-            public SuperSourceBorderTestDefinition(AtemComparisonHelper helper, SuperSourceId ssrcId, IBMDSwitcherSuperSourceBorder ssrc) : base(helper)
+            public SuperSourceBorderTestDefinition(AtemComparisonHelper helper, SuperSourceId ssrcId, IBMDSwitcherSuperSourceBorder ssrc) : base(helper, ssrcId != SuperSourceId.One)
             {
                 _ssrcId = ssrcId;
                 _sdk = ssrc;
@@ -49,12 +46,12 @@ namespace LibAtem.ComparisonTests
 
             public override void UpdateExpectedState(AtemState state, bool goodValue, T v)
             {
-                SetCommandProperty(state.SuperSources[(int)_ssrcId], PropertyName, goodValue ? v : MangleBadValue(v));
+                SetCommandProperty(state.SuperSources[(int)_ssrcId].Border, PropertyName, goodValue ? v : MangleBadValue(v));
             }
 
             public override IEnumerable<string> ExpectedCommands(bool goodValue, T v)
             {
-                yield return $"SuperSources.{_ssrcId}.Border";
+                yield return $"SuperSources.{_ssrcId:D}.Border";
             }
         }
 
@@ -68,7 +65,7 @@ namespace LibAtem.ComparisonTests
             // Ensure the first value will have a change
             public override void Prepare() => _sdk.SetBorderEnabled(0);
 
-            public override string PropertyName => "BorderEnabled";
+            public override string PropertyName => "Enabled";
             public override bool MangleBadValue(bool v) => v;
         }
 
@@ -88,7 +85,7 @@ namespace LibAtem.ComparisonTests
             // Ensure the first value will have a change
             public override void Prepare() => _sdk.SetBorderBevel(_BMDSwitcherBorderBevelOption.bmdSwitcherBorderBevelOptionInOut);
 
-            public override string PropertyName => "BorderBevel";
+            public override string PropertyName => "Bevel";
             public override BorderBevel MangleBadValue(BorderBevel v) => v;
 
             public override BorderBevel[] GoodValues => Enum.GetValues(typeof(BorderBevel)).OfType<BorderBevel>().ToArray();
@@ -187,7 +184,7 @@ namespace LibAtem.ComparisonTests
         }
 
         [SkippableFact]
-        public void TestBorderWidthIn()
+        public void TestBorderInnerWidth()
         {
             using (var helper = new AtemComparisonHelper(_client, _output))
             {
@@ -197,13 +194,13 @@ namespace LibAtem.ComparisonTests
                 {
                     helper.EnsureVideoMode(mode);
 
-                    new SuperSourceBorderWidthTestDefinition(helper, mode, SuperSourceId.One, ssrc, "BorderInnerWidth").Run();
+                    new SuperSourceBorderWidthTestDefinition(helper, mode, SuperSourceId.One, ssrc, "InnerWidth").Run();
                 }
             }
         }
 
         [SkippableFact]
-        public void TestBorderWidthOut()
+        public void TestBorderOuterWidth()
         {
             using (var helper = new AtemComparisonHelper(_client, _output))
             {
@@ -213,7 +210,7 @@ namespace LibAtem.ComparisonTests
                 {
                     helper.EnsureVideoMode(mode);
 
-                    new SuperSourceBorderWidthTestDefinition(helper, mode, SuperSourceId.One, ssrc, "BorderOuterWidth").Run();
+                    new SuperSourceBorderWidthTestDefinition(helper, mode, SuperSourceId.One, ssrc, "OuterWidth").Run();
                 }
             }
         }
@@ -244,31 +241,31 @@ namespace LibAtem.ComparisonTests
         }
 
         [SkippableFact]
-        public void TestBorderSoftnessOut()
+        public void TestBorderOuterSoftness()
         {
             using (var helper = new AtemComparisonHelper(_client, _output))
-                new SuperSourceUint100TestDefinition(helper, SuperSourceId.One, GetSuperSourceBorder(helper), "BorderOuterSoftness").Run();
+                new SuperSourceUint100TestDefinition(helper, SuperSourceId.One, GetSuperSourceBorder(helper), "OuterSoftness").Run();
         }
 
         [SkippableFact]
-        public void TestBorderSoftnessIn()
+        public void TestBorderInnerSoftness()
         {
             using (var helper = new AtemComparisonHelper(_client, _output))
-                new SuperSourceUint100TestDefinition(helper, SuperSourceId.One, GetSuperSourceBorder(helper), "BorderInnerSoftness").Run();
+                new SuperSourceUint100TestDefinition(helper, SuperSourceId.One, GetSuperSourceBorder(helper), "InnerSoftness").Run();
         }
 
         [SkippableFact]
         public void TestBorderBevelSoftness()
         {
             using (var helper = new AtemComparisonHelper(_client, _output))
-                new SuperSourceUint100TestDefinition(helper, SuperSourceId.One, GetSuperSourceBorder(helper), "BorderBevelSoftness").Run();
+                new SuperSourceUint100TestDefinition(helper, SuperSourceId.One, GetSuperSourceBorder(helper), "BevelSoftness").Run();
         }
 
         [SkippableFact]
         public void TestBorderBevelPosition()
         {
             using (var helper = new AtemComparisonHelper(_client, _output))
-                new SuperSourceUint100TestDefinition(helper, SuperSourceId.One, GetSuperSourceBorder(helper), "BorderBevelPosition").Run();
+                new SuperSourceUint100TestDefinition(helper, SuperSourceId.One, GetSuperSourceBorder(helper), "BevelPosition").Run();
         }
 
         private class SuperSourceBorderHueTestDefinition : SuperSourceBorderTestDefinition<double>
@@ -280,7 +277,7 @@ namespace LibAtem.ComparisonTests
             // Ensure the first value will have a change
             public override void Prepare() => _sdk.SetBorderHue(20);
 
-            public override string PropertyName => "BorderHue";
+            public override string PropertyName => "Hue";
             public override double MangleBadValue(double v)
             {
                 ushort ui = (ushort)((ushort)(v * 10) % 3600);
@@ -307,7 +304,7 @@ namespace LibAtem.ComparisonTests
             // Ensure the first value will have a change
             public override void Prepare() => _sdk.SetBorderSaturation(20);
 
-            public override string PropertyName => "BorderSaturation";
+            public override string PropertyName => "Saturation";
             public override double MangleBadValue(double v) => v >= 100 ? 100 : 0;
 
             public override double[] GoodValues => new double[] { 0, 87.4, 14.7, 99.9, 100, 0.1 };
@@ -330,7 +327,7 @@ namespace LibAtem.ComparisonTests
             // Ensure the first value will have a change
             public override void Prepare() => _sdk.SetBorderLuma(20);
 
-            public override string PropertyName => "BorderLuma";
+            public override string PropertyName => "Luma";
             public override double MangleBadValue(double v) => v >= 100 ? 100 : 0;
 
             public override double[] GoodValues => new double[] { 0, 87.4, 14.7, 99.9, 100, 0.1 };
@@ -353,7 +350,7 @@ namespace LibAtem.ComparisonTests
             // Ensure the first value will have a change
             public override void Prepare() => _sdk.SetBorderLightSourceDirection(20);
 
-            public override string PropertyName => "BorderLightSourceDirection";
+            public override string PropertyName => "LightSourceDirection";
             public override double MangleBadValue(double v) => 0;
 
             public override double[] GoodValues => new double[] { 0, 123, 233.4, 359.9 };
@@ -376,7 +373,7 @@ namespace LibAtem.ComparisonTests
             // Ensure the first value will have a change
             public override void Prepare() => _sdk.SetBorderLightSourceAltitude(20);
 
-            public override string PropertyName => "BorderLightSourceAltitude";
+            public override string PropertyName => "LightSourceAltitude";
             public override uint MangleBadValue(uint v) => v < 10 ? (uint)10 : 100;
 
             public override uint[] GoodValues => new uint[] { 10, 100, 34, 99, 11, 78 };

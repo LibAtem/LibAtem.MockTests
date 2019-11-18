@@ -55,7 +55,7 @@ namespace LibAtem.ComparisonTests.Settings
 
             public override IEnumerable<string> ExpectedCommands(bool goodValue, T v)
             {
-                yield return $"Settings.Inputs.{_id}";
+                yield return $"Settings.Inputs.{_id:D}";
             }
         }
 

@@ -26,17 +26,17 @@ namespace LibAtem.ComparisonTests.State.SDK
                 case _BMDSwitcherMediaPoolEventType.bmdSwitcherMediaPoolEventTypeValidChanged:
                     _props.IsValid(index, out int valid);
                     _state.Stills[(int)index].IsUsed = valid != 0;
-                    _onChange($"{index}");
+                    _onChange($"{index:D}");
                     break;
                 case _BMDSwitcherMediaPoolEventType.bmdSwitcherMediaPoolEventTypeNameChanged:
                     _props.GetName(index, out string name);
                     _state.Stills[(int)index].Filename = name;
-                    _onChange($"{index}");
+                    _onChange($"{index:D}");
                     break;
                 case _BMDSwitcherMediaPoolEventType.bmdSwitcherMediaPoolEventTypeHashChanged:
                     _props.GetHash(index, out BMDSwitcherHash hash);
                     _state.Stills[(int)index].Hash = hash.data;
-                    _onChange($"{index}");
+                    _onChange($"{index:D}");
                     break;
                 case _BMDSwitcherMediaPoolEventType.bmdSwitcherMediaPoolEventTypeLockBusy:
                     break;

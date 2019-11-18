@@ -57,7 +57,7 @@ namespace LibAtem.ComparisonTests.MixEffects
             public override IEnumerable<string> ExpectedCommands(bool goodValue, VideoSource v)
             {
                 if (goodValue)
-                    yield return $"MixEffects.{_meId}.Sources";
+                    yield return $"MixEffects.{_meId:D}.Sources";
             }
 
             public override VideoSource[] GoodValues => Enum.GetValues(typeof(VideoSource)).OfType<VideoSource>().Where(i => i.IsAvailable(_helper.Profile) && i.IsAvailable(_meId)).ToArray();
@@ -108,7 +108,7 @@ namespace LibAtem.ComparisonTests.MixEffects
             public override IEnumerable<string> ExpectedCommands(bool goodValue, VideoSource v)
             {
                 if (goodValue)
-                    yield return $"MixEffects.{_meId}.Sources";
+                    yield return $"MixEffects.{_meId:D}.Sources";
             }
 
             public override VideoSource[] GoodValues => Enum.GetValues(typeof(VideoSource)).OfType<VideoSource>().Where(i => i.IsAvailable(_helper.Profile) && i.IsAvailable(_meId)).ToArray();

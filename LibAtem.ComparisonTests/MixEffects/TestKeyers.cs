@@ -102,7 +102,7 @@ namespace LibAtem.ComparisonTests.MixEffects
 
             public override IEnumerable<string> ExpectedCommands(bool goodValue, MixEffectKeyType v)
             {
-                yield return $"MixEffect.{_meId}.Keyers.{_keyId}.Properties";
+                yield return $"MixEffects.{_meId:D}.Keyers.{_keyId:D}.Properties";
             }
 
             public override MixEffectKeyType[] GoodValues => Enum.GetValues(typeof(MixEffectKeyType)).OfType<MixEffectKeyType>().Where(o => o.IsAvailable(_helper.Profile)).ToArray();
@@ -303,7 +303,7 @@ namespace LibAtem.ComparisonTests.MixEffects
             public override IEnumerable<string> ExpectedCommands(bool goodValue, VideoSource v)
             {
                 if (goodValue)
-                    yield return $"MixEffect.{_meId}.Keyers.{_keyId}.Properties";
+                    yield return $"MixEffects.{_meId:D}.Keyers.{_keyId:D}.Properties";
             }
 
             public override VideoSource[] GoodValues => VideoSourceLists.All.Where(s => s.IsAvailable(_helper.Profile) && s.IsAvailable(_meId) && s.IsAvailable(SourceAvailability.KeySource)).ToArray();
@@ -355,7 +355,7 @@ namespace LibAtem.ComparisonTests.MixEffects
             public override IEnumerable<string> ExpectedCommands(bool goodValue, VideoSource v)
             {
                 if (goodValue)
-                    yield return $"MixEffect.{_meId}.Keyers.{_keyId}.Properties";
+                    yield return $"MixEffects.{_meId:D}.Keyers.{_keyId:D}.Properties";
             }
 
             public override VideoSource[] GoodValues => VideoSourceLists.All.Where(s => s.IsAvailable(_helper.Profile) && s.IsAvailable(_meId)).ToArray();
@@ -413,7 +413,7 @@ namespace LibAtem.ComparisonTests.MixEffects
 
             public override IEnumerable<string> ExpectedCommands(bool goodValue, bool v)
             {
-                yield return $"MixEffect.{_meId}.Keyers.{_keyId}.OnAir";
+                yield return $"MixEffects.{_meId:D}.Keyers.{_keyId:D}.OnAir";
             }
         }
         [Fact]
@@ -486,7 +486,7 @@ namespace LibAtem.ComparisonTests.MixEffects
 
             public override IEnumerable<string> ExpectedCommands(bool goodValue, T v)
             {
-                yield return $"MixEffect.{_meId}.Keyers.{_keyId}.Properties";
+                yield return $"MixEffects.{_meId:D}.Keyers.{_keyId:D}.Properties";
             }
         }
         private class KeyMaskEnabledTestDefinition : KeyMaskTestDefinition<bool>

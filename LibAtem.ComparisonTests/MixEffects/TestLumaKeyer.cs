@@ -48,7 +48,7 @@ namespace LibAtem.ComparisonTests.MixEffects
 
             public override IEnumerable<string> ExpectedCommands(bool goodValue, T v)
             {
-                yield return $"MixEffect.{_meId}.Keyers.{_keyId}.Luma";
+                yield return $"MixEffects.{_meId:D}.Keyers.{_keyId:D}.Luma";
             }
         }
 

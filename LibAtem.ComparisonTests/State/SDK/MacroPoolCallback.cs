@@ -45,7 +45,7 @@ namespace LibAtem.ComparisonTests.State.SDK
                     throw new ArgumentOutOfRangeException(nameof(eventType), eventType, null);
             }
 
-            _onChange($"{index}");
+            _onChange($"{index:D}");
         }
     }
 }

@@ -48,7 +48,7 @@ namespace LibAtem.ComparisonTests.MixEffects
 
             public override IEnumerable<string> ExpectedCommands(bool goodValue, T v)
             {
-                yield return $"MixEffect.{_id}.Transition.DVE";
+                yield return $"MixEffects.{_id:D}.Transition.DVE";
             }
         }
 
