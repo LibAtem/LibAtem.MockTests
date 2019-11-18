@@ -74,7 +74,6 @@ namespace LibAtem.ComparisonTests.State.SDK
             mixer.CreateIterator(ref itId, out var itPtr);
             IBMDSwitcherAudioInputIterator iterator = (IBMDSwitcherAudioInputIterator)Marshal.GetObjectForIUnknown(itPtr);
 
-            int id = 0;
             for (iterator.Next(out IBMDSwitcherAudioInput port); port != null; iterator.Next(out port))
             {
                 port.GetAudioInputId(out long inputId);
@@ -84,8 +83,6 @@ namespace LibAtem.ComparisonTests.State.SDK
                 port.AddCallback(cbi);
                 _cleanupCallbacks.Add(() => port.RemoveCallback(cbi));
                 TriggerAllChanged(cbi);
-
-                id++;
             }
 
             itId = typeof(IBMDSwitcherAudioMonitorOutputIterator).GUID;
@@ -99,13 +96,12 @@ namespace LibAtem.ComparisonTests.State.SDK
             {
                 var mon = new AudioState.MonitorOutputState();
                 mons.Add(mon);
+                uint monId = id2++; 
 
-                var cbi = new AudioMixerMonitorOutputCallback(mon, r, () => FireCommandKey($"Audio.Monitors.{id2:D}"));
+                var cbi = new AudioMixerMonitorOutputCallback(mon, r, () => FireCommandKey($"Audio.Monitors.{monId:D}"));
                 r.AddCallback(cbi);
                 _cleanupCallbacks.Add(() => r.RemoveCallback(cbi));
                 TriggerAllChanged(cbi);
-
-                id2++;
             }
 
             var talkback = switcher as IBMDSwitcherTalkback;
@@ -152,6 +148,7 @@ namespace LibAtem.ComparisonTests.State.SDK
             {
                 var mvState = new MultiViewerState();
                 mvs.Add(mvState);
+                uint mvId = id++;
 
                 mv.GetWindowCount(out uint count);
                 mvState.Windows = Enumerable.Repeat(0, (int)count).Select(i => new MultiViewerState.WindowState()).ToList();
@@ -159,12 +156,10 @@ namespace LibAtem.ComparisonTests.State.SDK
                 mv.SupportsProgramPreviewSwap(out int canSwap);
                 mvState.SupportsProgramPreviewSwapped = canSwap != 0;
 
-                var cb = new MultiViewPropertiesCallback(mvState, mv, str => FireCommandKey($"Settings.MultiViewers.{id:D}.{str}"));
+                var cb = new MultiViewPropertiesCallback(mvState, mv, str => FireCommandKey($"Settings.MultiViewers.{mvId:D}.{str}"));
                 mv.AddCallback(cb);
                 _cleanupCallbacks.Add(() => mv.RemoveCallback(cb));
                 TriggerAllChanged(cb);
-
-                id++;
             }
             State.Settings.MultiViewers = mvs;
         }
@@ -181,13 +176,12 @@ namespace LibAtem.ComparisonTests.State.SDK
             {
                 var player = new MediaPlayerState();
                 players.Add(player);
+                MediaPlayerId playerId = id++;
 
-                var cb = new MediaPlayerCallback(player, updateSettings, media, str => FireCommandKey($"MediaPlayers.{id:D}.{str}"));
+                var cb = new MediaPlayerCallback(player, updateSettings, media, str => FireCommandKey($"MediaPlayers.{playerId:D}.{str}"));
                 media.AddCallback(cb);
                 _cleanupCallbacks.Add(() => media.RemoveCallback(cb));
                 cb.Notify();
-
-                id++;
             }
             State.MediaPlayers = players;
         }
@@ -221,8 +215,9 @@ namespace LibAtem.ComparisonTests.State.SDK
             for (uint i = 0; i < clipCount; i++)
             {
                 pool.GetClip(i, out IBMDSwitcherClip clip);
+                uint clipId = i;
 
-                var cbc = new MediaPoolClipCallback(State.MediaPool.Clips[(int)i], clip, () => FireCommandKey($"MediaPool.Clips.{i:D}"));
+                var cbc = new MediaPoolClipCallback(State.MediaPool.Clips[(int)i], clip, () => FireCommandKey($"MediaPool.Clips.{clipId:D}"));
                 clip.AddCallback(cbc);
                 _cleanupCallbacks.Add(() => clip.RemoveCallback(cbc));
 
@@ -267,13 +262,12 @@ namespace LibAtem.ComparisonTests.State.SDK
             {
                 var dsk = new DownstreamKeyerState();
                 dsks.Add(dsk);
+                DownstreamKeyId dskId = id++;
 
-                var cb = new DownstreamKeyerPropertiesCallback(dsk, key, str => FireCommandKey($"DownstreamKeyers.{id:D}.{str}"));
+                var cb = new DownstreamKeyerPropertiesCallback(dsk, key, str => FireCommandKey($"DownstreamKeyers.{dskId:D}.{str}"));
                 key.AddCallback(cb);
                 _cleanupCallbacks.Add(() => key.RemoveCallback(cb));
                 TriggerAllChanged(cb);
-
-                id++;
             }
             State.DownstreamKeyers = dsks;
         }
@@ -292,17 +286,16 @@ namespace LibAtem.ComparisonTests.State.SDK
             {
                 var meState = new MixEffectState();
                 mes.Add(meState);
+                var meId = id++;
 
-                var cb = new MixEffectPropertiesCallback(meState, me, str => FireCommandKey($"MixEffects.{id:D}.{str}"));
+                var cb = new MixEffectPropertiesCallback(meState, me, str => FireCommandKey($"MixEffects.{meId:D}.{str}"));
                 me.AddCallback(cb);
                 _cleanupCallbacks.Add(() => me.RemoveCallback(cb));
                 TriggerAllChanged(cb);
 
-                SetupMixEffectKeyer(me, id);
+                SetupMixEffectKeyer(me, meId);
 
-                SetupMixEffectTransition(me, id);
-
-                id++;
+                SetupMixEffectTransition(me, meId);
             }
         }
 
@@ -549,8 +542,9 @@ namespace LibAtem.ComparisonTests.State.SDK
 
         private AuxState SetupAuxiliary(VideoSource id, IBMDSwitcherInputAux aux)
         {
+            AuxiliaryId id2 = AtemEnumMaps.GetAuxId(id);
             var c = new AuxState();
-            var cb = new AuxiliaryCallback(c, aux, () => FireCommandKey($"Auxiliaries.{id:D}"));
+            var cb = new AuxiliaryCallback(c, aux, () => FireCommandKey($"Auxiliaries.{id2:D}"));
             aux.AddCallback(cb);
             _cleanupCallbacks.Add(() => aux.RemoveCallback(cb));
 
@@ -560,8 +554,9 @@ namespace LibAtem.ComparisonTests.State.SDK
 
         private ColorState SetupColor(VideoSource id, IBMDSwitcherInputColor col)
         {
+            ColorGeneratorId id2 = AtemEnumMaps.GetSourceIdForGen(id);
             var c = new ColorState();
-            var cb = new ColorCallback(c, col, () => FireCommandKey($"ColorGenerators.{id:D}"));
+            var cb = new ColorCallback(c, col, () => FireCommandKey($"ColorGenerators.{id2:D}"));
             col.AddCallback(cb);
             _cleanupCallbacks.Add(() => col.RemoveCallback(cb));
             
@@ -596,14 +591,13 @@ namespace LibAtem.ComparisonTests.State.SDK
             {
                 var boxState = new SuperSourceState.BoxState();
                 boxes.Add(boxState);
+                var boxId = id++;
 
-                var cb2 = new SuperSourceBoxCallback(boxState, box, () => FireCommandKey($"SuperSources.{ssrcId:D}.Boxes.{id:D}"));
+                var cb2 = new SuperSourceBoxCallback(boxState, box, () => FireCommandKey($"SuperSources.{ssrcId:D}.Boxes.{boxId:D}"));
                 box.AddCallback(cb2);
                 _cleanupCallbacks.Add(() => box.RemoveCallback(cb2));
 
                 TriggerAllChanged(cb2);
-
-                id++;
             }
 
             c.Boxes = boxes;
