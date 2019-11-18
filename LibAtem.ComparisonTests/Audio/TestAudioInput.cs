@@ -81,9 +81,9 @@ namespace LibAtem.ComparisonTests.Audio
                 SetCommandProperty(obj, PropertyName, goodValue ? v : MangleBadValue(v));
             }
 
-            public override IEnumerable<CommandQueueKey> ExpectedCommands(bool goodValue, T v)
+            public override IEnumerable<string> ExpectedCommands(bool goodValue, T v)
             {
-                yield return new CommandQueueKey(new AudioMixerInputGetCommand() { Index = _id });
+                yield return $"Audio.Inputs.{_id}";
             }
         }
 
@@ -146,13 +146,13 @@ namespace LibAtem.ComparisonTests.Audio
             }
             public override AudioMixOption[] BadValues => Enum.GetValues(typeof(AudioMixOption)).OfType<AudioMixOption>().Except(GoodValues).ToArray();
 
-            public override IEnumerable<CommandQueueKey> ExpectedCommands(bool goodValue, AudioMixOption v)
+            public override IEnumerable<string> ExpectedCommands(bool goodValue, AudioMixOption v)
             {
                 foreach (var c in base.ExpectedCommands(goodValue, v))
                     yield return c;
 
                 if (goodValue)
-                    yield return new CommandQueueKey(new AudioMixerTallyCommand());
+                    yield return $"Audio.Inputs.{_id}.Tally";
             }
         }
         [Fact]
@@ -214,7 +214,7 @@ namespace LibAtem.ComparisonTests.Audio
             using (new MediaPoolUtil.MediaPlayingHelper(helper, MediaPlayerId.One, 0))
             using (new SendAudioLevelsHelper(helper))
             {
-                var levelsKey = new CommandQueueKey(new AudioMixerLevelsCommand());
+                var levelsKey = $"Audio.Inputs.{AudioSource.MP1}.Levels";
                 helper.Sleep(240);
                 helper.SendAndWaitForMatching(levelsKey, new ProgramInputSetCommand
                 {

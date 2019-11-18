@@ -1,7 +1,5 @@
 ﻿using System;
 using BMDSwitcherAPI;
-using LibAtem.Commands;
-using LibAtem.Commands.Settings;
 using LibAtem.State;
 
 namespace LibAtem.ComparisonTests.State.SDK
@@ -10,9 +8,9 @@ namespace LibAtem.ComparisonTests.State.SDK
     {
         private readonly SettingsState _state;
         private readonly IBMDSwitcherSerialPort _props;
-        private readonly Action<CommandQueueKey> _onChange;
+        private readonly Action _onChange;
 
-        public SerialPortPropertiesCallback(SettingsState state, IBMDSwitcherSerialPort props, Action<CommandQueueKey> onChange)
+        public SerialPortPropertiesCallback(SettingsState state, IBMDSwitcherSerialPort props, Action onChange)
         {
             _state = state;
             _props = props;
@@ -31,7 +29,7 @@ namespace LibAtem.ComparisonTests.State.SDK
                     throw new ArgumentOutOfRangeException(nameof(eventType), eventType, null);
             }
 
-            _onChange(new CommandQueueKey(new SerialPortModeCommand()));
+            _onChange();
         }
     }
 }

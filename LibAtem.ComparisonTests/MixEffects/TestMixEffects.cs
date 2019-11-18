@@ -54,10 +54,10 @@ namespace LibAtem.ComparisonTests.MixEffects
                 }
             }
 
-            public override IEnumerable<CommandQueueKey> ExpectedCommands(bool goodValue, VideoSource v)
+            public override IEnumerable<string> ExpectedCommands(bool goodValue, VideoSource v)
             {
                 if (goodValue)
-                    yield return new CommandQueueKey(new ProgramInputGetCommand() { Index = _meId });
+                    yield return $"MixEffects.{_meId}.Sources";
             }
 
             public override VideoSource[] GoodValues => Enum.GetValues(typeof(VideoSource)).OfType<VideoSource>().Where(i => i.IsAvailable(_helper.Profile) && i.IsAvailable(_meId)).ToArray();
@@ -105,10 +105,10 @@ namespace LibAtem.ComparisonTests.MixEffects
                 }
             }
 
-            public override IEnumerable<CommandQueueKey> ExpectedCommands(bool goodValue, VideoSource v)
+            public override IEnumerable<string> ExpectedCommands(bool goodValue, VideoSource v)
             {
                 if (goodValue)
-                    yield return new CommandQueueKey(new PreviewInputGetCommand() { Index = _meId });
+                    yield return $"MixEffects.{_meId}.Sources";
             }
 
             public override VideoSource[] GoodValues => Enum.GetValues(typeof(VideoSource)).OfType<VideoSource>().Where(i => i.IsAvailable(_helper.Profile) && i.IsAvailable(_meId)).ToArray();

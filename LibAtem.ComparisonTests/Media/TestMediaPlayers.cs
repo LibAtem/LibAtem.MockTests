@@ -97,9 +97,9 @@ namespace LibAtem.ComparisonTests.Media
                 yield return Tuple.Create(MediaPlayerSource.Still, _helper.Profile.MediaPoolStills);
             }
 
-            public override IEnumerable<CommandQueueKey> ExpectedCommands(bool goodValue, Tuple<MediaPlayerSource, uint> v)
+            public override IEnumerable<string> ExpectedCommands(bool goodValue, Tuple<MediaPlayerSource, uint> v)
             {
-                yield return new CommandQueueKey(new MediaPlayerSourceGetCommand() { Index = _id });
+                yield return $"MediaPlayers.{_id}.Source";
             }
         }
 
@@ -144,13 +144,13 @@ namespace LibAtem.ComparisonTests.Media
 
             public override void UpdateExpectedState(AtemState state, bool goodValue, T v)
             {
-                MediaPlayerState obj = state.MediaPlayers[(int)_id];
+                MediaPlayerState.StatusState obj = state.MediaPlayers[(int)_id].Status;
                 SetCommandProperty(obj, PropertyName, goodValue ? v : MangleBadValue(v));
             }
 
-            public override IEnumerable<CommandQueueKey> ExpectedCommands(bool goodValue, T v)
+            public override IEnumerable<string> ExpectedCommands(bool goodValue, T v)
             {
-                yield return new CommandQueueKey(new MediaPlayerClipStatusGetCommand() { Index = _id });
+                yield return $"MediaPlayers.{_id}.Status";
             }
         }
 

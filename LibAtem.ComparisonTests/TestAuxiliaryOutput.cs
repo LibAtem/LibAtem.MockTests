@@ -66,10 +66,10 @@ namespace LibAtem.ComparisonTests
                     state.Auxiliaries[(int)_auxId].Source = v;
             }
 
-            public override IEnumerable<CommandQueueKey> ExpectedCommands(bool goodValue, VideoSource v)
+            public override IEnumerable<string> ExpectedCommands(bool goodValue, VideoSource v)
             {
                 if (goodValue)
-                    yield return new CommandQueueKey(new AuxSourceGetCommand() { Id = _auxId });
+                    yield return $"Auxiliaries.{_auxId}";
             }
         }
 

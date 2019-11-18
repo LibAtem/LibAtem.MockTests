@@ -11,11 +11,13 @@ namespace LibAtem.ComparisonTests.State.SDK
     {
         private readonly AudioState.TalkbackState _state;
         private readonly IBMDSwitcherTalkback _props;
+        private readonly Action _onChange;
 
-        public TalkbackCallback(AudioState.TalkbackState state, IBMDSwitcherTalkback props)
+        public TalkbackCallback(AudioState.TalkbackState state, IBMDSwitcherTalkback props, Action onChange)
         {
             _state = state;
             _props = props;
+            _onChange = onChange;
         }
 
         public void Notify(_BMDSwitcherTalkbackEventType eventType, long audioInputId)
@@ -45,6 +47,8 @@ namespace LibAtem.ComparisonTests.State.SDK
                 default:
                     throw new ArgumentOutOfRangeException(nameof(eventType), eventType, null);
             }
+
+            _onChange();
         }
 
         public void NotifyAll(IEnumerable<long> ids)

@@ -84,10 +84,10 @@ namespace LibAtem.ComparisonTests
                     state.DownstreamKeyers[(int)_keyId].Sources.CutSource = v;
             }
 
-            public override IEnumerable<CommandQueueKey> ExpectedCommands(bool goodValue, VideoSource v)
+            public override IEnumerable<string> ExpectedCommands(bool goodValue, VideoSource v)
             {
                 if (goodValue)
-                    yield return new CommandQueueKey(new DownstreamKeySourceGetCommand() { Index = _keyId });
+                    yield return $"DownstreamKeyers.{_keyId}.Sources";
             }
         }
 
@@ -142,10 +142,10 @@ namespace LibAtem.ComparisonTests
                 }
             }
 
-            public override IEnumerable<CommandQueueKey> ExpectedCommands(bool goodValue, VideoSource v)
+            public override IEnumerable<string> ExpectedCommands(bool goodValue, VideoSource v)
             {
                 if (goodValue)
-                    yield return new CommandQueueKey(new DownstreamKeySourceGetCommand() { Index = _keyId });
+                    yield return $"DownstreamKeyers.{_keyId}.Sources";
             }
         }
 
@@ -179,9 +179,9 @@ namespace LibAtem.ComparisonTests
                 SetCommandProperty(state.DownstreamKeyers[(int)_keyId].Properties, PropertyName, goodValue ? v : MangleBadValue(v));
             }
 
-            public override IEnumerable<CommandQueueKey> ExpectedCommands(bool goodValue, T v)
+            public override IEnumerable<string> ExpectedCommands(bool goodValue, T v)
             {
-                yield return new CommandQueueKey(new DownstreamKeyPropertiesGetCommand() { Index = _keyId });
+                yield return $"DownstreamKeyers.{_keyId}.Properties";
             }
         }
 
@@ -222,9 +222,9 @@ namespace LibAtem.ComparisonTests
                 }
             }
 
-            public override IEnumerable<CommandQueueKey> ExpectedCommands(bool goodValue, bool v)
+            public override IEnumerable<string> ExpectedCommands(bool goodValue, bool v)
             {
-                yield return new CommandQueueKey(new DownstreamKeyPropertiesGetCommand() { Index = _keyId });
+                yield return $"DownstreamKeyers.{_keyId}.Properties";
             }
         }
 
@@ -269,9 +269,10 @@ namespace LibAtem.ComparisonTests
             public override uint[] GoodValues => new uint[] { 1, 18, 28, 95, 234, 244, 250 };
             public override uint[] BadValues => new uint[] { 251, 255, 0 };
 
-            public override IEnumerable<CommandQueueKey> ExpectedCommands(bool goodValue, uint v)
+            public override IEnumerable<string> ExpectedCommands(bool goodValue, uint v)
             {
-                yield return new CommandQueueKey(new DownstreamKeyPropertiesGetCommand() { Index = _keyId });
+                yield return $"DownstreamKeyers.{_keyId}.Properties";
+                yield return $"DownstreamKeyers.{_keyId}.State";
             }
         }
 
@@ -319,9 +320,9 @@ namespace LibAtem.ComparisonTests
                 }
             }
 
-            public override IEnumerable<CommandQueueKey> ExpectedCommands(bool goodValue, bool v)
+            public override IEnumerable<string> ExpectedCommands(bool goodValue, bool v)
             {
-                yield return new CommandQueueKey(new DownstreamKeyStateGetV8Command() { Index = _keyId });
+                yield return $"DownstreamKeyers.{_keyId}.State";
             }
         }
 
@@ -518,9 +519,9 @@ namespace LibAtem.ComparisonTests
                 SetCommandProperty(state.DownstreamKeyers[(int)_keyId].Properties, PropertyName, goodValue ? v : MangleBadValue(v));
             }
 
-            public override IEnumerable<CommandQueueKey> ExpectedCommands(bool goodValue, T v)
+            public override IEnumerable<string> ExpectedCommands(bool goodValue, T v)
             {
-                yield return new CommandQueueKey(new DownstreamKeyPropertiesGetCommand() { Index = _keyId });
+                yield return $"DownstreamKeyers.{_keyId}.Properties";
             }
         }
 

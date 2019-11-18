@@ -46,9 +46,9 @@ namespace LibAtem.ComparisonTests.MixEffects
                 SetCommandProperty(obj, PropertyName, goodValue ? v : MangleBadValue(v));
             }
 
-            public override IEnumerable<CommandQueueKey> ExpectedCommands(bool goodValue, T v)
+            public override IEnumerable<string> ExpectedCommands(bool goodValue, T v)
             {
-                yield return new CommandQueueKey(new TransitionDVEGetCommand() { Index = _id });
+                yield return $"MixEffect.{_id}.Transition.DVE";
             }
         }
 
@@ -67,11 +67,11 @@ namespace LibAtem.ComparisonTests.MixEffects
             public override uint[] GoodValues => new uint[] { 1, 18, 28, 95, 234, 244, 250 };
             public override uint[] BadValues => new uint[] { 251, 255, 0 };
 
-            public override IEnumerable<CommandQueueKey> ExpectedCommands(bool goodValue, uint v)
+            public override IEnumerable<string> ExpectedCommands(bool goodValue, uint v)
             {
                 if (goodValue)
                     return base.ExpectedCommands(goodValue, v);
-                return new CommandQueueKey[0];
+                return new string[0];
             }
         }
 
@@ -97,11 +97,11 @@ namespace LibAtem.ComparisonTests.MixEffects
             public override uint[] GoodValues => new uint[] { 1, 18, 28, 95, 234, 244, 250 };
             public override uint[] BadValues => new uint[] { 251, 255, 0 };
 
-            public override IEnumerable<CommandQueueKey> ExpectedCommands(bool goodValue, uint v)
+            public override IEnumerable<string> ExpectedCommands(bool goodValue, uint v)
             {
                 if (goodValue)
                     return base.ExpectedCommands(goodValue, v);
-                return new CommandQueueKey[0];
+                return new string[0];
             }
         }
 
@@ -190,11 +190,11 @@ namespace LibAtem.ComparisonTests.MixEffects
                 }
             }
 
-            public override IEnumerable<CommandQueueKey> ExpectedCommands(bool goodValue, VideoSource v)
+            public override IEnumerable<string> ExpectedCommands(bool goodValue, VideoSource v)
             {
                 if (goodValue)
                     return base.ExpectedCommands(goodValue, v);
-                return new CommandQueueKey[0];
+                return new string[0];
             }
         }
 
@@ -233,11 +233,11 @@ namespace LibAtem.ComparisonTests.MixEffects
                     state.MixEffects[(int)_id].Transition.DVE.KeySource = v;
             }
 
-            public override IEnumerable<CommandQueueKey> ExpectedCommands(bool goodValue, VideoSource v)
+            public override IEnumerable<string> ExpectedCommands(bool goodValue, VideoSource v)
             {
                 if (goodValue)
                     return base.ExpectedCommands(goodValue, v);
-                return new CommandQueueKey[0];
+                return new string[0];
             }
         }
 

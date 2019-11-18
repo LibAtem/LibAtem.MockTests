@@ -151,19 +151,19 @@ namespace LibAtem.ComparisonTests
         }
         
         // Note: This doesnt quite work properly yet
-        public void SendAndWaitForMatching(CommandQueueKey key, ICommand toSend, int timeout = -1)
+        public void SendAndWaitForMatching(string targetPath, ICommand toSend, int timeout = -1)
         {
             if (responseWait != null)
                 return;
 
             responseWait = new AutoResetEvent(false);
 
-            void Handler (object sender, CommandQueueKey queueKey){
-                if (queueKey.Equals(key))
+            void Handler (object sender, string changePath){
+                if (targetPath.Equals(changePath))
                     responseWait.Set();
             }
 
-            _client.OnCommandKey += Handler;
+            _client.OnStateChange += Handler;
 
             if (toSend != null)
                 SendCommand(toSend);
@@ -172,10 +172,10 @@ namespace LibAtem.ComparisonTests
             responseWait.WaitOne(timeout == -1 ? CommandWaitTime : timeout);
 
             responseWait = null;
-            _client.OnCommandKey -= Handler;
+            _client.OnStateChange -= Handler;
         }
 
-        public void SendAndWaitForMatching(List<CommandQueueKey> expected, ICommand toSend, int timeout = -1)
+        public void SendAndWaitForMatching(List<string> expected, ICommand toSend, int timeout = -1)
         {
             if (responseWait != null)
                 throw new Exception("a SendAndWaitForMatching is already running");
@@ -195,7 +195,7 @@ namespace LibAtem.ComparisonTests
             var pendingLib = expected.ToList();
             var pendingSdk = expected.ToList();
 
-            void HandlerLib(object sender, CommandQueueKey queueKey)
+            void HandlerLib(object sender, string queueKey)
             {
                 Output.WriteLine("SendAndWaitForMatching: Got Lib change: " + queueKey);
 
@@ -206,7 +206,7 @@ namespace LibAtem.ComparisonTests
                         libWait.Set();
                 }
             }
-            void HandlerSdk(object sender, CommandQueueKey queueKey)
+            void HandlerSdk(object sender, string queueKey)
             {
                 Output.WriteLine("SendAndWaitForMatching: Got Sdk change: " + queueKey);
 
@@ -218,7 +218,7 @@ namespace LibAtem.ComparisonTests
                 }
             }
 
-            _client.OnCommandKey += HandlerLib;
+            _client.OnStateChange += HandlerLib;
             _client.OnSdkStateChange += HandlerSdk;
 
             if (toSend != null)
@@ -229,7 +229,7 @@ namespace LibAtem.ComparisonTests
             // The Sdk doesn't send the same notifies if nothing changed, so once the lib has finished, wait a small time for sdk to finish up
             sdkWait.WaitOne(timeout == -1 ? CommandWaitTime / 2 : timeout);
 
-            _client.OnCommandKey -= HandlerLib;
+            _client.OnStateChange -= HandlerLib;
             _client.OnSdkStateChange -= HandlerSdk;
 
             if (pendingLib.Count > 0)

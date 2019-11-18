@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.InteropServices;
 using BMDSwitcherAPI;
-using LibAtem.Commands;
 using LibAtem.Common;
 using LibAtem.State;
 using LibAtem.State.Builder;
@@ -49,12 +48,12 @@ namespace LibAtem.ComparisonTests.State.SDK
             _cleanupCallbacks.ForEach(cb => cb());
         }
 
-        private void FireCommandKey(CommandQueueKey key)
+        private void FireCommandKey(string path)
         {
-            OnStateChange?.Invoke(this, key);
+            OnStateChange?.Invoke(this, path);
         }
 
-        public delegate void StateChangeHandler(object sender, CommandQueueKey key);
+        public delegate void StateChangeHandler(object sender, string path);
         public event StateChangeHandler OnStateChange;
         
         private void TriggerAllChanged<T>(INotify<T> cb, params T[] skip)
@@ -66,7 +65,7 @@ namespace LibAtem.ComparisonTests.State.SDK
         {
             var mixer = switcher as IBMDSwitcherAudioMixer;
 
-            var cb = new AudioMixerCallback(State.Audio.ProgramOut, mixer, FireCommandKey);
+            var cb = new AudioMixerCallback(State.Audio.ProgramOut, mixer, () => FireCommandKey("Audio.ProgramOut"));
             mixer.AddCallback(cb);
             _cleanupCallbacks.Add(() => mixer.RemoveCallback(cb));
             TriggerAllChanged(cb);
@@ -81,7 +80,7 @@ namespace LibAtem.ComparisonTests.State.SDK
                 port.GetAudioInputId(out long inputId);
                 State.Audio.Inputs[inputId] = new AudioState.InputState();
 
-                var cbi = new AudioMixerInputCallback(State.Audio.Inputs[inputId], (AudioSource)inputId, port, FireCommandKey);
+                var cbi = new AudioMixerInputCallback(State.Audio.Inputs[inputId], port, () => FireCommandKey($"Audio.Inputs.{inputId}"));
                 port.AddCallback(cbi);
                 _cleanupCallbacks.Add(() => port.RemoveCallback(cbi));
                 TriggerAllChanged(cbi);
@@ -101,7 +100,7 @@ namespace LibAtem.ComparisonTests.State.SDK
                 var mon = new AudioState.MonitorOutputState();
                 mons.Add(mon);
 
-                var cbi = new AudioMixerMonitorOutputCallback(mon, r, FireCommandKey);
+                var cbi = new AudioMixerMonitorOutputCallback(mon, r, () => FireCommandKey($"Audio.Monitors.{id2}"));
                 r.AddCallback(cbi);
                 _cleanupCallbacks.Add(() => r.RemoveCallback(cbi));
                 TriggerAllChanged(cbi);
@@ -112,7 +111,7 @@ namespace LibAtem.ComparisonTests.State.SDK
             var talkback = switcher as IBMDSwitcherTalkback;
             if (talkback != null)
             {
-                var cbt = new TalkbackCallback(State.Audio.Talkback, talkback);
+                var cbt = new TalkbackCallback(State.Audio.Talkback, talkback, () => FireCommandKey("Audio.Talkback"));
                 talkback.AddCallback(cbt);
                 _cleanupCallbacks.Add(() => talkback.RemoveCallback(cbt));
                 cbt.NotifyAll(State.Audio.Inputs.Keys);
@@ -132,7 +131,7 @@ namespace LibAtem.ComparisonTests.State.SDK
             {
                 Assert.Equal(0, id);
                 
-                var cb = new SerialPortPropertiesCallback(State.Settings, port, FireCommandKey);
+                var cb = new SerialPortPropertiesCallback(State.Settings, port, () => FireCommandKey("Settings.SerialPort"));
                 port.AddCallback(cb);
                 _cleanupCallbacks.Add(() => port.RemoveCallback(cb));
                 TriggerAllChanged(cb);
@@ -160,7 +159,7 @@ namespace LibAtem.ComparisonTests.State.SDK
                 mv.SupportsProgramPreviewSwap(out int canSwap);
                 mvState.SupportsProgramPreviewSwapped = canSwap != 0;
 
-                var cb = new MultiViewPropertiesCallback(mvState, id, mv, FireCommandKey);
+                var cb = new MultiViewPropertiesCallback(mvState, mv, str => FireCommandKey($"Settings.MultiViewers.{id}.{str}"));
                 mv.AddCallback(cb);
                 _cleanupCallbacks.Add(() => mv.RemoveCallback(cb));
                 TriggerAllChanged(cb);
@@ -183,7 +182,7 @@ namespace LibAtem.ComparisonTests.State.SDK
                 var player = new MediaPlayerState();
                 players.Add(player);
 
-                var cb = new MediaPlayerCallback(player, updateSettings, id, media, FireCommandKey);
+                var cb = new MediaPlayerCallback(player, updateSettings, media, str => FireCommandKey($"MediaPlayers.{id}.{str}"));
                 media.AddCallback(cb);
                 _cleanupCallbacks.Add(() => media.RemoveCallback(cb));
                 cb.Notify();
@@ -203,7 +202,7 @@ namespace LibAtem.ComparisonTests.State.SDK
             // Stills
             pool.GetStills(out IBMDSwitcherStills stills);
 
-            var cbs = new MediaPoolStillsCallback(State.MediaPool, stills);
+            var cbs = new MediaPoolStillsCallback(State.MediaPool, stills, str => FireCommandKey($"MediaPool.Stills.{str}"));
             stills.AddCallback(cbs);
             _cleanupCallbacks.Add(() => stills.RemoveCallback(cbs));
 
@@ -223,7 +222,7 @@ namespace LibAtem.ComparisonTests.State.SDK
             {
                 pool.GetClip(i, out IBMDSwitcherClip clip);
 
-                var cbc = new MediaPoolClipCallback(State.MediaPool.Clips[(int)i], clip);
+                var cbc = new MediaPoolClipCallback(State.MediaPool.Clips[(int)i], clip, () => FireCommandKey($"MediaPool.Clips.{i}"));
                 clip.AddCallback(cbc);
                 _cleanupCallbacks.Add(() => clip.RemoveCallback(cbc));
 
@@ -236,7 +235,7 @@ namespace LibAtem.ComparisonTests.State.SDK
         {
             var pool = switcher as IBMDSwitcherMacroPool;
             
-            var cbs = new MacroPoolCallback(State.Macros, pool, FireCommandKey);
+            var cbs = new MacroPoolCallback(State.Macros, pool, str => FireCommandKey($"Macros.Pool.{str}"));
             pool.AddCallback(cbs);
             _cleanupCallbacks.Add(() => pool.RemoveCallback(cbs));
 
@@ -249,7 +248,7 @@ namespace LibAtem.ComparisonTests.State.SDK
 
             var ctrl = switcher as IBMDSwitcherMacroControl;
 
-            var cbs2 = new MacroControlCallback(State.Macros, ctrl, FireCommandKey);
+            var cbs2 = new MacroControlCallback(State.Macros, ctrl, str => FireCommandKey($"Macros.{str}"));
             ctrl.AddCallback(cbs2);
             _cleanupCallbacks.Add(() => ctrl.RemoveCallback(cbs2));
 
@@ -269,7 +268,7 @@ namespace LibAtem.ComparisonTests.State.SDK
                 var dsk = new DownstreamKeyerState();
                 dsks.Add(dsk);
 
-                var cb = new DownstreamKeyerPropertiesCallback(dsk, id, key, FireCommandKey);
+                var cb = new DownstreamKeyerPropertiesCallback(dsk, key, str => FireCommandKey($"DownstreamKeyers.{id}.{str}"));
                 key.AddCallback(cb);
                 _cleanupCallbacks.Add(() => key.RemoveCallback(cb));
                 TriggerAllChanged(cb);
@@ -294,7 +293,7 @@ namespace LibAtem.ComparisonTests.State.SDK
                 var meState = new MixEffectState();
                 mes.Add(meState);
 
-                var cb = new MixEffectPropertiesCallback(meState, id, me, FireCommandKey);
+                var cb = new MixEffectPropertiesCallback(meState, me, str => FireCommandKey($"MixEffects.{id}.{str}"));
                 me.AddCallback(cb);
                 _cleanupCallbacks.Add(() => me.RemoveCallback(cb));
                 TriggerAllChanged(cb);
@@ -327,7 +326,7 @@ namespace LibAtem.ComparisonTests.State.SDK
         {
             MixEffectState.TransitionState st = State.MixEffects[(int)id].Transition;
 
-            var cb = new MixEffectTransitionPropertiesCallback(st, id, trans, FireCommandKey);
+            var cb = new MixEffectTransitionPropertiesCallback(st, trans, str => FireCommandKey($"MixEffects.{id}.Transition.{str}"));
             trans.AddCallback(cb);
             _cleanupCallbacks.Add(() => trans.RemoveCallback(cb));
 
@@ -338,7 +337,7 @@ namespace LibAtem.ComparisonTests.State.SDK
         {
             MixEffectState.TransitionMixState st = State.MixEffects[(int)id].Transition.Mix = new MixEffectState.TransitionMixState();
 
-            var cb = new MixEffectTransitionMixCallback(st, id, dip, FireCommandKey);
+            var cb = new MixEffectTransitionMixCallback(st, dip, () => FireCommandKey($"MixEffects.{id}.Transition.Mix"));
             dip.AddCallback(cb);
             _cleanupCallbacks.Add(() => dip.RemoveCallback(cb));
 
@@ -349,7 +348,7 @@ namespace LibAtem.ComparisonTests.State.SDK
         {
             MixEffectState.TransitionDipState st = State.MixEffects[(int)id].Transition.Dip = new MixEffectState.TransitionDipState();
 
-            var cb = new MixEffectTransitionDipCallback(st, id, dip, FireCommandKey);
+            var cb = new MixEffectTransitionDipCallback(st, dip, () => FireCommandKey($"MixEffects.{id}.Transition.Dip"));
             dip.AddCallback(cb);
             _cleanupCallbacks.Add(() => dip.RemoveCallback(cb));
 
@@ -360,7 +359,7 @@ namespace LibAtem.ComparisonTests.State.SDK
         {
             MixEffectState.TransitionWipeState st = State.MixEffects[(int)id].Transition.Wipe = new MixEffectState.TransitionWipeState();
 
-            var cb = new MixEffectTransitionWipeCallback(st, id, wipe, FireCommandKey);
+            var cb = new MixEffectTransitionWipeCallback(st, wipe, () => FireCommandKey($"MixEffects.{id}.Transition.Wipe"));
             wipe.AddCallback(cb);
             _cleanupCallbacks.Add(() => wipe.RemoveCallback(cb));
 
@@ -371,7 +370,7 @@ namespace LibAtem.ComparisonTests.State.SDK
         {
             MixEffectState.TransitionStingerState st = State.MixEffects[(int)id].Transition.Stinger = new MixEffectState.TransitionStingerState();
 
-            var cb = new MixEffectTransitionStingerCallback(st, id, stinger, FireCommandKey);
+            var cb = new MixEffectTransitionStingerCallback(st, stinger, () => FireCommandKey($"MixEffects.{id}.Transition.Stinger"));
             stinger.AddCallback(cb);
             _cleanupCallbacks.Add(() => stinger.RemoveCallback(cb));
 
@@ -382,7 +381,7 @@ namespace LibAtem.ComparisonTests.State.SDK
         {
             MixEffectState.TransitionDVEState st = State.MixEffects[(int)id].Transition.DVE = new MixEffectState.TransitionDVEState();
 
-            var cb = new MixEffectTransitionDVECallback(st, id, dve, FireCommandKey);
+            var cb = new MixEffectTransitionDVECallback(st, dve, () => FireCommandKey($"MixEffects.{id}.Transition.DVE"));
             dve.AddCallback(cb);
             _cleanupCallbacks.Add(() => dve.RemoveCallback(cb));
 
@@ -420,9 +419,9 @@ namespace LibAtem.ComparisonTests.State.SDK
             State.MixEffects[(int)id].Keyers = keyers;
         }
 
-        private void SetupMixEffectKeyerProps(IBMDSwitcherKey props, MixEffectState.KeyerState state, MixEffectBlockId id, UpstreamKeyId keyId)
+        private void SetupMixEffectKeyerProps(IBMDSwitcherKey props, MixEffectState.KeyerState state, MixEffectBlockId meId, UpstreamKeyId keyId)
         {
-            var cb = new MixEffectKeyerCallback(state, id, keyId, props, FireCommandKey);
+            var cb = new MixEffectKeyerCallback(state, props, str => FireCommandKey($"MixEffects.{meId}.Keyers.{keyId}.{str}"));
             props.AddCallback(cb);
             _cleanupCallbacks.Add(() => props.RemoveCallback(cb));
 
@@ -433,7 +432,7 @@ namespace LibAtem.ComparisonTests.State.SDK
         {
             state.Luma = new MixEffectState.KeyerLumaState();
 
-            var cb = new MixEffectKeyerLumaCallback(state.Luma, meId, keyId, props, FireCommandKey);
+            var cb = new MixEffectKeyerLumaCallback(state.Luma, props, () => FireCommandKey($"MixEffects.{meId}.Keyers.{keyId}.Luma"));
             props.AddCallback(cb);
             _cleanupCallbacks.Add(() => props.RemoveCallback(cb));
 
@@ -444,7 +443,7 @@ namespace LibAtem.ComparisonTests.State.SDK
         {
             state.Chroma = new MixEffectState.KeyerChromaState();
 
-            var cb = new MixEffectKeyerChromaCallback(state.Chroma, meId, keyId, props, FireCommandKey);
+            var cb = new MixEffectKeyerChromaCallback(state.Chroma, props, () => FireCommandKey($"MixEffects.{meId}.Keyers.{keyId}.Chroma"));
             props.AddCallback(cb);
             _cleanupCallbacks.Add(() => props.RemoveCallback(cb));
 
@@ -455,7 +454,7 @@ namespace LibAtem.ComparisonTests.State.SDK
         {
             state.Pattern = new MixEffectState.KeyerPatternState();
 
-            var cb = new MixEffectKeyerPatternCallback(state.Pattern, meId, keyId, props, FireCommandKey);
+            var cb = new MixEffectKeyerPatternCallback(state.Pattern, props, () => FireCommandKey($"MixEffects.{meId}.Keyers.{keyId}.Pattern"));
             props.AddCallback(cb);
             _cleanupCallbacks.Add(() => props.RemoveCallback(cb));
 
@@ -466,7 +465,7 @@ namespace LibAtem.ComparisonTests.State.SDK
         {
             state.DVE = new MixEffectState.KeyerDVEState();
 
-            var cb = new MixEffectKeyerDVECallback(state.DVE, meId, keyId, props, FireCommandKey);
+            var cb = new MixEffectKeyerDVECallback(state.DVE, props, () => FireCommandKey($"MixEffects.{meId}.Keyers.{keyId}.DVE"));
             props.AddCallback(cb);
             _cleanupCallbacks.Add(() => props.RemoveCallback(cb));
 
@@ -475,7 +474,7 @@ namespace LibAtem.ComparisonTests.State.SDK
 
         private void SetupMixEffectFlyKeyer(IBMDSwitcherKeyFlyParameters props, MixEffectState.KeyerState state, MixEffectBlockId meId, UpstreamKeyId keyId)
         {
-            var cb = new MixEffectKeyerFlyCallback(state.DVE, meId, keyId, props, FireCommandKey);
+            var cb = new MixEffectKeyerFlyCallback(state.DVE, props, () => FireCommandKey($"MixEffects.{meId}.Keyers.{keyId}.DVE"));
             props.AddCallback(cb);
             _cleanupCallbacks.Add(() => props.RemoveCallback(cb));
 
@@ -498,12 +497,12 @@ namespace LibAtem.ComparisonTests.State.SDK
                 new MixEffectState.KeyerFlyFrameState()
             };
 
-            var cb2 = new MixEffectKeyerFlyKeyFrameCallback(state.FlyFrames[0], meId, keyId, FlyKeyKeyFrameId.One, keyframeA, FireCommandKey);
+            var cb2 = new MixEffectKeyerFlyKeyFrameCallback(state.FlyFrames[0], keyframeA, () => FireCommandKey($"MixEffects.{meId}.Keyers.{keyId}.FlyFrames.0"));
             keyframeA.AddCallback(cb2);
             _cleanupCallbacks.Add(() => keyframeA.RemoveCallback(cb2));
             TriggerAllChanged(cb2);
 
-            var cb3 = new MixEffectKeyerFlyKeyFrameCallback(state.FlyFrames[1], meId, keyId, FlyKeyKeyFrameId.Two, keyframeB, FireCommandKey);
+            var cb3 = new MixEffectKeyerFlyKeyFrameCallback(state.FlyFrames[1], keyframeB, () => FireCommandKey($"MixEffects.{meId}.Keyers.{keyId}.FlyFrames.1"));
             keyframeB.AddCallback(cb3);
             _cleanupCallbacks.Add(() => keyframeB.RemoveCallback(cb3));
             TriggerAllChanged(cb3);
@@ -541,7 +540,7 @@ namespace LibAtem.ComparisonTests.State.SDK
         {
             var c = new InputState();
             State.Settings.Inputs[id] = c;
-            var cb = new InputCallback(c, id, inp, FireCommandKey);
+            var cb = new InputCallback(c, inp, str => FireCommandKey($"Settings.Inputs.{id}.{str}"));
             inp.AddCallback(cb);
             _cleanupCallbacks.Add(() => inp.RemoveCallback(cb));
 
@@ -551,7 +550,7 @@ namespace LibAtem.ComparisonTests.State.SDK
         private AuxState SetupAuxiliary(VideoSource id, IBMDSwitcherInputAux aux)
         {
             var c = new AuxState();
-            var cb = new AuxiliaryCallback(c, AtemEnumMaps.GetAuxId(id), aux, FireCommandKey);
+            var cb = new AuxiliaryCallback(c, aux, () => FireCommandKey($"Auxiliaries.{id}"));
             aux.AddCallback(cb);
             _cleanupCallbacks.Add(() => aux.RemoveCallback(cb));
 
@@ -562,7 +561,7 @@ namespace LibAtem.ComparisonTests.State.SDK
         private ColorState SetupColor(VideoSource id, IBMDSwitcherInputColor col)
         {
             var c = new ColorState();
-            var cb = new ColorCallback(c, AtemEnumMaps.GetSourceIdForGen(id), col, FireCommandKey);
+            var cb = new ColorCallback(c, col, () => FireCommandKey($"ColorGenerators.{id}"));
             col.AddCallback(cb);
             _cleanupCallbacks.Add(() => col.RemoveCallback(cb));
             
@@ -576,13 +575,13 @@ namespace LibAtem.ComparisonTests.State.SDK
             SuperSourceId ssrcId = SuperSourceId.One;
 
             var c = new SuperSourceState();
-            var cb = new SuperSourceCallback(c.Properties, ssrc, FireCommandKey);
+            var cb = new SuperSourceCallback(c.Properties, ssrc, () => FireCommandKey($"SuperSources.{ssrcId}.Properties"));
             ssrc.AddCallback(cb);
             _cleanupCallbacks.Add(() => ssrc.RemoveCallback(cb));
             TriggerAllChanged(cb);
 
             var ssrc2 = ssrc as IBMDSwitcherSuperSourceBorder;
-            var cb3 = new SuperSourceBorderCallback(c.Border, ssrc2, FireCommandKey);
+            var cb3 = new SuperSourceBorderCallback(c.Border, ssrc2, () => FireCommandKey($"SuperSources.{ssrcId}.Border"));
             ssrc2.AddCallback(cb3);
             _cleanupCallbacks.Add(() => ssrc2.RemoveCallback(cb3));
             TriggerAllChanged(cb3);
@@ -598,7 +597,7 @@ namespace LibAtem.ComparisonTests.State.SDK
                 var boxState = new SuperSourceState.BoxState();
                 boxes.Add(boxState);
 
-                var cb2 = new SuperSourceBoxCallback(boxState, ssrcId, id, box, FireCommandKey);
+                var cb2 = new SuperSourceBoxCallback(boxState, box, () => FireCommandKey($"SuperSources.{ssrcId}.Boxes.{id}"));
                 box.AddCallback(cb2);
                 _cleanupCallbacks.Add(() => box.RemoveCallback(cb2));
 

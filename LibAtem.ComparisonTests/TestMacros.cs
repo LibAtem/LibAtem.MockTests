@@ -95,9 +95,9 @@ namespace LibAtem.ComparisonTests
             public override string PropertyName => "Loop";
             public override void UpdateExpectedState(AtemState state, bool goodValue, bool v) => state.Macros.RunStatus.Loop = v;
 
-            public override IEnumerable<CommandQueueKey> ExpectedCommands(bool goodValue, bool v)
+            public override IEnumerable<string> ExpectedCommands(bool goodValue, bool v)
             {
-                yield return new CommandQueueKey(new MacroRunStatusGetCommand());
+                yield return $"Macros.RunStatus";
             }
         }
 

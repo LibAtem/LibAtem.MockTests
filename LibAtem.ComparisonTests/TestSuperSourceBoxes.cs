@@ -79,9 +79,9 @@ namespace LibAtem.ComparisonTests
                 SetCommandProperty(state.SuperSources[(int)_ssrcId].Boxes[(int)_boxId], PropertyName, goodValue ? v : MangleBadValue(v));
             }
 
-            public override IEnumerable<CommandQueueKey> ExpectedCommands(bool goodValue, T v)
+            public override IEnumerable<string> ExpectedCommands(bool goodValue, T v)
             {
-                yield return new CommandQueueKey(new SuperSourceBoxGetV8Command() { SSrcId = _ssrcId, BoxIndex = _boxId });
+                yield return $"SuperSources.{_ssrcId}.Boxes.{_boxId}";
             }
         }
 
@@ -129,12 +129,12 @@ namespace LibAtem.ComparisonTests
                     state.SuperSources[(int)_ssrcId].Boxes[(int)_boxId].InputSource = v;
             }
 
-            public override IEnumerable<CommandQueueKey> ExpectedCommands(bool goodValue, VideoSource v)
+            public override IEnumerable<string> ExpectedCommands(bool goodValue, VideoSource v)
             {
                 if (goodValue)
                     return base.ExpectedCommands(goodValue, v);
 
-                return new CommandQueueKey[0];
+                return new string[0];
             }
         }
 

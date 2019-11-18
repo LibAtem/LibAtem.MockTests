@@ -1,7 +1,5 @@
 ﻿using System;
 using BMDSwitcherAPI;
-using LibAtem.Commands;
-using LibAtem.Commands.Macro;
 using LibAtem.State;
 
 namespace LibAtem.ComparisonTests.State.SDK
@@ -10,9 +8,9 @@ namespace LibAtem.ComparisonTests.State.SDK
     {
         private readonly MacroState _state;
         private readonly IBMDSwitcherMacroPool _props;
-        private readonly Action<CommandQueueKey> _onChange;
+        private readonly Action<string> _onChange;
 
-        public MacroPoolCallback(MacroState state, IBMDSwitcherMacroPool props, Action<CommandQueueKey> onChange)
+        public MacroPoolCallback(MacroState state, IBMDSwitcherMacroPool props, Action<string> onChange)
         {
             _state = state;
             _props = props;
@@ -47,7 +45,7 @@ namespace LibAtem.ComparisonTests.State.SDK
                     throw new ArgumentOutOfRangeException(nameof(eventType), eventType, null);
             }
 
-            _onChange(new CommandQueueKey(new MacroPropertiesGetCommand() { Index = index }));
+            _onChange($"{index}");
         }
     }
 }

@@ -120,7 +120,7 @@ namespace LibAtem.ComparisonTests.Util
             prop.SetValue(obj, val);
         }
 
-        public abstract IEnumerable<CommandQueueKey> ExpectedCommands(bool goodValue, T v);
+        public abstract IEnumerable<string> ExpectedCommands(bool goodValue, T v);
         public abstract void UpdateExpectedState(AtemState state, bool goodValue, T v);
     }
 

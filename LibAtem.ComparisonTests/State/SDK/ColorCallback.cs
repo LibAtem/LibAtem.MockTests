@@ -1,7 +1,5 @@
 ﻿using System;
 using BMDSwitcherAPI;
-using LibAtem.Commands;
-using LibAtem.Common;
 using LibAtem.State;
 
 namespace LibAtem.ComparisonTests.State.SDK
@@ -9,14 +7,12 @@ namespace LibAtem.ComparisonTests.State.SDK
     public sealed class ColorCallback : IBMDSwitcherInputColorCallback, INotify<_BMDSwitcherInputColorEventType>
     {
         private readonly ColorState _state;
-        private readonly ColorGeneratorId _id;
         private readonly IBMDSwitcherInputColor _color;
-        private readonly Action<CommandQueueKey> _onChange;
+        private readonly Action _onChange;
 
-        public ColorCallback(ColorState state, ColorGeneratorId id, IBMDSwitcherInputColor color, Action<CommandQueueKey> onChange)
+        public ColorCallback(ColorState state, IBMDSwitcherInputColor color, Action onChange)
         {
             _state = state;
-            _id = id;
             _color = color;
             _onChange = onChange;
         }
@@ -41,7 +37,7 @@ namespace LibAtem.ComparisonTests.State.SDK
                     throw new ArgumentOutOfRangeException(nameof(eventType), eventType, null);
             }
 
-            _onChange(new CommandQueueKey(new ColorGeneratorGetCommand() { Index = _id }));
+            _onChange();
         }
     }
 }

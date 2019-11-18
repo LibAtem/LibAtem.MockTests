@@ -1,7 +1,5 @@
 ﻿using System;
 using BMDSwitcherAPI;
-using LibAtem.Commands;
-using LibAtem.Commands.Audio;
 using LibAtem.State;
 
 namespace LibAtem.ComparisonTests.State.SDK
@@ -10,9 +8,9 @@ namespace LibAtem.ComparisonTests.State.SDK
     {
         private readonly AudioState.ProgramOutState _state;
         private readonly IBMDSwitcherAudioMixer _props;
-        private readonly Action<CommandQueueKey> _onChange;
+        private readonly Action _onChange;
 
-        public AudioMixerCallback(AudioState.ProgramOutState state, IBMDSwitcherAudioMixer props, Action<CommandQueueKey> onChange)
+        public AudioMixerCallback(AudioState.ProgramOutState state, IBMDSwitcherAudioMixer props, Action onChange)
         {
             _state = state;
             _props = props;
@@ -41,7 +39,7 @@ namespace LibAtem.ComparisonTests.State.SDK
                     throw new ArgumentOutOfRangeException(nameof(eventType), eventType, null);
             }
 
-            _onChange(new CommandQueueKey(new AudioMixerMasterGetCommand()));
+            _onChange();
         }
 
         public void ProgramOutLevelNotification(double left, double right, double peakLeft, double peakRight)

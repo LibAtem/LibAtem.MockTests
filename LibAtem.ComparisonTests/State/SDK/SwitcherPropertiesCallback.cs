@@ -1,7 +1,5 @@
 ﻿using System;
 using BMDSwitcherAPI;
-using LibAtem.Commands;
-using LibAtem.Commands.Settings;
 using LibAtem.State;
 
 namespace LibAtem.ComparisonTests.State.SDK
@@ -10,9 +8,9 @@ namespace LibAtem.ComparisonTests.State.SDK
     {
         private readonly AtemState _state;
         private readonly IBMDSwitcher _props;
-        private readonly Action<CommandQueueKey> _onChange;
+        private readonly Action<string> _onChange;
 
-        public SwitcherPropertiesCallback(AtemState state, IBMDSwitcher props, Action<CommandQueueKey> onChange)
+        public SwitcherPropertiesCallback(AtemState state, IBMDSwitcher props, Action<string> onChange)
         {
             _state = state;
             _props = props;
@@ -26,7 +24,7 @@ namespace LibAtem.ComparisonTests.State.SDK
                 case _BMDSwitcherEventType.bmdSwitcherEventTypeVideoModeChanged:
                     _props.GetVideoMode(out _BMDSwitcherVideoMode videoMode);
                     _state.Settings.VideoMode = AtemEnumMaps.VideoModesMap.FindByValue(videoMode);
-                    _onChange(new CommandQueueKey(new VideoModeGetCommand()));
+                    _onChange("Settings.VideoMode");
                     break;
                 // TODO - the rest
                 case _BMDSwitcherEventType.bmdSwitcherEventTypeMethodForDownConvertedSDChanged:

@@ -47,9 +47,9 @@ namespace LibAtem.ComparisonTests.MixEffects
             }
 
 
-            public override IEnumerable<CommandQueueKey> ExpectedCommands(bool goodValue, T v)
+            public override IEnumerable<string> ExpectedCommands(bool goodValue, T v)
             {
-                yield return new CommandQueueKey(new TransitionWipeGetCommand() { Index = _id });
+                yield return $"MixEffect.{_id}.Transition.Wipe";
             }
         }
 

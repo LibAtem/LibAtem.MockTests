@@ -53,10 +53,10 @@ namespace LibAtem.ComparisonTests
         private readonly AtemSDKComparisonMonitor _sdkState;
         private readonly AtemState _libState;
 
-        public delegate void CommandKeyHandler(object sender, CommandQueueKey key);
-        public event CommandKeyHandler OnCommandKey;
+        public delegate void CommandKeyHandler(object sender, string path);
+        public event CommandKeyHandler OnStateChange;
 
-        public delegate void StateChangeHandler(object sender, CommandQueueKey key);
+        public delegate void StateChangeHandler(object sender, string path);
         public event StateChangeHandler OnSdkStateChange;
 
         public AtemClientWrapper()
@@ -133,7 +133,11 @@ namespace LibAtem.ComparisonTests
                 foreach (ICommand cmd in commands)
                 {
                     // TODO - handle result?
-                    AtemStateBuilder.Update(_libState, cmd, _updateSettings);
+                    IUpdateResult result = AtemStateBuilder.Update(_libState, cmd, _updateSettings);
+                    foreach (string change in result.ChangedPaths)
+                    {
+                        OnStateChange?.Invoke(this, change);
+                    }
                 }
                 lock (_lastReceivedLibAtem)
                 {
@@ -141,7 +145,6 @@ namespace LibAtem.ComparisonTests
                     {
                         CommandQueueKey key = new CommandQueueKey(cmd);
                         _lastReceivedLibAtem[key] = cmd;
-                        OnCommandKey?.Invoke(this, key);
                     }
 
                     if (!_handshakeFinished && commands.Any(c => c is InitializationCompleteCommand))

@@ -9,11 +9,13 @@ namespace LibAtem.ComparisonTests.State.SDK
     {
         private readonly MediaPoolState _state;
         private readonly IBMDSwitcherStills _props;
+        private readonly Action<string> _onChange;
 
-        public MediaPoolStillsCallback(MediaPoolState state, IBMDSwitcherStills props)
+        public MediaPoolStillsCallback(MediaPoolState state, IBMDSwitcherStills props, Action<string> onChange)
         {
             _state = state;
             _props = props;
+            _onChange = onChange;
         }
 
         public void Notify(_BMDSwitcherMediaPoolEventType eventType, IBMDSwitcherFrame frame, int index2)
@@ -24,14 +26,17 @@ namespace LibAtem.ComparisonTests.State.SDK
                 case _BMDSwitcherMediaPoolEventType.bmdSwitcherMediaPoolEventTypeValidChanged:
                     _props.IsValid(index, out int valid);
                     _state.Stills[(int)index].IsUsed = valid != 0;
+                    _onChange($"{index}");
                     break;
                 case _BMDSwitcherMediaPoolEventType.bmdSwitcherMediaPoolEventTypeNameChanged:
                     _props.GetName(index, out string name);
                     _state.Stills[(int)index].Filename = name;
+                    _onChange($"{index}");
                     break;
                 case _BMDSwitcherMediaPoolEventType.bmdSwitcherMediaPoolEventTypeHashChanged:
                     _props.GetHash(index, out BMDSwitcherHash hash);
                     _state.Stills[(int)index].Hash = hash.data;
+                    _onChange($"{index}");
                     break;
                 case _BMDSwitcherMediaPoolEventType.bmdSwitcherMediaPoolEventTypeLockBusy:
                     break;

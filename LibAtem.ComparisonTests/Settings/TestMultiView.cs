@@ -75,9 +75,9 @@ namespace LibAtem.ComparisonTests.Settings
                 SetCommandProperty(obj, PropertyName, goodValue ? v : MangleBadValue(v));
             }
 
-            public override IEnumerable<CommandQueueKey> ExpectedCommands(bool goodValue, T v)
+            public override IEnumerable<string> ExpectedCommands(bool goodValue, T v)
             {
-                yield return new CommandQueueKey(new MultiviewPropertiesGetCommand() { MultiviewIndex = _id });
+                yield return $"Settings.MultiViewers.{_id}";
             }
         }
 
@@ -224,9 +224,9 @@ namespace LibAtem.ComparisonTests.Settings
                 }
             }
 
-            public override IEnumerable<CommandQueueKey> ExpectedCommands(bool goodValue, VideoSource v)
+            public override IEnumerable<string> ExpectedCommands(bool goodValue, VideoSource v)
             {
-                return new CommandQueueKey[0];
+                yield break;
             }
         }
 
@@ -265,7 +265,7 @@ namespace LibAtem.ComparisonTests.Settings
                 }
             }
 
-            public override IEnumerable<CommandQueueKey> ExpectedCommands(bool goodValue, bool v)
+            public override IEnumerable<string> ExpectedCommands(bool goodValue, bool v)
             {
                 yield break;
             }
@@ -323,10 +323,10 @@ namespace LibAtem.ComparisonTests.Settings
                 }
             }
 
-            public override IEnumerable<CommandQueueKey> ExpectedCommands(bool goodValue, VideoSource v)
+            public override IEnumerable<string> ExpectedCommands(bool goodValue, VideoSource v)
             {
                 if (goodValue)
-                    yield return new CommandQueueKey(new MultiviewWindowInputGetCommand() { MultiviewIndex = _id, WindowIndex = _window });
+                    yield return $"Settings.MultiViewers.{_id}.Windows.{_window}";
             }
         }
         private class MultiviewRoutableWindowVuMeterTestDefinition : TestDefinitionBase<MultiviewWindowVuMeterSetCommand, bool>
@@ -360,7 +360,7 @@ namespace LibAtem.ComparisonTests.Settings
                 state.Settings.MultiViewers[(int)_id].Windows[(int)_window].VuMeter = supportsVuMeter != 0 ? v : false;
             }
 
-            public override IEnumerable<CommandQueueKey> ExpectedCommands(bool goodValue, bool v)
+            public override IEnumerable<string> ExpectedCommands(bool goodValue, bool v)
             {
                 yield break;
             }
@@ -468,9 +468,9 @@ namespace LibAtem.ComparisonTests.Settings
                     state.Settings.MultiViewers[(int)_id].VuMeterOpacity = v <= 10 && v >= -0.1 ? 10 : 100;
             }
 
-            public override IEnumerable<CommandQueueKey> ExpectedCommands(bool goodValue, double v)
+            public override IEnumerable<string> ExpectedCommands(bool goodValue, double v)
             {
-                yield return new CommandQueueKey(new MultiviewVuOpacityCommand() { MultiviewIndex = _id});
+                yield return $"Settings.MultiViewers.{_id}";
             }
 
             public override double[] GoodValues => new double[] { 10, 87, 14, 99, 100, 11 };

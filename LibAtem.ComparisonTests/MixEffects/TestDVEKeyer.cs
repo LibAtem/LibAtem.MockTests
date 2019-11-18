@@ -5,7 +5,6 @@ using BMDSwitcherAPI;
 using LibAtem.Commands;
 using LibAtem.Commands.MixEffects.Key;
 using LibAtem.Common;
-using LibAtem.ComparisonTests.State;
 using LibAtem.ComparisonTests.Util;
 using LibAtem.State;
 using Xunit;
@@ -47,9 +46,9 @@ namespace LibAtem.ComparisonTests.MixEffects
                 SetCommandProperty(obj, PropertyName, goodValue ? v : MangleBadValue(v));
             }
 
-            public override IEnumerable<CommandQueueKey> ExpectedCommands(bool goodValue, T v)
+            public override IEnumerable<string> ExpectedCommands(bool goodValue, T v)
             {
-                yield return new CommandQueueKey(new MixEffectKeyDVEGetCommand() { MixEffectIndex = _meId, KeyerIndex = _keyId });
+                yield return $"MixEffect.{_meId}.Keyers.{_keyId}.DVE";
             }
         }
 
@@ -255,12 +254,12 @@ namespace LibAtem.ComparisonTests.MixEffects
                 }
             }
 
-            public override IEnumerable<CommandQueueKey> ExpectedCommands(bool goodValue, double v)
+            public override IEnumerable<string> ExpectedCommands(bool goodValue, double v)
             {
                 if (goodValue)
                     return base.ExpectedCommands(goodValue, v);
 
-                return new CommandQueueKey[0];
+                return new string[0];
             }
         }
 

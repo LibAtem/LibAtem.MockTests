@@ -47,9 +47,9 @@ namespace LibAtem.ComparisonTests.MixEffects
                 SetCommandProperty(obj, PropertyName, goodValue ? v : MangleBadValue(v));
             }
 
-            public override IEnumerable<CommandQueueKey> ExpectedCommands(bool goodValue, T v)
+            public override IEnumerable<string> ExpectedCommands(bool goodValue, T v)
             {
-                yield return new CommandQueueKey(new MixEffectKeyPatternGetCommand() { MixEffectIndex = _meId, KeyerIndex = _keyId });
+                yield return $"MixEffect.{_meId}.Keyers.{_keyId}.Pattern";
             }
         }
 

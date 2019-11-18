@@ -1,7 +1,5 @@
 ﻿using System;
 using BMDSwitcherAPI;
-using LibAtem.Commands;
-using LibAtem.Commands.SuperSource;
 using LibAtem.Common;
 using LibAtem.State;
 
@@ -11,9 +9,9 @@ namespace LibAtem.ComparisonTests.State.SDK
     {
         private readonly SuperSourceState.PropertiesState _state;
         private readonly IBMDSwitcherInputSuperSource _props;
-        private readonly Action<CommandQueueKey> _onChange;
+        private readonly Action _onChange;
 
-        public SuperSourceCallback(SuperSourceState.PropertiesState state, IBMDSwitcherInputSuperSource props, Action<CommandQueueKey> onChange)
+        public SuperSourceCallback(SuperSourceState.PropertiesState state, IBMDSwitcherInputSuperSource props, Action onChange)
         {
             _state = state;
             _props = props;
@@ -56,7 +54,7 @@ namespace LibAtem.ComparisonTests.State.SDK
                     throw new ArgumentOutOfRangeException(nameof(eventType), eventType, null);
             }
 
-            _onChange(new CommandQueueKey(new SuperSourcePropertiesGetCommand()));
+            _onChange();
         }
     }
 
@@ -64,9 +62,9 @@ namespace LibAtem.ComparisonTests.State.SDK
     {
         private readonly SuperSourceState.BorderState _state;
         private readonly IBMDSwitcherSuperSourceBorder _props;
-        private readonly Action<CommandQueueKey> _onChange;
+        private readonly Action _onChange;
 
-        public SuperSourceBorderCallback(SuperSourceState.BorderState state, IBMDSwitcherSuperSourceBorder props, Action<CommandQueueKey> onChange)
+        public SuperSourceBorderCallback(SuperSourceState.BorderState state, IBMDSwitcherSuperSourceBorder props, Action onChange)
         {
             _state = state;
             _props = props;
@@ -133,23 +131,19 @@ namespace LibAtem.ComparisonTests.State.SDK
                     throw new ArgumentOutOfRangeException(nameof(eventType), eventType, null);
             }
 
-            _onChange(new CommandQueueKey(new SuperSourcePropertiesGetCommand()));
+            _onChange();
         }
     }
 
     public sealed class SuperSourceBoxCallback : IBMDSwitcherSuperSourceBoxCallback, INotify<_BMDSwitcherSuperSourceBoxEventType>
     {
         private readonly SuperSourceState.BoxState _state;
-        private readonly SuperSourceId _ssrcIndex;
-        private readonly SuperSourceBoxId _boxIndex;
         private readonly IBMDSwitcherSuperSourceBox _props;
-        private readonly Action<CommandQueueKey> _onChange;
+        private readonly Action _onChange;
 
-        public SuperSourceBoxCallback(SuperSourceState.BoxState state, SuperSourceId ssrcIndex, SuperSourceBoxId boxIndex, IBMDSwitcherSuperSourceBox props, Action<CommandQueueKey> onChange)
+        public SuperSourceBoxCallback(SuperSourceState.BoxState state, IBMDSwitcherSuperSourceBox props, Action onChange)
         {
             _state = state;
-            _ssrcIndex = ssrcIndex;
-            _boxIndex = boxIndex;
             _props = props;
             _onChange = onChange;
         }
@@ -202,7 +196,7 @@ namespace LibAtem.ComparisonTests.State.SDK
                     throw new ArgumentOutOfRangeException(nameof(eventType), eventType, null);
             }
 
-            _onChange(new CommandQueueKey(new SuperSourceBoxGetV8Command() { SSrcId = _ssrcIndex, BoxIndex = _boxIndex }));
+            _onChange();
         }
     }
 }

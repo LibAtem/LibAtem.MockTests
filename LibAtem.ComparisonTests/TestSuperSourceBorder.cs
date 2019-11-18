@@ -52,9 +52,9 @@ namespace LibAtem.ComparisonTests
                 SetCommandProperty(state.SuperSources[(int)_ssrcId], PropertyName, goodValue ? v : MangleBadValue(v));
             }
 
-            public override IEnumerable<CommandQueueKey> ExpectedCommands(bool goodValue, T v)
+            public override IEnumerable<string> ExpectedCommands(bool goodValue, T v)
             {
-                yield return new CommandQueueKey(new SuperSourceBorderGetCommand() { SSrcId = _ssrcId });
+                yield return $"SuperSources.{_ssrcId}.Border";
             }
         }
 
@@ -177,12 +177,12 @@ namespace LibAtem.ComparisonTests
                 }
             }
 
-            public override IEnumerable<CommandQueueKey> ExpectedCommands(bool goodValue, double v)
+            public override IEnumerable<string> ExpectedCommands(bool goodValue, double v)
             {
                 if (goodValue)
                     return base.ExpectedCommands(goodValue, v);
 
-                return new CommandQueueKey[0];
+                return new string[0];
             }
         }
 

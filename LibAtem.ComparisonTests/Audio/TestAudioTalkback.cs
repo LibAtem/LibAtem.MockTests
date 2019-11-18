@@ -51,9 +51,9 @@ namespace LibAtem.ComparisonTests.Audio
             public override string PropertyName => "MuteSDI";
             public override void UpdateExpectedState(AtemState state, bool goodValue, bool v) => SetCommandProperty(state, PropertyName, v);
 
-            public override IEnumerable<CommandQueueKey> ExpectedCommands(bool goodValue, bool v)
+            public override IEnumerable<string> ExpectedCommands(bool goodValue, bool v)
             {
-                yield return new CommandQueueKey(new AudioMixerTalkbackPropertiesGetCommand());
+                yield return "Audio.Talkback";
             }
         }
 

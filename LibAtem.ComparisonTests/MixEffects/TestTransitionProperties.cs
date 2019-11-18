@@ -38,9 +38,9 @@ namespace LibAtem.ComparisonTests.MixEffects
                 cmd.Index = _meId;
             }
 
-            public override IEnumerable<CommandQueueKey> ExpectedCommands(bool goodValue, T v)
+            public override IEnumerable<string> ExpectedCommands(bool goodValue, T v)
             {
-                yield return new CommandQueueKey(new TransitionPropertiesGetCommand() { Index = _meId});
+                yield return $"MixEffect.{_meId}.Transition.Properties";
             }
         }
 
@@ -64,7 +64,7 @@ namespace LibAtem.ComparisonTests.MixEffects
             {
                 if (goodValue)
                 {
-                    MixEffectState.TransitionState obj = state.MixEffects[(int)_meId].Transition;
+                    MixEffectState.TransitionPropertiesState obj = state.MixEffects[(int)_meId].Transition.Properties;
 
                     if (!_inTransition) SetCommandProperty(obj, "Style", v);
                     SetCommandProperty(obj, "NextStyle", v);

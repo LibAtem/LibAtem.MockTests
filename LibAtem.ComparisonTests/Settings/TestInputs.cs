@@ -53,9 +53,9 @@ namespace LibAtem.ComparisonTests.Settings
                 SetCommandProperty(obj, PropertyName, goodValue ? v : MangleBadValue(v));
             }
 
-            public override IEnumerable<CommandQueueKey> ExpectedCommands(bool goodValue, T v)
+            public override IEnumerable<string> ExpectedCommands(bool goodValue, T v)
             {
-                yield return new CommandQueueKey(new InputPropertiesGetCommand() { Id = _id });
+                yield return $"Settings.Inputs.{_id}";
             }
         }
 
@@ -96,10 +96,10 @@ namespace LibAtem.ComparisonTests.Settings
                 }
             }
 
-            public override IEnumerable<CommandQueueKey> ExpectedCommands(bool goodValue, ExternalPortTypeFlags v)
+            public override IEnumerable<string> ExpectedCommands(bool goodValue, ExternalPortTypeFlags v)
             {
                 if (goodValue) return base.ExpectedCommands(goodValue, v);
-                return new CommandQueueKey[0];
+                return new string[0];
             }
         }
         [Fact]

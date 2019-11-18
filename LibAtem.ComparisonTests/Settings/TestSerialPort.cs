@@ -71,9 +71,9 @@ namespace LibAtem.ComparisonTests.Settings
                 state.Settings.SerialMode = v;
             }
 
-            public override IEnumerable<CommandQueueKey> ExpectedCommands(bool goodValue, SerialMode v)
+            public override IEnumerable<string> ExpectedCommands(bool goodValue, SerialMode v)
             {
-                yield return new CommandQueueKey(new SerialPortModeCommand());
+                yield return $"Settings.SerialPort";
             }
         }
 

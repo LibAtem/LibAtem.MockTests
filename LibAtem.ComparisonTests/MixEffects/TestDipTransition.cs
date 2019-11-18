@@ -46,9 +46,9 @@ namespace LibAtem.ComparisonTests.MixEffects
                 SetCommandProperty(obj, PropertyName, goodValue ? v : MangleBadValue(v));
             }
 
-            public override IEnumerable<CommandQueueKey> ExpectedCommands(bool goodValue, T v)
+            public override IEnumerable<string> ExpectedCommands(bool goodValue, T v)
             {
-                yield return new CommandQueueKey(new TransitionDipGetCommand() { Index = _id });
+                yield return $"MixEffect.{_id}.Transition.Dip";
             }
         }
 
@@ -96,12 +96,12 @@ namespace LibAtem.ComparisonTests.MixEffects
                     base.UpdateExpectedState(state, goodValue, v);
             }
 
-            public override IEnumerable<CommandQueueKey> ExpectedCommands(bool goodValue, VideoSource v)
+            public override IEnumerable<string> ExpectedCommands(bool goodValue, VideoSource v)
             {
                 if (goodValue)
                     return base.ExpectedCommands(goodValue, v);
 
-                return new CommandQueueKey[0];
+                return new string[0];
             }
         }
 

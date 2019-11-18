@@ -1,6 +1,5 @@
 ﻿using System;
 using BMDSwitcherAPI;
-using LibAtem.Commands;
 using LibAtem.State;
 
 namespace LibAtem.ComparisonTests.State.SDK
@@ -9,9 +8,9 @@ namespace LibAtem.ComparisonTests.State.SDK
     {
         private readonly MacroState _state;
         private readonly IBMDSwitcherMacroControl _props;
-        private readonly Action<CommandQueueKey> _onChange;
+        private readonly Action<string> _onChange;
 
-        public MacroControlCallback(MacroState state, IBMDSwitcherMacroControl props, Action<CommandQueueKey> onChange)
+        public MacroControlCallback(MacroState state, IBMDSwitcherMacroControl props, Action<string> onChange)
         {
             _state = state;
             _props = props;
@@ -42,17 +41,17 @@ namespace LibAtem.ComparisonTests.State.SDK
 
                     _state.RunStatus.Loop = loop != 0;
                     _state.RunStatus.RunIndex = index;
+                    _onChange("RunStatus");
                     break;
                 case _BMDSwitcherMacroControlEventType.bmdSwitcherMacroControlEventTypeRecordStatusChanged:
                     _props.GetRecordStatus(out _BMDSwitcherMacroRecordStatus recStatus, out uint recIndex);
                     _state.RecordStatus.IsRecording = recStatus == _BMDSwitcherMacroRecordStatus.bmdSwitcherMacroRecordStatusRecording;
                     _state.RecordStatus.RecordIndex = recIndex;
+                    _onChange("RecordStatus");
                     break;
                 default:
                     throw new ArgumentOutOfRangeException(nameof(eventType), eventType, null);
             }
-
-            //_onChange(new CommandQueueKey(new ))
         }
     }
 }

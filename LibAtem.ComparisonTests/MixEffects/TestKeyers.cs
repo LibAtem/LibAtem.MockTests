@@ -96,13 +96,13 @@ namespace LibAtem.ComparisonTests.MixEffects
 
             public override void UpdateExpectedState(AtemState state, bool goodValue, MixEffectKeyType v)
             {
-                MixEffectState.KeyerState obj = state.MixEffects[(int)_meId].Keyers[(int)_keyId];
-                if (goodValue) SetCommandProperty(obj, "Type", v);
+                MixEffectState.KeyerPropertiesState obj = state.MixEffects[(int)_meId].Keyers[(int)_keyId].Properties;
+                if (goodValue) SetCommandProperty(obj, "Mode", v);
             }
 
-            public override IEnumerable<CommandQueueKey> ExpectedCommands(bool goodValue, MixEffectKeyType v)
+            public override IEnumerable<string> ExpectedCommands(bool goodValue, MixEffectKeyType v)
             {
-                yield return new CommandQueueKey(new MixEffectKeyPropertiesGetCommand() { MixEffectIndex = _meId, KeyerIndex = _keyId });
+                yield return $"MixEffect.{_meId}.Keyers.{_keyId}.Properties";
             }
 
             public override MixEffectKeyType[] GoodValues => Enum.GetValues(typeof(MixEffectKeyType)).OfType<MixEffectKeyType>().Where(o => o.IsAvailable(_helper.Profile)).ToArray();
@@ -296,14 +296,14 @@ namespace LibAtem.ComparisonTests.MixEffects
 
             public override void UpdateExpectedState(AtemState state, bool goodValue, VideoSource v)
             {
-                MixEffectState.KeyerState obj = state.MixEffects[(int)_meId].Keyers[(int)_keyId];
+                MixEffectState.KeyerPropertiesState obj = state.MixEffects[(int)_meId].Keyers[(int)_keyId].Properties;
                 if (goodValue) SetCommandProperty(obj, PropertyName, v);
             }
 
-            public override IEnumerable<CommandQueueKey> ExpectedCommands(bool goodValue, VideoSource v)
+            public override IEnumerable<string> ExpectedCommands(bool goodValue, VideoSource v)
             {
                 if (goodValue)
-                    yield return new CommandQueueKey(new MixEffectKeyPropertiesGetCommand() { MixEffectIndex = _meId, KeyerIndex = _keyId });
+                    yield return $"MixEffect.{_meId}.Keyers.{_keyId}.Properties";
             }
 
             public override VideoSource[] GoodValues => VideoSourceLists.All.Where(s => s.IsAvailable(_helper.Profile) && s.IsAvailable(_meId) && s.IsAvailable(SourceAvailability.KeySource)).ToArray();
@@ -343,7 +343,7 @@ namespace LibAtem.ComparisonTests.MixEffects
 
             public override void UpdateExpectedState(AtemState state, bool goodValue, VideoSource v)
             {
-                MixEffectState.KeyerState obj = state.MixEffects[(int)_meId].Keyers[(int)_keyId];
+                MixEffectState.KeyerPropertiesState obj = state.MixEffects[(int)_meId].Keyers[(int)_keyId].Properties;
                 if (goodValue)
                 {
                     SetCommandProperty(obj, PropertyName, v);
@@ -352,10 +352,10 @@ namespace LibAtem.ComparisonTests.MixEffects
                 }
             }
 
-            public override IEnumerable<CommandQueueKey> ExpectedCommands(bool goodValue, VideoSource v)
+            public override IEnumerable<string> ExpectedCommands(bool goodValue, VideoSource v)
             {
                 if (goodValue)
-                    yield return new CommandQueueKey(new MixEffectKeyPropertiesGetCommand() { MixEffectIndex = _meId, KeyerIndex = _keyId });
+                    yield return $"MixEffect.{_meId}.Keyers.{_keyId}.Properties";
             }
 
             public override VideoSource[] GoodValues => VideoSourceLists.All.Where(s => s.IsAvailable(_helper.Profile) && s.IsAvailable(_meId)).ToArray();
@@ -411,9 +411,9 @@ namespace LibAtem.ComparisonTests.MixEffects
                 state.Settings.Inputs[obj.Properties.FillSource].Tally.PreviewTally = v;
             }
 
-            public override IEnumerable<CommandQueueKey> ExpectedCommands(bool goodValue, bool v)
+            public override IEnumerable<string> ExpectedCommands(bool goodValue, bool v)
             {
-                yield return new CommandQueueKey(new MixEffectKeyPropertiesGetCommand() { MixEffectIndex = _meId, KeyerIndex = _keyId });
+                yield return $"MixEffect.{_meId}.Keyers.{_keyId}.OnAir";
             }
         }
         [Fact]
@@ -480,13 +480,13 @@ namespace LibAtem.ComparisonTests.MixEffects
 
             public override void UpdateExpectedState(AtemState state, bool goodValue, T v)
             {
-                MixEffectState.KeyerState obj = state.MixEffects[(int)_meId].Keyers[(int)_keyId];
+                MixEffectState.KeyerPropertiesState obj = state.MixEffects[(int)_meId].Keyers[(int)_keyId].Properties;
                 SetCommandProperty(obj, PropertyName, goodValue ? v : MangleBadValue(v));
             }
 
-            public override IEnumerable<CommandQueueKey> ExpectedCommands(bool goodValue, T v)
+            public override IEnumerable<string> ExpectedCommands(bool goodValue, T v)
             {
-                yield return new CommandQueueKey(new MixEffectKeyPropertiesGetCommand() { MixEffectIndex = _meId, KeyerIndex = _keyId });
+                yield return $"MixEffect.{_meId}.Keyers.{_keyId}.Properties";
             }
         }
         private class KeyMaskEnabledTestDefinition : KeyMaskTestDefinition<bool>

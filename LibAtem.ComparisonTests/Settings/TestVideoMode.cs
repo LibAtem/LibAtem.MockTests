@@ -140,24 +140,23 @@ namespace LibAtem.ComparisonTests.Settings
                 }
             }
 
-            public override IEnumerable<CommandQueueKey> ExpectedCommands(bool goodValue, VideoMode v)
+            public override IEnumerable<string> ExpectedCommands(bool goodValue, VideoMode v)
             {
                 if (goodValue)
                 {
-                    yield return new CommandQueueKey(new VideoModeGetCommand());
+                    yield return "Settings.VideoMode";
 
                     for (var i = 0; i < _helper.LibState.DownstreamKeyers.Count; i++)
-                        yield return new CommandQueueKey(new DownstreamKeyStateGetCommand() { Index = (DownstreamKeyId)i });
+                        yield return $"DownstreamKeyers.{i}.State";
                     for (var i = 0; i < _helper.LibState.MixEffects.Count; i++)
                     {
-                        var id = (MixEffectBlockId)i;
-                        yield return new CommandQueueKey(new TransitionMixGetCommand() { Index = id });
-                        yield return new CommandQueueKey(new TransitionDipGetCommand() { Index = id });
-                        yield return new CommandQueueKey(new TransitionWipeGetCommand() { Index = id });
+                        yield return $"MixEffects.{i}.Transition.Mix";
+                        yield return $"MixEffects.{i}.Transition.Dip";
+                        yield return $"MixEffects.{i}.Transition.Wipe";
 
                         var me = _helper.LibState.MixEffects[i];
                         if (me != null && me.Transition.DVE != null)
-                            yield return new CommandQueueKey(new TransitionDVEGetCommand() { Index = id });
+                            yield return $"MixEffects.{i}.Transition.DVE";
                     }
                 }
             }

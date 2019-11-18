@@ -8,11 +8,13 @@ namespace LibAtem.ComparisonTests.State.SDK
     {
         private readonly MediaPoolState.ClipState _state;
         private readonly IBMDSwitcherClip _props;
+        private readonly Action _onChange;
 
-        public MediaPoolClipCallback(MediaPoolState.ClipState state, IBMDSwitcherClip props)
+        public MediaPoolClipCallback(MediaPoolState.ClipState state, IBMDSwitcherClip props, Action onChange)
         {
             _state = state;
             _props = props;
+            _onChange = onChange;
         }
 
         public void Notify(_BMDSwitcherMediaPoolEventType eventType, IBMDSwitcherFrame frame, int frameIndex, IBMDSwitcherAudio audio, int clipIndex)
@@ -26,6 +28,7 @@ namespace LibAtem.ComparisonTests.State.SDK
                 case _BMDSwitcherMediaPoolEventType.bmdSwitcherMediaPoolEventTypeNameChanged:
                     _props.GetName(out string name);
                     _state.Name = name;
+                    _onChange();
                     break;
                 case _BMDSwitcherMediaPoolEventType.bmdSwitcherMediaPoolEventTypeHashChanged:
                     break;

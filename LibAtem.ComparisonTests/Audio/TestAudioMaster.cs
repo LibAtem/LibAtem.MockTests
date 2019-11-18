@@ -42,9 +42,9 @@ namespace LibAtem.ComparisonTests.Audio
                 SetCommandProperty(obj, PropertyName, goodValue ? v : MangleBadValue(v));
             }
 
-            public override IEnumerable<CommandQueueKey> ExpectedCommands(bool goodValue, T v)
+            public override IEnumerable<string> ExpectedCommands(bool goodValue, T v)
             {
-                yield return new CommandQueueKey(new AudioMixerMasterGetCommand());
+                yield return $"Audio.ProgramOut";
             }
         }
 
@@ -139,7 +139,7 @@ namespace LibAtem.ComparisonTests.Audio
                     FollowFadeToBlack = false
                 });
 
-                var levelsKey = new CommandQueueKey(new AudioMixerLevelsCommand());
+                var levelsKey = "Audio.ProgramOut.Levels";
                 helper.Sleep(240);
                 helper.SendAndWaitForMatching(levelsKey, null);
 
@@ -231,7 +231,7 @@ namespace LibAtem.ComparisonTests.Audio
                     FollowFadeToBlack = false
                 });
 
-                var levelsKey = new CommandQueueKey(new AudioMixerLevelsCommand());
+                var levelsKey = "Audio.ProgramOut.Levels";
                 helper.Sleep(240);
                 helper.SendAndWaitForMatching(levelsKey, null);
 

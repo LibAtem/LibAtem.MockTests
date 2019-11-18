@@ -62,9 +62,9 @@ namespace LibAtem.ComparisonTests
                 SetCommandProperty(obj, PropertyName, goodValue ? v : MangleBadValue(v));
             }
 
-            public override IEnumerable<CommandQueueKey> ExpectedCommands(bool goodValue, double v)
+            public override IEnumerable<string> ExpectedCommands(bool goodValue, double v)
             {
-                yield return new CommandQueueKey(new ColorGeneratorGetCommand() { Index = _colId });
+                yield return $"ColorGenerators.{_colId}";
             }
         }
 
