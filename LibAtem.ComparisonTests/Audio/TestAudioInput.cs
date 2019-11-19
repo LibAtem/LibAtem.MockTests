@@ -77,13 +77,13 @@ namespace LibAtem.ComparisonTests.Audio
 
             public override void UpdateExpectedState(AtemState state, bool goodValue, T v)
             {
-                AudioState.InputState obj = state.Audio.Inputs[(long)_id];
+                AudioState.InputState.PropertiesState obj = state.Audio.Inputs[(long)_id].Properties;
                 SetCommandProperty(obj, PropertyName, goodValue ? v : MangleBadValue(v));
             }
 
             public override IEnumerable<string> ExpectedCommands(bool goodValue, T v)
             {
-                yield return $"Audio.Inputs.{_id:D}";
+                yield return $"Audio.Inputs.{_id:D}.Properties";
             }
         }
 
@@ -130,7 +130,7 @@ namespace LibAtem.ComparisonTests.Audio
                 get
                 {
                     var state = _helper.LibState.Audio.Inputs[(long)_id];
-                    var fullProps = _helper.Client.FindWithMatching(new AudioMixerInputGetCommand() { Index = _id });
+                    var fullProps = _helper.Client.FindWithMatching(new AudioMixerInputGetV8Command() { Index = _id });
                     switch (fullProps.SourceType)
                     {
                         case AudioSourceType.ExternalAudio:

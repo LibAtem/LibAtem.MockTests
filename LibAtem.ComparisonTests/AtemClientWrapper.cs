@@ -51,7 +51,7 @@ namespace LibAtem.ComparisonTests
         private readonly AtemStateBuilderSettings _updateSettings;
 
         private readonly AtemSDKComparisonMonitor _sdkState;
-        private readonly AtemState _libState;
+        private AtemState _libState;
 
         public delegate void CommandKeyHandler(object sender, string path);
         public event CommandKeyHandler OnStateChange;
@@ -104,6 +104,11 @@ namespace LibAtem.ComparisonTests
 
         public AtemState SdkState => _sdkState.State.Clone();
         public AtemState LibState => _libState.Clone();
+
+        public void SyncStates()
+        {
+            _libState = _sdkState.State.Clone();
+        }
 
         private void ConnectLibAtem(string address)
         {

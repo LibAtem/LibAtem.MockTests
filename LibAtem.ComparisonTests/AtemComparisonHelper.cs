@@ -37,6 +37,7 @@ namespace LibAtem.ComparisonTests
 
             _client.Client.OnReceive += OnReceive;
 
+            _client.SyncStates();
             AssertStatesMatch();
         }
 

@@ -9,10 +9,10 @@ namespace LibAtem.ComparisonTests.Util
 {
     public static class VideoSourceUtil
     {
-        private static IEnumerable<VideoSource> SelectionOfGroup(List<VideoSource> sources, int randomCount = 3)
+        private static IEnumerable<T> SelectionOfGroup<T>(List<T> sources, int randomCount = 3)
         {
-            VideoSource min = sources.Min();
-            VideoSource max = sources.Max();
+            T min = sources.Min();
+            T max = sources.Max();
             yield return min;
             yield return max;
 
@@ -58,6 +58,29 @@ namespace LibAtem.ComparisonTests.Util
             var badSources = VideoSourceLists.All.Where(s => !possibleSources.Contains(s)).ToArray();
             return TakeSelection(badSources);
         }
+/*
+        public static AudioSource[] TakeSelection(AudioSource[] possibleSources)
+        {
+            var inputs = possibleSources.Where(src =>
+            {
+                AudioSourceTypeAttribute props = src.GetAttribute<AudioSource, AudioSourceTypeAttribute>();
+                return props != null && props.Type == AudioSourceType.ExternalVideo;
+            }).ToList();
 
+            List<AudioSource> result = possibleSources.Except(inputs).ToList();
+
+            // Choose some random sources
+            if (inputs.Count > 0)
+                result.AddRange(SelectionOfGroup(inputs));
+
+            return result.ToArray();
+        }
+
+        public static AudioSource[] TakeBadSelection(AudioSource[] possibleSources)
+        {
+            var badSources = Enum.GetValues(typeof(AudioSource)).OfType<AudioSource>().Where(s => !possibleSources.Contains(s)).ToArray();
+            return TakeSelection(badSources);
+        }
+        */
     }
 }
