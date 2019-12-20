@@ -15,7 +15,12 @@ namespace LibAtem.ComparisonTests.State
 
         static AtemStateComparer()
         {
-            IgnoreNodes = new List<string>();
+            IgnoreNodes = new List<string>
+            {
+                "Info.Version",
+                "Info.Model",
+                "Info.LastTimecode"
+            };
         }
 
         public static List<string> AreEqual(AtemState state1, AtemState state2)

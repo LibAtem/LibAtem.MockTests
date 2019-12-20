@@ -25,7 +25,13 @@ namespace LibAtem.ComparisonTests.State.SDK
         public AtemSDKComparisonMonitor(IBMDSwitcher switcher, AtemStateBuilderSettings updateSettings)
         {
             State = new AtemState();
-            
+
+            switcher.GetProductName(out string productName);
+            State.Info.ProductName = productName;
+            switcher.GetTimeCodeLocked(out int timecodeLocked);
+            State.Info.TimecodeLocked = timecodeLocked != 0;
+
+
             SetupInputs(switcher);
             SetupMixEffects(switcher);
             SetupSerialPorts(switcher);
@@ -35,6 +41,8 @@ namespace LibAtem.ComparisonTests.State.SDK
             SetupMediaPool(switcher);
             SetupMacroPool(switcher);
             SetupAudio(switcher);
+
+            switcher.AllowStreamingToResume();
 
             var cb = new SwitcherPropertiesCallback(State, switcher, FireCommandKey);
             switcher.AddCallback(cb);

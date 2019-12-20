@@ -40,10 +40,24 @@ namespace LibAtem.ComparisonTests.State.SDK
                 case _BMDSwitcherEventType.bmdSwitcherEventType3GSDIOutputLevelChanged:
                     break;
                 case _BMDSwitcherEventType.bmdSwitcherEventTypeTimeCodeChanged:
+                    _props.GetTimeCode(out byte hours, out byte minutes, out byte seconds, out byte frames, out int dropFrame);
+                    _state.Info.LastTimecode = new Timecode
+                    {
+                        Hour = hours,
+                        Minute = minutes,
+                        Second = seconds,
+                        Frame = frames,
+                        DropFrame = dropFrame != 0
+                    };
+                    _onChange("Info.LastTimecode");
                     break;
                 case _BMDSwitcherEventType.bmdSwitcherEventTypeTimeCodeLockedChanged:
                     break;
                 case _BMDSwitcherEventType.bmdSwitcherEventTypeSuperSourceCascadeChanged:
+                    break;
+                case _BMDSwitcherEventType.bmdSwitcherEventTypeAutoVideoModeChanged:
+                    break;
+                case _BMDSwitcherEventType.bmdSwitcherEventTypeAutoVideoModeDetectedChanged:
                     break;
                 default:
                     throw new ArgumentOutOfRangeException(nameof(eventType), eventType, null);
