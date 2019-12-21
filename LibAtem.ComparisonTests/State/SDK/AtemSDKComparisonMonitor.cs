@@ -52,6 +52,7 @@ namespace LibAtem.ComparisonTests.State.SDK
 
         }
 
+        // TODO - this should probably be replaced being being disposable
         ~AtemSDKComparisonMonitor()
         {
             _cleanupCallbacks.ForEach(cb => cb());

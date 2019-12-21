@@ -38,27 +38,12 @@ namespace LibAtem.MockTests.Fairlight
          * The only benefit to keeping it is to verify that the state building is correct (which tbh is a good idea)
          */
 
-        private static IEnumerable<ICommand> ProgramGainCommandHandler(ImmutableList<ICommand> previousCommands, ICommand cmd)
-        {
-            if (cmd is FairlightMixerMasterSetCommand masterCmd)
-            {
-                Assert.Equal(FairlightMixerMasterSetCommand.MaskFlags.Gain, masterCmd.Mask);
-
-                var previous = previousCommands.OfType<FairlightMixerMasterGetCommand>().Last();
-                Assert.NotNull(previous);
-
-                previous.Gain = masterCmd.Gain;
-                yield return previous;
-            }
-        }
-
         [Fact]
-        public void TestProgramGain()
+        public void TestGain()
         {
-            AtemMockServerWrapper.Each(_output, ProgramGainCommandHandler, DeviceTestCases.FairlightMain, helper =>
+            AtemMockServerWrapper.Each(_output, GainCommandHandler, DeviceTestCases.FairlightMain, helper =>
             {
                 IBMDSwitcherFairlightAudioMixer mixer = GetFairlightMixer(helper);
-                
                 AtemState stateBefore = helper.Helper.LibState;
 
                 helper.SendAndWaitForChange(stateBefore, () =>
@@ -74,6 +59,65 @@ namespace LibAtem.MockTests.Fairlight
                 });
             });
         }
+        private static IEnumerable<ICommand> GainCommandHandler(ImmutableList<ICommand> previousCommands, ICommand cmd)
+        {
+            if (cmd is FairlightMixerMasterSetCommand masterCmd)
+            {
+                Assert.Equal(FairlightMixerMasterSetCommand.MaskFlags.Gain, masterCmd.Mask);
+
+                var previous = previousCommands.OfType<FairlightMixerMasterGetCommand>().Last();
+                Assert.NotNull(previous);
+
+                previous.Gain = masterCmd.Gain;
+                yield return previous;
+            }
+        }
+
+        [Fact]
+        public void TestFollowFadeToBlack()
+        {
+            AtemMockServerWrapper.Each(_output, FollowFadeToBlackCommandHandler, DeviceTestCases.FairlightMain, helper =>
+            {
+                IBMDSwitcherFairlightAudioMixer mixer = GetFairlightMixer(helper);
+                AtemState stateBefore = helper.Helper.LibState;
+
+                if (stateBefore.Fairlight.ProgramOut.FollowFadeToBlack)
+                {
+                    helper.SendAndWaitForChange(stateBefore, () =>
+                    {
+                        stateBefore.Fairlight.ProgramOut.FollowFadeToBlack = false;
+                        mixer.SetMasterOutFollowFadeToBlack(0);
+                    });
+                }
+
+                helper.SendAndWaitForChange(stateBefore, () =>
+                {
+                    stateBefore.Fairlight.ProgramOut.FollowFadeToBlack = true;
+                    mixer.SetMasterOutFollowFadeToBlack(1);
+                });
+
+                helper.SendAndWaitForChange(stateBefore, () =>
+                {
+                    stateBefore.Fairlight.ProgramOut.FollowFadeToBlack = false;
+                    mixer.SetMasterOutFollowFadeToBlack(0);
+                });
+            });
+        }
+        private static IEnumerable<ICommand> FollowFadeToBlackCommandHandler(ImmutableList<ICommand> previousCommands, ICommand cmd)
+        {
+            if (cmd is FairlightMixerMasterSetCommand masterCmd)
+            {
+                Assert.Equal(FairlightMixerMasterSetCommand.MaskFlags.FollowFadeToBlack, masterCmd.Mask);
+
+                var previous = previousCommands.OfType<FairlightMixerMasterGetCommand>().Last();
+                Assert.NotNull(previous);
+
+                previous.FollowFadeToBlack = masterCmd.FollowFadeToBlack;
+                yield return previous;
+            }
+        }
+
+
 
 
     }

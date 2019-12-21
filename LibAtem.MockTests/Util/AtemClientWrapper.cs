@@ -93,7 +93,7 @@ namespace LibAtem.MockTests.Util
 
             ConnectLibAtem(address);
 
-            Thread.Sleep(1000);
+            // Thread.Sleep(1000);
 
             _switcherDiscovery = new CBMDSwitcherDiscovery();
             Assert.NotNull(_switcherDiscovery);
@@ -200,7 +200,7 @@ namespace LibAtem.MockTests.Util
             // TODO - reenable once LibAtem allows disconnection
             // Assert.True(_disposeEvent.WaitOne(TimeSpan.FromSeconds(1)), "LibAtem: Cleanup timed out");
 
-            Thread.Sleep(1000);
+            Thread.Sleep(100);
         }
 
         public delegate void SwitcherEventHandler(object sender, object args);

@@ -27,7 +27,7 @@ namespace LibAtem.MockTests.Util
             Clients = new AtemClientWrapper("127.0.0.1");
             Helper = new AtemTestHelper(Clients, _output);
             Server.HandleCommand = cmd => handler(Clients.LibAtemReceived, cmd);
-            Clients.SdkState.Info.LastTimecode = Clients.LibState.Info.LastTimecode = new Timecode()
+            Clients.SdkState.Info.LastTimecode = Clients.LibState.Info.LastTimecode = new Timecode() // TODO - this might be doing nothign..
             {
                 Second = Server.CurrentTime % 60,
                 Minute = Server.CurrentTime / 60
