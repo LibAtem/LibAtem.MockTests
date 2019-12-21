@@ -7,6 +7,7 @@ using LibAtem.Commands;
 using LibAtem.Commands.DownstreamKey;
 using LibAtem.Common;
 using LibAtem.ComparisonTests.State;
+using LibAtem.ComparisonTests.State.SDK;
 using LibAtem.ComparisonTests.Util;
 using LibAtem.DeviceProfile;
 using LibAtem.State;
@@ -29,9 +30,7 @@ namespace LibAtem.ComparisonTests
 
         protected List<Tuple<DownstreamKeyId, IBMDSwitcherDownstreamKey>> GetKeyers()
         {
-            Guid itId = typeof(IBMDSwitcherDownstreamKeyIterator).GUID;
-            _client.SdkSwitcher.CreateIterator(ref itId, out IntPtr itPtr);
-            IBMDSwitcherDownstreamKeyIterator iterator = (IBMDSwitcherDownstreamKeyIterator)Marshal.GetObjectForIUnknown(itPtr);
+            var iterator = AtemSDKConverter.CastSdk<IBMDSwitcherDownstreamKeyIterator>(_client.SdkSwitcher.CreateIterator);
 
             var result = new List<Tuple<DownstreamKeyId, IBMDSwitcherDownstreamKey>>();
             DownstreamKeyId index = 0;

@@ -73,7 +73,7 @@ namespace LibAtem.ComparisonTests.State.SDK
                     break;
                 case _BMDSwitcherHyperDeckEventType.bmdSwitcherHyperDeckEventTypeNetworkAddressChanged:
                     _props.GetNetworkAddress(out uint address);
-                    _state.NetworkAddress = IPUtil.IPToString(BitConverter.GetBytes(address));
+                    _state.NetworkAddress = address == 0 ? null : IPUtil.IPToString(BitConverter.GetBytes(address));
                     _onChange("NetworkAddress");
                     break;
                 default:

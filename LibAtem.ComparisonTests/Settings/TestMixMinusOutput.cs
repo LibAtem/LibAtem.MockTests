@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
 using BMDSwitcherAPI;
+using LibAtem.ComparisonTests.State.SDK;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -21,9 +22,7 @@ namespace LibAtem.ComparisonTests.Settings
 
         private static List<IBMDSwitcherMixMinusOutput> GetOutputs(AtemComparisonHelper helper)
         {
-            Guid itId = typeof(IBMDSwitcherMixMinusOutputIterator).GUID;
-            helper.SdkSwitcher.CreateIterator(ref itId, out IntPtr itPtr);
-            IBMDSwitcherMixMinusOutputIterator iterator = (IBMDSwitcherMixMinusOutputIterator)Marshal.GetObjectForIUnknown(itPtr);
+            var iterator = AtemSDKConverter.CastSdk<IBMDSwitcherMixMinusOutputIterator>(helper.SdkSwitcher.CreateIterator);
 
             List<IBMDSwitcherMixMinusOutput> result = new List<IBMDSwitcherMixMinusOutput>();
             for (iterator.Next(out IBMDSwitcherMixMinusOutput r); r != null; iterator.Next(out r))

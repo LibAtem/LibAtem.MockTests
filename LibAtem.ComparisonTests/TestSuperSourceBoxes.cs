@@ -7,6 +7,7 @@ using LibAtem.Commands;
 using LibAtem.Commands.SuperSource;
 using LibAtem.Common;
 using LibAtem.ComparisonTests.State;
+using LibAtem.ComparisonTests.State.SDK;
 using LibAtem.ComparisonTests.Util;
 using LibAtem.DeviceProfile;
 using LibAtem.State;
@@ -40,9 +41,7 @@ namespace LibAtem.ComparisonTests
             if (src == null)
                 yield break;
 
-            Guid itId = typeof(IBMDSwitcherSuperSourceBoxIterator).GUID;
-            src.CreateIterator(ref itId, out IntPtr itPtr);
-            IBMDSwitcherSuperSourceBoxIterator iterator = (IBMDSwitcherSuperSourceBoxIterator)Marshal.GetObjectForIUnknown(itPtr);
+            var iterator = AtemSDKConverter.CastSdk<IBMDSwitcherSuperSourceBoxIterator>(src.CreateIterator);
 
             SuperSourceBoxId o = 0;
             for (iterator.Next(out IBMDSwitcherSuperSourceBox r); r != null; iterator.Next(out r))

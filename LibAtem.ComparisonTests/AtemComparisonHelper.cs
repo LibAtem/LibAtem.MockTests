@@ -7,6 +7,7 @@ using BMDSwitcherAPI;
 using LibAtem.Commands;
 using LibAtem.Common;
 using LibAtem.ComparisonTests.State;
+using LibAtem.ComparisonTests.State.SDK;
 using LibAtem.State;
 using LibAtem.State.Builder;
 using LibAtem.Util;
@@ -133,9 +134,7 @@ namespace LibAtem.ComparisonTests
 
         public Dictionary<VideoSource, T> GetSdkInputsOfType<T>() where T : class
         {
-            Guid itId = typeof(IBMDSwitcherInputIterator).GUID;
-            SdkSwitcher.CreateIterator(ref itId, out var itPtr);
-            IBMDSwitcherInputIterator iterator = (IBMDSwitcherInputIterator)Marshal.GetObjectForIUnknown(itPtr);
+            var iterator = AtemSDKConverter.CastSdk<IBMDSwitcherInputIterator>(SdkSwitcher.CreateIterator);
 
             Dictionary<VideoSource, T> inputs = new Dictionary<VideoSource, T>();
             for (iterator.Next(out IBMDSwitcherInput input); input != null; iterator.Next(out input))

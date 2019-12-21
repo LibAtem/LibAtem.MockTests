@@ -10,6 +10,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.InteropServices;
+using LibAtem.ComparisonTests.State.SDK;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -32,9 +33,7 @@ namespace LibAtem.ComparisonTests.Audio
             var mixer = _client.SdkSwitcher as IBMDSwitcherAudioMixer;
             Assert.NotNull(mixer);
 
-            Guid itId = typeof(IBMDSwitcherAudioMonitorOutputIterator).GUID;
-            mixer.CreateIterator(ref itId, out IntPtr itPtr);
-            IBMDSwitcherAudioMonitorOutputIterator iterator = (IBMDSwitcherAudioMonitorOutputIterator)Marshal.GetObjectForIUnknown(itPtr);
+            var iterator = AtemSDKConverter.CastSdk<IBMDSwitcherAudioMonitorOutputIterator>(mixer.CreateIterator);
 
             var result = new List<IBMDSwitcherAudioMonitorOutput>();
             for (iterator.Next(out IBMDSwitcherAudioMonitorOutput r); r != null; iterator.Next(out r))

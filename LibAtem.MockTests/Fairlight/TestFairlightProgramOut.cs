@@ -1,5 +1,6 @@
 ﻿using BMDSwitcherAPI;
 using LibAtem.Commands.Audio.Fairlight;
+using LibAtem.ComparisonTests.State.SDK;
 using LibAtem.MockTests.Util;
 using LibAtem.State;
 using Xunit;
@@ -24,6 +25,14 @@ namespace LibAtem.MockTests.Fairlight
             return mixer;
         }
 
+        public static IBMDSwitcherFairlightAudioDynamicsProcessor GetDynamics(AtemMockServerWrapper helper)
+        {
+            var mixer = GetFairlightMixer(helper);
+            var dynamics = AtemSDKConverter.CastSdk<IBMDSwitcherFairlightAudioDynamicsProcessor>(mixer.GetMasterOutEffect);
+            Assert.NotNull(dynamics);
+            return dynamics;
+        }
+
         /**
          * Notes:
          * The flow is to always send commands via the sdk.
@@ -43,17 +52,15 @@ namespace LibAtem.MockTests.Fairlight
                 IBMDSwitcherFairlightAudioMixer mixer = GetFairlightMixer(helper);
                 AtemState stateBefore = helper.Helper.LibState;
 
-                helper.SendAndWaitForChange(stateBefore, () =>
+                for (int i = 0; i < 5; i++)
                 {
-                    stateBefore.Fairlight.ProgramOut.Gain = 2;
-                    mixer.SetMasterOutFaderGain(2);
-                });
-
-                helper.SendAndWaitForChange(stateBefore, () =>
-                {
-                    stateBefore.Fairlight.ProgramOut.Gain = -14;
-                    mixer.SetMasterOutFaderGain(-14);
-                });
+                    double target = Randomiser.Range();
+                    stateBefore.Fairlight.ProgramOut.Gain = target;
+                    helper.SendAndWaitForChange(stateBefore, () =>
+                    {
+                        mixer.SetMasterOutFaderGain(target);
+                    });
+                }
             });
         }
 
@@ -66,26 +73,36 @@ namespace LibAtem.MockTests.Fairlight
                 IBMDSwitcherFairlightAudioMixer mixer = GetFairlightMixer(helper);
                 AtemState stateBefore = helper.Helper.LibState;
 
-                if (stateBefore.Fairlight.ProgramOut.FollowFadeToBlack)
+                for (int i = 0; i < 5; i++)
                 {
+                    stateBefore.Fairlight.ProgramOut.FollowFadeToBlack = i % 2 > 0;
                     helper.SendAndWaitForChange(stateBefore, () =>
                     {
-                        stateBefore.Fairlight.ProgramOut.FollowFadeToBlack = false;
-                        mixer.SetMasterOutFollowFadeToBlack(0);
+                        mixer.SetMasterOutFollowFadeToBlack(i % 2);
                     });
                 }
+            });
+        }
 
-                helper.SendAndWaitForChange(stateBefore, () =>
-                {
-                    stateBefore.Fairlight.ProgramOut.FollowFadeToBlack = true;
-                    mixer.SetMasterOutFollowFadeToBlack(1);
-                });
+        [Fact]
+        public void TestMakeUp()
+        {
+            var handler = CommandGenerator.CreateAutoCommandHandler<FairlightMixerMasterSetCommand, FairlightMixerMasterGetCommand>("MakeUpGain");
+            AtemMockServerWrapper.Each(_output, handler, DeviceTestCases.FairlightMain, helper =>
+            {
+                IBMDSwitcherFairlightAudioDynamicsProcessor dynamics = GetDynamics(helper);
 
-                helper.SendAndWaitForChange(stateBefore, () =>
+                AtemState stateBefore = helper.Helper.LibState;
+
+                for (int i = 0; i < 5; i++)
                 {
-                    stateBefore.Fairlight.ProgramOut.FollowFadeToBlack = false;
-                    mixer.SetMasterOutFollowFadeToBlack(0);
-                });
+                    double target = Randomiser.Range(0, 20);
+                    stateBefore.Fairlight.ProgramOut.Dynamics.MakeUpGain = target;
+                    helper.SendAndWaitForChange(stateBefore, () =>
+                    {
+                        dynamics.SetMakeupGain(target);
+                    });
+                }
             });
         }
 

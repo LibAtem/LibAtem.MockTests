@@ -7,6 +7,7 @@ using LibAtem.Commands;
 using LibAtem.Commands.Settings.Multiview;
 using LibAtem.Common;
 using LibAtem.ComparisonTests.State;
+using LibAtem.ComparisonTests.State.SDK;
 using LibAtem.ComparisonTests.Util;
 using LibAtem.DeviceProfile;
 using LibAtem.State;
@@ -29,10 +30,7 @@ namespace LibAtem.ComparisonTests.Settings
 
         private List<Tuple<uint, IBMDSwitcherMultiView>> GetMultiviewers()
         {
-            Guid itId = typeof(IBMDSwitcherMultiViewIterator).GUID;
-            _client.SdkSwitcher.CreateIterator(ref itId, out var itPtr);
-            IBMDSwitcherMultiViewIterator
-                iterator = (IBMDSwitcherMultiViewIterator) Marshal.GetObjectForIUnknown(itPtr);
+            var iterator = AtemSDKConverter.CastSdk<IBMDSwitcherMultiViewIterator>(_client.SdkSwitcher.CreateIterator);
 
             var result = new List<Tuple<uint, IBMDSwitcherMultiView>>();
             uint index = 0;

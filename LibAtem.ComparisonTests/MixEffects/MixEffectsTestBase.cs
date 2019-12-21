@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.InteropServices;
+using LibAtem.ComparisonTests.State.SDK;
 using Xunit.Abstractions;
 
 namespace LibAtem.ComparisonTests.MixEffects
@@ -37,9 +38,7 @@ namespace LibAtem.ComparisonTests.MixEffects
             List<Tuple<MixEffectBlockId, IBMDSwitcherMixEffectBlock>> mes = GetMixEffects<IBMDSwitcherMixEffectBlock>();
             foreach (var me in mes)
             {
-                Guid itId = typeof(IBMDSwitcherKeyIterator).GUID;
-                me.Item2.CreateIterator(ref itId, out IntPtr itPtr);
-                IBMDSwitcherKeyIterator iterator = (IBMDSwitcherKeyIterator)Marshal.GetObjectForIUnknown(itPtr);
+                var iterator = AtemSDKConverter.CastSdk<IBMDSwitcherKeyIterator>(me.Item2.CreateIterator);
 
                 int o = 0;
                 for (iterator.Next(out IBMDSwitcherKey r); r != null; iterator.Next(out r))

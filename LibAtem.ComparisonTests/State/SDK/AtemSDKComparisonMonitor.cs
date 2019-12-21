@@ -83,10 +83,7 @@ namespace LibAtem.ComparisonTests.State.SDK
                 _cleanupCallbacks.Add(() => mixer.RemoveCallback(cb));
                 TriggerAllChanged(cb);
 
-                Guid itId = typeof(IBMDSwitcherAudioInputIterator).GUID;
-                mixer.CreateIterator(ref itId, out var itPtr);
-                IBMDSwitcherAudioInputIterator iterator =
-                    (IBMDSwitcherAudioInputIterator) Marshal.GetObjectForIUnknown(itPtr);
+                var iterator = AtemSDKConverter.CastSdk<IBMDSwitcherAudioInputIterator>(mixer.CreateIterator);
 
                 for (iterator.Next(out IBMDSwitcherAudioInput port); port != null; iterator.Next(out port))
                 {
@@ -100,10 +97,7 @@ namespace LibAtem.ComparisonTests.State.SDK
                     TriggerAllChanged(cbi);
                 }
 
-                itId = typeof(IBMDSwitcherAudioMonitorOutputIterator).GUID;
-                mixer.CreateIterator(ref itId, out itPtr);
-                IBMDSwitcherAudioMonitorOutputIterator monIt =
-                    (IBMDSwitcherAudioMonitorOutputIterator) Marshal.GetObjectForIUnknown(itPtr);
+                var monIt = AtemSDKConverter.CastSdk<IBMDSwitcherAudioMonitorOutputIterator>(mixer.CreateIterator);
 
                 var mons = new List<AudioState.MonitorOutputState>();
                 State.Audio.Monitors = mons;
@@ -142,14 +136,43 @@ namespace LibAtem.ComparisonTests.State.SDK
                 _cleanupCallbacks.Add(() => fairlightMixer.RemoveCallback(cb));
                 TriggerAllChanged(cb);
 
+                // Dynamics
+                var pgmDynamics = AtemSDKConverter.CastSdk<IBMDSwitcherFairlightAudioDynamicsProcessor>(fairlightMixer.GetMasterOutEffect);
+                SetupFairlightDynamics(State.Fairlight.ProgramOut.Dynamics, pgmDynamics, "Fairlight.ProgramOut.Dynamics");
+
             }
+        }
+
+        private void SetupFairlightDynamics(FairlightAudioState.DynamicsState state, IBMDSwitcherFairlightAudioDynamicsProcessor proc, string path)
+        {
+            var dynCb = new FairlightDynamicsAudioMixerCallback(state, proc, str => FireCommandKey($"{path}.{str}"));
+            proc.AddCallback(dynCb);
+            _cleanupCallbacks.Add(() => proc.RemoveCallback(dynCb));
+            TriggerAllChanged(dynCb);
+
+            // Limiter
+            var limiterProps = AtemSDKConverter.CastSdk<IBMDSwitcherFairlightAudioLimiter>(proc.GetProcessor);
+
+            state.Limiter = new FairlightAudioState.LimiterState();
+            var limiterCb = new FairlightLimiterDynamicsAudioMixerCallback(state.Limiter, limiterProps, str => FireCommandKey($"{path}.Limiter.{str}"));
+            limiterProps.AddCallback(limiterCb);
+            _cleanupCallbacks.Add(() => limiterProps.RemoveCallback(limiterCb));
+            TriggerAllChanged(limiterCb);
+
+            // Compressor
+            var compressorProps = AtemSDKConverter.CastSdk<IBMDSwitcherFairlightAudioCompressor>(proc.GetProcessor);
+            
+            state.Compressor = new FairlightAudioState.CompressorState();
+            var compressorCb = new FairlightCompressorDynamicsAudioMixerCallback(state.Compressor, compressorProps, str => FireCommandKey($"{path}.Compressor.{str}"));
+            compressorProps.AddCallback(compressorCb);
+            _cleanupCallbacks.Add(() => compressorProps.RemoveCallback(compressorCb));
+            TriggerAllChanged(compressorCb);
+
         }
 
         private void SetupSerialPorts(IBMDSwitcher switcher)
         {
-            Guid itId = typeof(IBMDSwitcherSerialPortIterator).GUID;
-            switcher.CreateIterator(ref itId, out var itPtr);
-            IBMDSwitcherSerialPortIterator iterator = (IBMDSwitcherSerialPortIterator)Marshal.GetObjectForIUnknown(itPtr);
+            var iterator = AtemSDKConverter.CastSdk<IBMDSwitcherSerialPortIterator>(switcher.CreateIterator);
 
             int id = 0;
             for (iterator.Next(out IBMDSwitcherSerialPort port); port != null; iterator.Next(out port))
@@ -167,21 +190,20 @@ namespace LibAtem.ComparisonTests.State.SDK
 
         private void SetupHyperdecks(IBMDSwitcher switcher)
         {
-            Guid itId = typeof(IBMDSwitcherHyperDeckIterator).GUID;
-            switcher.CreateIterator(ref itId, out var itPtr);
-            IBMDSwitcherHyperDeckIterator iterator = (IBMDSwitcherHyperDeckIterator)Marshal.GetObjectForIUnknown(itPtr);
+            var iterator = AtemSDKConverter.CastSdk<IBMDSwitcherHyperDeckIterator>(switcher.CreateIterator);
 
             var hyperdecks = new List<SettingsState.HyperdeckState>();
             uint id = 0;
             for (iterator.Next(out IBMDSwitcherHyperDeck deck); deck != null; iterator.Next(out deck))
             {
+                var deck2 = deck;
                 var deckState = new SettingsState.HyperdeckState();
                 hyperdecks.Add(deckState);
                 uint deckId = id++;
 
-                var cb = new HyperDeckPropertiesCallback(deckState, deck, str => FireCommandKey($"Settings.Hyperdecks.{deckId:D}.{str}"));
-                deck.AddCallback(cb);
-                _cleanupCallbacks.Add(() => deck.RemoveCallback(cb));
+                var cb = new HyperDeckPropertiesCallback(deckState, deck2, str => FireCommandKey($"Settings.Hyperdecks.{deckId:D}.{str}"));
+                deck2.AddCallback(cb);
+                _cleanupCallbacks.Add(() => deck2.RemoveCallback(cb));
                 TriggerAllChanged(cb);
             }
             State.Settings.Hyperdecks = hyperdecks;
@@ -189,9 +211,7 @@ namespace LibAtem.ComparisonTests.State.SDK
 
         private void SetupMultiViews(IBMDSwitcher switcher)
         {
-            Guid itId = typeof(IBMDSwitcherMultiViewIterator).GUID;
-            switcher.CreateIterator(ref itId, out var itPtr);
-            IBMDSwitcherMultiViewIterator iterator = (IBMDSwitcherMultiViewIterator)Marshal.GetObjectForIUnknown(itPtr);
+            var iterator = AtemSDKConverter.CastSdk<IBMDSwitcherMultiViewIterator>(switcher.CreateIterator);
 
             var mvs = new List<MultiViewerState>();
             uint id = 0;
@@ -217,9 +237,7 @@ namespace LibAtem.ComparisonTests.State.SDK
 
         private void SetupMediaPlayers(IBMDSwitcher switcher, AtemStateBuilderSettings updateSettings)
         {
-            Guid itId = typeof(IBMDSwitcherMediaPlayerIterator).GUID;
-            switcher.CreateIterator(ref itId, out var itPtr);
-            IBMDSwitcherMediaPlayerIterator iterator = (IBMDSwitcherMediaPlayerIterator)Marshal.GetObjectForIUnknown(itPtr);
+            var iterator = AtemSDKConverter.CastSdk<IBMDSwitcherMediaPlayerIterator>(switcher.CreateIterator);
 
             var players = new List<MediaPlayerState>();
             MediaPlayerId id = 0;
@@ -307,9 +325,7 @@ namespace LibAtem.ComparisonTests.State.SDK
 
         private void SetupDownstreamKeyers(IBMDSwitcher switcher)
         {
-            Guid itId = typeof(IBMDSwitcherDownstreamKeyIterator).GUID;
-            switcher.CreateIterator(ref itId, out var itPtr);
-            IBMDSwitcherDownstreamKeyIterator iterator = (IBMDSwitcherDownstreamKeyIterator)Marshal.GetObjectForIUnknown(itPtr);
+            var iterator = AtemSDKConverter.CastSdk<IBMDSwitcherDownstreamKeyIterator>(switcher.CreateIterator);
 
             var dsks = new List<DownstreamKeyerState>();
             DownstreamKeyId id = 0;
@@ -329,9 +345,7 @@ namespace LibAtem.ComparisonTests.State.SDK
 
         private void SetupMixEffects(IBMDSwitcher switcher)
         {
-            Guid itId = typeof(IBMDSwitcherMixEffectBlockIterator).GUID;
-            switcher.CreateIterator(ref itId, out var itPtr);
-            IBMDSwitcherMixEffectBlockIterator iterator = (IBMDSwitcherMixEffectBlockIterator) Marshal.GetObjectForIUnknown(itPtr);
+            var iterator = AtemSDKConverter.CastSdk<IBMDSwitcherMixEffectBlockIterator>(switcher.CreateIterator);
 
             var mes = new List<MixEffectState>();
             State.MixEffects = mes;
@@ -438,9 +452,7 @@ namespace LibAtem.ComparisonTests.State.SDK
 
         private void SetupMixEffectKeyer(IBMDSwitcherMixEffectBlock me, MixEffectBlockId id)
         {
-            Guid itId = typeof(IBMDSwitcherKeyIterator).GUID;
-            me.CreateIterator(ref itId, out var itPtr);
-            IBMDSwitcherKeyIterator iterator = (IBMDSwitcherKeyIterator)Marshal.GetObjectForIUnknown(itPtr);
+            var iterator = AtemSDKConverter.CastSdk<IBMDSwitcherKeyIterator>(me.CreateIterator);
 
             var keyId = UpstreamKeyId.One;
             var keyers = new List<MixEffectState.KeyerState>();
@@ -558,9 +570,7 @@ namespace LibAtem.ComparisonTests.State.SDK
 
         private void SetupInputs(IBMDSwitcher switcher)
         {
-            Guid itId = typeof(IBMDSwitcherInputIterator).GUID;
-            switcher.CreateIterator(ref itId, out var itPtr);
-            IBMDSwitcherInputIterator iterator = (IBMDSwitcherInputIterator)Marshal.GetObjectForIUnknown(itPtr);
+            var iterator = AtemSDKConverter.CastSdk<IBMDSwitcherInputIterator>(switcher.CreateIterator);
 
             var auxes = new List<AuxState>();
             var cols = new List<ColorState>();
@@ -636,9 +646,7 @@ namespace LibAtem.ComparisonTests.State.SDK
             _cleanupCallbacks.Add(() => ssrc2.RemoveCallback(cb3));
             TriggerAllChanged(cb3);
 
-            Guid itId = typeof(IBMDSwitcherSuperSourceBoxIterator).GUID;
-            ssrc.CreateIterator(ref itId, out var itPtr);
-            IBMDSwitcherSuperSourceBoxIterator iterator = (IBMDSwitcherSuperSourceBoxIterator)Marshal.GetObjectForIUnknown(itPtr);
+            var iterator = AtemSDKConverter.CastSdk<IBMDSwitcherSuperSourceBoxIterator>(ssrc.CreateIterator);
 
             var boxes = new List<SuperSourceState.BoxState>();
             SuperSourceBoxId id = 0;

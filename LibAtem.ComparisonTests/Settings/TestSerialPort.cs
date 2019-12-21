@@ -7,6 +7,7 @@ using LibAtem.Commands;
 using LibAtem.Commands.Settings;
 using LibAtem.Common;
 using LibAtem.ComparisonTests.State;
+using LibAtem.ComparisonTests.State.SDK;
 using LibAtem.ComparisonTests.Util;
 using LibAtem.State;
 using Xunit;
@@ -28,9 +29,7 @@ namespace LibAtem.ComparisonTests.Settings
 
         private static List<IBMDSwitcherSerialPort> GetPorts(AtemComparisonHelper helper)
         {
-            Guid itId = typeof(IBMDSwitcherSerialPortIterator).GUID;
-            helper.SdkSwitcher.CreateIterator(ref itId, out IntPtr itPtr);
-            IBMDSwitcherSerialPortIterator iterator = (IBMDSwitcherSerialPortIterator) Marshal.GetObjectForIUnknown(itPtr);
+            var iterator = AtemSDKConverter.CastSdk<IBMDSwitcherSerialPortIterator>(helper.SdkSwitcher.CreateIterator);
 
             List<IBMDSwitcherSerialPort> result = new List<IBMDSwitcherSerialPort>();
             for (iterator.Next(out IBMDSwitcherSerialPort r); r != null; iterator.Next(out r))

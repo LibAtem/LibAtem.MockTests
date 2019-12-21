@@ -11,6 +11,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.InteropServices;
+using LibAtem.ComparisonTests.State.SDK;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -33,9 +34,7 @@ namespace LibAtem.ComparisonTests.Audio
             var mixer = _client.SdkSwitcher as IBMDSwitcherAudioMixer;
             Assert.NotNull(mixer);
 
-            Guid itId = typeof(IBMDSwitcherAudioInputIterator).GUID;
-            mixer.CreateIterator(ref itId, out IntPtr itPtr);
-            IBMDSwitcherAudioInputIterator iterator = (IBMDSwitcherAudioInputIterator)Marshal.GetObjectForIUnknown(itPtr);
+            var iterator = AtemSDKConverter.CastSdk<IBMDSwitcherAudioInputIterator>(mixer.CreateIterator);
 
             var result = new List<Tuple<AudioSource, IBMDSwitcherAudioInput>>();
             for (iterator.Next(out IBMDSwitcherAudioInput r); r != null; iterator.Next(out r))

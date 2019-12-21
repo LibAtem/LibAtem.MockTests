@@ -61,10 +61,11 @@ namespace LibAtem.ComparisonTests.State
                     continue;
 
                 object newVal = prop.GetValue(state2);
-                if (newVal == null)
-                    continue;
-
                 object oldVal = prop.GetValue(state1);
+
+                // Both null is good
+                if (newVal == null && oldVal == null)
+                    continue;
 
                 bool isDictionary = prop.PropertyType.IsGenericType && prop.PropertyType.GetGenericTypeDefinition() == typeof(Dictionary<,>);
                 bool isList = prop.PropertyType.IsGenericType && (prop.PropertyType.GetGenericTypeDefinition() == typeof(List<>) || prop.PropertyType.GetGenericTypeDefinition() == typeof(IReadOnlyList<>));

@@ -3,6 +3,7 @@ using LibAtem.Common;
 using System;
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
+using LibAtem.ComparisonTests.State.SDK;
 
 namespace LibAtem.ComparisonTests.Util
 {
@@ -10,9 +11,7 @@ namespace LibAtem.ComparisonTests.Util
     {
         public static List<Tuple<MixEffectBlockId, T>> GetMixEffects<T>(this AtemClientWrapper client) where T : class
         {
-            Guid itId = typeof(IBMDSwitcherMixEffectBlockIterator).GUID;
-            client.SdkSwitcher.CreateIterator(ref itId, out IntPtr itPtr);
-            var iterator = (IBMDSwitcherMixEffectBlockIterator)Marshal.GetObjectForIUnknown(itPtr);
+            var iterator = AtemSDKConverter.CastSdk<IBMDSwitcherMixEffectBlockIterator>(client.SdkSwitcher.CreateIterator);
 
             var result = new List<Tuple<MixEffectBlockId, T>>();
             int index = 0;
@@ -32,9 +31,7 @@ namespace LibAtem.ComparisonTests.Util
         {
             var mixer = (IBMDSwitcherAudioMixer)client.SdkSwitcher;
 
-            Guid itId = typeof(IBMDSwitcherAudioInputIterator).GUID;
-            mixer.CreateIterator(ref itId, out IntPtr itPtr);
-            var iterator = (IBMDSwitcherAudioInputIterator)Marshal.GetObjectForIUnknown(itPtr);
+            var iterator = AtemSDKConverter.CastSdk<IBMDSwitcherAudioInputIterator>(client.SdkSwitcher.CreateIterator);
 
             var result = new List<Tuple<AudioSource, IBMDSwitcherAudioInput>>();
             for (iterator.Next(out IBMDSwitcherAudioInput r); r != null; iterator.Next(out r))
@@ -48,9 +45,7 @@ namespace LibAtem.ComparisonTests.Util
         */
         public static List<Tuple<MediaPlayerId, IBMDSwitcherMediaPlayer>> GetMediaPlayers(this AtemClientWrapper client)
         {
-            Guid itId = typeof(IBMDSwitcherMediaPlayerIterator).GUID;
-            client.SdkSwitcher.CreateIterator(ref itId, out IntPtr itPtr);
-            var iterator = (IBMDSwitcherMediaPlayerIterator)Marshal.GetObjectForIUnknown(itPtr);
+            var iterator = AtemSDKConverter.CastSdk<IBMDSwitcherMediaPlayerIterator>(client.SdkSwitcher.CreateIterator);
 
             var result = new List<Tuple<MediaPlayerId, IBMDSwitcherMediaPlayer>>();
             int index = 0;

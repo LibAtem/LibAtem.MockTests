@@ -7,6 +7,7 @@ using LibAtem.Commands;
 using LibAtem.Commands.Settings;
 using LibAtem.Common;
 using LibAtem.ComparisonTests.State;
+using LibAtem.ComparisonTests.State.SDK;
 using LibAtem.ComparisonTests.Util;
 using LibAtem.DeviceProfile;
 using LibAtem.State;
@@ -254,9 +255,7 @@ namespace LibAtem.ComparisonTests.Settings
             // Note: This doesn't test every input, but does some sampling based on those not live and routed
             using (var helper = new AtemComparisonHelper(_client, _output))
             {
-                Guid itId = typeof(IBMDSwitcherMixEffectBlockIterator).GUID;
-                helper.SdkSwitcher.CreateIterator(ref itId, out IntPtr itPtr);
-                IBMDSwitcherMixEffectBlockIterator iterator = (IBMDSwitcherMixEffectBlockIterator)Marshal.GetObjectForIUnknown(itPtr);
+                var iterator = AtemSDKConverter.CastSdk<IBMDSwitcherMixEffectBlockIterator>(helper.SdkSwitcher.CreateIterator);
 
                 iterator.Next(out IBMDSwitcherMixEffectBlock meBlock);
                 Assert.NotNull(meBlock);

@@ -8,6 +8,7 @@ using LibAtem.Commands.MixEffects;
 using LibAtem.Commands.MixEffects.Transition;
 using LibAtem.Common;
 using LibAtem.ComparisonTests.State;
+using LibAtem.ComparisonTests.State.SDK;
 using LibAtem.ComparisonTests.Util;
 using LibAtem.DeviceProfile;
 using LibAtem.State;
@@ -140,9 +141,7 @@ namespace LibAtem.ComparisonTests.MixEffects
             // TODO - refactor to use ValueComparer
             using (var helper = new AtemComparisonHelper(Client, Output))
             {
-                Guid itId = typeof(IBMDSwitcherMixEffectBlockIterator).GUID;
-                helper.SdkSwitcher.CreateIterator(ref itId, out var itPtr);
-                IBMDSwitcherMixEffectBlockIterator iterator = (IBMDSwitcherMixEffectBlockIterator)Marshal.GetObjectForIUnknown(itPtr);
+                var iterator = AtemSDKConverter.CastSdk<IBMDSwitcherMixEffectBlockIterator>(helper.SdkSwitcher.CreateIterator);
 
                 List<IBMDSwitcherMixEffectBlock> sdkMeBlocks = new List<IBMDSwitcherMixEffectBlock>();
                 for (iterator.Next(out IBMDSwitcherMixEffectBlock meBlock); meBlock != null; iterator.Next(out meBlock))

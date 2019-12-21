@@ -5,6 +5,7 @@ using System.Runtime.InteropServices;
 using BMDSwitcherAPI;
 using LibAtem.Commands;
 using LibAtem.Common;
+using LibAtem.ComparisonTests.State.SDK;
 using LibAtem.MockTests.DeviceMock;
 using LibAtem.State;
 using LibAtem.Util;
@@ -65,9 +66,7 @@ namespace LibAtem.MockTests.Util
 
         public Dictionary<VideoSource, T> GetSdkInputsOfType<T>() where T : class
         {
-            Guid itId = typeof(IBMDSwitcherInputIterator).GUID;
-            Helper.SdkSwitcher.CreateIterator(ref itId, out var itPtr);
-            IBMDSwitcherInputIterator iterator = (IBMDSwitcherInputIterator)Marshal.GetObjectForIUnknown(itPtr);
+            var iterator = AtemSDKConverter.CastSdk<IBMDSwitcherInputIterator>(Helper.SdkSwitcher.CreateIterator);
 
             Dictionary<VideoSource, T> inputs = new Dictionary<VideoSource, T>();
             for (iterator.Next(out IBMDSwitcherInput input); input != null; iterator.Next(out input))
@@ -85,9 +84,7 @@ namespace LibAtem.MockTests.Util
 
         public IBMDSwitcherInput GetSdkInput(long targetId)
         {
-            Guid itId = typeof(IBMDSwitcherInputIterator).GUID;
-            Helper.SdkSwitcher.CreateIterator(ref itId, out var itPtr);
-            IBMDSwitcherInputIterator iterator = (IBMDSwitcherInputIterator)Marshal.GetObjectForIUnknown(itPtr);
+            var iterator = AtemSDKConverter.CastSdk<IBMDSwitcherInputIterator>(Helper.SdkSwitcher.CreateIterator);
 
             for (iterator.Next(out IBMDSwitcherInput input); input != null; iterator.Next(out input))
             {
