@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.IO;
 using System.Linq;
 using System.Reflection;
@@ -59,6 +60,19 @@ namespace LibAtem.MockTests.Util
         public delegate void StateChangeHandler(object sender, string path);
         public event StateChangeHandler OnSdkStateChange;
 
+        private readonly List<ICommand> _libAtemReceived;
+
+        public ImmutableList<ICommand> LibAtemReceived
+        {
+            get
+            {
+                lock (_libAtemReceived)
+                {
+                    return _libAtemReceived.ToImmutableList();
+                }
+            }
+        }
+
         public AtemClientWrapper(string address = "10.42.13.95")
         {
             var logRepository = LogManager.GetRepository(Assembly.GetExecutingAssembly());
@@ -72,6 +86,8 @@ namespace LibAtem.MockTests.Util
             _handshakeEvent = new AutoResetEvent(false);
 
             _updateSettings = new AtemStateBuilderSettings();
+
+            _libAtemReceived = new List<ICommand>();
 
             _libState = new AtemState();
 
@@ -156,6 +172,11 @@ namespace LibAtem.MockTests.Util
                         _handshakeFinished = true;
                     }
                 }
+
+                lock (_libAtemReceived)
+                {
+                    _libAtemReceived.AddRange(commands);
+                }
             };
             _client.Connect();
 
@@ -197,39 +218,7 @@ namespace LibAtem.MockTests.Util
                 }
             }
         }
-
-        internal T FindWithMatching<T>(T srcId) where T : ICommand
-        {
-            var id = new CommandQueueKey(srcId);
-
-            lock (_lastReceivedLibAtem)
-            {
-                if (_lastReceivedLibAtem.TryGetValue(id, out var val))
-                    return (T)val;
-
-                return default(T);
-            }
-        }
-
-        internal ICommand FindWithMatching<T>(CommandQueueKey id) where T : ICommand
-        {
-            lock (_lastReceivedLibAtem)
-            {
-                if (_lastReceivedLibAtem.TryGetValue(id, out var val))
-                    return (T)val;
-
-                return default(T);
-            }
-        }
-
-        public List<T> FindAllOfType<T>() where T : ICommand
-        {
-            lock (_lastReceivedLibAtem)
-            {
-                return _lastReceivedLibAtem.Values.OfType<T>().ToList();
-            }
-        }
-
+        
     }
 
 }

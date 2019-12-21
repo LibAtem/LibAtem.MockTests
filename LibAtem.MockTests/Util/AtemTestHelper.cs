@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Runtime.InteropServices;
 using System.Threading;
 using BMDSwitcherAPI;
 using LibAtem.Commands;
@@ -75,122 +74,13 @@ namespace LibAtem.MockTests.Util
         public IBMDSwitcher SdkSwitcher => _client.SdkSwitcher;
 
         public LibAtem.DeviceProfile.DeviceProfile Profile => _client.Profile;
-
-        /*
-        public T FindWithMatching<T>(T srcId) where T : ICommand
-        {
-            return _client.FindWithMatching(srcId);
-        }
-
-        public List<T> FindAllOfType<T>() where T : ICommand
-        {
-            return _client.FindAllOfType<T>();
-        }
-
-        public void ClearReceivedCommands()
-        {
-            lock (_receivedCommands)
-                _receivedCommands.Clear();
-        }
-
-        public List<T> GetReceivedCommands<T>() where T : ICommand
-        {
-            lock (_receivedCommands)
-                return _receivedCommands.OfType<T>().ToList();
-        }
-
-        public T GetSingleReceivedCommands<T>() where T : ICommand
-        {
-            lock (_receivedCommands)
-                return _receivedCommands.OfType<T>().Single();
-        }
-
-        public int CountAndClearReceivedCommands<T>() where T : ICommand
-        {
-            lock (_receivedCommands)
-            {
-                int count = _receivedCommands.OfType<T>().Count();
-                _receivedCommands.Clear();
-                return count;
-            }
-        }
-
-        public void SendCommand(params ICommand[] commands)
-        {
-            commands.ForEach(c => _client.Client.SendCommand(c));
-        }
-
-        public void Sleep(int sleep = -1)
-        {
-            Thread.Sleep(sleep == -1 ? CommandWaitTime : sleep);
-        }
-
-        public void EnsureVideoMode(VideoMode mode)
-        {
-            // TODO - dont do if already on this mode, as it clears some data that would be good to keep
-            SdkSwitcher.SetVideoMode(AtemEnumMaps.VideoModesMap[mode]);
-            Sleep();
-        }
-
-        public Dictionary<VideoSource, T> GetSdkInputsOfType<T>() where T : class
-        {
-            Guid itId = typeof(IBMDSwitcherInputIterator).GUID;
-            SdkSwitcher.CreateIterator(ref itId, out var itPtr);
-            IBMDSwitcherInputIterator iterator = (IBMDSwitcherInputIterator)Marshal.GetObjectForIUnknown(itPtr);
-
-            Dictionary<VideoSource, T> inputs = new Dictionary<VideoSource, T>();
-            for (iterator.Next(out IBMDSwitcherInput input); input != null; iterator.Next(out input))
-            {
-                var colGen = input as T;
-                if (colGen == null)
-                    continue;
-
-                input.GetInputId(out long id);
-                inputs[(VideoSource)id] = colGen;
-            }
-
-            return inputs;
-        }
-
-        // Note: This doesnt quite work properly yet
-        public void SendAndWaitForMatching(string targetPath, ICommand toSend, int timeout = -1)
-        {
-            if (responseWait != null)
-                return;
-
-            responseWait = new AutoResetEvent(false);
-
-            void Handler(object sender, string changePath)
-            {
-                if (targetPath.Equals(changePath))
-                    responseWait.Set();
-            }
-
-            _client.OnStateChange += Handler;
-
-            if (toSend != null)
-                SendCommand(toSend);
-
-            // Wait for the expected time. If no response, then go with last data
-            responseWait.WaitOne(timeout == -1 ? CommandWaitTime : timeout);
-
-            responseWait = null;
-            _client.OnStateChange -= Handler;
-        }
-
-        public void SendAndWaitForMatching(List<string> expected, ICommand toSend, int timeout = -1)
+        
+        public void SendAndWaitForChange(Action doSend, int timeout = -1)
         {
             if (responseWait != null)
                 throw new Exception("a SendAndWaitForMatching is already running");
 
-            if (expected.Count == 0)
-            {
-                if (toSend != null)
-                    SendCommand(toSend);
-
-                Sleep(timeout);
-                return;
-            }
+            var expected = new[] {"Info.LastTimecode"};
 
             var libWait = new ManualResetEvent(false);
             var sdkWait = new ManualResetEvent(false);
@@ -224,13 +114,12 @@ namespace LibAtem.MockTests.Util
             _client.OnStateChange += HandlerLib;
             _client.OnSdkStateChange += HandlerSdk;
 
-            if (toSend != null)
-                SendCommand(toSend);
+            doSend();
 
             // Wait for the expected time. If no response, then go with last data
             libWait.WaitOne(timeout == -1 ? CommandWaitTime * 3 : timeout);
             // The Sdk doesn't send the same notifies if nothing changed, so once the lib has finished, wait a small time for sdk to finish up
-            sdkWait.WaitOne(timeout == -1 ? CommandWaitTime / 2 : timeout);
+            sdkWait.WaitOne(timeout == -1 ? CommandWaitTime * 2 : timeout);
 
             _client.OnStateChange -= HandlerLib;
             _client.OnSdkStateChange -= HandlerSdk;
@@ -243,7 +132,29 @@ namespace LibAtem.MockTests.Util
 
             Output.WriteLine("");
         }
-        */
+
+        public void AssertStateChanged(AtemState expected)
+        {
+            List<string> sdk = AtemStateComparer.AreEqual(expected, SdkState);
+            List<string> lib = AtemStateComparer.AreEqual(expected, LibState);
+
+            if (sdk.Count > 0 || lib.Count > 0)
+            {
+                if (sdk.Count > 0)
+                {
+                    Output.WriteLine("SDK wrong");
+                    sdk.ForEach(Output.WriteLine);
+                }
+
+                if (lib.Count > 0)
+                {
+                    Output.WriteLine("Lib wrong");
+                    lib.ForEach(Output.WriteLine);
+                }
+
+                TestResult = false;
+            }
+        }
     }
 
 }

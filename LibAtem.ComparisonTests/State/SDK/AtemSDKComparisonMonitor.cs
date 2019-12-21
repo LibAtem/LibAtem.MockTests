@@ -72,61 +72,76 @@ namespace LibAtem.ComparisonTests.State.SDK
 
         private void SetupAudio(IBMDSwitcher switcher)
         {
-            var mixer = switcher as IBMDSwitcherAudioMixer;
-            if (mixer == null)
+            if (switcher is IBMDSwitcherAudioMixer mixer)
             {
-                return;
-            }
+                State.Audio = new AudioState();
 
-            var cb = new AudioMixerCallback(State.Audio.ProgramOut, mixer, () => FireCommandKey("Audio.ProgramOut"));
-            mixer.AddCallback(cb);
-            _cleanupCallbacks.Add(() => mixer.RemoveCallback(cb));
-            TriggerAllChanged(cb);
+                var cb = new AudioMixerCallback(State.Audio.ProgramOut, mixer,
+                    () => FireCommandKey("Audio.ProgramOut"));
+                mixer.AddCallback(cb);
+                _cleanupCallbacks.Add(() => mixer.RemoveCallback(cb));
+                TriggerAllChanged(cb);
 
-            Guid itId = typeof(IBMDSwitcherAudioInputIterator).GUID;
-            mixer.CreateIterator(ref itId, out var itPtr);
-            IBMDSwitcherAudioInputIterator iterator = (IBMDSwitcherAudioInputIterator)Marshal.GetObjectForIUnknown(itPtr);
+                Guid itId = typeof(IBMDSwitcherAudioInputIterator).GUID;
+                mixer.CreateIterator(ref itId, out var itPtr);
+                IBMDSwitcherAudioInputIterator iterator =
+                    (IBMDSwitcherAudioInputIterator) Marshal.GetObjectForIUnknown(itPtr);
 
-            for (iterator.Next(out IBMDSwitcherAudioInput port); port != null; iterator.Next(out port))
+                for (iterator.Next(out IBMDSwitcherAudioInput port); port != null; iterator.Next(out port))
+                {
+                    port.GetAudioInputId(out long inputId);
+                    State.Audio.Inputs[inputId] = new AudioState.InputState();
+
+                    var cbi = new AudioMixerInputCallback(State.Audio.Inputs[inputId], port,
+                        str => FireCommandKey($"Audio.Inputs.{inputId:D}.{str}"));
+                    port.AddCallback(cbi);
+                    _cleanupCallbacks.Add(() => port.RemoveCallback(cbi));
+                    TriggerAllChanged(cbi);
+                }
+
+                itId = typeof(IBMDSwitcherAudioMonitorOutputIterator).GUID;
+                mixer.CreateIterator(ref itId, out itPtr);
+                IBMDSwitcherAudioMonitorOutputIterator monIt =
+                    (IBMDSwitcherAudioMonitorOutputIterator) Marshal.GetObjectForIUnknown(itPtr);
+
+                var mons = new List<AudioState.MonitorOutputState>();
+                State.Audio.Monitors = mons;
+                uint id2 = 0;
+                for (monIt.Next(out IBMDSwitcherAudioMonitorOutput r); r != null; monIt.Next(out r))
+                {
+                    var mon = new AudioState.MonitorOutputState();
+                    mons.Add(mon);
+                    uint monId = id2++;
+
+                    var cbi = new AudioMixerMonitorOutputCallback(mon, r,
+                        () => FireCommandKey($"Audio.Monitors.{monId:D}"));
+                    r.AddCallback(cbi);
+                    _cleanupCallbacks.Add(() => r.RemoveCallback(cbi));
+                    TriggerAllChanged(cbi);
+                }
+
+                var talkback = switcher as IBMDSwitcherTalkback;
+                if (talkback != null)
+                {
+                    var cbt = new TalkbackCallback(State.Audio.Talkback, talkback,
+                        () => FireCommandKey("Audio.Talkback"));
+                    talkback.AddCallback(cbt);
+                    _cleanupCallbacks.Add(() => talkback.RemoveCallback(cbt));
+                    cbt.NotifyAll(State.Audio.Inputs.Keys);
+                }
+
+                // TODO others
+            } else if (switcher is IBMDSwitcherFairlightAudioMixer fairlightMixer)
             {
-                port.GetAudioInputId(out long inputId);
-                State.Audio.Inputs[inputId] = new AudioState.InputState();
+                State.Fairlight = new FairlightAudioState();
 
-                var cbi = new AudioMixerInputCallback(State.Audio.Inputs[inputId], port, str => FireCommandKey($"Audio.Inputs.{inputId:D}.{str}"));
-                port.AddCallback(cbi);
-                _cleanupCallbacks.Add(() => port.RemoveCallback(cbi));
-                TriggerAllChanged(cbi);
+                var cb = new FairlightAudioMixerCallback(State.Fairlight.ProgramOut, fairlightMixer,
+                    () => FireCommandKey("Fairlight.ProgramOut"));
+                fairlightMixer.AddCallback(cb);
+                _cleanupCallbacks.Add(() => fairlightMixer.RemoveCallback(cb));
+                TriggerAllChanged(cb);
+
             }
-
-            itId = typeof(IBMDSwitcherAudioMonitorOutputIterator).GUID;
-            mixer.CreateIterator(ref itId, out itPtr);
-            IBMDSwitcherAudioMonitorOutputIterator monIt = (IBMDSwitcherAudioMonitorOutputIterator)Marshal.GetObjectForIUnknown(itPtr);
-
-            var mons = new List<AudioState.MonitorOutputState>();
-            State.Audio.Monitors = mons;
-            uint id2 = 0;
-            for (monIt.Next(out IBMDSwitcherAudioMonitorOutput r); r != null; monIt.Next(out r))
-            {
-                var mon = new AudioState.MonitorOutputState();
-                mons.Add(mon);
-                uint monId = id2++; 
-
-                var cbi = new AudioMixerMonitorOutputCallback(mon, r, () => FireCommandKey($"Audio.Monitors.{monId:D}"));
-                r.AddCallback(cbi);
-                _cleanupCallbacks.Add(() => r.RemoveCallback(cbi));
-                TriggerAllChanged(cbi);
-            }
-
-            var talkback = switcher as IBMDSwitcherTalkback;
-            if (talkback != null)
-            {
-                var cbt = new TalkbackCallback(State.Audio.Talkback, talkback, () => FireCommandKey("Audio.Talkback"));
-                talkback.AddCallback(cbt);
-                _cleanupCallbacks.Add(() => talkback.RemoveCallback(cbt));
-                cbt.NotifyAll(State.Audio.Inputs.Keys);
-            }
-
-            // TODO others
         }
 
         private void SetupSerialPorts(IBMDSwitcher switcher)

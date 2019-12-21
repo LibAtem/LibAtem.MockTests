@@ -19,17 +19,17 @@ namespace LibAtem.MockTests
         }
 
         [Fact]
-        public void TestStateMock2ME() => RunTest("8.0.1-2me");
+        public void TestStateMock2ME() => RunTest(DeviceTestCases.Handshake2ME);
 
         [Fact]
-        public void TestStateMockConstellation() => RunTest("8.0.2-constellation");
+        public void TestStateMockConstellation() => RunTest(DeviceTestCases.HandshakeConstellation);
 
         [Fact]
-        public void TestStateMockMini() => RunTest("8.1-mini");
+        public void TestStateMockMini() => RunTest(DeviceTestCases.HandshakeMini);
         
         private void RunTest(string filename)
         {
-            var commandData = WiresharkParser.BuildCommands(ProtocolVersion.V8_0_1, $"TestFiles/Handshake/{filename}.pcapng");
+            var commandData = WiresharkParser.BuildCommands(ProtocolVersion.V8_0_1, filename);
             using var server = new AtemMockServer(commandData);
             using var helper = new AtemClientWrapper("127.0.0.1");
 

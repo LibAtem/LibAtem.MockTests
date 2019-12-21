@@ -12,7 +12,7 @@ namespace LibAtem.MockTests.Util
     {
         public static List<byte[]> BuildCommands(ProtocolVersion version, string filename, Action<ParsedCommand, CommandBuilder> mutateCommand = null)
         {
-            var commands = ParseCommands(version, filename);
+            var commands = ParseCommands(version, $"TestFiles/Handshake/{filename}.pcapng");
 
             return commands.Select(pkt =>
             {

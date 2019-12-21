@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Net;
+using LibAtem.Commands;
 using log4net;
 
 namespace LibAtem.MockTests.DeviceMock
@@ -75,5 +76,18 @@ namespace LibAtem.MockTests.DeviceMock
             }
         }
 
+        public void SendCommands(IReadOnlyList<ICommand> commands)
+        {
+            lock (connections)
+            {
+                foreach (KeyValuePair<EndPoint, AtemServerConnection> conn in connections)
+                {
+                    if (!conn.Value.HasTimedOut)
+                    {
+                        conn.Value.QueueCommands(commands);
+                    }
+                }
+            }
+        }
     }
 }

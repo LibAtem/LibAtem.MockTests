@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Net;
 using System.Net.Sockets;
 using System.Threading;
@@ -25,9 +26,14 @@ namespace LibAtem.MockTests.DeviceMock
         // TODO - remove this list, and replace with something more sensible...
         private readonly List<Timer> timers = new List<Timer>();
 
-        public AtemMockServer(IReadOnlyList<byte[]> state)
+        public uint CurrentTime { get; private set; } = 100;
+
+        public Func<ICommand, IEnumerable<ICommand>> HandleCommand { get; set; }
+
+        public AtemMockServer(IReadOnlyList<byte[]> state, Func<ICommand, IEnumerable<ICommand>> handleCommand = null)
         {
             _state = state;
+            HandleCommand = handleCommand;
             _connections = new AtemConnectionList();
 
             _receiveRunning = new AutoResetEvent(false);
@@ -67,6 +73,16 @@ namespace LibAtem.MockTests.DeviceMock
             serverSocket.Bind(ipEndPoint);
 
             return serverSocket;
+        }
+
+        private TimeCodeCommand CreateTimeCommand()
+        {
+            uint time = CurrentTime++;
+
+            var cmd = new TimeCodeCommand();
+            cmd.Second += time % 60;
+            cmd.Minute = time / 60;
+            return cmd;
         }
 
         private void StartReceive()
@@ -131,6 +147,23 @@ namespace LibAtem.MockTests.DeviceMock
                                     List<ICommand> cmds = conn.GetNextCommands();
 
                                     Log.DebugFormat("Recieved {0} commands", cmds.Count);
+                                    if (HandleCommand != null)
+                                    {
+                                        cmds.ForEach(cmd =>
+                                        {
+                                            List<ICommand> res = HandleCommand(cmd).ToList();
+                                            if (res.Count == 0)
+                                                throw new Exception($"Unhandled command \"{cmd.GetType().Name}\" in server");
+
+                                            // A null means 'ignore this, it shouldnt return anything'
+                                            if (res.All(c => c != null))
+                                            {
+                                                res.Add(CreateTimeCommand());
+
+                                                _connections.SendCommands(res);
+                                            }
+                                        });
+                                    }
                                     //conn.HandleInner(_state, connection, cmds);
                                 }
                             });
