@@ -39,36 +39,48 @@ namespace LibAtem.ComparisonTests.State.SDK
 
         public void PlayingChanged()
         {
-            _props.GetPlaying(out int playing);
-            _state.Status.Playing = playing != 0;
-            _onChange("Status");
+            if (_state.ClipStatus != null)
+            {
+                _props.GetPlaying(out int playing);
+                _state.ClipStatus.Playing = playing != 0;
+                _onChange("Status");
+            }
         }
 
         public void LoopChanged()
         {
-            _props.GetLoop(out int loop);
-            _state.Status.Loop = loop != 0;
-            _onChange("Status");
+            if (_state.ClipStatus != null)
+            {
+                _props.GetLoop(out int loop);
+                _state.ClipStatus.Loop = loop != 0;
+                _onChange("Status");
+            }
         }
 
         public void AtBeginningChanged()
         {
-            if (!_updateSettings.TrackMediaClipFrames)
-                return;
+            if (_state.ClipStatus != null)
+            {
+                if (!_updateSettings.TrackMediaClipFrames)
+                    return;
 
-            _props.GetAtBeginning(out int atBegining);
-            _state.Status.AtBeginning = atBegining != 0;
-            _onChange("Status");
+                _props.GetAtBeginning(out int atBegining);
+                _state.ClipStatus.AtBeginning = atBegining != 0;
+                _onChange("Status");
+            }
         }
 
         public void ClipFrameChanged()
         {
-            if (!_updateSettings.TrackMediaClipFrames)
-                return;
+            if (_state.ClipStatus != null)
+            {
+                if (!_updateSettings.TrackMediaClipFrames)
+                    return;
 
-            _props.GetClipFrame(out uint clipFrame);
-            _state.Status.ClipFrame = clipFrame;
-            _onChange("Status");
+                _props.GetClipFrame(out uint clipFrame);
+                _state.ClipStatus.ClipFrame = clipFrame;
+                _onChange("Status");
+            }
         }
     }
 }

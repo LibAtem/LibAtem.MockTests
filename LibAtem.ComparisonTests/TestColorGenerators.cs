@@ -29,7 +29,7 @@ namespace LibAtem.ComparisonTests
             using (var helper = new AtemComparisonHelper(_client, _output))
             {
                 Dictionary<VideoSource, IBMDSwitcherInputColor> sdkCols = helper.GetSdkInputsOfType<IBMDSwitcherInputColor>();
-                Assert.Equal((int) helper.Profile.ColorGenerators, sdkCols.Count);
+                Assert.Equal(2, sdkCols.Count);
 
                 Assert.True(sdkCols.Keys.All(k => k.GetPortType() == InternalPortType.ColorGenerator));
             }

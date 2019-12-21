@@ -156,6 +156,8 @@ namespace LibAtem.ComparisonTests
                 {VideoMode.N8KHDp2997, _BMDSwitcherVideoMode.bmdSwitcherVideoMode8KHDp2997},
                 {VideoMode.P8KHDp50, _BMDSwitcherVideoMode.bmdSwitcherVideoMode8KHDp50},
                 {VideoMode.N8KHDp5994, _BMDSwitcherVideoMode.bmdSwitcherVideoMode8KHDp5994},
+                {VideoMode.N1080p30, _BMDSwitcherVideoMode.bmdSwitcherVideoMode1080p30},
+                {VideoMode.N1080p60, _BMDSwitcherVideoMode.bmdSwitcherVideoMode1080p60}
             };
 
             SDDownconvertModesMap = new Dictionary<DownConvertMode, _BMDSwitcherDownConversionMethod>()
@@ -262,7 +264,7 @@ namespace LibAtem.ComparisonTests
 
         public static AuxiliaryId GetAuxId(VideoSource id)
         {
-            if (id >= VideoSource.Auxilary1 && id <= VideoSource.Auxilary6)
+            if (id >= VideoSource.Auxilary1 && id <= VideoSource.Auxilary24)
                 return (AuxiliaryId)(id - VideoSource.Auxilary1);
 
             throw new Exception("Not an Aux");

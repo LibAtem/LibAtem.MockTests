@@ -37,10 +37,11 @@ namespace LibAtem.ComparisonTests.State.SDK
             SetupSerialPorts(switcher);
             SetupMultiViews(switcher);
             SetupDownstreamKeyers(switcher);
-            SetupMediaPlayers(switcher, updateSettings);
             SetupMediaPool(switcher);
+            SetupMediaPlayers(switcher, updateSettings);
             SetupMacroPool(switcher);
             SetupAudio(switcher);
+            SetupHyperdecks(switcher);
 
             switcher.AllowStreamingToResume();
 
@@ -72,6 +73,10 @@ namespace LibAtem.ComparisonTests.State.SDK
         private void SetupAudio(IBMDSwitcher switcher)
         {
             var mixer = switcher as IBMDSwitcherAudioMixer;
+            if (mixer == null)
+            {
+                return;
+            }
 
             var cb = new AudioMixerCallback(State.Audio.ProgramOut, mixer, () => FireCommandKey("Audio.ProgramOut"));
             mixer.AddCallback(cb);
@@ -144,6 +149,28 @@ namespace LibAtem.ComparisonTests.State.SDK
             }
         }
 
+        private void SetupHyperdecks(IBMDSwitcher switcher)
+        {
+            Guid itId = typeof(IBMDSwitcherHyperDeckIterator).GUID;
+            switcher.CreateIterator(ref itId, out var itPtr);
+            IBMDSwitcherHyperDeckIterator iterator = (IBMDSwitcherHyperDeckIterator)Marshal.GetObjectForIUnknown(itPtr);
+
+            var hyperdecks = new List<SettingsState.HyperdeckState>();
+            uint id = 0;
+            for (iterator.Next(out IBMDSwitcherHyperDeck deck); deck != null; iterator.Next(out deck))
+            {
+                var deckState = new SettingsState.HyperdeckState();
+                hyperdecks.Add(deckState);
+                uint deckId = id++;
+
+                var cb = new HyperDeckPropertiesCallback(deckState, deck, str => FireCommandKey($"Settings.Hyperdecks.{deckId:D}.{str}"));
+                deck.AddCallback(cb);
+                _cleanupCallbacks.Add(() => deck.RemoveCallback(cb));
+                TriggerAllChanged(cb);
+            }
+            State.Settings.Hyperdecks = hyperdecks;
+        }
+
         private void SetupMultiViews(IBMDSwitcher switcher)
         {
             Guid itId = typeof(IBMDSwitcherMultiViewIterator).GUID;
@@ -186,7 +213,11 @@ namespace LibAtem.ComparisonTests.State.SDK
                 players.Add(player);
                 MediaPlayerId playerId = id++;
 
-                var cb = new MediaPlayerCallback(player, updateSettings, media, str => FireCommandKey($"MediaPlayers.{playerId:D}.{str}"));
+                if (State.MediaPool.Clips.Count > 0)
+                    player.ClipStatus = new MediaPlayerState.ClipStatusState();
+
+                var cb = new MediaPlayerCallback(player, updateSettings, media,
+                    str => FireCommandKey($"MediaPlayers.{playerId:D}.{str}"));
                 media.AddCallback(cb);
                 _cleanupCallbacks.Add(() => media.RemoveCallback(cb));
                 cb.Notify();

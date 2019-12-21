@@ -144,7 +144,7 @@ namespace LibAtem.ComparisonTests.Media
 
             public override void UpdateExpectedState(AtemState state, bool goodValue, T v)
             {
-                MediaPlayerState.StatusState obj = state.MediaPlayers[(int)_id].Status;
+                MediaPlayerState.ClipStatusState obj = state.MediaPlayers[(int)_id].ClipStatus;
                 SetCommandProperty(obj, PropertyName, goodValue ? v : MangleBadValue(v));
             }
 
@@ -195,7 +195,7 @@ namespace LibAtem.ComparisonTests.Media
                 base.UpdateExpectedState(state, goodValue, v);
 
                 MediaPlayerState obj = state.MediaPlayers[(int)_id];
-                obj.Status.AtBeginning = (v == 0);
+                obj.ClipStatus.AtBeginning = (v == 0);
             }
 
             public override uint[] GoodValues => new uint[] { 0, 1, 5, 7 };

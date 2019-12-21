@@ -57,6 +57,7 @@ namespace LibAtem.ComparisonTests.Audio
             }
         }
 
+        /*
         [Fact]
         public void TestSupported()
         {
@@ -66,6 +67,7 @@ namespace LibAtem.ComparisonTests.Audio
                 Assert.Equal(helper.Profile.TalkbackOverSDI, talkback != null);
             }
         }
+        */
 
         [SkippableFact]
         public void TestMuteSDI()

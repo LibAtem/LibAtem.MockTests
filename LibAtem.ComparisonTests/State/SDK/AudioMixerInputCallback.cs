@@ -43,9 +43,11 @@ namespace LibAtem.ComparisonTests.State.SDK
                     _state.Properties.Balance = balance * 50;
                     break;
                 case _BMDSwitcherAudioInputEventType.bmdSwitcherAudioInputEventTypeIsMixedInChanged:
+                    /*
                     _props.IsMixedIn(out int mixedIn);
                     _state.IsMixedIn = mixedIn != 0;
                     _onChange("IsMixedIn");
+                    */
                     return;
                 default:
                     throw new ArgumentOutOfRangeException(nameof(eventType), eventType, null);

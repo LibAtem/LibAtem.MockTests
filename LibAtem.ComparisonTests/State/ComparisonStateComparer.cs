@@ -41,9 +41,14 @@ namespace LibAtem.ComparisonTests.State
 
         private static IEnumerable<string> CompareObject(string name, IReadOnlyList<string> ignoreNodes, object state1, object state2)
         {
-            if (state1 == null || state2 == null)
+            if (state1 == null)
             {
-                yield return "IsNull: " + name;
+                yield return "IsNull (Expected): " + name;
+                yield break;
+            }
+            if (state2 == null)
+            {
+                yield return "IsNull (Actual): " + name;
                 yield break;
             }
 
