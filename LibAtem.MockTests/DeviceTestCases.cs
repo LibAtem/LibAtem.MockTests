@@ -10,6 +10,9 @@ namespace LibAtem.MockTests
         public static readonly string HandshakeConstellation = "8.0.2-constellation";
         public static readonly string Handshake2ME = "8.0.1-2me";
 
+
+        public static readonly string[] All = { HandshakeMini, HandshakeConstellation, Handshake2ME };
+
         // Audio
         public static readonly string[] FairlightMain = {HandshakeMini, HandshakeConstellation};
     }
