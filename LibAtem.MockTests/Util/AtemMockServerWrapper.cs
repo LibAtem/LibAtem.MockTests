@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Runtime.InteropServices;
+using System.Threading;
 using BMDSwitcherAPI;
 using LibAtem.Commands;
 using LibAtem.Common;
@@ -60,7 +61,16 @@ namespace LibAtem.MockTests.Util
             Helper.SendAndWaitForChange(doSend, timeout);
             if (expected != null)
             {
-                Helper.AssertStateChanged(expected);
+                try
+                {
+                    Helper.AssertStateChanged(expected);
+                }
+                catch (Exception)
+                {
+                    // Try and sleep in case of a minor timing glitch
+                    Thread.Sleep(200);
+                    Helper.AssertStateChanged(expected);
+                }
             }
         }
 

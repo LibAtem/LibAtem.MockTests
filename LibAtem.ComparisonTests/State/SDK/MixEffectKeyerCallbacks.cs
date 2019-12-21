@@ -161,6 +161,96 @@ namespace LibAtem.ComparisonTests.State.SDK
         }
     }
 
+    public sealed class MixEffectKeyerAdvancedChromaCallback : IBMDSwitcherKeyAdvancedChromaParametersCallback, INotify<_BMDSwitcherKeyAdvancedChromaParametersEventType>
+    {
+        private readonly MixEffectState.KeyerAdvancedChromaState _state;
+        private readonly IBMDSwitcherKeyAdvancedChromaParameters _props;
+        private readonly Action<string> _onChange;
+
+        public MixEffectKeyerAdvancedChromaCallback(MixEffectState.KeyerAdvancedChromaState state, IBMDSwitcherKeyAdvancedChromaParameters props, Action<string> onChange)
+        {
+            _state = state;
+            _props = props;
+            _onChange = onChange;
+        }
+
+        public void Notify(_BMDSwitcherKeyAdvancedChromaParametersEventType eventType)
+        {
+            switch (eventType)
+            {
+                case _BMDSwitcherKeyAdvancedChromaParametersEventType.bmdSwitcherKeyAdvancedChromaParametersEventTypeForegroundLevelChanged:
+                    _props.GetForegroundLevel(out double foreground);
+                    _state.Properties.ForegroundLevel = foreground * 100;
+                    _onChange("Properties");
+                    break;
+                case _BMDSwitcherKeyAdvancedChromaParametersEventType.bmdSwitcherKeyAdvancedChromaParametersEventTypeBackgroundLevelChanged:
+                    _props.GetBackgroundLevel(out double background);
+                    _state.Properties.BackgroundLevel = background * 100;
+                    _onChange("Properties");
+                    break;
+                case _BMDSwitcherKeyAdvancedChromaParametersEventType.bmdSwitcherKeyAdvancedChromaParametersEventTypeKeyEdgeChanged:
+                    _props.GetKeyEdge(out double keyEdge);
+                    _state.Properties.KeyEdge = keyEdge * 100;
+                    _onChange("Properties");
+                    break;
+                case _BMDSwitcherKeyAdvancedChromaParametersEventType.bmdSwitcherKeyAdvancedChromaParametersEventTypeSpillSuppressChanged:
+                    _props.GetSpillSuppress(out double spillSuppress);
+                    _state.Properties.SpillSuppression = spillSuppress * 100;
+                    _onChange("Properties");
+                    break;
+                case _BMDSwitcherKeyAdvancedChromaParametersEventType.bmdSwitcherKeyAdvancedChromaParametersEventTypeFlareSuppressChanged:
+                    _props.GetFlareSuppress(out double flareSuppress);
+                    _state.Properties.FlareSuppression = flareSuppress * 100;
+                    _onChange("Properties");
+                    break;
+                case _BMDSwitcherKeyAdvancedChromaParametersEventType.bmdSwitcherKeyAdvancedChromaParametersEventTypeBrightnessChanged:
+                    _props.GetBrightness(out double brightness);
+                    _state.Properties.Brightness = brightness * 100;
+                    _onChange("Properties");
+                    break;
+                case _BMDSwitcherKeyAdvancedChromaParametersEventType.bmdSwitcherKeyAdvancedChromaParametersEventTypeContrastChanged:
+                    _props.GetContrast(out double contrast);
+                    _state.Properties.Contrast = contrast * 100;
+                    _onChange("Properties");
+                    break;
+                case _BMDSwitcherKeyAdvancedChromaParametersEventType.bmdSwitcherKeyAdvancedChromaParametersEventTypeSaturationChanged:
+                    _props.GetSaturation(out double saturation);
+                    _state.Properties.Saturation = saturation * 100;
+                    _onChange("Properties");
+                    break;
+                case _BMDSwitcherKeyAdvancedChromaParametersEventType.bmdSwitcherKeyAdvancedChromaParametersEventTypeRedChanged:
+                    _props.GetRed(out double red);
+                    _state.Properties.Red = red * 100;
+                    _onChange("Properties");
+                    break;
+                case _BMDSwitcherKeyAdvancedChromaParametersEventType.bmdSwitcherKeyAdvancedChromaParametersEventTypeGreenChanged:
+                    _props.GetGreen(out double green);
+                    _state.Properties.Green = green * 100;
+                    _onChange("Properties");
+                    break;
+                case _BMDSwitcherKeyAdvancedChromaParametersEventType.bmdSwitcherKeyAdvancedChromaParametersEventTypeBlueChanged:
+                    _props.GetBlue(out double blue);
+                    _state.Properties.Blue = blue * 100;
+                    _onChange("Properties");
+                    break;
+                case _BMDSwitcherKeyAdvancedChromaParametersEventType.bmdSwitcherKeyAdvancedChromaParametersEventTypeSamplingModeEnabledChanged:
+                    break;
+                case _BMDSwitcherKeyAdvancedChromaParametersEventType.bmdSwitcherKeyAdvancedChromaParametersEventTypePreviewEnabledChanged:
+                    break;
+                case _BMDSwitcherKeyAdvancedChromaParametersEventType.bmdSwitcherKeyAdvancedChromaParametersEventTypeCursorXPositionChanged:
+                    break;
+                case _BMDSwitcherKeyAdvancedChromaParametersEventType.bmdSwitcherKeyAdvancedChromaParametersEventTypeCursorYPositionChanged:
+                    break;
+                case _BMDSwitcherKeyAdvancedChromaParametersEventType.bmdSwitcherKeyAdvancedChromaParametersEventTypeCursorSizeChanged:
+                    break;
+                case _BMDSwitcherKeyAdvancedChromaParametersEventType.bmdSwitcherKeyAdvancedChromaParametersEventTypeSampledColorChanged:
+                    break;
+                default:
+                    throw new ArgumentOutOfRangeException(nameof(eventType), eventType, null);
+            }
+        }
+    }
+
     public sealed class MixEffectKeyerPatternCallback : IBMDSwitcherKeyPatternParametersCallback, INotify<_BMDSwitcherKeyPatternParametersEventType>
     {
         private readonly MixEffectState.KeyerPatternState _state;

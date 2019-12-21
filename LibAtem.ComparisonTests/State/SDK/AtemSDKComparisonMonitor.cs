@@ -138,12 +138,12 @@ namespace LibAtem.ComparisonTests.State.SDK
 
                 // Dynamics
                 var pgmDynamics = AtemSDKConverter.CastSdk<IBMDSwitcherFairlightAudioDynamicsProcessor>(fairlightMixer.GetMasterOutEffect);
-                SetupFairlightDynamics(State.Fairlight.ProgramOut.Dynamics, pgmDynamics, "Fairlight.ProgramOut.Dynamics");
+                SetupFairlightDynamics(State.Fairlight.ProgramOut.Dynamics, pgmDynamics, "Fairlight.ProgramOut.Dynamics", false);
 
             }
         }
 
-        private void SetupFairlightDynamics(FairlightAudioState.DynamicsState state, IBMDSwitcherFairlightAudioDynamicsProcessor proc, string path)
+        private void SetupFairlightDynamics(FairlightAudioState.DynamicsState state, IBMDSwitcherFairlightAudioDynamicsProcessor proc, string path, bool hasExpander)
         {
             var dynCb = new FairlightDynamicsAudioMixerCallback(state, proc, str => FireCommandKey($"{path}.{str}"));
             proc.AddCallback(dynCb);
@@ -168,6 +168,12 @@ namespace LibAtem.ComparisonTests.State.SDK
             _cleanupCallbacks.Add(() => compressorProps.RemoveCallback(compressorCb));
             TriggerAllChanged(compressorCb);
 
+            if (hasExpander)
+            {
+                // Expander
+                var expanderProps = AtemSDKConverter.CastSdk<IBMDSwitcherFairlightAudioExpander>(proc.GetProcessor);
+
+            }
         }
 
         private void SetupSerialPorts(IBMDSwitcher switcher)
@@ -467,6 +473,8 @@ namespace LibAtem.ComparisonTests.State.SDK
                     SetupMixEffectLumaKeyer(luma, keyerState, id, keyId);
                 if (keyer is IBMDSwitcherKeyChromaParameters chroma)
                     SetupMixEffectChromaKeyer(chroma, keyerState, id, keyId);
+                if (keyer is IBMDSwitcherKeyAdvancedChromaParameters advancedChroma)
+                    SetupMixEffectAdvancedChromaKeyer(advancedChroma, keyerState, id, keyId);
                 if (keyer is IBMDSwitcherKeyPatternParameters pattern)
                     SetupMixEffectPatternKeyer(pattern, keyerState, id, keyId);
                 if (keyer is IBMDSwitcherKeyDVEParameters dve)
@@ -504,6 +512,17 @@ namespace LibAtem.ComparisonTests.State.SDK
             state.Chroma = new MixEffectState.KeyerChromaState();
 
             var cb = new MixEffectKeyerChromaCallback(state.Chroma, props, () => FireCommandKey($"MixEffects.{meId:D}.Keyers.{keyId:D}.Chroma"));
+            props.AddCallback(cb);
+            _cleanupCallbacks.Add(() => props.RemoveCallback(cb));
+
+            TriggerAllChanged(cb);
+        }
+
+        private void SetupMixEffectAdvancedChromaKeyer(IBMDSwitcherKeyAdvancedChromaParameters props, MixEffectState.KeyerState state, MixEffectBlockId meId, UpstreamKeyId keyId)
+        {
+            state.AdvancedChroma = new MixEffectState.KeyerAdvancedChromaState();
+
+            var cb = new MixEffectKeyerAdvancedChromaCallback(state.AdvancedChroma, props, str => FireCommandKey($"MixEffects.{meId:D}.Keyers.{keyId:D}.AdvancedChroma.{str}"));
             props.AddCallback(cb);
             _cleanupCallbacks.Add(() => props.RemoveCallback(cb));
 

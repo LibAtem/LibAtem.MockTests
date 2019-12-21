@@ -200,7 +200,7 @@ namespace LibAtem.MockTests.Util
             // TODO - reenable once LibAtem allows disconnection
             // Assert.True(_disposeEvent.WaitOne(TimeSpan.FromSeconds(1)), "LibAtem: Cleanup timed out");
 
-            Thread.Sleep(100);
+            Thread.Sleep(500);
         }
 
         public delegate void SwitcherEventHandler(object sender, object args);

@@ -13,6 +13,9 @@ namespace LibAtem.MockTests
 
         public static readonly string[] All = { HandshakeMini, HandshakeConstellation, Handshake2ME };
 
+
+        public static readonly string[] AdvancedChromaKeyer = { HandshakeMini, HandshakeConstellation };
+
         // Audio
         public static readonly string[] FairlightMain = {HandshakeMini, HandshakeConstellation};
     }
