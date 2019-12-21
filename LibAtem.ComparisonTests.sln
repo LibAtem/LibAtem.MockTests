@@ -27,6 +27,10 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LibAtem.XmlState.TestMacroO
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "FatAntelope", "LibAtem\FatAntelope\FatAntelope\FatAntelope.csproj", "{4F686BA1-53AD-4470-A95D-10552E8BD88B}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Logger", "Logger\Logger.csproj", "{D4A91DD9-463F-4AE8-BD44-E7504023166A}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LibAtem.MockTests", "LibAtem.MockTests\LibAtem.MockTests.csproj", "{7BE6B889-4BAA-4466-92F5-7506A79E79C5}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -81,6 +85,14 @@ Global
 		{4F686BA1-53AD-4470-A95D-10552E8BD88B}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{4F686BA1-53AD-4470-A95D-10552E8BD88B}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{4F686BA1-53AD-4470-A95D-10552E8BD88B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D4A91DD9-463F-4AE8-BD44-E7504023166A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D4A91DD9-463F-4AE8-BD44-E7504023166A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D4A91DD9-463F-4AE8-BD44-E7504023166A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D4A91DD9-463F-4AE8-BD44-E7504023166A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{7BE6B889-4BAA-4466-92F5-7506A79E79C5}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7BE6B889-4BAA-4466-92F5-7506A79E79C5}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7BE6B889-4BAA-4466-92F5-7506A79E79C5}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7BE6B889-4BAA-4466-92F5-7506A79E79C5}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
