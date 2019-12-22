@@ -7,17 +7,13 @@ using Xunit;
 
 namespace LibAtem.ComparisonTests.State.SDK
 {
-    public sealed class TalkbackCallback : IBMDSwitcherTalkbackCallback
+    public sealed class TalkbackCallback : SdkCallbackBase<IBMDSwitcherTalkback>, IBMDSwitcherTalkbackCallback
     {
         private readonly AudioState.TalkbackState _state;
-        private readonly IBMDSwitcherTalkback _props;
-        private readonly Action _onChange;
 
-        public TalkbackCallback(AudioState.TalkbackState state, IBMDSwitcherTalkback props, Action onChange)
+        public TalkbackCallback(AudioState.TalkbackState state, IBMDSwitcherTalkback props, Action<string> onChange) : base(props, onChange)
         {
             _state = state;
-            _props = props;
-            _onChange = onChange;
         }
 
         public void Notify(_BMDSwitcherTalkbackEventType eventType, long audioInputId)
@@ -25,11 +21,11 @@ namespace LibAtem.ComparisonTests.State.SDK
             switch (eventType)
             {
                 case _BMDSwitcherTalkbackEventType.bmdSwitcherTalkbackEventTypeMuteSDIChanged:
-                    _props.GetMuteSDI(out int muteSDI);
+                    Props.GetMuteSDI(out int muteSDI);
                     _state.MuteSDI = muteSDI != 0;
                     break;
                 case _BMDSwitcherTalkbackEventType.bmdSwitcherTalkbackEventTypeInputMuteSDIChanged:
-                    _props.InputCanMuteSDI(audioInputId, out int supports);
+                    Props.InputCanMuteSDI(audioInputId, out int supports);
                     if (supports == 0) // If hardware doesnt support it, it exceptions
                     {
                         _state.Inputs[audioInputId] = false;
@@ -37,18 +33,18 @@ namespace LibAtem.ComparisonTests.State.SDK
                     }
 
                     Assert.True(false, "Not tested");
-                    _props.GetInputMuteSDI(audioInputId, out int muteSDIin);
+                    Props.GetInputMuteSDI(audioInputId, out int muteSDIin);
                     _state.Inputs[audioInputId] = muteSDIin != 0;
                     break;
                 case _BMDSwitcherTalkbackEventType.bmdSwitcherTalkbackEventTypeCurrentInputSupportsMuteSDIChanged:
-                    _props.CurrentInputSupportsMuteSDI(audioInputId, out int supportsMuteSDI);
+                    Props.CurrentInputSupportsMuteSDI(audioInputId, out int supportsMuteSDI);
                     // TODO - this will be fired when changed port type
                     break;
                 default:
                     throw new ArgumentOutOfRangeException(nameof(eventType), eventType, null);
             }
 
-            _onChange();
+            OnChange(null);
         }
 
         public void NotifyAll(IEnumerable<long> ids)

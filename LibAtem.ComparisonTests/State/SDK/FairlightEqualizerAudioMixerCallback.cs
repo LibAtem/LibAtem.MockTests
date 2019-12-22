@@ -4,36 +4,54 @@ using LibAtem.State;
 
 namespace LibAtem.ComparisonTests.State.SDK
 {
-    public sealed class FairlightEqualizerAudioMixerCallback : IBMDSwitcherFairlightAudioEqualizerCallback, INotify<_BMDSwitcherFairlightAudioEqualizerEventType>
+    public sealed class FairlightEqualizerAudioMixerCallback : SdkCallbackBaseNotify<IBMDSwitcherFairlightAudioEqualizer, _BMDSwitcherFairlightAudioEqualizerEventType>, IBMDSwitcherFairlightAudioEqualizerCallback
     {
         private readonly FairlightAudioState.EqualizerState _state;
-        private readonly IBMDSwitcherFairlightAudioEqualizer _props;
-        private readonly Action _onChange;
 
-        public FairlightEqualizerAudioMixerCallback(FairlightAudioState.EqualizerState state, IBMDSwitcherFairlightAudioEqualizer props, Action onChange)
+        public FairlightEqualizerAudioMixerCallback(FairlightAudioState.EqualizerState state, IBMDSwitcherFairlightAudioEqualizer props, Action<string> onChange) : base(props, onChange)
         {
             _state = state;
-            _props = props;
-            _onChange = onChange;
+            TriggerAllChanged();
+
+            /*
+            // Bands
+            var iterator = AtemSDKConverter.CastSdk<IBMDSwitcherFairlightAudioEqualizerBandIterator>(eq.CreateIterator);
+
+            var bands = new List<FairlightAudioState.EqualizerBandState>();
+
+            int id = 0;
+            for (iterator.Next(out IBMDSwitcherFairlightAudioEqualizerBand band); band != null; iterator.Next(out band))
+            {
+                var bandState = new FairlightAudioState.EqualizerBandState();
+
+                var id2 = id;
+                var cb = new FairlightEqualizerBandAudioMixerCallback(bandState, band, () => FireCommandKey($"{path}.Bands.{id2:D}"));
+                SetupCallback(cb, band.AddCallback, band.RemoveCallback);
+
+                id++;
+            }
+
+            state.Bands = bands;
+            */
         }
 
-        public void Notify(_BMDSwitcherFairlightAudioEqualizerEventType eventType)
+        public override void Notify(_BMDSwitcherFairlightAudioEqualizerEventType eventType)
         {
             switch (eventType)
             {
                 case _BMDSwitcherFairlightAudioEqualizerEventType.bmdSwitcherFairlightAudioEqualizerEventTypeEnabledChanged:
-                    _props.GetEnabled(out int enabled);
+                    Props.GetEnabled(out int enabled);
                     _state.Enabled = enabled != 0;
                     break;
                 case _BMDSwitcherFairlightAudioEqualizerEventType.bmdSwitcherFairlightAudioEqualizerEventTypeGainChanged:
-                    _props.GetGain(out double gain);
+                    Props.GetGain(out double gain);
                     _state.Gain = gain;
                     break;
                 default:
                     throw new ArgumentOutOfRangeException(nameof(eventType), eventType, null);
             }
 
-            _onChange();
+            OnChange(null);
         }
     }
 

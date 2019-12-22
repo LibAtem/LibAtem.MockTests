@@ -4,17 +4,13 @@ using LibAtem.State;
 
 namespace LibAtem.ComparisonTests.State.SDK
 {
-    public sealed class MediaPoolClipCallback : IBMDSwitcherClipCallback, INotify<_BMDSwitcherMediaPoolEventType>
+    public sealed class MediaPoolClipCallback : SdkCallbackBaseNotify<IBMDSwitcherClip, _BMDSwitcherMediaPoolEventType>, IBMDSwitcherClipCallback
     {
         private readonly MediaPoolState.ClipState _state;
-        private readonly IBMDSwitcherClip _props;
-        private readonly Action _onChange;
 
-        public MediaPoolClipCallback(MediaPoolState.ClipState state, IBMDSwitcherClip props, Action onChange)
+        public MediaPoolClipCallback(MediaPoolState.ClipState state, IBMDSwitcherClip props, Action<string> onChange) : base(props, onChange)
         {
             _state = state;
-            _props = props;
-            _onChange = onChange;
 
             //_props.GetMaxFrameCount(out uint frames);
             //for (uint o = 0; o < frames; o++)
@@ -30,9 +26,9 @@ namespace LibAtem.ComparisonTests.State.SDK
                     //_props.is
                     break;
                 case _BMDSwitcherMediaPoolEventType.bmdSwitcherMediaPoolEventTypeNameChanged:
-                    _props.GetName(out string name);
+                    Props.GetName(out string name);
                     _state.Name = name;
-                    _onChange();
+                    OnChange(null);
                     break;
                 case _BMDSwitcherMediaPoolEventType.bmdSwitcherMediaPoolEventTypeHashChanged:
                     break;
@@ -57,7 +53,7 @@ namespace LibAtem.ComparisonTests.State.SDK
             }
         }
 
-        public void Notify(_BMDSwitcherMediaPoolEventType eventType)
+        public override void Notify(_BMDSwitcherMediaPoolEventType eventType)
         {
             // TODO - does this need to be for each frame or just clip?
             /*

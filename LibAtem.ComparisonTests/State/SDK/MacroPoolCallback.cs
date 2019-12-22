@@ -1,20 +1,25 @@
 ﻿using System;
+using System.Linq;
 using BMDSwitcherAPI;
 using LibAtem.State;
+using LibAtem.Util;
 
 namespace LibAtem.ComparisonTests.State.SDK
 {
-    public sealed class MacroPoolCallback : IBMDSwitcherMacroPoolCallback
+    public sealed class MacroPoolCallback : SdkCallbackBase<IBMDSwitcherMacroPool>, IBMDSwitcherMacroPoolCallback
     {
         private readonly MacroState _state;
-        private readonly IBMDSwitcherMacroPool _props;
-        private readonly Action<string> _onChange;
 
-        public MacroPoolCallback(MacroState state, IBMDSwitcherMacroPool props, Action<string> onChange)
+        public MacroPoolCallback(MacroState state, IBMDSwitcherMacroPool props, Action<string> onChange) : base(props, onChange)
         {
             _state = state;
-            _props = props;
-            _onChange = onChange;
+
+            props.GetMaxCount(out uint count);
+            state.Pool = Enumerable.Repeat(0, (int)count).Select(i => new MacroState.ItemState()).ToList();
+            for (uint i = 0; i < count; i++)
+            {
+                Enum.GetValues(typeof(_BMDSwitcherMacroPoolEventType)).OfType<_BMDSwitcherMacroPoolEventType>().ForEach(e => Notify(e, i, null));
+            }
         }
 
         public void Notify(_BMDSwitcherMacroPoolEventType eventType, uint index, IBMDSwitcherTransferMacro macroTransfer)
@@ -22,17 +27,17 @@ namespace LibAtem.ComparisonTests.State.SDK
             switch (eventType)
             {
                 case _BMDSwitcherMacroPoolEventType.bmdSwitcherMacroPoolEventTypeValidChanged:
-                    _props.IsValid(index, out int valid);
+                    Props.IsValid(index, out int valid);
                     _state.Pool[(int)index].IsUsed = valid != 0;
                     break;
                 case _BMDSwitcherMacroPoolEventType.bmdSwitcherMacroPoolEventTypeHasUnsupportedOpsChanged:
                     break;
                 case _BMDSwitcherMacroPoolEventType.bmdSwitcherMacroPoolEventTypeNameChanged:
-                    _props.GetName(index, out string name);
+                    Props.GetName(index, out string name);
                     _state.Pool[(int)index].Name = name;
                     break;
                 case _BMDSwitcherMacroPoolEventType.bmdSwitcherMacroPoolEventTypeDescriptionChanged:
-                    _props.GetDescription(index, out string description);
+                    Props.GetDescription(index, out string description);
                     _state.Pool[(int)index].Description = description;
                     break;
                 case _BMDSwitcherMacroPoolEventType.bmdSwitcherMacroPoolEventTypeTransferCompleted:
@@ -45,7 +50,7 @@ namespace LibAtem.ComparisonTests.State.SDK
                     throw new ArgumentOutOfRangeException(nameof(eventType), eventType, null);
             }
 
-            _onChange($"{index:D}");
+            OnChange($"{index:D}");
         }
     }
 }

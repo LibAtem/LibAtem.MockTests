@@ -4,27 +4,27 @@ using LibAtem.State;
 
 namespace LibAtem.ComparisonTests.State.SDK
 {
-    public sealed class SwitcherPropertiesCallback : IBMDSwitcherCallback, INotify<_BMDSwitcherEventType>
+    public sealed class SwitcherPropertiesCallback : SdkCallbackBaseNotify<IBMDSwitcher, _BMDSwitcherEventType>, IBMDSwitcherCallback
     {
         private readonly AtemState _state;
-        private readonly IBMDSwitcher _props;
-        private readonly Action<string> _onChange;
 
-        public SwitcherPropertiesCallback(AtemState state, IBMDSwitcher props, Action<string> onChange)
+        public SwitcherPropertiesCallback(AtemState state, IBMDSwitcher props, Action<string> onChange) : base(props, onChange)
         {
             _state = state;
-            _props = props;
-            _onChange = onChange;
+            TriggerAllChanged();
+
+            props.GetProductName(out string productName);
+            state.Info.ProductName = productName;
         }
 
-        public void Notify(_BMDSwitcherEventType eventType)
+        public override void Notify(_BMDSwitcherEventType eventType)
         {
             switch (eventType)
             {
                 case _BMDSwitcherEventType.bmdSwitcherEventTypeVideoModeChanged:
-                    _props.GetVideoMode(out _BMDSwitcherVideoMode videoMode);
+                    Props.GetVideoMode(out _BMDSwitcherVideoMode videoMode);
                     _state.Settings.VideoMode = AtemEnumMaps.VideoModesMap.FindByValue(videoMode);
-                    _onChange("Settings.VideoMode");
+                    OnChange("Settings.VideoMode");
                     break;
                 // TODO - the rest
                 case _BMDSwitcherEventType.bmdSwitcherEventTypeMethodForDownConvertedSDChanged:
@@ -40,7 +40,7 @@ namespace LibAtem.ComparisonTests.State.SDK
                 case _BMDSwitcherEventType.bmdSwitcherEventType3GSDIOutputLevelChanged:
                     break;
                 case _BMDSwitcherEventType.bmdSwitcherEventTypeTimeCodeChanged:
-                    _props.GetTimeCode(out byte hours, out byte minutes, out byte seconds, out byte frames, out int dropFrame);
+                    Props.GetTimeCode(out byte hours, out byte minutes, out byte seconds, out byte frames, out int dropFrame);
                     _state.Info.LastTimecode = new Timecode
                     {
                         Hour = hours,
@@ -49,12 +49,12 @@ namespace LibAtem.ComparisonTests.State.SDK
                         Frame = frames,
                         DropFrame = dropFrame != 0
                     };
-                    _onChange("Info.LastTimecode");
+                    OnChange("Info.LastTimecode");
                     break;
                 case _BMDSwitcherEventType.bmdSwitcherEventTypeTimeCodeLockedChanged:
-                    _props.GetTimeCodeLocked(out int locked);
+                    Props.GetTimeCodeLocked(out int locked);
                     _state.Info.TimecodeLocked = locked != 0;
-                    _onChange("Info.TimecodeLocked");
+                    OnChange("Info.TimecodeLocked");
                     break;
                 case _BMDSwitcherEventType.bmdSwitcherEventTypeSuperSourceCascadeChanged:
                     break;

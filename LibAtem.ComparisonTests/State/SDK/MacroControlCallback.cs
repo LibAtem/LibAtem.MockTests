@@ -4,25 +4,22 @@ using LibAtem.State;
 
 namespace LibAtem.ComparisonTests.State.SDK
 {
-    public sealed class MacroControlCallback : IBMDSwitcherMacroControlCallback, INotify<_BMDSwitcherMacroControlEventType>
+    public sealed class MacroControlCallback : SdkCallbackBaseNotify<IBMDSwitcherMacroControl, _BMDSwitcherMacroControlEventType>, IBMDSwitcherMacroControlCallback
     {
         private readonly MacroState _state;
-        private readonly IBMDSwitcherMacroControl _props;
-        private readonly Action<string> _onChange;
 
-        public MacroControlCallback(MacroState state, IBMDSwitcherMacroControl props, Action<string> onChange)
+        public MacroControlCallback(MacroState state, IBMDSwitcherMacroControl props, Action<string> onChange) : base(props, onChange)
         {
             _state = state;
-            _props = props;
-            _onChange = onChange;
+            TriggerAllChanged();
         }
 
-        public void Notify(_BMDSwitcherMacroControlEventType eventType)
+        public override void Notify(_BMDSwitcherMacroControlEventType eventType)
         {
             switch (eventType)
             {
                 case _BMDSwitcherMacroControlEventType.bmdSwitcherMacroControlEventTypeRunStatusChanged:
-                    _props.GetRunStatus(out _BMDSwitcherMacroRunStatus status, out int loop, out uint index);
+                    Props.GetRunStatus(out _BMDSwitcherMacroRunStatus status, out int loop, out uint index);
 
                     switch (status)
                     {
@@ -41,13 +38,13 @@ namespace LibAtem.ComparisonTests.State.SDK
 
                     _state.RunStatus.Loop = loop != 0;
                     _state.RunStatus.RunIndex = index;
-                    _onChange("RunStatus");
+                    OnChange("RunStatus");
                     break;
                 case _BMDSwitcherMacroControlEventType.bmdSwitcherMacroControlEventTypeRecordStatusChanged:
-                    _props.GetRecordStatus(out _BMDSwitcherMacroRecordStatus recStatus, out uint recIndex);
+                    Props.GetRecordStatus(out _BMDSwitcherMacroRecordStatus recStatus, out uint recIndex);
                     _state.RecordStatus.IsRecording = recStatus == _BMDSwitcherMacroRecordStatus.bmdSwitcherMacroRecordStatusRecording;
                     _state.RecordStatus.RecordIndex = recIndex;
-                    _onChange("RecordStatus");
+                    OnChange("RecordStatus");
                     break;
                 default:
                     throw new ArgumentOutOfRangeException(nameof(eventType), eventType, null);

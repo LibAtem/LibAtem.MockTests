@@ -20,10 +20,6 @@ namespace LibAtem.ComparisonTests.State.SDK
         {
             State = new AtemState();
 
-            switcher.GetProductName(out string productName);
-            State.Info.ProductName = productName;
-
-
             SetupInputs(switcher);
             SetupMixEffects(switcher);
             SetupSerialPorts(switcher);
@@ -31,14 +27,13 @@ namespace LibAtem.ComparisonTests.State.SDK
             SetupDownstreamKeyers(switcher);
             SetupMediaPool(switcher);
             SetupMediaPlayers(switcher, updateSettings);
-            SetupMacroPool(switcher);
+            SetupMacros(switcher);
             SetupAudio(switcher);
             SetupHyperdecks(switcher);
 
-            switcher.AllowStreamingToResume();
+            //switcher.AllowStreamingToResume();
 
-            var cb = new SwitcherPropertiesCallback(State, switcher, FireCommandKey);
-            SetupCallback<SwitcherPropertiesCallback, _BMDSwitcherEventType>(cb, switcher.AddCallback, switcher.RemoveCallback);
+            SetupDisposable(new SwitcherPropertiesCallback(State, switcher, GetFireCommandKey(null)));
         }
 
         public void Dispose()
@@ -46,90 +41,25 @@ namespace LibAtem.ComparisonTests.State.SDK
             _cleanupCallbacks.ForEach(cb => cb());
         }
 
-        private void FireCommandKey(string path)
-        {
-            OnStateChange?.Invoke(this, path);
-        }
-
-        private Action<string> GetFireCommandKey(string root)
-        {
-            return SdkCallbackUtil.AppendChange(FireCommandKey, root);
-        }
+        private Action<string> GetFireCommandKey(string root) => SdkCallbackUtil.AppendChange(p => OnStateChange?.Invoke(this, p), root);
 
         public delegate void StateChangeHandler(object sender, string path);
         public event StateChangeHandler OnStateChange;
         
-        private void TriggerAllChanged<T>(INotify<T> cb, params T[] skip)
-        {
-            Enum.GetValues(typeof(T)).OfType<T>().Where(v => !skip.Contains(v)).ForEach(cb.Notify);
-        }
-
-        private void SetupCallbackBasic<T>(T cb, Action<T> add, Action<T> remove) 
-        {
-            add(cb);
-            _cleanupCallbacks.Add(() => remove(cb));
-        }
-
-        private void SetupCallback<T, Te>(T cb, Action<T> add, Action<T> remove, bool triggerAllChanged = true, params Te[] skip) where T : INotify<Te>
-        {
-            add(cb);
-            _cleanupCallbacks.Add(() => remove(cb));
-
-            if (triggerAllChanged)
-            {
-                TriggerAllChanged(cb, skip);
-            }
-        }
-
-        private void SetupDisposable(IDisposable obj)
-        {
-            _cleanupCallbacks.Add(obj.Dispose);
-        }
+        private void SetupDisposable(IDisposable obj) => _cleanupCallbacks.Add(obj.Dispose);
 
         private void SetupAudio(IBMDSwitcher switcher)
         {
             if (switcher is IBMDSwitcherAudioMixer mixer)
             {
                 State.Audio = new AudioState();
-
-                var cb = new AudioMixerCallback(State.Audio.ProgramOut, mixer,
-                    () => FireCommandKey("Audio.ProgramOut"));
-                SetupCallback<AudioMixerCallback, _BMDSwitcherAudioMixerEventType>(cb, mixer.AddCallback, mixer.RemoveCallback);
-
-                var iterator = AtemSDKConverter.CastSdk<IBMDSwitcherAudioInputIterator>(mixer.CreateIterator);
-
-                for (iterator.Next(out IBMDSwitcherAudioInput port); port != null; iterator.Next(out port))
-                {
-                    port.GetAudioInputId(out long inputId);
-                    State.Audio.Inputs[inputId] = new AudioState.InputState();
-
-                    var cbi = new AudioMixerInputCallback(State.Audio.Inputs[inputId], port,
-                        str => FireCommandKey($"Audio.Inputs.{inputId:D}.{str}"));
-                    SetupCallback<AudioMixerInputCallback, _BMDSwitcherAudioInputEventType>(cbi, port.AddCallback, port.RemoveCallback);
-                }
-
-                var monIt = AtemSDKConverter.CastSdk<IBMDSwitcherAudioMonitorOutputIterator>(mixer.CreateIterator);
-
-                var mons = new List<AudioState.MonitorOutputState>();
-                State.Audio.Monitors = mons;
-                uint id2 = 0;
-                for (monIt.Next(out IBMDSwitcherAudioMonitorOutput r); r != null; monIt.Next(out r))
-                {
-                    var mon = new AudioState.MonitorOutputState();
-                    mons.Add(mon);
-                    uint monId = id2++;
-
-                    var cbi = new AudioMixerMonitorOutputCallback(mon, r,
-                        () => FireCommandKey($"Audio.Monitors.{monId:D}"));
-                    SetupCallback<AudioMixerMonitorOutputCallback, _BMDSwitcherAudioMonitorOutputEventType>(cbi, r.AddCallback, r.RemoveCallback);
-                }
+                SetupDisposable(new AudioMixerCallback(State.Audio, mixer, GetFireCommandKey("Audio")));
 
                 var talkback = switcher as IBMDSwitcherTalkback;
                 if (talkback != null)
                 {
-                    var cbt = new TalkbackCallback(State.Audio.Talkback, talkback,
-                        () => FireCommandKey("Audio.Talkback"));
-                    SetupCallbackBasic(cbt, talkback.AddCallback, talkback.RemoveCallback);
+                    var cbt = new TalkbackCallback(State.Audio.Talkback, talkback, GetFireCommandKey("Audio.Talkback"));
+                    SetupDisposable(cbt);
                     cbt.NotifyAll(State.Audio.Inputs.Keys);
                 }
 
@@ -137,108 +67,8 @@ namespace LibAtem.ComparisonTests.State.SDK
             } else if (switcher is IBMDSwitcherFairlightAudioMixer fairlightMixer)
             {
                 State.Fairlight = new FairlightAudioState();
-
-                var cb = new FairlightAudioMixerCallback(State.Fairlight.ProgramOut, fairlightMixer, () => FireCommandKey("Fairlight.ProgramOut"));
-                SetupCallback<FairlightAudioMixerCallback, _BMDSwitcherFairlightAudioMixerEventType>(cb, fairlightMixer.AddCallback, fairlightMixer.RemoveCallback);
-
-                // Dynamics
-                var pgmDynamics = AtemSDKConverter.CastSdk<IBMDSwitcherFairlightAudioDynamicsProcessor>(fairlightMixer.GetMasterOutEffect);
-                SetupFairlightDynamics(State.Fairlight.ProgramOut.Dynamics, pgmDynamics, "Fairlight.ProgramOut.Dynamics", false);
-
-                // Equalizer
-                var pgmEqualizer = AtemSDKConverter.CastSdk<IBMDSwitcherFairlightAudioEqualizer>(fairlightMixer.GetMasterOutEffect);
-                SetupFairlightEqualizer(State.Fairlight.ProgramOut.Equalizer, pgmEqualizer, "Fairlight.ProgramOut.Equalizer");
-
-                // Inputs
-                var iterator = AtemSDKConverter.CastSdk<IBMDSwitcherFairlightAudioInputIterator>(fairlightMixer.CreateIterator);
-                for (iterator.Next(out IBMDSwitcherFairlightAudioInput input); input != null; iterator.Next(out input))
-                {
-                    input.GetId(out long id);
-                    input.GetType(out _BMDSwitcherFairlightAudioInputType type);
-                    input.GetSupportedConfigurations(out _BMDSwitcherFairlightAudioInputConfiguration configs);
-
-                    var inputPath = $"Fairlight.Input.{id}";
-                    var inputState = State.Fairlight.Inputs[id] = new FairlightAudioState.InputState
-                    {
-                        InputType = AtemEnumMaps.FairlightAudioInputType.FindByValue(type),
-                        SupportedConfigurations = (FairlightInputConfiguration)configs
-                    };
-
-                    var cb2 = new FairlightAudioInputCallback(inputState, input, str => FireCommandKey($"{inputPath}.{str}"));
-                    SetupCallback<FairlightAudioInputCallback, _BMDSwitcherFairlightAudioInputEventType>(cb2, input.AddCallback, input.RemoveCallback);
-
-                    // Sources
-                    var sourceIterator = AtemSDKConverter.CastSdk<IBMDSwitcherFairlightAudioSourceIterator>(input.CreateIterator);
-                    int srcId = 0;
-                    for (sourceIterator.Next(out IBMDSwitcherFairlightAudioSource src); src != null; sourceIterator.Next(out src))
-                    {
-                        var srcState = new FairlightAudioState.InputSourceState();
-                        inputState.Sources.Add(srcState);
-
-                        var srcId2 = srcId;
-                        var cb3 = new FairlightAudioInputSourceCallback(srcState, src, () => FireCommandKey($"{inputPath}.Sources.{srcId2}"));
-                        SetupCallback<FairlightAudioInputSourceCallback, _BMDSwitcherFairlightAudioSourceEventType>(cb3, src.AddCallback, src.RemoveCallback);
-                        
-                        // TODO - Effects?
-
-                        srcId++;
-                    }
-                }
+                SetupDisposable(new FairlightAudioMixerCallback(State.Fairlight, fairlightMixer, GetFireCommandKey("Fairlight")));
             }
-        }
-
-        private void SetupFairlightDynamics(FairlightAudioState.DynamicsState state, IBMDSwitcherFairlightAudioDynamicsProcessor proc, string path, bool hasExpander)
-        {
-            var dynCb = new FairlightDynamicsAudioMixerCallback(state, proc, () => FireCommandKey(path));
-            SetupCallback<FairlightDynamicsAudioMixerCallback, _BMDSwitcherFairlightAudioDynamicsProcessorEventType>(dynCb, proc.AddCallback, proc.RemoveCallback);
-
-            // Limiter
-            var limiterProps = AtemSDKConverter.CastSdk<IBMDSwitcherFairlightAudioLimiter>(proc.GetProcessor);
-
-            state.Limiter = new FairlightAudioState.LimiterState();
-            var limiterCb = new FairlightLimiterDynamicsAudioMixerCallback(state.Limiter, limiterProps, str => FireCommandKey($"{path}.Limiter.{str}"));
-            SetupCallback<FairlightLimiterDynamicsAudioMixerCallback, _BMDSwitcherFairlightAudioLimiterEventType>(limiterCb, limiterProps.AddCallback, limiterProps.RemoveCallback);
-
-            // Compressor
-            var compressorProps = AtemSDKConverter.CastSdk<IBMDSwitcherFairlightAudioCompressor>(proc.GetProcessor);
-            
-            state.Compressor = new FairlightAudioState.CompressorState();
-            var compressorCb = new FairlightCompressorDynamicsAudioMixerCallback(state.Compressor, compressorProps, str => FireCommandKey($"{path}.Compressor.{str}"));
-            SetupCallback<FairlightCompressorDynamicsAudioMixerCallback, _BMDSwitcherFairlightAudioCompressorEventType>(compressorCb, compressorProps.AddCallback, compressorProps.RemoveCallback);
-
-            if (hasExpander)
-            {
-                // Expander
-                var expanderProps = AtemSDKConverter.CastSdk<IBMDSwitcherFairlightAudioExpander>(proc.GetProcessor);
-
-            }
-        }
-
-        private void SetupFairlightEqualizer(FairlightAudioState.EqualizerState state, IBMDSwitcherFairlightAudioEqualizer eq, string path)
-        {
-            var eqCb = new FairlightEqualizerAudioMixerCallback(state, eq, () => FireCommandKey(path));
-            SetupCallback<FairlightEqualizerAudioMixerCallback, _BMDSwitcherFairlightAudioEqualizerEventType>(eqCb, eq.AddCallback, eq.RemoveCallback);
-
-            /*
-            // Bands
-            var iterator = AtemSDKConverter.CastSdk<IBMDSwitcherFairlightAudioEqualizerBandIterator>(eq.CreateIterator);
-
-            var bands = new List<FairlightAudioState.EqualizerBandState>();
-
-            int id = 0;
-            for (iterator.Next(out IBMDSwitcherFairlightAudioEqualizerBand band); band != null; iterator.Next(out band))
-            {
-                var bandState = new FairlightAudioState.EqualizerBandState();
-
-                var id2 = id;
-                var cb = new FairlightEqualizerBandAudioMixerCallback(bandState, band, () => FireCommandKey($"{path}.Bands.{id2:D}"));
-                SetupCallback(cb, band.AddCallback, band.RemoveCallback);
-
-                id++;
-            }
-
-            state.Bands = bands;
-            */
         }
 
         private void SetupSerialPorts(IBMDSwitcher switcher)
@@ -300,15 +130,7 @@ namespace LibAtem.ComparisonTests.State.SDK
 
             // Stills
             pool.GetStills(out IBMDSwitcherStills stills);
-
-            var skipStills = new[]
-            {
-                _BMDSwitcherMediaPoolEventType.bmdSwitcherMediaPoolEventTypeAudioValidChanged,
-                _BMDSwitcherMediaPoolEventType.bmdSwitcherMediaPoolEventTypeAudioNameChanged,
-                _BMDSwitcherMediaPoolEventType.bmdSwitcherMediaPoolEventTypeAudioHashChanged
-            };
-            var cbs = new MediaPoolStillsCallback(State.MediaPool, stills, str => FireCommandKey($"MediaPool.Stills.{str}"));
-            SetupCallback(cbs, stills.AddCallback, stills.RemoveCallback, true, skipStills);
+            SetupDisposable(new MediaPoolStillsCallback(State.MediaPool, stills, GetFireCommandKey("MediaPool.Stills")));
 
             // Clips
             pool.GetClipCount(out uint clipCount);
@@ -316,31 +138,17 @@ namespace LibAtem.ComparisonTests.State.SDK
             for (uint i = 0; i < clipCount; i++)
             {
                 pool.GetClip(i, out IBMDSwitcherClip clip);
-                uint clipId = i;
-
-                var cbc = new MediaPoolClipCallback(State.MediaPool.Clips[(int)i], clip, () => FireCommandKey($"MediaPool.Clips.{clipId:D}"));
-                SetupCallback<MediaPoolClipCallback, _BMDSwitcherMediaPoolEventType>(cbc, clip.AddCallback, clip.RemoveCallback);
+                SetupDisposable(new MediaPoolClipCallback(State.MediaPool.Clips[(int)i], clip, GetFireCommandKey($"MediaPool.Clips.{i:D}")));
             }
         }
 
-        private void SetupMacroPool(IBMDSwitcher switcher)
+        private void SetupMacros(IBMDSwitcher switcher)
         {
             var pool = switcher as IBMDSwitcherMacroPool;
-            
-            var cbs = new MacroPoolCallback(State.Macros, pool, str => FireCommandKey($"Macros.Pool.{str}"));
-            SetupCallbackBasic(cbs, pool.AddCallback, pool.RemoveCallback);
-
-            pool.GetMaxCount(out uint count);
-            State.Macros.Pool = Enumerable.Repeat(0, (int)count).Select(i => new MacroState.ItemState()).ToList();
-            for (uint i = 0; i < count; i++)
-            {
-                Enum.GetValues(typeof(_BMDSwitcherMacroPoolEventType)).OfType<_BMDSwitcherMacroPoolEventType>().ForEach(e => cbs.Notify(e, i, null));
-            }
+            SetupDisposable(new MacroPoolCallback(State.Macros, pool, GetFireCommandKey("Macros.Pool")));
 
             var ctrl = switcher as IBMDSwitcherMacroControl;
-
-            var cbs2 = new MacroControlCallback(State.Macros, ctrl, str => FireCommandKey($"Macros.{str}"));
-            SetupCallback<MacroControlCallback, _BMDSwitcherMacroControlEventType>(cbs2, ctrl.AddCallback, ctrl.RemoveCallback);
+            SetupDisposable(new MacroControlCallback(State.Macros, ctrl, GetFireCommandKey("Macros")));
         }
 
         private void SetupDownstreamKeyers(IBMDSwitcher switcher)
@@ -380,8 +188,7 @@ namespace LibAtem.ComparisonTests.State.SDK
                 var src = (VideoSource)id;
 
                 var st = State.Settings.Inputs[src] = new InputState();
-                var cb = new InputCallback(st, input, str => FireCommandKey($"Settings.Inputs.{id:D}.{str}"));
-                SetupCallback<InputCallback, _BMDSwitcherInputEventType>(cb, input.AddCallback, input.RemoveCallback);
+                SetupDisposable(new InputCallback(st, input, GetFireCommandKey($"Settings.Inputs.{id:D}")));
 
                 if (input is IBMDSwitcherInputAux aux)
                 {

@@ -1,43 +1,39 @@
 ﻿using System;
-using System.Collections.Generic;
 using BMDSwitcherAPI;
 using LibAtem.State;
 
 namespace LibAtem.ComparisonTests.State.SDK
 {
-    public sealed class FairlightAudioInputCallback : IBMDSwitcherFairlightAudioInputCallback, INotify<_BMDSwitcherFairlightAudioInputEventType>
+    public sealed class FairlightAudioInputCallback : SdkCallbackBaseNotify<IBMDSwitcherFairlightAudioInput, _BMDSwitcherFairlightAudioInputEventType>, IBMDSwitcherFairlightAudioInputCallback
     {
         private readonly FairlightAudioState.InputState _state;
-        private readonly IBMDSwitcherFairlightAudioInput _props;
-        private readonly Action<string> _onChange;
 
-        public FairlightAudioInputCallback(FairlightAudioState.InputState state, IBMDSwitcherFairlightAudioInput props, Action<string> onChange)
+        public FairlightAudioInputCallback(FairlightAudioState.InputState state, IBMDSwitcherFairlightAudioInput props, Action<string> onChange) : base(props, onChange)
         {
             _state = state;
-            _props = props;
-            _onChange = onChange;
+            TriggerAllChanged();
         }
 
-        public void Notify(_BMDSwitcherFairlightAudioInputEventType eventType)
+        public override void Notify(_BMDSwitcherFairlightAudioInputEventType eventType)
         {
             switch (eventType)
             {
                 case _BMDSwitcherFairlightAudioInputEventType.bmdSwitcherFairlightAudioInputEventTypeCurrentExternalPortTypeChanged:
-                    _props.GetCurrentExternalPortType(out _BMDSwitcherExternalPortType portType);
+                    Props.GetCurrentExternalPortType(out _BMDSwitcherExternalPortType portType);
                     _state.ExternalPortType = AtemEnumMaps.ExternalPortTypeMap.FindByValue(portType);
-                    _onChange("ExternalPortType");
                     break;
                 case _BMDSwitcherFairlightAudioInputEventType.bmdSwitcherFairlightAudioInputEventTypeConfigurationChanged:
-                    _props.GetConfiguration(out _BMDSwitcherFairlightAudioInputConfiguration configuration);
+                    Props.GetConfiguration(out _BMDSwitcherFairlightAudioInputConfiguration configuration);
                     _state.ActiveConfiguration = AtemEnumMaps.FairlightAudioInputConfiguration.FindByValue(configuration);
                     
                     // Need to clear the sources, as the number of them will have changed
                     _state.Sources.Clear();
-                    _onChange("ActiveConfiguration");
                     break;
                 default:
                     throw new ArgumentOutOfRangeException(nameof(eventType), eventType, null);
             }
+
+            OnChange(null);
         }
     }
 
