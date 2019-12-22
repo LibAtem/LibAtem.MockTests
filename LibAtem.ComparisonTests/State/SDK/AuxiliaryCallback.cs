@@ -5,32 +5,29 @@ using LibAtem.State;
 
 namespace LibAtem.ComparisonTests.State.SDK
 {
-    public sealed class AuxiliaryCallback : IBMDSwitcherInputAuxCallback, INotify<_BMDSwitcherInputAuxEventType>
+    public sealed class AuxiliaryCallback : SdkCallbackBaseNotify<IBMDSwitcherInputAux, _BMDSwitcherInputAuxEventType>, IBMDSwitcherInputAuxCallback
     {
         private readonly AuxState _state;
-        private readonly IBMDSwitcherInputAux _aux;
-        private readonly Action _onChange;
 
-        public AuxiliaryCallback(AuxState state, IBMDSwitcherInputAux aux, Action onChange)
+        public AuxiliaryCallback(AuxState state, IBMDSwitcherInputAux aux, Action<string> onChange) : base(aux, onChange)
         {
             _state = state;
-            _aux = aux;
-            _onChange = onChange;
+            TriggerAllChanged();
         }
 
-        public void Notify(_BMDSwitcherInputAuxEventType eventType)
+        public override void Notify(_BMDSwitcherInputAuxEventType eventType)
         {
             switch (eventType)
             {
                 case _BMDSwitcherInputAuxEventType.bmdSwitcherInputAuxEventTypeInputSourceChanged:
-                    _aux.GetInputSource(out long source);
+                    Props.GetInputSource(out long source);
                     _state.Source = (VideoSource)source;
                     break;
                 default:
                     throw new ArgumentOutOfRangeException(nameof(eventType), eventType, null);
             }
 
-            _onChange();
+            OnChange(null);
         }
     }
 }

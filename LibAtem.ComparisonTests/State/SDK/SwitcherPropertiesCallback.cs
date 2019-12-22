@@ -52,6 +52,9 @@ namespace LibAtem.ComparisonTests.State.SDK
                     _onChange("Info.LastTimecode");
                     break;
                 case _BMDSwitcherEventType.bmdSwitcherEventTypeTimeCodeLockedChanged:
+                    _props.GetTimeCodeLocked(out int locked);
+                    _state.Info.TimecodeLocked = locked != 0;
+                    _onChange("Info.TimecodeLocked");
                     break;
                 case _BMDSwitcherEventType.bmdSwitcherEventTypeSuperSourceCascadeChanged:
                     break;

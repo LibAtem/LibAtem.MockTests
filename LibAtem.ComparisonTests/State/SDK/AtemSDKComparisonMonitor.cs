@@ -27,8 +27,6 @@ namespace LibAtem.ComparisonTests.State.SDK
 
             switcher.GetProductName(out string productName);
             State.Info.ProductName = productName;
-            switcher.GetTimeCodeLocked(out int timecodeLocked);
-            State.Info.TimecodeLocked = timecodeLocked != 0;
 
 
             SetupInputs(switcher);
@@ -58,6 +56,11 @@ namespace LibAtem.ComparisonTests.State.SDK
             OnStateChange?.Invoke(this, path);
         }
 
+        private Action<string> GetFireCommandKey(string root)
+        {
+            return SdkCallbackUtil.AppendChange(FireCommandKey, root);
+        }
+
         public delegate void StateChangeHandler(object sender, string path);
         public event StateChangeHandler OnStateChange;
         
@@ -81,6 +84,11 @@ namespace LibAtem.ComparisonTests.State.SDK
             {
                 TriggerAllChanged(cb, skip);
             }
+        }
+
+        private void SetupDisposable(IDisposable obj)
+        {
+            _cleanupCallbacks.Add(obj.Dispose);
         }
 
         private void SetupAudio(IBMDSwitcher switcher)
@@ -547,80 +555,49 @@ namespace LibAtem.ComparisonTests.State.SDK
 
         private void SetupInputs(IBMDSwitcher switcher)
         {
-            var iterator = AtemSDKConverter.CastSdk<IBMDSwitcherInputIterator>(switcher.CreateIterator);
-
             var auxes = new List<AuxState>();
             var cols = new List<ColorState>();
             var ssrcs = new List<SuperSourceState>();
-            for (iterator.Next(out IBMDSwitcherInput input); input != null; iterator.Next(out input))
+
+            var iterator = AtemSDKConverter.CastSdk<IBMDSwitcherInputIterator>(switcher.CreateIterator);
+            AtemSDKConverter.Iterate<IBMDSwitcherInput>(iterator.Next, (input, i) =>
             {
                 input.GetInputId(out long id);
-                var src = (VideoSource) id;
+                var src = (VideoSource)id;
 
                 var st = State.Settings.Inputs[src] = new InputState();
                 var cb = new InputCallback(st, input, str => FireCommandKey($"Settings.Inputs.{id:D}.{str}"));
                 SetupCallback<InputCallback, _BMDSwitcherInputEventType>(cb, input.AddCallback, input.RemoveCallback);
 
                 if (input is IBMDSwitcherInputAux aux)
-                    auxes.Add(SetupAuxiliary(src, aux));
+                {
+                    AuxiliaryId id2 = AtemEnumMaps.GetAuxId(src);
+                    var st2 = new AuxState();
+                    SetupDisposable(new AuxiliaryCallback(st2, aux, GetFireCommandKey($"Auxiliaries.{id2:D}")));
+                    auxes.Add(st2);
+                }
+
                 if (input is IBMDSwitcherInputColor col)
-                    cols.Add(SetupColor(src, col));
+                {
+                    ColorGeneratorId id2 = AtemEnumMaps.GetSourceIdForGen(src);
+                    var st2 = new ColorState();
+                    SetupDisposable(new ColorCallback(st2, col, GetFireCommandKey($"ColorGenerators.{id2:D}")));
+                    cols.Add(st2);
+                }
+
                 if (input is IBMDSwitcherInputSuperSource ssrc)
-                    ssrcs.Add(SetupSuperSource(ssrc));
-            }
+                {
+                    // TODO - properly
+                    SuperSourceId ssrcId = SuperSourceId.One;
+                    var st2 = new SuperSourceState();
+                    SetupDisposable(new SuperSourceCallback(st2, ssrc, GetFireCommandKey($"SuperSources.{ssrcId:D}")));
+                    ssrcs.Add(st2);
+                }
+            });
+
             State.Auxiliaries = auxes;
             State.ColorGenerators = cols;
             State.SuperSources = ssrcs;
-        }
-
-
-        private AuxState SetupAuxiliary(VideoSource id, IBMDSwitcherInputAux aux)
-        {
-            AuxiliaryId id2 = AtemEnumMaps.GetAuxId(id);
-            var c = new AuxState();
-            var cb = new AuxiliaryCallback(c, aux, () => FireCommandKey($"Auxiliaries.{id2:D}"));
-            SetupCallback<AuxiliaryCallback, _BMDSwitcherInputAuxEventType>(cb, aux.AddCallback, aux.RemoveCallback);
-            return c;
-        }
-
-        private ColorState SetupColor(VideoSource id, IBMDSwitcherInputColor col)
-        {
-            ColorGeneratorId id2 = AtemEnumMaps.GetSourceIdForGen(id);
-            var c = new ColorState();
-            var cb = new ColorCallback(c, col, () => FireCommandKey($"ColorGenerators.{id2:D}"));
-            SetupCallback<ColorCallback, _BMDSwitcherInputColorEventType>(cb, col.AddCallback, col.RemoveCallback);
-            return c;
-        }
-
-        private SuperSourceState SetupSuperSource(IBMDSwitcherInputSuperSource ssrc)
-        {
-            // TODO - properly
-            SuperSourceId ssrcId = SuperSourceId.One;
-
-            var c = new SuperSourceState();
-            var cb = new SuperSourceCallback(c.Properties, ssrc, () => FireCommandKey($"SuperSources.{ssrcId:D}.Properties"));
-            SetupCallback<SuperSourceCallback, _BMDSwitcherInputSuperSourceEventType>(cb, ssrc.AddCallback, ssrc.RemoveCallback);
-
-            var ssrc2 = ssrc as IBMDSwitcherSuperSourceBorder;
-            var cb3 = new SuperSourceBorderCallback(c.Border, ssrc2, () => FireCommandKey($"SuperSources.{ssrcId:D}.Border"));
-            SetupCallback<SuperSourceBorderCallback, _BMDSwitcherSuperSourceBorderEventType>(cb3, ssrc2.AddCallback, ssrc2.RemoveCallback);
-
-            var iterator = AtemSDKConverter.CastSdk<IBMDSwitcherSuperSourceBoxIterator>(ssrc.CreateIterator);
-
-            var boxes = new List<SuperSourceState.BoxState>();
-            SuperSourceBoxId id = 0;
-            for (iterator.Next(out IBMDSwitcherSuperSourceBox box); box != null; iterator.Next(out box))
-            {
-                var boxState = new SuperSourceState.BoxState();
-                boxes.Add(boxState);
-                var boxId = id++;
-
-                var cb2 = new SuperSourceBoxCallback(boxState, box, () => FireCommandKey($"SuperSources.{ssrcId:D}.Boxes.{boxId:D}"));
-                SetupCallback<SuperSourceBoxCallback, _BMDSwitcherSuperSourceBoxEventType>(cb2, box.AddCallback, box.RemoveCallback);
-            }
-
-            c.Boxes = boxes;
-            return c;
         }
 
     }
