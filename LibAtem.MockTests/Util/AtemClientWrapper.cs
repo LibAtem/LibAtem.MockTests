@@ -43,7 +43,7 @@ namespace LibAtem.MockTests.Util
 
         private readonly AtemStateBuilderSettings _updateSettings;
 
-        private readonly AtemSDKComparisonMonitor _sdkState;
+        private AtemSDKComparisonMonitor _sdkState;
         private AtemState _libState;
 
         public delegate void CommandKeyHandler(object sender, string path);
@@ -65,7 +65,7 @@ namespace LibAtem.MockTests.Util
             }
         }
 
-        public AtemClientWrapper(string address = "10.42.13.95")
+        public AtemClientWrapper(string address)
         {
             var logRepository = LogManager.GetRepository(Assembly.GetExecutingAssembly());
             XmlConfigurator.Configure(logRepository, new FileInfo("log4net.config"));
@@ -101,9 +101,8 @@ namespace LibAtem.MockTests.Util
             }
 
             _sdkSwitcher.AddCallback(new SwitcherConnectionMonitor()); // TODO - make this monitor work better!
-            _sdkState = new AtemSDKComparisonMonitor(_sdkSwitcher, _updateSettings);
-
-            _sdkState.OnStateChange += (s, e) => OnSdkStateChange?.Invoke(s, e);
+            //_sdkState = new AtemSDKComparisonMonitor(_sdkSwitcher, _updateSettings);
+            //_sdkState.OnStateChange += (s, e) => OnSdkStateChange?.Invoke(s, e);
 
             WaitForHandshake();
         }
@@ -111,8 +110,15 @@ namespace LibAtem.MockTests.Util
         public AtemState SdkState => _sdkState.State.Clone();
         public AtemState LibState => _libState.Clone();
 
+        public void BindSdkState()
+        {
+            _sdkState?.Dispose();
+            _sdkState = new AtemSDKComparisonMonitor(_sdkSwitcher, _updateSettings);
+            _sdkState.OnStateChange += (s, e) => OnSdkStateChange?.Invoke(s, e);
+        }
         public void SyncStates()
         {
+            BindSdkState();
             _libState = _sdkState.State.Clone();
         }
 
@@ -189,6 +195,7 @@ namespace LibAtem.MockTests.Util
         {
             _isDisposing = true;
             _client.Dispose();
+            _sdkState.Dispose();
             // TODO - reenable once LibAtem allows disconnection
             // Assert.True(_disposeEvent.WaitOne(TimeSpan.FromSeconds(1)), "LibAtem: Cleanup timed out");
 

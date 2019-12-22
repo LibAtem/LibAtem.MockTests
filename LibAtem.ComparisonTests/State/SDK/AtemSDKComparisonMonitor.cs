@@ -16,7 +16,7 @@ namespace LibAtem.ComparisonTests.State.SDK
         void Notify(T eventType);
     }
 
-    public sealed class AtemSDKComparisonMonitor
+    public sealed class AtemSDKComparisonMonitor : IDisposable
     {
         public AtemState State { get; }
 
@@ -53,7 +53,7 @@ namespace LibAtem.ComparisonTests.State.SDK
         }
 
         // TODO - this should probably be replaced being being disposable
-        ~AtemSDKComparisonMonitor()
+        public void Dispose()
         {
             _cleanupCallbacks.ForEach(cb => cb());
         }
@@ -93,7 +93,8 @@ namespace LibAtem.ComparisonTests.State.SDK
                     var cbi = new AudioMixerInputCallback(State.Audio.Inputs[inputId], port,
                         str => FireCommandKey($"Audio.Inputs.{inputId:D}.{str}"));
                     port.AddCallback(cbi);
-                    _cleanupCallbacks.Add(() => port.RemoveCallback(cbi));
+                    var port2 = port;
+                    _cleanupCallbacks.Add(() => port2.RemoveCallback(cbi));
                     TriggerAllChanged(cbi);
                 }
 
@@ -111,7 +112,8 @@ namespace LibAtem.ComparisonTests.State.SDK
                     var cbi = new AudioMixerMonitorOutputCallback(mon, r,
                         () => FireCommandKey($"Audio.Monitors.{monId:D}"));
                     r.AddCallback(cbi);
-                    _cleanupCallbacks.Add(() => r.RemoveCallback(cbi));
+                    var r2 = r;
+                    _cleanupCallbacks.Add(() => r2.RemoveCallback(cbi));
                     TriggerAllChanged(cbi);
                 }
 
@@ -187,7 +189,8 @@ namespace LibAtem.ComparisonTests.State.SDK
                 
                 var cb = new SerialPortPropertiesCallback(State.Settings, port, () => FireCommandKey("Settings.SerialPort"));
                 port.AddCallback(cb);
-                _cleanupCallbacks.Add(() => port.RemoveCallback(cb));
+                var port2 = port;
+                _cleanupCallbacks.Add(() => port2.RemoveCallback(cb));
                 TriggerAllChanged(cb);
 
                 id++;
@@ -235,7 +238,8 @@ namespace LibAtem.ComparisonTests.State.SDK
 
                 var cb = new MultiViewPropertiesCallback(mvState, mv, str => FireCommandKey($"Settings.MultiViewers.{mvId:D}.{str}"));
                 mv.AddCallback(cb);
-                _cleanupCallbacks.Add(() => mv.RemoveCallback(cb));
+                var mv2 = mv;
+                _cleanupCallbacks.Add(() => mv2.RemoveCallback(cb));
                 TriggerAllChanged(cb);
             }
             State.Settings.MultiViewers = mvs;
@@ -259,7 +263,8 @@ namespace LibAtem.ComparisonTests.State.SDK
                 var cb = new MediaPlayerCallback(player, updateSettings, media,
                     str => FireCommandKey($"MediaPlayers.{playerId:D}.{str}"));
                 media.AddCallback(cb);
-                _cleanupCallbacks.Add(() => media.RemoveCallback(cb));
+                var media2 = media;
+                _cleanupCallbacks.Add(() => media2.RemoveCallback(cb));
                 cb.Notify();
             }
             State.MediaPlayers = players;
@@ -343,7 +348,8 @@ namespace LibAtem.ComparisonTests.State.SDK
 
                 var cb = new DownstreamKeyerPropertiesCallback(dsk, key, str => FireCommandKey($"DownstreamKeyers.{dskId:D}.{str}"));
                 key.AddCallback(cb);
-                _cleanupCallbacks.Add(() => key.RemoveCallback(cb));
+                var key2 = key;
+                _cleanupCallbacks.Add(() => key2.RemoveCallback(cb));
                 TriggerAllChanged(cb);
             }
             State.DownstreamKeyers = dsks;
@@ -365,7 +371,8 @@ namespace LibAtem.ComparisonTests.State.SDK
 
                 var cb = new MixEffectPropertiesCallback(meState, me, str => FireCommandKey($"MixEffects.{meId:D}.{str}"));
                 me.AddCallback(cb);
-                _cleanupCallbacks.Add(() => me.RemoveCallback(cb));
+                var me2 = me;
+                _cleanupCallbacks.Add(() => me2.RemoveCallback(cb));
                 TriggerAllChanged(cb);
 
                 SetupMixEffectKeyer(me, meId);
@@ -677,7 +684,8 @@ namespace LibAtem.ComparisonTests.State.SDK
 
                 var cb2 = new SuperSourceBoxCallback(boxState, box, () => FireCommandKey($"SuperSources.{ssrcId:D}.Boxes.{boxId:D}"));
                 box.AddCallback(cb2);
-                _cleanupCallbacks.Add(() => box.RemoveCallback(cb2));
+                var box2 = box;
+                _cleanupCallbacks.Add(() => box2.RemoveCallback(cb2));
 
                 TriggerAllChanged(cb2);
             }

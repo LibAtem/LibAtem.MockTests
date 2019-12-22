@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using LibAtem.MockTests.DeviceMock;
+using LibAtem.Util;
 using Xunit;
 
 namespace LibAtem.MockTests.Util
@@ -16,6 +17,7 @@ namespace LibAtem.MockTests.Util
     public sealed class AtemServerClientPool : IDisposable
     {
         public AtemMockServer Server { get; }
+        private Dictionary<string, AtemClientWrapper> _clients;
 
         public AtemServerClientPool()
         {
@@ -25,12 +27,20 @@ namespace LibAtem.MockTests.Util
                 commandData[caseId.Item2] = WiresharkParser.BuildCommands(caseId.Item1, caseId.Item2);
             }
             Server = new AtemMockServer(commandData);
+            _clients = new Dictionary<string, AtemClientWrapper>();
+        }
 
+        public AtemClientWrapper GetOrCreateClients(string caseId)
+        {
+            if (_clients.TryGetValue(caseId, out AtemClientWrapper client))
+                return client;
+
+            return _clients[caseId] = new AtemClientWrapper("127.0.0.1");
         }
 
         public void Dispose()
         {
-            // TODO
+            _clients.Values.ForEach(cl => cl.Dispose());
             Server.Dispose();
         }
     }

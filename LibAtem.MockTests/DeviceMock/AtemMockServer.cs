@@ -29,7 +29,6 @@ namespace LibAtem.MockTests.DeviceMock
         public uint CurrentTime { get; private set; } = 100;
 
         public string CurrentCase { get; set; }
-        //public uint CurrentGroup { get; set; }
 
         public Func<ICommand, IEnumerable<ICommand>> HandleCommand { get; set; }
 

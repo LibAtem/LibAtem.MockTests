@@ -32,9 +32,10 @@ namespace LibAtem.MockTests.Util
 
             Server = _pool.Server;
             Server.CurrentCase = caseId.Item2;
+            Clients = _pool.GetOrCreateClients(caseId.Item2);
 
 
-            Clients = new AtemClientWrapper("127.0.0.1");
+            //Clients = new AtemClientWrapper("127.0.0.1");
             Helper = new AtemTestHelper(Clients, _output);
             Server.HandleCommand = cmd => handler(Clients.LibAtemReceived, cmd);
             /*
@@ -48,7 +49,7 @@ namespace LibAtem.MockTests.Util
         public void Dispose()
         {
             Helper.Dispose();
-            Clients.Dispose();
+            //Clients.Dispose();
             //Server.Dispose();
             Server.CurrentCase = null;
         }
