@@ -8,9 +8,9 @@ namespace LibAtem.ComparisonTests.State.SDK
     {
         private readonly FairlightAudioState.DynamicsState _state;
         private readonly IBMDSwitcherFairlightAudioDynamicsProcessor _props;
-        private readonly Action<string> _onChange;
+        private readonly Action _onChange;
 
-        public FairlightDynamicsAudioMixerCallback(FairlightAudioState.DynamicsState state, IBMDSwitcherFairlightAudioDynamicsProcessor props, Action<string> onChange)
+        public FairlightDynamicsAudioMixerCallback(FairlightAudioState.DynamicsState state, IBMDSwitcherFairlightAudioDynamicsProcessor props, Action onChange)
         {
             _state = state;
             _props = props;
@@ -24,11 +24,12 @@ namespace LibAtem.ComparisonTests.State.SDK
                 case _BMDSwitcherFairlightAudioDynamicsProcessorEventType.bmdSwitcherFairlightAudioDynamicsProcessorEventTypeMakeupGainChanged:
                     _props.GetMakeupGain(out double gain);
                     _state.MakeUpGain = gain;
-                    _onChange("MakeUpGain");
                     break;
                 default:
                     throw new ArgumentOutOfRangeException(nameof(eventType), eventType, null);
             }
+
+            _onChange();
         }
 
         public void InputLevelNotification(uint numLevels, ref double levels, uint numPeakLevels, ref double peakLevels)

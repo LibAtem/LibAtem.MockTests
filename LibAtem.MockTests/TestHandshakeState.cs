@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Text;
 using LibAtem.ComparisonTests.State;
 using LibAtem.MockTests.DeviceMock;
 using LibAtem.MockTests.Util;
@@ -26,7 +25,24 @@ namespace LibAtem.MockTests
 
         [Fact]
         public void TestStateMockMini() => RunTest(DeviceTestCases.Mini_8_1);
+
         
+        [Fact]
+        public void TestStateReal()
+        {
+            using var helper = new AtemClientWrapper("10.42.13.95");
+            helper.BindSdkState();
+
+            List<string> before = AtemStateComparer.AreEqual(helper.SdkState, helper.LibState);
+            if (before.Count != 0 && _output != null)
+            {
+                _output.WriteLine("state mismatch:");
+                before.ForEach(_output.WriteLine);
+            }
+            Assert.Empty(before);
+        }
+        
+
         private void RunTest(Tuple<ProtocolVersion, string> caseId)
         {
             var commandData = WiresharkParser.BuildCommands(caseId.Item1, caseId.Item2);

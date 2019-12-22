@@ -18,7 +18,6 @@ namespace LibAtem.MockTests.MixEffects
     {
         public TestAdvancedChromaKeyer(ITestOutputHelper output, AtemServerClientPool pool) : base(output, pool)
         {
-
         }
 
         [Fact]

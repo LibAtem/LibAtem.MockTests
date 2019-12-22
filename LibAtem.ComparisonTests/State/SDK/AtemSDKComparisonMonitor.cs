@@ -71,6 +71,17 @@ namespace LibAtem.ComparisonTests.State.SDK
             Enum.GetValues(typeof(T)).OfType<T>().Where(v => !skip.Contains(v)).ForEach(cb.Notify);
         }
 
+        private void SetupCallback<T, Te>(T cb, Action<T> add, Action<T> remove, bool triggerAllChanged = true, params Te[] skip) where T : INotify<Te>
+        {
+            add(cb);
+            _cleanupCallbacks.Add(() => remove(cb));
+
+            if (triggerAllChanged)
+            {
+                TriggerAllChanged(cb, skip);
+            }
+        }
+
         private void SetupAudio(IBMDSwitcher switcher)
         {
             if (switcher is IBMDSwitcherAudioMixer mixer)
@@ -132,22 +143,58 @@ namespace LibAtem.ComparisonTests.State.SDK
             {
                 State.Fairlight = new FairlightAudioState();
 
-                var cb = new FairlightAudioMixerCallback(State.Fairlight.ProgramOut, fairlightMixer,
-                    () => FireCommandKey("Fairlight.ProgramOut"));
-                fairlightMixer.AddCallback(cb);
-                _cleanupCallbacks.Add(() => fairlightMixer.RemoveCallback(cb));
-                TriggerAllChanged(cb);
+                var cb = new FairlightAudioMixerCallback(State.Fairlight.ProgramOut, fairlightMixer, () => FireCommandKey("Fairlight.ProgramOut"));
+                SetupCallback<FairlightAudioMixerCallback, _BMDSwitcherFairlightAudioMixerEventType>(cb, fairlightMixer.AddCallback, fairlightMixer.RemoveCallback);
 
                 // Dynamics
                 var pgmDynamics = AtemSDKConverter.CastSdk<IBMDSwitcherFairlightAudioDynamicsProcessor>(fairlightMixer.GetMasterOutEffect);
                 SetupFairlightDynamics(State.Fairlight.ProgramOut.Dynamics, pgmDynamics, "Fairlight.ProgramOut.Dynamics", false);
 
+                // Equalizer
+                var pgmEqualizer = AtemSDKConverter.CastSdk<IBMDSwitcherFairlightAudioEqualizer>(fairlightMixer.GetMasterOutEffect);
+                SetupFairlightEqualizer(State.Fairlight.ProgramOut.Equalizer, pgmEqualizer, "Fairlight.ProgramOut.Equalizer");
+
+                // Inputs
+                var iterator = AtemSDKConverter.CastSdk<IBMDSwitcherFairlightAudioInputIterator>(fairlightMixer.CreateIterator);
+                for (iterator.Next(out IBMDSwitcherFairlightAudioInput input); input != null; iterator.Next(out input))
+                {
+                    input.GetId(out long id);
+                    input.GetType(out _BMDSwitcherFairlightAudioInputType type);
+                    input.GetSupportedConfigurations(out _BMDSwitcherFairlightAudioInputConfiguration configs);
+
+                    var inputPath = $"Fairlight.Input.{id}";
+                    var inputState = State.Fairlight.Inputs[id] = new FairlightAudioState.InputState
+                    {
+                        InputType = AtemEnumMaps.FairlightAudioInputType.FindByValue(type),
+                        SupportedConfigurations = (FairlightInputConfiguration)configs
+                    };
+
+                    var cb2 = new FairlightAudioInputCallback(inputState, input, str => FireCommandKey($"{inputPath}.{str}"));
+                    SetupCallback<FairlightAudioInputCallback, _BMDSwitcherFairlightAudioInputEventType>(cb2, input.AddCallback, input.RemoveCallback);
+
+                    // Sources
+                    var sourceIterator = AtemSDKConverter.CastSdk<IBMDSwitcherFairlightAudioSourceIterator>(input.CreateIterator);
+                    int srcId = 0;
+                    for (sourceIterator.Next(out IBMDSwitcherFairlightAudioSource src); src != null; sourceIterator.Next(out src))
+                    {
+                        var srcState = new FairlightAudioState.InputSourceState();
+                        inputState.Sources.Add(srcState);
+
+                        var srcId2 = srcId;
+                        var cb3 = new FairlightAudioInputSourceCallback(srcState, src, () => FireCommandKey($"{inputPath}.Sources.{srcId2}"));
+                        SetupCallback<FairlightAudioInputSourceCallback, _BMDSwitcherFairlightAudioSourceEventType>(cb3, src.AddCallback, src.RemoveCallback);
+                        
+                        // TODO - Effects?
+
+                        srcId++;
+                    }
+                }
             }
         }
 
         private void SetupFairlightDynamics(FairlightAudioState.DynamicsState state, IBMDSwitcherFairlightAudioDynamicsProcessor proc, string path, bool hasExpander)
         {
-            var dynCb = new FairlightDynamicsAudioMixerCallback(state, proc, str => FireCommandKey($"{path}.{str}"));
+            var dynCb = new FairlightDynamicsAudioMixerCallback(state, proc, () => FireCommandKey(path));
             proc.AddCallback(dynCb);
             _cleanupCallbacks.Add(() => proc.RemoveCallback(dynCb));
             TriggerAllChanged(dynCb);
@@ -176,6 +223,38 @@ namespace LibAtem.ComparisonTests.State.SDK
                 var expanderProps = AtemSDKConverter.CastSdk<IBMDSwitcherFairlightAudioExpander>(proc.GetProcessor);
 
             }
+        }
+
+        private void SetupFairlightEqualizer(FairlightAudioState.EqualizerState state, IBMDSwitcherFairlightAudioEqualizer eq, string path)
+        {
+            var eqCb = new FairlightEqualizerAudioMixerCallback(state, eq, () => FireCommandKey(path));
+            eq.AddCallback(eqCb);
+            _cleanupCallbacks.Add(() => eq.RemoveCallback(eqCb));
+            TriggerAllChanged(eqCb);
+
+            /*
+            // Bands
+            var iterator = AtemSDKConverter.CastSdk<IBMDSwitcherFairlightAudioEqualizerBandIterator>(eq.CreateIterator);
+
+            var bands = new List<FairlightAudioState.EqualizerBandState>();
+
+            int id = 0;
+            for (iterator.Next(out IBMDSwitcherFairlightAudioEqualizerBand band); band != null; iterator.Next(out band))
+            {
+                var bandState = new FairlightAudioState.EqualizerBandState();
+
+                var id2 = id;
+                var cb = new FairlightEqualizerBandAudioMixerCallback(bandState, band, () => FireCommandKey($"{path}.Bands.{id2:D}"));
+                band.AddCallback(cb);
+                var band2 = band;
+                _cleanupCallbacks.Add(() => band2.RemoveCallback(cb));
+                TriggerAllChanged(cb);
+
+                id++;
+            }
+
+            state.Bands = bands;
+            */
         }
 
         private void SetupSerialPorts(IBMDSwitcher switcher)

@@ -21,7 +21,7 @@ namespace LibAtem.MockTests.Fairlight
         }
 
 
-        private static IBMDSwitcherFairlightAudioMixer GetFairlightMixer(AtemMockServerWrapper helper)
+        public static IBMDSwitcherFairlightAudioMixer GetFairlightMixer(AtemMockServerWrapper helper)
         {
             var mixer = helper.Helper.SdkSwitcher as IBMDSwitcherFairlightAudioMixer;
             Assert.NotNull(mixer);
