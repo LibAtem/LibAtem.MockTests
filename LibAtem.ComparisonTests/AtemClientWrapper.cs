@@ -178,6 +178,7 @@ namespace LibAtem.ComparisonTests
         {
             _isDisposing = true;
             _client.Dispose();
+            _sdkState.Dispose();
             // TODO - reenable once LibAtem allows disconnection
             // Assert.True(_disposeEvent.WaitOne(TimeSpan.FromSeconds(1)), "LibAtem: Cleanup timed out");
 

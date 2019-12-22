@@ -557,6 +557,142 @@ namespace LibAtem.MockTests.MixEffects
             }
         }
 
+        private class KeyerIdSet
+        {
+            public MixEffectBlockId MixEffect { get; set; }
+            public UpstreamKeyId Keyer { get; set; }
+        }
 
+        [Fact]
+        public void TestResetChromaCorrection()
+        {
+            MixEffectKeyAdvancedChromaResetCommand keyerTarget = new MixEffectKeyAdvancedChromaResetCommand
+            {
+                ChromaCorrection = true
+            };
+
+            bool tested = false;
+            AtemMockServerWrapper.Each(Output, Pool, CreateResetHandler(keyerTarget), DeviceTestCases.AdvancedChromaKeyer, helper =>
+            {
+                var keyers = GetKeyers<IBMDSwitcherKeyAdvancedChromaParameters>(helper);
+                var useKeyers = SelectionOfGroup(keyers);
+
+                foreach (Tuple<MixEffectBlockId, UpstreamKeyId, IBMDSwitcherKeyAdvancedChromaParameters> keyer in useKeyers)
+                {
+                    tested = true;
+                    AtemState stateBefore = helper.Helper.LibState;
+                    MixEffectState.KeyerAdvancedChromaState keyerBefore = stateBefore.MixEffects[(int)keyer.Item1].Keyers[(int)keyer.Item2].AdvancedChroma;
+                    Assert.NotNull(keyerBefore);
+
+                    IBMDSwitcherKeyAdvancedChromaParameters sdkKeyer = keyer.Item3;
+
+                    keyerTarget.MixEffectIndex = keyer.Item1;
+                    keyerTarget.KeyerIndex = keyer.Item2;
+
+                    uint timeBefore = helper.Server.CurrentTime;
+
+                    helper.SendAndWaitForChange(null, () => { sdkKeyer.ResetChromaCorrection(); });
+
+                    // It should have sent a response, but we dont expect any comparable data
+                    Assert.NotEqual(timeBefore, helper.Server.CurrentTime);
+                }
+            });
+            Assert.True(tested);
+        }
+
+        [Fact]
+        public void TestResetKeyAdjustments()
+        {
+            MixEffectKeyAdvancedChromaResetCommand keyerTarget = new MixEffectKeyAdvancedChromaResetCommand
+            {
+                KeyAdjustments = true
+            };
+
+            bool tested = false;
+            AtemMockServerWrapper.Each(Output, Pool, CreateResetHandler(keyerTarget), DeviceTestCases.AdvancedChromaKeyer, helper =>
+            {
+                var keyers = GetKeyers<IBMDSwitcherKeyAdvancedChromaParameters>(helper);
+                var useKeyers = SelectionOfGroup(keyers);
+
+                foreach (Tuple<MixEffectBlockId, UpstreamKeyId, IBMDSwitcherKeyAdvancedChromaParameters> keyer in useKeyers)
+                {
+                    tested = true;
+                    AtemState stateBefore = helper.Helper.LibState;
+                    MixEffectState.KeyerAdvancedChromaState keyerBefore = stateBefore.MixEffects[(int)keyer.Item1].Keyers[(int)keyer.Item2].AdvancedChroma;
+                    Assert.NotNull(keyerBefore);
+
+                    IBMDSwitcherKeyAdvancedChromaParameters sdkKeyer = keyer.Item3;
+
+                    keyerTarget.MixEffectIndex = keyer.Item1;
+                    keyerTarget.KeyerIndex = keyer.Item2;
+
+                    uint timeBefore = helper.Server.CurrentTime;
+
+                    helper.SendAndWaitForChange(null, () => { sdkKeyer.ResetKeyAdjustments(); });
+
+                    // It should have sent a response, but we dont expect any comparable data
+                    Assert.NotEqual(timeBefore, helper.Server.CurrentTime);
+                }
+            });
+            Assert.True(tested);
+        }
+
+        [Fact]
+        public void TestResetColorAdjustments()
+        {
+            MixEffectKeyAdvancedChromaResetCommand keyerTarget = new MixEffectKeyAdvancedChromaResetCommand
+            {
+                ColorAdjustments = true
+            };
+
+            bool tested = false;
+            AtemMockServerWrapper.Each(Output, Pool, CreateResetHandler(keyerTarget), DeviceTestCases.AdvancedChromaKeyer, helper =>
+            {
+                var keyers = GetKeyers<IBMDSwitcherKeyAdvancedChromaParameters>(helper);
+                var useKeyers = SelectionOfGroup(keyers);
+
+                foreach (Tuple<MixEffectBlockId, UpstreamKeyId, IBMDSwitcherKeyAdvancedChromaParameters> keyer in useKeyers)
+                {
+                    tested = true;
+                    AtemState stateBefore = helper.Helper.LibState;
+                    MixEffectState.KeyerAdvancedChromaState keyerBefore = stateBefore.MixEffects[(int)keyer.Item1].Keyers[(int)keyer.Item2].AdvancedChroma;
+                    Assert.NotNull(keyerBefore);
+
+                    IBMDSwitcherKeyAdvancedChromaParameters sdkKeyer = keyer.Item3;
+
+                    keyerTarget.MixEffectIndex = keyer.Item1;
+                    keyerTarget.KeyerIndex = keyer.Item2;
+
+                    uint timeBefore = helper.Server.CurrentTime;
+
+                    helper.SendAndWaitForChange(null, () => { sdkKeyer.ResetColorAdjustments(); });
+
+                    // It should have sent a response, but we dont expect any comparable data
+                    Assert.NotEqual(timeBefore, helper.Server.CurrentTime);
+                }
+            });
+            Assert.True(tested);
+        }
+
+
+        private static Func<ImmutableList<ICommand>, ICommand, IEnumerable<ICommand>> CreateResetHandler(MixEffectKeyAdvancedChromaResetCommand keyerTarget)
+        {
+            return (previousCommands, cmd) =>
+            {
+                if (cmd is MixEffectKeyAdvancedChromaResetCommand resetCmd)
+                {
+                    Assert.Equal(keyerTarget.MixEffectIndex, resetCmd.MixEffectIndex);
+                    Assert.Equal(keyerTarget.KeyerIndex, resetCmd.KeyerIndex);
+                    Assert.Equal(keyerTarget.ChromaCorrection, resetCmd.ChromaCorrection);
+                    Assert.Equal(keyerTarget.KeyAdjustments, resetCmd.KeyAdjustments);
+                    Assert.Equal(keyerTarget.ColorAdjustments, resetCmd.ColorAdjustments);
+
+                    // Accept it
+                    return new ICommand[] { null };
+                }
+
+                return new ICommand[0];
+            };
+        }
     }
 }

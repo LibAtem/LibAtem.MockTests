@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using LibAtem.Commands;
 using LibAtem.Net;
 using log4net;
+using ListExtensions = LibAtem.Util.ListExtensions;
 
 namespace LibAtem.MockTests.DeviceMock
 {
@@ -162,13 +163,9 @@ namespace LibAtem.MockTests.DeviceMock
                                             if (res.Count == 0)
                                                 throw new Exception($"Unhandled command \"{cmd.GetType().Name}\" in server");
 
-                                            // A null means 'ignore this, it shouldnt return anything'
-                                            if (res.All(c => c != null))
-                                            {
-                                                res.Add(CreateTimeCommand());
-
-                                                _connections.SendCommands(res);
-                                            }
+                                            res = ListExtensions.WhereNotNull(res).ToList();
+                                            res.Add(CreateTimeCommand());
+                                            _connections.SendCommands(res);
                                         });
                                     }
                                     //conn.HandleInner(_state, connection, cmds);
