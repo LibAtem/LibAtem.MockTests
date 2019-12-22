@@ -15,6 +15,10 @@ namespace LibAtem.ComparisonTests.State.SDK
             _state = state;
             _props = props;
             _onChange = onChange;
+
+            //_props.GetMaxFrameCount(out uint frames);
+            //for (uint o = 0; o < frames; o++)
+            //_state.Frames[o] = new ComparisonMediaPoolFrameState();
         }
 
         public void Notify(_BMDSwitcherMediaPoolEventType eventType, IBMDSwitcherFrame frame, int frameIndex, IBMDSwitcherAudio audio, int clipIndex)
@@ -51,13 +55,6 @@ namespace LibAtem.ComparisonTests.State.SDK
                 default:
                     throw new ArgumentOutOfRangeException(nameof(eventType), eventType, null);
             }
-        }
-
-        public void Init()
-        {
-            //_props.GetMaxFrameCount(out uint frames);
-            //for (uint o = 0; o < frames; o++)
-                //_state.Frames[o] = new ComparisonMediaPoolFrameState();
         }
 
         public void Notify(_BMDSwitcherMediaPoolEventType eventType)

@@ -16,6 +16,12 @@ namespace LibAtem.ComparisonTests.State.SDK
             _state = state;
             _props = props;
             _onChange = onChange;
+
+            _props.GetCount(out uint count);
+            var stills = new List<MediaPoolState.StillState>();
+            for (int i = 0; i < count; i++)
+                stills.Add(new MediaPoolState.StillState());
+            _state.Stills = stills;
         }
 
         public void Notify(_BMDSwitcherMediaPoolEventType eventType, IBMDSwitcherFrame frame, int index2)
@@ -51,16 +57,6 @@ namespace LibAtem.ComparisonTests.State.SDK
                 default:
                     throw new ArgumentOutOfRangeException(nameof(eventType), eventType, null);
             }
-        }
-
-        public void Init()
-        {
-            _props.GetCount(out uint count);
-
-            var stills = new List<MediaPoolState.StillState>();
-            for (int i = 0; i < count; i++)
-                stills.Add(new MediaPoolState.StillState());
-            _state.Stills = stills;
         }
 
         public void Notify(_BMDSwitcherMediaPoolEventType eventType)

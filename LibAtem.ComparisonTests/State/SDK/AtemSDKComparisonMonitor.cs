@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Runtime.InteropServices;
 using BMDSwitcherAPI;
 using LibAtem.Common;
 using LibAtem.State;
@@ -46,13 +45,9 @@ namespace LibAtem.ComparisonTests.State.SDK
             switcher.AllowStreamingToResume();
 
             var cb = new SwitcherPropertiesCallback(State, switcher, FireCommandKey);
-            switcher.AddCallback(cb);
-            _cleanupCallbacks.Add(() => switcher.RemoveCallback(cb));
-            TriggerAllChanged(cb);
-
+            SetupCallback<SwitcherPropertiesCallback, _BMDSwitcherEventType>(cb, switcher.AddCallback, switcher.RemoveCallback);
         }
 
-        // TODO - this should probably be replaced being being disposable
         public void Dispose()
         {
             _cleanupCallbacks.ForEach(cb => cb());
@@ -69,6 +64,12 @@ namespace LibAtem.ComparisonTests.State.SDK
         private void TriggerAllChanged<T>(INotify<T> cb, params T[] skip)
         {
             Enum.GetValues(typeof(T)).OfType<T>().Where(v => !skip.Contains(v)).ForEach(cb.Notify);
+        }
+
+        private void SetupCallbackBasic<T>(T cb, Action<T> add, Action<T> remove) 
+        {
+            add(cb);
+            _cleanupCallbacks.Add(() => remove(cb));
         }
 
         private void SetupCallback<T, Te>(T cb, Action<T> add, Action<T> remove, bool triggerAllChanged = true, params Te[] skip) where T : INotify<Te>
@@ -90,9 +91,7 @@ namespace LibAtem.ComparisonTests.State.SDK
 
                 var cb = new AudioMixerCallback(State.Audio.ProgramOut, mixer,
                     () => FireCommandKey("Audio.ProgramOut"));
-                mixer.AddCallback(cb);
-                _cleanupCallbacks.Add(() => mixer.RemoveCallback(cb));
-                TriggerAllChanged(cb);
+                SetupCallback<AudioMixerCallback, _BMDSwitcherAudioMixerEventType>(cb, mixer.AddCallback, mixer.RemoveCallback);
 
                 var iterator = AtemSDKConverter.CastSdk<IBMDSwitcherAudioInputIterator>(mixer.CreateIterator);
 
@@ -103,10 +102,7 @@ namespace LibAtem.ComparisonTests.State.SDK
 
                     var cbi = new AudioMixerInputCallback(State.Audio.Inputs[inputId], port,
                         str => FireCommandKey($"Audio.Inputs.{inputId:D}.{str}"));
-                    port.AddCallback(cbi);
-                    var port2 = port;
-                    _cleanupCallbacks.Add(() => port2.RemoveCallback(cbi));
-                    TriggerAllChanged(cbi);
+                    SetupCallback<AudioMixerInputCallback, _BMDSwitcherAudioInputEventType>(cbi, port.AddCallback, port.RemoveCallback);
                 }
 
                 var monIt = AtemSDKConverter.CastSdk<IBMDSwitcherAudioMonitorOutputIterator>(mixer.CreateIterator);
@@ -122,10 +118,7 @@ namespace LibAtem.ComparisonTests.State.SDK
 
                     var cbi = new AudioMixerMonitorOutputCallback(mon, r,
                         () => FireCommandKey($"Audio.Monitors.{monId:D}"));
-                    r.AddCallback(cbi);
-                    var r2 = r;
-                    _cleanupCallbacks.Add(() => r2.RemoveCallback(cbi));
-                    TriggerAllChanged(cbi);
+                    SetupCallback<AudioMixerMonitorOutputCallback, _BMDSwitcherAudioMonitorOutputEventType>(cbi, r.AddCallback, r.RemoveCallback);
                 }
 
                 var talkback = switcher as IBMDSwitcherTalkback;
@@ -133,8 +126,7 @@ namespace LibAtem.ComparisonTests.State.SDK
                 {
                     var cbt = new TalkbackCallback(State.Audio.Talkback, talkback,
                         () => FireCommandKey("Audio.Talkback"));
-                    talkback.AddCallback(cbt);
-                    _cleanupCallbacks.Add(() => talkback.RemoveCallback(cbt));
+                    SetupCallbackBasic(cbt, talkback.AddCallback, talkback.RemoveCallback);
                     cbt.NotifyAll(State.Audio.Inputs.Keys);
                 }
 
@@ -195,27 +187,21 @@ namespace LibAtem.ComparisonTests.State.SDK
         private void SetupFairlightDynamics(FairlightAudioState.DynamicsState state, IBMDSwitcherFairlightAudioDynamicsProcessor proc, string path, bool hasExpander)
         {
             var dynCb = new FairlightDynamicsAudioMixerCallback(state, proc, () => FireCommandKey(path));
-            proc.AddCallback(dynCb);
-            _cleanupCallbacks.Add(() => proc.RemoveCallback(dynCb));
-            TriggerAllChanged(dynCb);
+            SetupCallback<FairlightDynamicsAudioMixerCallback, _BMDSwitcherFairlightAudioDynamicsProcessorEventType>(dynCb, proc.AddCallback, proc.RemoveCallback);
 
             // Limiter
             var limiterProps = AtemSDKConverter.CastSdk<IBMDSwitcherFairlightAudioLimiter>(proc.GetProcessor);
 
             state.Limiter = new FairlightAudioState.LimiterState();
             var limiterCb = new FairlightLimiterDynamicsAudioMixerCallback(state.Limiter, limiterProps, str => FireCommandKey($"{path}.Limiter.{str}"));
-            limiterProps.AddCallback(limiterCb);
-            _cleanupCallbacks.Add(() => limiterProps.RemoveCallback(limiterCb));
-            TriggerAllChanged(limiterCb);
+            SetupCallback<FairlightLimiterDynamicsAudioMixerCallback, _BMDSwitcherFairlightAudioLimiterEventType>(limiterCb, limiterProps.AddCallback, limiterProps.RemoveCallback);
 
             // Compressor
             var compressorProps = AtemSDKConverter.CastSdk<IBMDSwitcherFairlightAudioCompressor>(proc.GetProcessor);
             
             state.Compressor = new FairlightAudioState.CompressorState();
             var compressorCb = new FairlightCompressorDynamicsAudioMixerCallback(state.Compressor, compressorProps, str => FireCommandKey($"{path}.Compressor.{str}"));
-            compressorProps.AddCallback(compressorCb);
-            _cleanupCallbacks.Add(() => compressorProps.RemoveCallback(compressorCb));
-            TriggerAllChanged(compressorCb);
+            SetupCallback<FairlightCompressorDynamicsAudioMixerCallback, _BMDSwitcherFairlightAudioCompressorEventType>(compressorCb, compressorProps.AddCallback, compressorProps.RemoveCallback);
 
             if (hasExpander)
             {
@@ -228,9 +214,7 @@ namespace LibAtem.ComparisonTests.State.SDK
         private void SetupFairlightEqualizer(FairlightAudioState.EqualizerState state, IBMDSwitcherFairlightAudioEqualizer eq, string path)
         {
             var eqCb = new FairlightEqualizerAudioMixerCallback(state, eq, () => FireCommandKey(path));
-            eq.AddCallback(eqCb);
-            _cleanupCallbacks.Add(() => eq.RemoveCallback(eqCb));
-            TriggerAllChanged(eqCb);
+            SetupCallback<FairlightEqualizerAudioMixerCallback, _BMDSwitcherFairlightAudioEqualizerEventType>(eqCb, eq.AddCallback, eq.RemoveCallback);
 
             /*
             // Bands
@@ -245,10 +229,7 @@ namespace LibAtem.ComparisonTests.State.SDK
 
                 var id2 = id;
                 var cb = new FairlightEqualizerBandAudioMixerCallback(bandState, band, () => FireCommandKey($"{path}.Bands.{id2:D}"));
-                band.AddCallback(cb);
-                var band2 = band;
-                _cleanupCallbacks.Add(() => band2.RemoveCallback(cb));
-                TriggerAllChanged(cb);
+                SetupCallback(cb, band.AddCallback, band.RemoveCallback);
 
                 id++;
             }
@@ -267,10 +248,7 @@ namespace LibAtem.ComparisonTests.State.SDK
                 Assert.Equal(0, id);
                 
                 var cb = new SerialPortPropertiesCallback(State.Settings, port, () => FireCommandKey("Settings.SerialPort"));
-                port.AddCallback(cb);
-                var port2 = port;
-                _cleanupCallbacks.Add(() => port2.RemoveCallback(cb));
-                TriggerAllChanged(cb);
+                SetupCallback<SerialPortPropertiesCallback, _BMDSwitcherSerialPortEventType>(cb, port.AddCallback, port.RemoveCallback);
 
                 id++;
             }
@@ -290,9 +268,7 @@ namespace LibAtem.ComparisonTests.State.SDK
                 uint deckId = id++;
 
                 var cb = new HyperDeckPropertiesCallback(deckState, deck2, str => FireCommandKey($"Settings.Hyperdecks.{deckId:D}.{str}"));
-                deck2.AddCallback(cb);
-                _cleanupCallbacks.Add(() => deck2.RemoveCallback(cb));
-                TriggerAllChanged(cb);
+                SetupCallback<HyperDeckPropertiesCallback, _BMDSwitcherHyperDeckEventType>(cb, deck.AddCallback, deck.RemoveCallback);
             }
             State.Settings.Hyperdecks = hyperdecks;
         }
@@ -316,10 +292,7 @@ namespace LibAtem.ComparisonTests.State.SDK
                 mvState.SupportsProgramPreviewSwapped = canSwap != 0;
 
                 var cb = new MultiViewPropertiesCallback(mvState, mv, str => FireCommandKey($"Settings.MultiViewers.{mvId:D}.{str}"));
-                mv.AddCallback(cb);
-                var mv2 = mv;
-                _cleanupCallbacks.Add(() => mv2.RemoveCallback(cb));
-                TriggerAllChanged(cb);
+                SetupCallback<MultiViewPropertiesCallback, _BMDSwitcherMultiViewEventType>(cb, mv.AddCallback, mv.RemoveCallback);
             }
             State.Settings.MultiViewers = mvs;
         }
@@ -341,9 +314,7 @@ namespace LibAtem.ComparisonTests.State.SDK
 
                 var cb = new MediaPlayerCallback(player, updateSettings, media,
                     str => FireCommandKey($"MediaPlayers.{playerId:D}.{str}"));
-                media.AddCallback(cb);
-                var media2 = media;
-                _cleanupCallbacks.Add(() => media2.RemoveCallback(cb));
+                SetupCallbackBasic(cb, media.AddCallback, media.RemoveCallback);
                 cb.Notify();
             }
             State.MediaPlayers = players;
@@ -359,18 +330,14 @@ namespace LibAtem.ComparisonTests.State.SDK
             // Stills
             pool.GetStills(out IBMDSwitcherStills stills);
 
-            var cbs = new MediaPoolStillsCallback(State.MediaPool, stills, str => FireCommandKey($"MediaPool.Stills.{str}"));
-            stills.AddCallback(cbs);
-            _cleanupCallbacks.Add(() => stills.RemoveCallback(cbs));
-
-            cbs.Init();
             var skipStills = new[]
             {
                 _BMDSwitcherMediaPoolEventType.bmdSwitcherMediaPoolEventTypeAudioValidChanged,
                 _BMDSwitcherMediaPoolEventType.bmdSwitcherMediaPoolEventTypeAudioNameChanged,
                 _BMDSwitcherMediaPoolEventType.bmdSwitcherMediaPoolEventTypeAudioHashChanged
             };
-            TriggerAllChanged(cbs, skipStills);
+            var cbs = new MediaPoolStillsCallback(State.MediaPool, stills, str => FireCommandKey($"MediaPool.Stills.{str}"));
+            SetupCallback(cbs, stills.AddCallback, stills.RemoveCallback, true, skipStills);
 
             // Clips
             pool.GetClipCount(out uint clipCount);
@@ -381,11 +348,7 @@ namespace LibAtem.ComparisonTests.State.SDK
                 uint clipId = i;
 
                 var cbc = new MediaPoolClipCallback(State.MediaPool.Clips[(int)i], clip, () => FireCommandKey($"MediaPool.Clips.{clipId:D}"));
-                clip.AddCallback(cbc);
-                _cleanupCallbacks.Add(() => clip.RemoveCallback(cbc));
-
-                cbc.Init();
-                TriggerAllChanged(cbc);
+                SetupCallback<MediaPoolClipCallback, _BMDSwitcherMediaPoolEventType>(cbc, clip.AddCallback, clip.RemoveCallback);
             }
         }
 
@@ -394,8 +357,7 @@ namespace LibAtem.ComparisonTests.State.SDK
             var pool = switcher as IBMDSwitcherMacroPool;
             
             var cbs = new MacroPoolCallback(State.Macros, pool, str => FireCommandKey($"Macros.Pool.{str}"));
-            pool.AddCallback(cbs);
-            _cleanupCallbacks.Add(() => pool.RemoveCallback(cbs));
+            SetupCallbackBasic(cbs, pool.AddCallback, pool.RemoveCallback);
 
             pool.GetMaxCount(out uint count);
             State.Macros.Pool = Enumerable.Repeat(0, (int)count).Select(i => new MacroState.ItemState()).ToList();
@@ -407,10 +369,7 @@ namespace LibAtem.ComparisonTests.State.SDK
             var ctrl = switcher as IBMDSwitcherMacroControl;
 
             var cbs2 = new MacroControlCallback(State.Macros, ctrl, str => FireCommandKey($"Macros.{str}"));
-            ctrl.AddCallback(cbs2);
-            _cleanupCallbacks.Add(() => ctrl.RemoveCallback(cbs2));
-
-            TriggerAllChanged(cbs2);
+            SetupCallback<MacroControlCallback, _BMDSwitcherMacroControlEventType>(cbs2, ctrl.AddCallback, ctrl.RemoveCallback);
         }
 
         private void SetupDownstreamKeyers(IBMDSwitcher switcher)
@@ -426,10 +385,7 @@ namespace LibAtem.ComparisonTests.State.SDK
                 DownstreamKeyId dskId = id++;
 
                 var cb = new DownstreamKeyerPropertiesCallback(dsk, key, str => FireCommandKey($"DownstreamKeyers.{dskId:D}.{str}"));
-                key.AddCallback(cb);
-                var key2 = key;
-                _cleanupCallbacks.Add(() => key2.RemoveCallback(cb));
-                TriggerAllChanged(cb);
+                SetupCallback<DownstreamKeyerPropertiesCallback, _BMDSwitcherDownstreamKeyEventType>(cb, key.AddCallback, key.RemoveCallback);
             }
             State.DownstreamKeyers = dsks;
         }
@@ -449,10 +405,7 @@ namespace LibAtem.ComparisonTests.State.SDK
                 var meId = id++;
 
                 var cb = new MixEffectPropertiesCallback(meState, me, str => FireCommandKey($"MixEffects.{meId:D}.{str}"));
-                me.AddCallback(cb);
-                var me2 = me;
-                _cleanupCallbacks.Add(() => me2.RemoveCallback(cb));
-                TriggerAllChanged(cb);
+                SetupCallback<MixEffectPropertiesCallback, _BMDSwitcherMixEffectBlockEventType>(cb, me.AddCallback, me.RemoveCallback);
 
                 SetupMixEffectKeyer(me, meId);
 
@@ -462,87 +415,51 @@ namespace LibAtem.ComparisonTests.State.SDK
 
         private void SetupMixEffectTransition(IBMDSwitcherMixEffectBlock me, MixEffectBlockId id)
         {
-            if (me is IBMDSwitcherTransitionParameters trans)
-                SetupMixEffectTransitionProperties(trans, id);
-            if (me is IBMDSwitcherTransitionMixParameters mix)
-                SetupMixEffectTransitionMix(mix, id);
-            if (me is IBMDSwitcherTransitionDipParameters dip)
-                SetupMixEffectTransitionDip(dip, id);
-            if (me is IBMDSwitcherTransitionWipeParameters wipe)
-                SetupMixEffectTransitionWipe(wipe, id);
-            if (me is IBMDSwitcherTransitionStingerParameters stinger)
-                SetupMixEffectTransitionStinger(stinger, id);
-            if (me is IBMDSwitcherTransitionDVEParameters dve)
-                SetupMixEffectTransitionDVE(dve, id);
-        }
-
-        private void SetupMixEffectTransitionProperties(IBMDSwitcherTransitionParameters trans, MixEffectBlockId id)
-        {
             MixEffectState.TransitionState st = State.MixEffects[(int)id].Transition;
 
-            var cb = new MixEffectTransitionPropertiesCallback(st, trans, str => FireCommandKey($"MixEffects.{id:D}.Transition.{str}"));
-            trans.AddCallback(cb);
-            _cleanupCallbacks.Add(() => trans.RemoveCallback(cb));
+            if (me is IBMDSwitcherTransitionParameters trans)
+            {
+                var cb = new MixEffectTransitionPropertiesCallback(st, trans, str => FireCommandKey($"MixEffects.{id:D}.Transition.{str}"));
+                SetupCallback<MixEffectTransitionPropertiesCallback, _BMDSwitcherTransitionParametersEventType>(cb, trans.AddCallback, trans.RemoveCallback);
+            }
 
-            TriggerAllChanged(cb);
+            if (me is IBMDSwitcherTransitionMixParameters mix)
+            {
+                st.Mix = new MixEffectState.TransitionMixState();
+                var cb = new MixEffectTransitionMixCallback(st.Mix, mix, () => FireCommandKey($"MixEffects.{id:D}.Transition.Mix"));
+                SetupCallback<MixEffectTransitionMixCallback, _BMDSwitcherTransitionMixParametersEventType>(cb, mix.AddCallback, mix.RemoveCallback);
+            }
+
+            if (me is IBMDSwitcherTransitionDipParameters dip)
+            {
+                st.Dip = new MixEffectState.TransitionDipState();
+                var cb = new MixEffectTransitionDipCallback(st.Dip, dip, () => FireCommandKey($"MixEffects.{id:D}.Transition.Dip"));
+                SetupCallback<MixEffectTransitionDipCallback, _BMDSwitcherTransitionDipParametersEventType>(cb, dip.AddCallback, dip.RemoveCallback);
+            }
+
+            if (me is IBMDSwitcherTransitionWipeParameters wipe)
+            {
+                st.Wipe = new MixEffectState.TransitionWipeState();
+                var cb = new MixEffectTransitionWipeCallback(st.Wipe, wipe, () => FireCommandKey($"MixEffects.{id:D}.Transition.Wipe"));
+                SetupCallback<MixEffectTransitionWipeCallback, _BMDSwitcherTransitionWipeParametersEventType>(cb, wipe.AddCallback, wipe.RemoveCallback);
+            }
+
+            if (me is IBMDSwitcherTransitionStingerParameters stinger)
+            {
+                st.Stinger = new MixEffectState.TransitionStingerState();
+                var cb = new MixEffectTransitionStingerCallback(st.Stinger, stinger, () => FireCommandKey($"MixEffects.{id:D}.Transition.Stinger"));
+                SetupCallback<MixEffectTransitionStingerCallback, _BMDSwitcherTransitionStingerParametersEventType>(cb, stinger.AddCallback, stinger.RemoveCallback);
+            }
+
+            if (me is IBMDSwitcherTransitionDVEParameters dve)
+            {
+                st.DVE = new MixEffectState.TransitionDVEState();
+                var cb = new MixEffectTransitionDVECallback(st.DVE, dve, () => FireCommandKey($"MixEffects.{id:D}.Transition.DVE"));
+                SetupCallback<MixEffectTransitionDVECallback, _BMDSwitcherTransitionDVEParametersEventType>(cb, dve.AddCallback, dve.RemoveCallback);
+            }
         }
 
-        private void SetupMixEffectTransitionMix(IBMDSwitcherTransitionMixParameters dip, MixEffectBlockId id)
-        {
-            MixEffectState.TransitionMixState st = State.MixEffects[(int)id].Transition.Mix = new MixEffectState.TransitionMixState();
-
-            var cb = new MixEffectTransitionMixCallback(st, dip, () => FireCommandKey($"MixEffects.{id:D}.Transition.Mix"));
-            dip.AddCallback(cb);
-            _cleanupCallbacks.Add(() => dip.RemoveCallback(cb));
-
-            TriggerAllChanged(cb);
-        }
-
-        private void SetupMixEffectTransitionDip(IBMDSwitcherTransitionDipParameters dip, MixEffectBlockId id)
-        {
-            MixEffectState.TransitionDipState st = State.MixEffects[(int)id].Transition.Dip = new MixEffectState.TransitionDipState();
-
-            var cb = new MixEffectTransitionDipCallback(st, dip, () => FireCommandKey($"MixEffects.{id:D}.Transition.Dip"));
-            dip.AddCallback(cb);
-            _cleanupCallbacks.Add(() => dip.RemoveCallback(cb));
-
-            TriggerAllChanged(cb);
-        }
-
-        private void SetupMixEffectTransitionWipe(IBMDSwitcherTransitionWipeParameters wipe, MixEffectBlockId id)
-        {
-            MixEffectState.TransitionWipeState st = State.MixEffects[(int)id].Transition.Wipe = new MixEffectState.TransitionWipeState();
-
-            var cb = new MixEffectTransitionWipeCallback(st, wipe, () => FireCommandKey($"MixEffects.{id:D}.Transition.Wipe"));
-            wipe.AddCallback(cb);
-            _cleanupCallbacks.Add(() => wipe.RemoveCallback(cb));
-
-            TriggerAllChanged(cb);
-        }
-
-        private void SetupMixEffectTransitionStinger(IBMDSwitcherTransitionStingerParameters stinger, MixEffectBlockId id)
-        {
-            MixEffectState.TransitionStingerState st = State.MixEffects[(int)id].Transition.Stinger = new MixEffectState.TransitionStingerState();
-
-            var cb = new MixEffectTransitionStingerCallback(st, stinger, () => FireCommandKey($"MixEffects.{id:D}.Transition.Stinger"));
-            stinger.AddCallback(cb);
-            _cleanupCallbacks.Add(() => stinger.RemoveCallback(cb));
-
-            TriggerAllChanged(cb);
-        }
-
-        private void SetupMixEffectTransitionDVE(IBMDSwitcherTransitionDVEParameters dve, MixEffectBlockId id)
-        {
-            MixEffectState.TransitionDVEState st = State.MixEffects[(int)id].Transition.DVE = new MixEffectState.TransitionDVEState();
-
-            var cb = new MixEffectTransitionDVECallback(st, dve, () => FireCommandKey($"MixEffects.{id:D}.Transition.DVE"));
-            dve.AddCallback(cb);
-            _cleanupCallbacks.Add(() => dve.RemoveCallback(cb));
-
-            TriggerAllChanged(cb);
-        }
-
-        private void SetupMixEffectKeyer(IBMDSwitcherMixEffectBlock me, MixEffectBlockId id)
+        private void SetupMixEffectKeyer(IBMDSwitcherMixEffectBlock me, MixEffectBlockId meId)
         {
             var iterator = AtemSDKConverter.CastSdk<IBMDSwitcherKeyIterator>(me.CreateIterator);
 
@@ -553,96 +470,54 @@ namespace LibAtem.ComparisonTests.State.SDK
                 var keyerState = new MixEffectState.KeyerState();
                 keyers.Add(keyerState);
 
-                SetupMixEffectKeyerProps(keyer, keyerState, id, keyId);
+                var cb2 = new MixEffectKeyerCallback(keyerState, keyer, str => FireCommandKey($"MixEffects.{meId:D}.Keyers.{keyId:D}.{str}"));
+                SetupCallback(cb2, keyer.AddCallback, keyer.RemoveCallback, true, _BMDSwitcherKeyEventType.bmdSwitcherKeyEventTypeCanBeDVEKeyChanged);
 
                 if (keyer is IBMDSwitcherKeyLumaParameters luma)
-                    SetupMixEffectLumaKeyer(luma, keyerState, id, keyId);
+                {
+                    keyerState.Luma = new MixEffectState.KeyerLumaState();
+                    var cb = new MixEffectKeyerLumaCallback(keyerState.Luma, luma, () => FireCommandKey($"MixEffects.{meId:D}.Keyers.{keyId:D}.Luma"));
+                    SetupCallback<MixEffectKeyerLumaCallback, _BMDSwitcherKeyLumaParametersEventType>(cb, luma.AddCallback, luma.RemoveCallback);
+                }
+
                 if (keyer is IBMDSwitcherKeyChromaParameters chroma)
-                    SetupMixEffectChromaKeyer(chroma, keyerState, id, keyId);
+                {
+                    keyerState.Chroma = new MixEffectState.KeyerChromaState();
+                    var cb = new MixEffectKeyerChromaCallback(keyerState.Chroma, chroma, () => FireCommandKey($"MixEffects.{meId:D}.Keyers.{keyId:D}.Chroma"));
+                    SetupCallback<MixEffectKeyerChromaCallback, _BMDSwitcherKeyChromaParametersEventType>(cb, chroma.AddCallback, chroma.RemoveCallback);
+                }
+
                 if (keyer is IBMDSwitcherKeyAdvancedChromaParameters advancedChroma)
-                    SetupMixEffectAdvancedChromaKeyer(advancedChroma, keyerState, id, keyId);
+                {
+                    keyerState.AdvancedChroma = new MixEffectState.KeyerAdvancedChromaState();
+                    var cb = new MixEffectKeyerAdvancedChromaCallback(keyerState.AdvancedChroma, advancedChroma, str => FireCommandKey($"MixEffects.{meId:D}.Keyers.{keyId:D}.AdvancedChroma.{str}"));
+                    SetupCallback<MixEffectKeyerAdvancedChromaCallback, _BMDSwitcherKeyAdvancedChromaParametersEventType>(cb, advancedChroma.AddCallback, advancedChroma.RemoveCallback);
+                }
+
                 if (keyer is IBMDSwitcherKeyPatternParameters pattern)
-                    SetupMixEffectPatternKeyer(pattern, keyerState, id, keyId);
+                {
+                    keyerState.Pattern = new MixEffectState.KeyerPatternState();
+                    var cb = new MixEffectKeyerPatternCallback(keyerState.Pattern, pattern, () => FireCommandKey($"MixEffects.{meId:D}.Keyers.{keyId:D}.Pattern"));
+                    SetupCallback<MixEffectKeyerPatternCallback, _BMDSwitcherKeyPatternParametersEventType>(cb, pattern.AddCallback, pattern.RemoveCallback);
+                }
+
                 if (keyer is IBMDSwitcherKeyDVEParameters dve)
-                    SetupMixEffectDVEKeyer(dve, keyerState, id, keyId);
+                {
+                    keyerState.DVE = new MixEffectState.KeyerDVEState();
+                    var cb = new MixEffectKeyerDVECallback(keyerState.DVE, dve, () => FireCommandKey($"MixEffects.{meId:D}.Keyers.{keyId:D}.DVE"));
+                    SetupCallback<MixEffectKeyerDVECallback, _BMDSwitcherKeyDVEParametersEventType>(cb, dve.AddCallback, dve.RemoveCallback);
+                }
+
                 if (keyer is IBMDSwitcherKeyFlyParameters fly)
-                    SetupMixEffectFlyKeyer(fly, keyerState, id, keyId);
+                    SetupMixEffectFlyKeyer(fly, keyerState, meId, keyId);
                 
                 keyId++;
             }
-            State.MixEffects[(int)id].Keyers = keyers;
-        }
-
-        private void SetupMixEffectKeyerProps(IBMDSwitcherKey props, MixEffectState.KeyerState state, MixEffectBlockId meId, UpstreamKeyId keyId)
-        {
-            var cb = new MixEffectKeyerCallback(state, props, str => FireCommandKey($"MixEffects.{meId:D}.Keyers.{keyId:D}.{str}"));
-            props.AddCallback(cb);
-            _cleanupCallbacks.Add(() => props.RemoveCallback(cb));
-
-            TriggerAllChanged(cb, _BMDSwitcherKeyEventType.bmdSwitcherKeyEventTypeCanBeDVEKeyChanged);
-        }
-
-        private void SetupMixEffectLumaKeyer(IBMDSwitcherKeyLumaParameters props, MixEffectState.KeyerState state, MixEffectBlockId meId, UpstreamKeyId keyId)
-        {
-            state.Luma = new MixEffectState.KeyerLumaState();
-
-            var cb = new MixEffectKeyerLumaCallback(state.Luma, props, () => FireCommandKey($"MixEffects.{meId:D}.Keyers.{keyId:D}.Luma"));
-            props.AddCallback(cb);
-            _cleanupCallbacks.Add(() => props.RemoveCallback(cb));
-
-            TriggerAllChanged(cb);
-        }
-
-        private void SetupMixEffectChromaKeyer(IBMDSwitcherKeyChromaParameters props, MixEffectState.KeyerState state, MixEffectBlockId meId, UpstreamKeyId keyId)
-        {
-            state.Chroma = new MixEffectState.KeyerChromaState();
-
-            var cb = new MixEffectKeyerChromaCallback(state.Chroma, props, () => FireCommandKey($"MixEffects.{meId:D}.Keyers.{keyId:D}.Chroma"));
-            props.AddCallback(cb);
-            _cleanupCallbacks.Add(() => props.RemoveCallback(cb));
-
-            TriggerAllChanged(cb);
-        }
-
-        private void SetupMixEffectAdvancedChromaKeyer(IBMDSwitcherKeyAdvancedChromaParameters props, MixEffectState.KeyerState state, MixEffectBlockId meId, UpstreamKeyId keyId)
-        {
-            state.AdvancedChroma = new MixEffectState.KeyerAdvancedChromaState();
-
-            var cb = new MixEffectKeyerAdvancedChromaCallback(state.AdvancedChroma, props, str => FireCommandKey($"MixEffects.{meId:D}.Keyers.{keyId:D}.AdvancedChroma.{str}"));
-            props.AddCallback(cb);
-            _cleanupCallbacks.Add(() => props.RemoveCallback(cb));
-
-            TriggerAllChanged(cb);
-        }
-
-        private void SetupMixEffectPatternKeyer(IBMDSwitcherKeyPatternParameters props, MixEffectState.KeyerState state, MixEffectBlockId meId, UpstreamKeyId keyId)
-        {
-            state.Pattern = new MixEffectState.KeyerPatternState();
-
-            var cb = new MixEffectKeyerPatternCallback(state.Pattern, props, () => FireCommandKey($"MixEffects.{meId:D}.Keyers.{keyId:D}.Pattern"));
-            props.AddCallback(cb);
-            _cleanupCallbacks.Add(() => props.RemoveCallback(cb));
-
-            TriggerAllChanged(cb);
-        }
-
-        private void SetupMixEffectDVEKeyer(IBMDSwitcherKeyDVEParameters props, MixEffectState.KeyerState state, MixEffectBlockId meId, UpstreamKeyId keyId)
-        {
-            state.DVE = new MixEffectState.KeyerDVEState();
-
-            var cb = new MixEffectKeyerDVECallback(state.DVE, props, () => FireCommandKey($"MixEffects.{meId:D}.Keyers.{keyId:D}.DVE"));
-            props.AddCallback(cb);
-            _cleanupCallbacks.Add(() => props.RemoveCallback(cb));
-
-            TriggerAllChanged(cb);
+            State.MixEffects[(int)meId].Keyers = keyers;
         }
 
         private void SetupMixEffectFlyKeyer(IBMDSwitcherKeyFlyParameters props, MixEffectState.KeyerState state, MixEffectBlockId meId, UpstreamKeyId keyId)
         {
-            var cb = new MixEffectKeyerFlyCallback(state.DVE, props, () => FireCommandKey($"MixEffects.{meId:D}.Keyers.{keyId:D}.DVE"));
-            props.AddCallback(cb);
-            _cleanupCallbacks.Add(() => props.RemoveCallback(cb));
-
             var ignore = new[]
             {
                 _BMDSwitcherKeyFlyParametersEventType.bmdSwitcherKeyFlyParametersEventTypeIsAtKeyFramesChanged,
@@ -651,7 +526,8 @@ namespace LibAtem.ComparisonTests.State.SDK
                 _BMDSwitcherKeyFlyParametersEventType.bmdSwitcherKeyFlyParametersEventTypeIsKeyFrameStoredChanged,
                 _BMDSwitcherKeyFlyParametersEventType.bmdSwitcherKeyFlyParametersEventTypeIsRunningChanged
             };
-            TriggerAllChanged(cb, ignore);
+            var cb = new MixEffectKeyerFlyCallback(state.DVE, props, () => FireCommandKey($"MixEffects.{meId:D}.Keyers.{keyId:D}.DVE"));
+            SetupCallback(cb, props.AddCallback, props.RemoveCallback, true, ignore);
 
             props.GetKeyFrameParameters(_BMDSwitcherFlyKeyFrame.bmdSwitcherFlyKeyFrameA, out IBMDSwitcherKeyFlyKeyFrameParameters keyframeA);
             props.GetKeyFrameParameters(_BMDSwitcherFlyKeyFrame.bmdSwitcherFlyKeyFrameB, out IBMDSwitcherKeyFlyKeyFrameParameters keyframeB);
@@ -663,14 +539,10 @@ namespace LibAtem.ComparisonTests.State.SDK
             };
 
             var cb2 = new MixEffectKeyerFlyKeyFrameCallback(state.FlyFrames[0], keyframeA, () => FireCommandKey($"MixEffects.{meId:D}.Keyers.{keyId:D}.FlyFrames.0"));
-            keyframeA.AddCallback(cb2);
-            _cleanupCallbacks.Add(() => keyframeA.RemoveCallback(cb2));
-            TriggerAllChanged(cb2);
+            SetupCallback<MixEffectKeyerFlyKeyFrameCallback, _BMDSwitcherKeyFlyKeyFrameParametersEventType>(cb2, keyframeA.AddCallback, keyframeA.RemoveCallback);
 
             var cb3 = new MixEffectKeyerFlyKeyFrameCallback(state.FlyFrames[1], keyframeB, () => FireCommandKey($"MixEffects.{meId:D}.Keyers.{keyId:D}.FlyFrames.1"));
-            keyframeB.AddCallback(cb3);
-            _cleanupCallbacks.Add(() => keyframeB.RemoveCallback(cb3));
-            TriggerAllChanged(cb3);
+            SetupCallback<MixEffectKeyerFlyKeyFrameCallback, _BMDSwitcherKeyFlyKeyFrameParametersEventType>(cb3, keyframeB.AddCallback, keyframeB.RemoveCallback);
         }
 
         private void SetupInputs(IBMDSwitcher switcher)
@@ -685,7 +557,9 @@ namespace LibAtem.ComparisonTests.State.SDK
                 input.GetInputId(out long id);
                 var src = (VideoSource) id;
 
-                SetInputProperties(src, input);
+                var st = State.Settings.Inputs[src] = new InputState();
+                var cb = new InputCallback(st, input, str => FireCommandKey($"Settings.Inputs.{id:D}.{str}"));
+                SetupCallback<InputCallback, _BMDSwitcherInputEventType>(cb, input.AddCallback, input.RemoveCallback);
 
                 if (input is IBMDSwitcherInputAux aux)
                     auxes.Add(SetupAuxiliary(src, aux));
@@ -699,26 +573,13 @@ namespace LibAtem.ComparisonTests.State.SDK
             State.SuperSources = ssrcs;
         }
 
-        private void SetInputProperties(VideoSource id, IBMDSwitcherInput inp)
-        {
-            var c = new InputState();
-            State.Settings.Inputs[id] = c;
-            var cb = new InputCallback(c, inp, str => FireCommandKey($"Settings.Inputs.{id:D}.{str}"));
-            inp.AddCallback(cb);
-            _cleanupCallbacks.Add(() => inp.RemoveCallback(cb));
-
-            TriggerAllChanged(cb);
-        }
 
         private AuxState SetupAuxiliary(VideoSource id, IBMDSwitcherInputAux aux)
         {
             AuxiliaryId id2 = AtemEnumMaps.GetAuxId(id);
             var c = new AuxState();
             var cb = new AuxiliaryCallback(c, aux, () => FireCommandKey($"Auxiliaries.{id2:D}"));
-            aux.AddCallback(cb);
-            _cleanupCallbacks.Add(() => aux.RemoveCallback(cb));
-
-            TriggerAllChanged(cb);
+            SetupCallback<AuxiliaryCallback, _BMDSwitcherInputAuxEventType>(cb, aux.AddCallback, aux.RemoveCallback);
             return c;
         }
 
@@ -727,10 +588,7 @@ namespace LibAtem.ComparisonTests.State.SDK
             ColorGeneratorId id2 = AtemEnumMaps.GetSourceIdForGen(id);
             var c = new ColorState();
             var cb = new ColorCallback(c, col, () => FireCommandKey($"ColorGenerators.{id2:D}"));
-            col.AddCallback(cb);
-            _cleanupCallbacks.Add(() => col.RemoveCallback(cb));
-            
-            TriggerAllChanged(cb);
+            SetupCallback<ColorCallback, _BMDSwitcherInputColorEventType>(cb, col.AddCallback, col.RemoveCallback);
             return c;
         }
 
@@ -741,15 +599,11 @@ namespace LibAtem.ComparisonTests.State.SDK
 
             var c = new SuperSourceState();
             var cb = new SuperSourceCallback(c.Properties, ssrc, () => FireCommandKey($"SuperSources.{ssrcId:D}.Properties"));
-            ssrc.AddCallback(cb);
-            _cleanupCallbacks.Add(() => ssrc.RemoveCallback(cb));
-            TriggerAllChanged(cb);
+            SetupCallback<SuperSourceCallback, _BMDSwitcherInputSuperSourceEventType>(cb, ssrc.AddCallback, ssrc.RemoveCallback);
 
             var ssrc2 = ssrc as IBMDSwitcherSuperSourceBorder;
             var cb3 = new SuperSourceBorderCallback(c.Border, ssrc2, () => FireCommandKey($"SuperSources.{ssrcId:D}.Border"));
-            ssrc2.AddCallback(cb3);
-            _cleanupCallbacks.Add(() => ssrc2.RemoveCallback(cb3));
-            TriggerAllChanged(cb3);
+            SetupCallback<SuperSourceBorderCallback, _BMDSwitcherSuperSourceBorderEventType>(cb3, ssrc2.AddCallback, ssrc2.RemoveCallback);
 
             var iterator = AtemSDKConverter.CastSdk<IBMDSwitcherSuperSourceBoxIterator>(ssrc.CreateIterator);
 
@@ -762,11 +616,7 @@ namespace LibAtem.ComparisonTests.State.SDK
                 var boxId = id++;
 
                 var cb2 = new SuperSourceBoxCallback(boxState, box, () => FireCommandKey($"SuperSources.{ssrcId:D}.Boxes.{boxId:D}"));
-                box.AddCallback(cb2);
-                var box2 = box;
-                _cleanupCallbacks.Add(() => box2.RemoveCallback(cb2));
-
-                TriggerAllChanged(cb2);
+                SetupCallback<SuperSourceBoxCallback, _BMDSwitcherSuperSourceBoxEventType>(cb2, box.AddCallback, box.RemoveCallback);
             }
 
             c.Boxes = boxes;
