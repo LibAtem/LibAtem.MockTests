@@ -234,16 +234,36 @@ namespace LibAtem.ComparisonTests.State.SDK
                     _onChange("Properties");
                     break;
                 case _BMDSwitcherKeyAdvancedChromaParametersEventType.bmdSwitcherKeyAdvancedChromaParametersEventTypeSamplingModeEnabledChanged:
+                    _props.GetSamplingModeEnabled(out int sampleEnabled);
+                    _state.Sample.EnableCursor = sampleEnabled != 0;
+                    _onChange("Sample");
                     break;
                 case _BMDSwitcherKeyAdvancedChromaParametersEventType.bmdSwitcherKeyAdvancedChromaParametersEventTypePreviewEnabledChanged:
+                    _props.GetPreviewEnabled(out int previewEnabled);
+                    _state.Sample.Preview = previewEnabled != 0;
+                    _onChange("Sample");
                     break;
                 case _BMDSwitcherKeyAdvancedChromaParametersEventType.bmdSwitcherKeyAdvancedChromaParametersEventTypeCursorXPositionChanged:
+                    _props.GetCursorXPosition(out double xPos);
+                    _state.Sample.CursorX = xPos;
+                    _onChange("Sample");
                     break;
                 case _BMDSwitcherKeyAdvancedChromaParametersEventType.bmdSwitcherKeyAdvancedChromaParametersEventTypeCursorYPositionChanged:
+                    _props.GetCursorYPosition(out double yPos);
+                    _state.Sample.CursorY = yPos;
+                    _onChange("Sample");
                     break;
                 case _BMDSwitcherKeyAdvancedChromaParametersEventType.bmdSwitcherKeyAdvancedChromaParametersEventTypeCursorSizeChanged:
+                    _props.GetCursorSize(out double size);
+                    _state.Sample.CursorSize = size * 100;
+                    _onChange("Sample");
                     break;
                 case _BMDSwitcherKeyAdvancedChromaParametersEventType.bmdSwitcherKeyAdvancedChromaParametersEventTypeSampledColorChanged:
+                    _props.GetSampledColor(out double y, out double cb, out double cr);
+                    _state.Sample.SampledY = y;
+                    _state.Sample.SampledCb = cb;
+                    _state.Sample.SampledCr = cr;
+                    _onChange("Sample");
                     break;
                 default:
                     throw new ArgumentOutOfRangeException(nameof(eventType), eventType, null);

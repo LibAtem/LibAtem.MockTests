@@ -32,6 +32,7 @@ namespace LibAtem.MockTests
             var commandData = WiresharkParser.BuildCommands(caseId.Item1, caseId.Item2);
             using var server = new AtemMockServer(commandData);
             using var helper = new AtemClientWrapper("127.0.0.1");
+            helper.BindSdkState();
 
             List<string> before = AtemStateComparer.AreEqual(helper.SdkState, helper.LibState);
             if (before.Count != 0 && _output != null)
