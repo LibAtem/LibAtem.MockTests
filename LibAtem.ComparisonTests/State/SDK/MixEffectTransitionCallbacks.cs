@@ -5,33 +5,60 @@ using LibAtem.State;
 
 namespace LibAtem.ComparisonTests.State.SDK
 {
-    public sealed class MixEffectTransitionPropertiesCallback : IBMDSwitcherTransitionParametersCallback, INotify<_BMDSwitcherTransitionParametersEventType>
+    public sealed class MixEffectTransitionPropertiesCallback : SdkCallbackBaseNotify<IBMDSwitcherTransitionParameters, _BMDSwitcherTransitionParametersEventType>, IBMDSwitcherTransitionParametersCallback
     {
         private readonly MixEffectState.TransitionState _state;
-        private readonly IBMDSwitcherTransitionParameters _props;
-        private readonly Action<string> _onChange;
 
-        public MixEffectTransitionPropertiesCallback(MixEffectState.TransitionState state, IBMDSwitcherTransitionParameters props, Action<string> onChange)
+        public MixEffectTransitionPropertiesCallback(MixEffectState.TransitionState state, IBMDSwitcherTransitionParameters props, Action<string> onChange) : base(props, onChange)
         {
             _state = state;
-            _props = props;
-            _onChange = onChange;
+            TriggerAllChanged();
+
+            if (props is IBMDSwitcherTransitionMixParameters mix)
+            {
+                _state.Mix = new MixEffectState.TransitionMixState();
+                Children.Add(new MixEffectTransitionMixCallback(_state.Mix, mix, AppendChange("Mix")));
+            }
+
+            if (props is IBMDSwitcherTransitionDipParameters dip)
+            {
+                _state.Dip = new MixEffectState.TransitionDipState();
+                Children.Add(new MixEffectTransitionDipCallback(_state.Dip, dip, AppendChange("Dip")));
+            }
+
+            if (props is IBMDSwitcherTransitionWipeParameters wipe)
+            {
+                _state.Wipe = new MixEffectState.TransitionWipeState();
+                Children.Add(new MixEffectTransitionWipeCallback(_state.Wipe, wipe, AppendChange("Wipe")));
+            }
+
+            if (props is IBMDSwitcherTransitionStingerParameters stinger)
+            {
+                _state.Stinger = new MixEffectState.TransitionStingerState();
+                Children.Add(new MixEffectTransitionStingerCallback(_state.Stinger, stinger,  AppendChange("Stinger")));
+            }
+
+            if (props is IBMDSwitcherTransitionDVEParameters dve)
+            {
+                _state.DVE = new MixEffectState.TransitionDVEState();
+                Children.Add(new MixEffectTransitionDVECallback(_state.DVE, dve, AppendChange("DVE")));
+            }
         }
 
-        public void Notify(_BMDSwitcherTransitionParametersEventType eventType)
+        public override void Notify(_BMDSwitcherTransitionParametersEventType eventType)
         {
             switch (eventType)
             {
                 case _BMDSwitcherTransitionParametersEventType.bmdSwitcherTransitionParametersEventTypeTransitionStyleChanged:
-                    _props.GetTransitionStyle(out _BMDSwitcherTransitionStyle style);
+                    Props.GetTransitionStyle(out _BMDSwitcherTransitionStyle style);
                     _state.Properties.Style = AtemEnumMaps.TransitionStyleMap.FindByValue(style);
                     break;
                 case _BMDSwitcherTransitionParametersEventType.bmdSwitcherTransitionParametersEventTypeNextTransitionStyleChanged:
-                    _props.GetNextTransitionStyle(out _BMDSwitcherTransitionStyle nextStyle);
+                    Props.GetNextTransitionStyle(out _BMDSwitcherTransitionStyle nextStyle);
                     _state.Properties.NextStyle = AtemEnumMaps.TransitionStyleMap.FindByValue(nextStyle);
                     break;
                 case _BMDSwitcherTransitionParametersEventType.bmdSwitcherTransitionParametersEventTypeTransitionSelectionChanged:
-                    _props.GetTransitionSelection(out _BMDSwitcherTransitionSelection selection);
+                    Props.GetTransitionSelection(out _BMDSwitcherTransitionSelection selection);
                     _state.Properties.Selection = (TransitionLayer)selection;
                     break;
                 case _BMDSwitcherTransitionParametersEventType.bmdSwitcherTransitionParametersEventTypeNextTransitionSelectionChanged:
@@ -40,270 +67,255 @@ namespace LibAtem.ComparisonTests.State.SDK
                 default:
                     throw new ArgumentOutOfRangeException(nameof(eventType), eventType, null);
             }
-            _props.GetNextTransitionSelection(out _BMDSwitcherTransitionSelection nextSelection);
+            Props.GetNextTransitionSelection(out _BMDSwitcherTransitionSelection nextSelection);
             _state.Properties.NextSelection = (TransitionLayer)nextSelection;
 
-            _onChange("Properties");
+            OnChange("Properties");
         }
     }
-    public sealed class MixEffectTransitionMixCallback : IBMDSwitcherTransitionMixParametersCallback, INotify<_BMDSwitcherTransitionMixParametersEventType>
+    public sealed class MixEffectTransitionMixCallback : SdkCallbackBaseNotify<IBMDSwitcherTransitionMixParameters, _BMDSwitcherTransitionMixParametersEventType>, IBMDSwitcherTransitionMixParametersCallback
     {
         private readonly MixEffectState.TransitionMixState _state;
-        private readonly IBMDSwitcherTransitionMixParameters _props;
-        private readonly Action _onChange;
 
-        public MixEffectTransitionMixCallback(MixEffectState.TransitionMixState state, IBMDSwitcherTransitionMixParameters props, Action onChange)
+        public MixEffectTransitionMixCallback(MixEffectState.TransitionMixState state, IBMDSwitcherTransitionMixParameters props, Action<string> onChange) : base(props, onChange)
         {
             _state = state;
-            _props = props;
-            _onChange = onChange;
+            TriggerAllChanged();
         }
 
-        public void Notify(_BMDSwitcherTransitionMixParametersEventType eventType)
+        public override void Notify(_BMDSwitcherTransitionMixParametersEventType eventType)
         {
             switch (eventType)
             {
                 case _BMDSwitcherTransitionMixParametersEventType.bmdSwitcherTransitionMixParametersEventTypeRateChanged:
-                    _props.GetRate(out uint rate);
+                    Props.GetRate(out uint rate);
                     _state.Rate = rate;
                     break;
                 default:
                     throw new ArgumentOutOfRangeException(nameof(eventType), eventType, null);
             }
 
-            _onChange();
+            OnChange(null);
         }
     }
 
-    public sealed class MixEffectTransitionDipCallback : IBMDSwitcherTransitionDipParametersCallback, INotify<_BMDSwitcherTransitionDipParametersEventType>
+    public sealed class MixEffectTransitionDipCallback : SdkCallbackBaseNotify<IBMDSwitcherTransitionDipParameters, _BMDSwitcherTransitionDipParametersEventType>, IBMDSwitcherTransitionDipParametersCallback
     {
         private readonly MixEffectState.TransitionDipState _state;
-        private readonly IBMDSwitcherTransitionDipParameters _props;
-        private readonly Action _onChange;
 
-        public MixEffectTransitionDipCallback(MixEffectState.TransitionDipState state, IBMDSwitcherTransitionDipParameters props, Action onChange)
+        public MixEffectTransitionDipCallback(MixEffectState.TransitionDipState state, IBMDSwitcherTransitionDipParameters props, Action<string> onChange) : base (props, onChange)
         {
             _state = state;
-            _props = props;
-            _onChange = onChange;
+            TriggerAllChanged();
         }
 
-        public void Notify(_BMDSwitcherTransitionDipParametersEventType eventType)
+        public override void Notify(_BMDSwitcherTransitionDipParametersEventType eventType)
         {
             switch (eventType)
             {
                 case _BMDSwitcherTransitionDipParametersEventType.bmdSwitcherTransitionDipParametersEventTypeRateChanged:
-                    _props.GetRate(out uint rate);
+                    Props.GetRate(out uint rate);
                     _state.Rate = rate;
                     break;
                 case _BMDSwitcherTransitionDipParametersEventType.bmdSwitcherTransitionDipParametersEventTypeInputDipChanged:
-                    _props.GetInputDip(out long input);
+                    Props.GetInputDip(out long input);
                     _state.Input = (VideoSource) input;
                     break;
                 default:
                     throw new ArgumentOutOfRangeException(nameof(eventType), eventType, null);
             }
 
-            _onChange();
+            OnChange(null);
         }
     }
 
-    public sealed class MixEffectTransitionWipeCallback : IBMDSwitcherTransitionWipeParametersCallback, INotify<_BMDSwitcherTransitionWipeParametersEventType>
+    public sealed class MixEffectTransitionWipeCallback : SdkCallbackBaseNotify<IBMDSwitcherTransitionWipeParameters, _BMDSwitcherTransitionWipeParametersEventType>, IBMDSwitcherTransitionWipeParametersCallback
     {
         private readonly MixEffectState.TransitionWipeState _state;
-        private readonly IBMDSwitcherTransitionWipeParameters _props;
-        private readonly Action _onChange;
 
-        public MixEffectTransitionWipeCallback(MixEffectState.TransitionWipeState state, IBMDSwitcherTransitionWipeParameters props, Action onChange)
+        public MixEffectTransitionWipeCallback(MixEffectState.TransitionWipeState state, IBMDSwitcherTransitionWipeParameters props, Action<string> onChange) : base(props, onChange)
         {
             _state = state;
-            _props = props;
-            _onChange = onChange;
+            TriggerAllChanged();
         }
 
-        public void Notify(_BMDSwitcherTransitionWipeParametersEventType eventType)
+        public override void Notify(_BMDSwitcherTransitionWipeParametersEventType eventType)
         {
             switch (eventType)
             {
                 case _BMDSwitcherTransitionWipeParametersEventType.bmdSwitcherTransitionWipeParametersEventTypeRateChanged:
-                    _props.GetRate(out uint rate);
+                    Props.GetRate(out uint rate);
                     _state.Rate = rate;
                     break;
                 case _BMDSwitcherTransitionWipeParametersEventType.bmdSwitcherTransitionWipeParametersEventTypePatternChanged:
-                    _props.GetPattern(out _BMDSwitcherPatternStyle pattern);
+                    Props.GetPattern(out _BMDSwitcherPatternStyle pattern);
                     _state.Pattern = AtemEnumMaps.PatternMap.FindByValue(pattern);
                     break;
                 case _BMDSwitcherTransitionWipeParametersEventType.bmdSwitcherTransitionWipeParametersEventTypeBorderSizeChanged:
-                    _props.GetBorderSize(out double size);
+                    Props.GetBorderSize(out double size);
                     _state.BorderWidth = size * 100;
                     break;
                 case _BMDSwitcherTransitionWipeParametersEventType.bmdSwitcherTransitionWipeParametersEventTypeInputBorderChanged:
-                    _props.GetInputBorder(out long input);
+                    Props.GetInputBorder(out long input);
                     _state.BorderInput = (VideoSource) input;
                     break;
                 case _BMDSwitcherTransitionWipeParametersEventType.bmdSwitcherTransitionWipeParametersEventTypeSymmetryChanged:
-                    _props.GetSymmetry(out double symmetry);
+                    Props.GetSymmetry(out double symmetry);
                     _state.Symmetry = symmetry * 100;
                     break;
                 case _BMDSwitcherTransitionWipeParametersEventType.bmdSwitcherTransitionWipeParametersEventTypeSoftnessChanged:
-                    _props.GetSoftness(out double soft);
+                    Props.GetSoftness(out double soft);
                     _state.BorderSoftness = soft * 100;
                     break;
                 case _BMDSwitcherTransitionWipeParametersEventType.bmdSwitcherTransitionWipeParametersEventTypeHorizontalOffsetChanged:
-                    _props.GetHorizontalOffset(out double xPos);
+                    Props.GetHorizontalOffset(out double xPos);
                     _state.XPosition = xPos;
                     break;
                 case _BMDSwitcherTransitionWipeParametersEventType.bmdSwitcherTransitionWipeParametersEventTypeVerticalOffsetChanged:
-                    _props.GetVerticalOffset(out double yPos);
+                    Props.GetVerticalOffset(out double yPos);
                     _state.YPosition = yPos;
                     break;
                 case _BMDSwitcherTransitionWipeParametersEventType.bmdSwitcherTransitionWipeParametersEventTypeReverseChanged:
-                    _props.GetReverse(out int reverse);
+                    Props.GetReverse(out int reverse);
                     _state.ReverseDirection = reverse != 0;
                     break;
                 case _BMDSwitcherTransitionWipeParametersEventType.bmdSwitcherTransitionWipeParametersEventTypeFlipFlopChanged:
-                    _props.GetFlipFlop(out int flipflop);
+                    Props.GetFlipFlop(out int flipflop);
                     _state.FlipFlop = flipflop != 0;
                     break;
                 default:
                     throw new ArgumentOutOfRangeException(nameof(eventType), eventType, null);
             }
 
-            _onChange();
+            OnChange(null);
         }
     }
 
-    public sealed class MixEffectTransitionStingerCallback : IBMDSwitcherTransitionStingerParametersCallback, INotify<_BMDSwitcherTransitionStingerParametersEventType>
+    public sealed class MixEffectTransitionStingerCallback : SdkCallbackBaseNotify<IBMDSwitcherTransitionStingerParameters, _BMDSwitcherTransitionStingerParametersEventType>, IBMDSwitcherTransitionStingerParametersCallback
     {
         private readonly MixEffectState.TransitionStingerState _state;
-        private readonly IBMDSwitcherTransitionStingerParameters _props;
-        private readonly Action _onChange;
 
-        public MixEffectTransitionStingerCallback(MixEffectState.TransitionStingerState state, IBMDSwitcherTransitionStingerParameters props, Action onChange)
+        public MixEffectTransitionStingerCallback(MixEffectState.TransitionStingerState state, IBMDSwitcherTransitionStingerParameters props, Action<string> onChange) : base(props, onChange)
         {
             _state = state;
-            _props = props;
-            _onChange = onChange;
+            TriggerAllChanged();
         }
 
-        public void Notify(_BMDSwitcherTransitionStingerParametersEventType eventType)
+        public override void Notify(_BMDSwitcherTransitionStingerParametersEventType eventType)
         {
             switch (eventType)
             {
                 case _BMDSwitcherTransitionStingerParametersEventType.bmdSwitcherTransitionStingerParametersEventTypeSourceChanged:
-                    _props.GetSource(out _BMDSwitcherStingerTransitionSource src);
+                    Props.GetSource(out _BMDSwitcherStingerTransitionSource src);
                     _state.Source = AtemEnumMaps.StingerSourceMap.FindByValue(src);
                     break;
                 case _BMDSwitcherTransitionStingerParametersEventType.bmdSwitcherTransitionStingerParametersEventTypePreMultipliedChanged:
-                    _props.GetPreMultiplied(out int preMultiplied);
+                    Props.GetPreMultiplied(out int preMultiplied);
                     _state.PreMultipliedKey = preMultiplied != 0;
                     break;
                 case _BMDSwitcherTransitionStingerParametersEventType.bmdSwitcherTransitionStingerParametersEventTypeClipChanged:
-                    _props.GetClip(out double clip);
+                    Props.GetClip(out double clip);
                     _state.Clip = clip * 100;
                     break;
                 case _BMDSwitcherTransitionStingerParametersEventType.bmdSwitcherTransitionStingerParametersEventTypeGainChanged:
-                    _props.GetGain(out double gain);
+                    Props.GetGain(out double gain);
                     _state.Gain = gain * 100;
                     break;
                 case _BMDSwitcherTransitionStingerParametersEventType.bmdSwitcherTransitionStingerParametersEventTypeInverseChanged:
-                    _props.GetInverse(out int inverse);
+                    Props.GetInverse(out int inverse);
                     _state.Invert = inverse != 0;
                     break;
                 case _BMDSwitcherTransitionStingerParametersEventType.bmdSwitcherTransitionStingerParametersEventTypePrerollChanged:
-                    _props.GetPreroll(out uint preroll);
+                    Props.GetPreroll(out uint preroll);
                     _state.Preroll = preroll;
                     break;
                 case _BMDSwitcherTransitionStingerParametersEventType.bmdSwitcherTransitionStingerParametersEventTypeClipDurationChanged:
-                    _props.GetClipDuration(out uint duration);
+                    Props.GetClipDuration(out uint duration);
                     _state.ClipDuration = duration;
                     break;
                 case _BMDSwitcherTransitionStingerParametersEventType.bmdSwitcherTransitionStingerParametersEventTypeTriggerPointChanged:
-                    _props.GetTriggerPoint(out uint trigger);
+                    Props.GetTriggerPoint(out uint trigger);
                     _state.TriggerPoint = trigger;
                     break;
                 case _BMDSwitcherTransitionStingerParametersEventType.bmdSwitcherTransitionStingerParametersEventTypeMixRateChanged:
-                    _props.GetMixRate(out uint mixrate);
+                    Props.GetMixRate(out uint mixrate);
                     _state.MixRate = mixrate;
                     break;
                 default:
                     throw new ArgumentOutOfRangeException(nameof(eventType), eventType, null);
             }
 
-            _onChange();
+            OnChange(null);
         }
     }
 
-    public sealed class MixEffectTransitionDVECallback : IBMDSwitcherTransitionDVEParametersCallback, INotify<_BMDSwitcherTransitionDVEParametersEventType>
+    public sealed class MixEffectTransitionDVECallback : SdkCallbackBaseNotify<IBMDSwitcherTransitionDVEParameters, _BMDSwitcherTransitionDVEParametersEventType>, IBMDSwitcherTransitionDVEParametersCallback
     {
         private readonly MixEffectState.TransitionDVEState _state;
-        private readonly IBMDSwitcherTransitionDVEParameters _props;
-        private readonly Action _onChange;
 
-        public MixEffectTransitionDVECallback(MixEffectState.TransitionDVEState state, IBMDSwitcherTransitionDVEParameters props, Action onChange)
+        public MixEffectTransitionDVECallback(MixEffectState.TransitionDVEState state, IBMDSwitcherTransitionDVEParameters props, Action<string> onChange) : base(props, onChange)
         {
             _state = state;
-            _props = props;
-            _onChange = onChange;
+            TriggerAllChanged();
         }
 
-        public void Notify(_BMDSwitcherTransitionDVEParametersEventType eventType)
+        public override void Notify(_BMDSwitcherTransitionDVEParametersEventType eventType)
         {
             switch (eventType)
             {
                 case _BMDSwitcherTransitionDVEParametersEventType.bmdSwitcherTransitionDVEParametersEventTypeRateChanged:
-                    _props.GetRate(out uint rate);
+                    Props.GetRate(out uint rate);
                     _state.Rate = rate;
                     break;
                 case _BMDSwitcherTransitionDVEParametersEventType.bmdSwitcherTransitionDVEParametersEventTypeLogoRateChanged:
-                    _props.GetLogoRate(out uint logoRate);
+                    Props.GetLogoRate(out uint logoRate);
                     _state.LogoRate = logoRate;
                     break;
                 case _BMDSwitcherTransitionDVEParametersEventType.bmdSwitcherTransitionDVEParametersEventTypeReverseChanged:
-                    _props.GetReverse(out int reverse);
+                    Props.GetReverse(out int reverse);
                     _state.Reverse = reverse != 0;
                     break;
                 case _BMDSwitcherTransitionDVEParametersEventType.bmdSwitcherTransitionDVEParametersEventTypeFlipFlopChanged:
-                    _props.GetFlipFlop(out int flipflop);
+                    Props.GetFlipFlop(out int flipflop);
                     _state.FlipFlop = flipflop != 0;
                     break;
                 case _BMDSwitcherTransitionDVEParametersEventType.bmdSwitcherTransitionDVEParametersEventTypeStyleChanged:
-                    _props.GetStyle(out _BMDSwitcherDVETransitionStyle style);
+                    Props.GetStyle(out _BMDSwitcherDVETransitionStyle style);
                     _state.Style = AtemEnumMaps.DVEStyleMap.FindByValue(style);
                     break;
                 case _BMDSwitcherTransitionDVEParametersEventType.bmdSwitcherTransitionDVEParametersEventTypeInputFillChanged:
-                    _props.GetInputFill(out long input);
+                    Props.GetInputFill(out long input);
                     _state.FillSource = (VideoSource)input;
                     break;
                 case _BMDSwitcherTransitionDVEParametersEventType.bmdSwitcherTransitionDVEParametersEventTypeInputCutChanged:
-                    _props.GetInputCut(out long inputCut);
+                    Props.GetInputCut(out long inputCut);
                     _state.KeySource = (VideoSource)inputCut;
                     break;
                 case _BMDSwitcherTransitionDVEParametersEventType.bmdSwitcherTransitionDVEParametersEventTypeEnableKeyChanged:
-                    _props.GetEnableKey(out int enable);
+                    Props.GetEnableKey(out int enable);
                     _state.EnableKey = enable != 0;
                     break;
                 case _BMDSwitcherTransitionDVEParametersEventType.bmdSwitcherTransitionDVEParametersEventTypePreMultipliedChanged:
-                    _props.GetPreMultiplied(out int preMultiplied);
+                    Props.GetPreMultiplied(out int preMultiplied);
                     _state.PreMultiplied = preMultiplied != 0;
                     break;
                 case _BMDSwitcherTransitionDVEParametersEventType.bmdSwitcherTransitionDVEParametersEventTypeClipChanged:
-                    _props.GetClip(out double clip);
+                    Props.GetClip(out double clip);
                     _state.Clip = clip * 100;
                     break;
                 case _BMDSwitcherTransitionDVEParametersEventType.bmdSwitcherTransitionDVEParametersEventTypeGainChanged:
-                    _props.GetGain(out double gain);
+                    Props.GetGain(out double gain);
                     _state.Gain = gain * 100;
                     break;
                 case _BMDSwitcherTransitionDVEParametersEventType.bmdSwitcherTransitionDVEParametersEventTypeInverseChanged:
-                    _props.GetInverse(out int inverse);
+                    Props.GetInverse(out int inverse);
                     _state.InvertKey = inverse != 0;
                     break;
                 default:
                     throw new ArgumentOutOfRangeException(nameof(eventType), eventType, null);
             }
 
-            _onChange();
+            OnChange(null);
         }
     }
 }

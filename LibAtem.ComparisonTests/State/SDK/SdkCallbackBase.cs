@@ -28,6 +28,11 @@ namespace LibAtem.ComparisonTests.State.SDK
         }
     }
 
+    public interface INotify<in T>
+    {
+        void Notify(T eventType);
+    }
+
     public abstract class SdkCallbackBase<T> : IDisposable
     {
         protected readonly List<IDisposable> Children = new List<IDisposable>();

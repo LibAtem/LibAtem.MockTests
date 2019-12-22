@@ -10,11 +10,6 @@ using Xunit;
 
 namespace LibAtem.ComparisonTests.State.SDK
 {
-    public interface INotify<in T>
-    {
-        void Notify(T eventType);
-    }
-
     public sealed class AtemSDKComparisonMonitor : IDisposable
     {
         public AtemState State { get; }
@@ -249,83 +244,51 @@ namespace LibAtem.ComparisonTests.State.SDK
         private void SetupSerialPorts(IBMDSwitcher switcher)
         {
             var iterator = AtemSDKConverter.CastSdk<IBMDSwitcherSerialPortIterator>(switcher.CreateIterator);
-
-            int id = 0;
-            for (iterator.Next(out IBMDSwitcherSerialPort port); port != null; iterator.Next(out port))
+            AtemSDKConverter.Iterate<IBMDSwitcherSerialPort>(iterator.Next, (port, id) =>
             {
-                Assert.Equal(0, id);
-                
-                var cb = new SerialPortPropertiesCallback(State.Settings, port, () => FireCommandKey("Settings.SerialPort"));
-                SetupCallback<SerialPortPropertiesCallback, _BMDSwitcherSerialPortEventType>(cb, port.AddCallback, port.RemoveCallback);
+                Assert.Equal((uint) 0, id);
 
-                id++;
-            }
+                SetupDisposable(new SerialPortPropertiesCallback(State.Settings, port, GetFireCommandKey("Settings.SerialPort")));
+            });
         }
 
         private void SetupHyperdecks(IBMDSwitcher switcher)
         {
             var iterator = AtemSDKConverter.CastSdk<IBMDSwitcherHyperDeckIterator>(switcher.CreateIterator);
-
-            var hyperdecks = new List<SettingsState.HyperdeckState>();
-            uint id = 0;
-            for (iterator.Next(out IBMDSwitcherHyperDeck deck); deck != null; iterator.Next(out deck))
+            State.Settings.Hyperdecks = AtemSDKConverter.IterateList<IBMDSwitcherHyperDeck, SettingsState.HyperdeckState>(iterator.Next, (deck, id) =>
             {
-                var deck2 = deck;
                 var deckState = new SettingsState.HyperdeckState();
-                hyperdecks.Add(deckState);
-                uint deckId = id++;
-
-                var cb = new HyperDeckPropertiesCallback(deckState, deck2, str => FireCommandKey($"Settings.Hyperdecks.{deckId:D}.{str}"));
-                SetupCallback<HyperDeckPropertiesCallback, _BMDSwitcherHyperDeckEventType>(cb, deck.AddCallback, deck.RemoveCallback);
-            }
-            State.Settings.Hyperdecks = hyperdecks;
+                SetupDisposable(new HyperDeckPropertiesCallback(deckState, deck, GetFireCommandKey($"Settings.Hyperdecks.{id:D}")));
+                return deckState;
+            });
         }
 
         private void SetupMultiViews(IBMDSwitcher switcher)
         {
             var iterator = AtemSDKConverter.CastSdk<IBMDSwitcherMultiViewIterator>(switcher.CreateIterator);
-
-            var mvs = new List<MultiViewerState>();
-            uint id = 0;
-            for (iterator.Next(out IBMDSwitcherMultiView mv); mv != null; iterator.Next(out mv))
-            {
-                var mvState = new MultiViewerState();
-                mvs.Add(mvState);
-                uint mvId = id++;
-
-                mv.GetWindowCount(out uint count);
-                mvState.Windows = Enumerable.Repeat(0, (int)count).Select(i => new MultiViewerState.WindowState()).ToList();
-
-                mv.SupportsProgramPreviewSwap(out int canSwap);
-                mvState.SupportsProgramPreviewSwapped = canSwap != 0;
-
-                var cb = new MultiViewPropertiesCallback(mvState, mv, str => FireCommandKey($"Settings.MultiViewers.{mvId:D}.{str}"));
-                SetupCallback<MultiViewPropertiesCallback, _BMDSwitcherMultiViewEventType>(cb, mv.AddCallback, mv.RemoveCallback);
-            }
-            State.Settings.MultiViewers = mvs;
+            State.Settings.MultiViewers = AtemSDKConverter.IterateList<IBMDSwitcherMultiView, MultiViewerState>(iterator.Next,
+                (mv, id) =>
+                {
+                    var mvState = new MultiViewerState();
+                    SetupDisposable(new MultiViewPropertiesCallback(mvState, mv, GetFireCommandKey($"Settings.MultiViewers.{id:D}")));
+                    return mvState;
+                });
         }
 
         private void SetupMediaPlayers(IBMDSwitcher switcher, AtemStateBuilderSettings updateSettings)
         {
             var iterator = AtemSDKConverter.CastSdk<IBMDSwitcherMediaPlayerIterator>(switcher.CreateIterator);
+            State.MediaPlayers = AtemSDKConverter.IterateList<IBMDSwitcherMediaPlayer, MediaPlayerState>(iterator.Next,
+                (media, id) =>
+                {
+                    var player = new MediaPlayerState();
+                    if (State.MediaPool.Clips.Count > 0)
+                        player.ClipStatus = new MediaPlayerState.ClipStatusState();
 
-            var players = new List<MediaPlayerState>();
-            MediaPlayerId id = 0;
-            for (iterator.Next(out IBMDSwitcherMediaPlayer media); media != null; iterator.Next(out media))
-            {
-                var player = new MediaPlayerState();
-                players.Add(player);
-                MediaPlayerId playerId = id++;
+                    SetupDisposable(new MediaPlayerCallback(player, updateSettings, media, GetFireCommandKey($"MediaPlayers.{id:D}")));
+                    return player;
+                });
 
-                if (State.MediaPool.Clips.Count > 0)
-                    player.ClipStatus = new MediaPlayerState.ClipStatusState();
-
-                var cb = new MediaPlayerCallback(player, updateSettings, media,
-                    str => FireCommandKey($"MediaPlayers.{playerId:D}.{str}"));
-                SetupCallbackBasic(cb, media.AddCallback, media.RemoveCallback);
-                cb.Notify();
-            }
-            State.MediaPlayers = players;
         }
         
         private void SetupMediaPool(IBMDSwitcher switcher)
@@ -383,174 +346,25 @@ namespace LibAtem.ComparisonTests.State.SDK
         private void SetupDownstreamKeyers(IBMDSwitcher switcher)
         {
             var iterator = AtemSDKConverter.CastSdk<IBMDSwitcherDownstreamKeyIterator>(switcher.CreateIterator);
-
-            var dsks = new List<DownstreamKeyerState>();
-            DownstreamKeyId id = 0;
-            for (iterator.Next(out IBMDSwitcherDownstreamKey key); key != null; iterator.Next(out key))
-            {
-                var dsk = new DownstreamKeyerState();
-                dsks.Add(dsk);
-                DownstreamKeyId dskId = id++;
-
-                var cb = new DownstreamKeyerPropertiesCallback(dsk, key, str => FireCommandKey($"DownstreamKeyers.{dskId:D}.{str}"));
-                SetupCallback<DownstreamKeyerPropertiesCallback, _BMDSwitcherDownstreamKeyEventType>(cb, key.AddCallback, key.RemoveCallback);
-            }
-            State.DownstreamKeyers = dsks;
+            State.DownstreamKeyers = AtemSDKConverter.IterateList<IBMDSwitcherDownstreamKey, DownstreamKeyerState>(
+                iterator.Next,
+                (key, id) =>
+                {
+                    var dsk = new DownstreamKeyerState();
+                    SetupDisposable(new DownstreamKeyerPropertiesCallback(dsk, key, GetFireCommandKey($"DownstreamKeyers.{id:D}")));
+                    return dsk;
+                });
         }
 
         private void SetupMixEffects(IBMDSwitcher switcher)
         {
             var iterator = AtemSDKConverter.CastSdk<IBMDSwitcherMixEffectBlockIterator>(switcher.CreateIterator);
-
-            var mes = new List<MixEffectState>();
-            State.MixEffects = mes;
-
-            var id = MixEffectBlockId.One;
-            for (iterator.Next(out IBMDSwitcherMixEffectBlock me); me != null; iterator.Next(out me))
+            State.MixEffects = AtemSDKConverter.IterateList<IBMDSwitcherMixEffectBlock, MixEffectState>(iterator.Next, (me, id) =>
             {
                 var meState = new MixEffectState();
-                mes.Add(meState);
-                var meId = id++;
-
-                var cb = new MixEffectPropertiesCallback(meState, me, str => FireCommandKey($"MixEffects.{meId:D}.{str}"));
-                SetupCallback<MixEffectPropertiesCallback, _BMDSwitcherMixEffectBlockEventType>(cb, me.AddCallback, me.RemoveCallback);
-
-                SetupMixEffectKeyer(me, meId);
-
-                SetupMixEffectTransition(me, meId);
-            }
-        }
-
-        private void SetupMixEffectTransition(IBMDSwitcherMixEffectBlock me, MixEffectBlockId id)
-        {
-            MixEffectState.TransitionState st = State.MixEffects[(int)id].Transition;
-
-            if (me is IBMDSwitcherTransitionParameters trans)
-            {
-                var cb = new MixEffectTransitionPropertiesCallback(st, trans, str => FireCommandKey($"MixEffects.{id:D}.Transition.{str}"));
-                SetupCallback<MixEffectTransitionPropertiesCallback, _BMDSwitcherTransitionParametersEventType>(cb, trans.AddCallback, trans.RemoveCallback);
-            }
-
-            if (me is IBMDSwitcherTransitionMixParameters mix)
-            {
-                st.Mix = new MixEffectState.TransitionMixState();
-                var cb = new MixEffectTransitionMixCallback(st.Mix, mix, () => FireCommandKey($"MixEffects.{id:D}.Transition.Mix"));
-                SetupCallback<MixEffectTransitionMixCallback, _BMDSwitcherTransitionMixParametersEventType>(cb, mix.AddCallback, mix.RemoveCallback);
-            }
-
-            if (me is IBMDSwitcherTransitionDipParameters dip)
-            {
-                st.Dip = new MixEffectState.TransitionDipState();
-                var cb = new MixEffectTransitionDipCallback(st.Dip, dip, () => FireCommandKey($"MixEffects.{id:D}.Transition.Dip"));
-                SetupCallback<MixEffectTransitionDipCallback, _BMDSwitcherTransitionDipParametersEventType>(cb, dip.AddCallback, dip.RemoveCallback);
-            }
-
-            if (me is IBMDSwitcherTransitionWipeParameters wipe)
-            {
-                st.Wipe = new MixEffectState.TransitionWipeState();
-                var cb = new MixEffectTransitionWipeCallback(st.Wipe, wipe, () => FireCommandKey($"MixEffects.{id:D}.Transition.Wipe"));
-                SetupCallback<MixEffectTransitionWipeCallback, _BMDSwitcherTransitionWipeParametersEventType>(cb, wipe.AddCallback, wipe.RemoveCallback);
-            }
-
-            if (me is IBMDSwitcherTransitionStingerParameters stinger)
-            {
-                st.Stinger = new MixEffectState.TransitionStingerState();
-                var cb = new MixEffectTransitionStingerCallback(st.Stinger, stinger, () => FireCommandKey($"MixEffects.{id:D}.Transition.Stinger"));
-                SetupCallback<MixEffectTransitionStingerCallback, _BMDSwitcherTransitionStingerParametersEventType>(cb, stinger.AddCallback, stinger.RemoveCallback);
-            }
-
-            if (me is IBMDSwitcherTransitionDVEParameters dve)
-            {
-                st.DVE = new MixEffectState.TransitionDVEState();
-                var cb = new MixEffectTransitionDVECallback(st.DVE, dve, () => FireCommandKey($"MixEffects.{id:D}.Transition.DVE"));
-                SetupCallback<MixEffectTransitionDVECallback, _BMDSwitcherTransitionDVEParametersEventType>(cb, dve.AddCallback, dve.RemoveCallback);
-            }
-        }
-
-        private void SetupMixEffectKeyer(IBMDSwitcherMixEffectBlock me, MixEffectBlockId meId)
-        {
-            var iterator = AtemSDKConverter.CastSdk<IBMDSwitcherKeyIterator>(me.CreateIterator);
-
-            var keyId = UpstreamKeyId.One;
-            var keyers = new List<MixEffectState.KeyerState>();
-            for (iterator.Next(out IBMDSwitcherKey keyer); keyer != null; iterator.Next(out keyer))
-            {
-                var keyerState = new MixEffectState.KeyerState();
-                keyers.Add(keyerState);
-
-                var cb2 = new MixEffectKeyerCallback(keyerState, keyer, str => FireCommandKey($"MixEffects.{meId:D}.Keyers.{keyId:D}.{str}"));
-                SetupCallback(cb2, keyer.AddCallback, keyer.RemoveCallback, true, _BMDSwitcherKeyEventType.bmdSwitcherKeyEventTypeCanBeDVEKeyChanged);
-
-                if (keyer is IBMDSwitcherKeyLumaParameters luma)
-                {
-                    keyerState.Luma = new MixEffectState.KeyerLumaState();
-                    var cb = new MixEffectKeyerLumaCallback(keyerState.Luma, luma, () => FireCommandKey($"MixEffects.{meId:D}.Keyers.{keyId:D}.Luma"));
-                    SetupCallback<MixEffectKeyerLumaCallback, _BMDSwitcherKeyLumaParametersEventType>(cb, luma.AddCallback, luma.RemoveCallback);
-                }
-
-                if (keyer is IBMDSwitcherKeyChromaParameters chroma)
-                {
-                    keyerState.Chroma = new MixEffectState.KeyerChromaState();
-                    var cb = new MixEffectKeyerChromaCallback(keyerState.Chroma, chroma, () => FireCommandKey($"MixEffects.{meId:D}.Keyers.{keyId:D}.Chroma"));
-                    SetupCallback<MixEffectKeyerChromaCallback, _BMDSwitcherKeyChromaParametersEventType>(cb, chroma.AddCallback, chroma.RemoveCallback);
-                }
-
-                if (keyer is IBMDSwitcherKeyAdvancedChromaParameters advancedChroma)
-                {
-                    keyerState.AdvancedChroma = new MixEffectState.KeyerAdvancedChromaState();
-                    var cb = new MixEffectKeyerAdvancedChromaCallback(keyerState.AdvancedChroma, advancedChroma, str => FireCommandKey($"MixEffects.{meId:D}.Keyers.{keyId:D}.AdvancedChroma.{str}"));
-                    SetupCallback<MixEffectKeyerAdvancedChromaCallback, _BMDSwitcherKeyAdvancedChromaParametersEventType>(cb, advancedChroma.AddCallback, advancedChroma.RemoveCallback);
-                }
-
-                if (keyer is IBMDSwitcherKeyPatternParameters pattern)
-                {
-                    keyerState.Pattern = new MixEffectState.KeyerPatternState();
-                    var cb = new MixEffectKeyerPatternCallback(keyerState.Pattern, pattern, () => FireCommandKey($"MixEffects.{meId:D}.Keyers.{keyId:D}.Pattern"));
-                    SetupCallback<MixEffectKeyerPatternCallback, _BMDSwitcherKeyPatternParametersEventType>(cb, pattern.AddCallback, pattern.RemoveCallback);
-                }
-
-                if (keyer is IBMDSwitcherKeyDVEParameters dve)
-                {
-                    keyerState.DVE = new MixEffectState.KeyerDVEState();
-                    var cb = new MixEffectKeyerDVECallback(keyerState.DVE, dve, () => FireCommandKey($"MixEffects.{meId:D}.Keyers.{keyId:D}.DVE"));
-                    SetupCallback<MixEffectKeyerDVECallback, _BMDSwitcherKeyDVEParametersEventType>(cb, dve.AddCallback, dve.RemoveCallback);
-                }
-
-                if (keyer is IBMDSwitcherKeyFlyParameters fly)
-                    SetupMixEffectFlyKeyer(fly, keyerState, meId, keyId);
-                
-                keyId++;
-            }
-            State.MixEffects[(int)meId].Keyers = keyers;
-        }
-
-        private void SetupMixEffectFlyKeyer(IBMDSwitcherKeyFlyParameters props, MixEffectState.KeyerState state, MixEffectBlockId meId, UpstreamKeyId keyId)
-        {
-            var ignore = new[]
-            {
-                _BMDSwitcherKeyFlyParametersEventType.bmdSwitcherKeyFlyParametersEventTypeIsAtKeyFramesChanged,
-                _BMDSwitcherKeyFlyParametersEventType.bmdSwitcherKeyFlyParametersEventTypeCanFlyChanged,
-                _BMDSwitcherKeyFlyParametersEventType.bmdSwitcherKeyFlyParametersEventTypeFlyChanged,
-                _BMDSwitcherKeyFlyParametersEventType.bmdSwitcherKeyFlyParametersEventTypeIsKeyFrameStoredChanged,
-                _BMDSwitcherKeyFlyParametersEventType.bmdSwitcherKeyFlyParametersEventTypeIsRunningChanged
-            };
-            var cb = new MixEffectKeyerFlyCallback(state.DVE, props, () => FireCommandKey($"MixEffects.{meId:D}.Keyers.{keyId:D}.DVE"));
-            SetupCallback(cb, props.AddCallback, props.RemoveCallback, true, ignore);
-
-            props.GetKeyFrameParameters(_BMDSwitcherFlyKeyFrame.bmdSwitcherFlyKeyFrameA, out IBMDSwitcherKeyFlyKeyFrameParameters keyframeA);
-            props.GetKeyFrameParameters(_BMDSwitcherFlyKeyFrame.bmdSwitcherFlyKeyFrameB, out IBMDSwitcherKeyFlyKeyFrameParameters keyframeB);
-
-            state.FlyFrames = new[]
-            {
-                new MixEffectState.KeyerFlyFrameState(),
-                new MixEffectState.KeyerFlyFrameState()
-            };
-
-            var cb2 = new MixEffectKeyerFlyKeyFrameCallback(state.FlyFrames[0], keyframeA, () => FireCommandKey($"MixEffects.{meId:D}.Keyers.{keyId:D}.FlyFrames.0"));
-            SetupCallback<MixEffectKeyerFlyKeyFrameCallback, _BMDSwitcherKeyFlyKeyFrameParametersEventType>(cb2, keyframeA.AddCallback, keyframeA.RemoveCallback);
-
-            var cb3 = new MixEffectKeyerFlyKeyFrameCallback(state.FlyFrames[1], keyframeB, () => FireCommandKey($"MixEffects.{meId:D}.Keyers.{keyId:D}.FlyFrames.1"));
-            SetupCallback<MixEffectKeyerFlyKeyFrameCallback, _BMDSwitcherKeyFlyKeyFrameParametersEventType>(cb3, keyframeB.AddCallback, keyframeB.RemoveCallback);
+                SetupDisposable(new MixEffectPropertiesCallback(meState, me, GetFireCommandKey($"MixEffects.{id:D}")));
+                return meState;
+            });
         }
 
         private void SetupInputs(IBMDSwitcher switcher)

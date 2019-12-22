@@ -16,19 +16,19 @@ namespace LibAtem.ComparisonTests.State.SDK
             return (T)Marshal.GetObjectForIUnknown(itPtr);
         }
 
-        public static void Iterate<T>(IteratorNext<T> next, Action<T, int> fnc)
+        public static void Iterate<T>(IteratorNext<T> next, Action<T, uint> fnc)
         {
-            int i = 0;
+            uint i = 0;
             for (next(out var val); val != null; next(out val))
             {
                 fnc(val, i++);
             }
         }
 
-        public static List<Tv> IterateList<T, Tv>(IteratorNext<T> next, Func<T, int, Tv> fnc)
+        public static List<Tv> IterateList<T, Tv>(IteratorNext<T> next, Func<T, uint, Tv> fnc)
         {
             var res = new List<Tv>();
-            int i = 0;
+            uint i = 0;
             for (next(out var val); val != null; next(out val))
             {
                 res.Add(fnc(val, i++));

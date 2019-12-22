@@ -7,27 +7,28 @@ using LibAtem.Util;
 
 namespace LibAtem.ComparisonTests.State.SDK
 {
-    public sealed class MultiViewPropertiesCallback : IBMDSwitcherMultiViewCallback, INotify<_BMDSwitcherMultiViewEventType>
+    public sealed class MultiViewPropertiesCallback : SdkCallbackBaseNotify<IBMDSwitcherMultiView, _BMDSwitcherMultiViewEventType>, IBMDSwitcherMultiViewCallback
     {
         private readonly MultiViewerState _state;
-        private readonly IBMDSwitcherMultiView _props;
-        private readonly Action<string> _onChange;
 
-        public MultiViewPropertiesCallback(MultiViewerState state, IBMDSwitcherMultiView props, Action<string> onChange)
+        public MultiViewPropertiesCallback(MultiViewerState state, IBMDSwitcherMultiView props, Action<string> onChange) : base(props, onChange)
         {
             _state = state;
-            _props = props;
-            _onChange = onChange;
 
-            _props.SupportsVuMeters(out int supportsVu);
+            props.SupportsVuMeters(out int supportsVu);
             _state.SupportsVuMeters = supportsVu != 0;
-            _props.SupportsProgramPreviewSwap(out int supportsSwap);
+            props.SupportsProgramPreviewSwap(out int supportsSwap);
             _state.SupportsProgramPreviewSwapped = supportsSwap != 0;
-            _props.SupportsQuadrantLayout(out int supportsQuadrants);
+            props.SupportsQuadrantLayout(out int supportsQuadrants);
             _state.SupportsQuadrantLayout = supportsQuadrants != 0;
+
+            props.GetWindowCount(out uint count);
+            _state.Windows = Enumerable.Repeat(0, (int)count).Select(i => new MultiViewerState.WindowState()).ToList();
+
+            TriggerAllChanged();
         }
 
-        public void Notify(_BMDSwitcherMultiViewEventType eventType)
+        public override void Notify(_BMDSwitcherMultiViewEventType eventType)
         {
             switch (eventType)
             {
@@ -48,37 +49,37 @@ namespace LibAtem.ComparisonTests.State.SDK
             switch (eventType)
             {
                 case _BMDSwitcherMultiViewEventType.bmdSwitcherMultiViewEventTypeLayoutChanged:
-                    _props.GetLayout(out _BMDSwitcherMultiViewLayout layout);
+                    Props.GetLayout(out _BMDSwitcherMultiViewLayout layout);
                     _state.Properties.Layout = (MultiViewLayoutV8) layout;
-                    _onChange("Properties");
+                    OnChange("Properties");
                     break;
                 case _BMDSwitcherMultiViewEventType.bmdSwitcherMultiViewEventTypeWindowChanged:
-                    _props.GetWindowInput((uint)window, out long input);
+                    Props.GetWindowInput((uint)window, out long input);
                     _state.Windows[window].Source = (VideoSource)input;
-                    _onChange($"Windows.{window:D}");
+                    OnChange($"Windows.{window:D}");
                     break;
                 case _BMDSwitcherMultiViewEventType.bmdSwitcherMultiViewEventTypeCurrentInputSupportsVuMeterChanged:
                     if (_state.SupportsVuMeters)
                     {
-                        _props.CurrentInputSupportsVuMeter((uint) window, out int supportsVu);
+                        Props.CurrentInputSupportsVuMeter((uint) window, out int supportsVu);
                         _state.Windows[window].SupportsVuMeter = supportsVu != 0;
-                        _onChange($"Windows.{window:D}");
+                        OnChange($"Windows.{window:D}");
                     }
                     break;
                 case _BMDSwitcherMultiViewEventType.bmdSwitcherMultiViewEventTypeVuMeterEnabledChanged:
                     if (_state.SupportsVuMeters)
                     {
-                        _props.GetVuMeterEnabled((uint) window, out int vuEnabled);
+                        Props.GetVuMeterEnabled((uint) window, out int vuEnabled);
                         _state.Windows[window].VuMeter = vuEnabled != 0;
-                        _onChange($"Windows.{window:D}");
+                        OnChange($"Windows.{window:D}");
                     }
                     break;
                 case _BMDSwitcherMultiViewEventType.bmdSwitcherMultiViewEventTypeVuMeterOpacityChanged:
                     if (_state.SupportsVuMeters)
                     {
-                        _props.GetVuMeterOpacity(out double opacity);
+                        Props.GetVuMeterOpacity(out double opacity);
                         _state.VuMeterOpacity = opacity * 100;
-                        _onChange("Properties");
+                        OnChange("Properties");
                     }
                     break;
                 case _BMDSwitcherMultiViewEventType.bmdSwitcherMultiViewEventTypeSafeAreaEnabledChanged:
@@ -87,9 +88,9 @@ namespace LibAtem.ComparisonTests.State.SDK
                     //_onChange($"Windows.{window:D}");
                     break;
                 case _BMDSwitcherMultiViewEventType.bmdSwitcherMultiViewEventTypeProgramPreviewSwappedChanged:
-                    _props.GetProgramPreviewSwapped(out int swapped);
+                    Props.GetProgramPreviewSwapped(out int swapped);
                     _state.Properties.ProgramPreviewSwapped = swapped != 0;
-                    _onChange("Properties");
+                    OnChange("Properties");
                     break;
                 case _BMDSwitcherMultiViewEventType.bmdSwitcherMultiViewEventTypeCurrentInputSupportsSafeAreaChanged:
                     //_props.CurrentInputSupportsSafeArea((uint) window, out int supportsSafeArea);

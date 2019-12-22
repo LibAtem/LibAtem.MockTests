@@ -1,5 +1,4 @@
 ﻿using System;
-using System.ComponentModel;
 using BMDSwitcherAPI;
 using LibAtem.Common;
 using LibAtem.State;
@@ -7,20 +6,16 @@ using LibAtem.Util;
 
 namespace LibAtem.ComparisonTests.State.SDK
 {
-    public sealed class HyperDeckPropertiesCallback : IBMDSwitcherHyperDeckCallback, INotify<_BMDSwitcherHyperDeckEventType>
+    public sealed class HyperDeckPropertiesCallback : SdkCallbackBaseNotify<IBMDSwitcherHyperDeck, _BMDSwitcherHyperDeckEventType>, IBMDSwitcherHyperDeckCallback
     {
         private readonly SettingsState.HyperdeckState _state;
-        private readonly IBMDSwitcherHyperDeck _props;
-        private readonly Action<string> _onChange;
 
-        public HyperDeckPropertiesCallback(SettingsState.HyperdeckState state, IBMDSwitcherHyperDeck props, Action<string> onChange)
+        public HyperDeckPropertiesCallback(SettingsState.HyperdeckState state, IBMDSwitcherHyperDeck props, Action<string> onChange) : base(props, onChange)
         {
             _state = state;
-            _props = props;
-            _onChange = onChange;
         }
 
-        public void Notify(_BMDSwitcherHyperDeckEventType eventType)
+        public override void Notify(_BMDSwitcherHyperDeckEventType eventType)
         {
             switch (eventType)
             {
@@ -37,9 +32,9 @@ namespace LibAtem.ComparisonTests.State.SDK
                 case _BMDSwitcherHyperDeckEventType.bmdSwitcherHyperDeckEventTypeClipCountChanged:
                     break;
                 case _BMDSwitcherHyperDeckEventType.bmdSwitcherHyperDeckEventTypeSwitcherInputChanged:
-                    _props.GetSwitcherInput(out long inputId);
+                    Props.GetSwitcherInput(out long inputId);
                     _state.Input = (VideoSource) inputId;
-                    _onChange("Input");
+                    OnChange("Input");
                     break;
                 case _BMDSwitcherHyperDeckEventType.bmdSwitcherHyperDeckEventTypeFrameRateChanged:
                     break;
@@ -62,19 +57,19 @@ namespace LibAtem.ComparisonTests.State.SDK
                 case _BMDSwitcherHyperDeckEventType.bmdSwitcherHyperDeckEventTypeSingleClipPlaybackChanged:
                     break;
                 case _BMDSwitcherHyperDeckEventType.bmdSwitcherHyperDeckEventTypeAutoRollOnTakeChanged:
-                    _props.GetAutoRollOnTake(out int autoRoll);
+                    Props.GetAutoRollOnTake(out int autoRoll);
                     _state.AutoRoll = autoRoll != 0;
-                    _onChange("AutoRoll");
+                    OnChange("AutoRoll");
                     break;
                 case _BMDSwitcherHyperDeckEventType.bmdSwitcherHyperDeckEventTypeAutoRollOnTakeFrameDelayChanged:
-                    _props.GetAutoRollOnTakeFrameDelay(out ushort frameDelay);
+                    Props.GetAutoRollOnTakeFrameDelay(out ushort frameDelay);
                     _state.AutoRollFrameDelay = frameDelay;
-                    _onChange("AutoRollFrameDelay");
+                    OnChange("AutoRollFrameDelay");
                     break;
                 case _BMDSwitcherHyperDeckEventType.bmdSwitcherHyperDeckEventTypeNetworkAddressChanged:
-                    _props.GetNetworkAddress(out uint address);
+                    Props.GetNetworkAddress(out uint address);
                     _state.NetworkAddress = address == 0 ? null : IPUtil.IPToString(BitConverter.GetBytes(address));
-                    _onChange("NetworkAddress");
+                    OnChange("NetworkAddress");
                     break;
                 default:
                     throw new ArgumentOutOfRangeException(nameof(eventType), eventType, null);

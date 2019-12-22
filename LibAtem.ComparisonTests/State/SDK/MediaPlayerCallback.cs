@@ -5,19 +5,17 @@ using System;
 
 namespace LibAtem.ComparisonTests.State.SDK
 {
-    public sealed class MediaPlayerCallback : IBMDSwitcherMediaPlayerCallback
+    public sealed class MediaPlayerCallback : SdkCallbackBase<IBMDSwitcherMediaPlayer>, IBMDSwitcherMediaPlayerCallback
     {
         private readonly MediaPlayerState _state;
         private readonly AtemStateBuilderSettings _updateSettings;
-        private readonly IBMDSwitcherMediaPlayer _props;
-        private readonly Action<string> _onChange;
 
-        public MediaPlayerCallback(MediaPlayerState state, AtemStateBuilderSettings updateSettings, IBMDSwitcherMediaPlayer props, Action<string> onChange)
+        public MediaPlayerCallback(MediaPlayerState state, AtemStateBuilderSettings updateSettings, IBMDSwitcherMediaPlayer props, Action<string> onChange) : base(props, onChange)
         {
             _state = state;
             _updateSettings = updateSettings;
-            _props = props;
-            _onChange = onChange;
+
+            Notify();
         }
 
         public void Notify()
@@ -31,19 +29,19 @@ namespace LibAtem.ComparisonTests.State.SDK
 
         public void SourceChanged()
         {
-            _props.GetSource(out _BMDSwitcherMediaPlayerSourceType type, out uint index);
+            Props.GetSource(out _BMDSwitcherMediaPlayerSourceType type, out uint index);
             _state.Source.SourceType = AtemEnumMaps.MediaPlayerSourceMap.FindByValue(type);
             _state.Source.SourceIndex = index;
-            _onChange("Source");
+            OnChange("Source");
         }
 
         public void PlayingChanged()
         {
             if (_state.ClipStatus != null)
             {
-                _props.GetPlaying(out int playing);
+                Props.GetPlaying(out int playing);
                 _state.ClipStatus.Playing = playing != 0;
-                _onChange("Status");
+                OnChange("Status");
             }
         }
 
@@ -51,9 +49,9 @@ namespace LibAtem.ComparisonTests.State.SDK
         {
             if (_state.ClipStatus != null)
             {
-                _props.GetLoop(out int loop);
+                Props.GetLoop(out int loop);
                 _state.ClipStatus.Loop = loop != 0;
-                _onChange("Status");
+                OnChange("Status");
             }
         }
 
@@ -64,9 +62,9 @@ namespace LibAtem.ComparisonTests.State.SDK
                 if (!_updateSettings.TrackMediaClipFrames)
                     return;
 
-                _props.GetAtBeginning(out int atBegining);
+                Props.GetAtBeginning(out int atBegining);
                 _state.ClipStatus.AtBeginning = atBegining != 0;
-                _onChange("Status");
+                OnChange("Status");
             }
         }
 
@@ -77,9 +75,9 @@ namespace LibAtem.ComparisonTests.State.SDK
                 if (!_updateSettings.TrackMediaClipFrames)
                     return;
 
-                _props.GetClipFrame(out uint clipFrame);
+                Props.GetClipFrame(out uint clipFrame);
                 _state.ClipStatus.ClipFrame = clipFrame;
-                _onChange("Status");
+                OnChange("Status");
             }
         }
     }
