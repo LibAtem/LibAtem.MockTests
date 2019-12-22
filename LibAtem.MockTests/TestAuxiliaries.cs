@@ -14,19 +14,22 @@ using Xunit.Abstractions;
 
 namespace LibAtem.MockTests
 {
+    [Collection("ServerClientPool")]
     public class TestAuxiliaries
     {
         private readonly ITestOutputHelper _output;
+        private readonly AtemServerClientPool _pool;
 
-        public TestAuxiliaries(ITestOutputHelper output)
+        public TestAuxiliaries(ITestOutputHelper output, AtemServerClientPool pool)
         {
             _output = output;
+            _pool = pool;
         }
 
         [Fact]
         public void TestSource()
         {
-            AtemMockServerWrapper.Each(_output, SourceCommandHandler, DeviceTestCases.All, helper =>
+            AtemMockServerWrapper.Each(_output, _pool, SourceCommandHandler, DeviceTestCases.All, helper =>
             {
                 Dictionary<VideoSource, IBMDSwitcherInputAux> allAuxes = helper.GetSdkInputsOfType<IBMDSwitcherInputAux>();
                 VideoSource[] chosenIds = VideoSourceUtil.TakeSelection(allAuxes.Keys.ToArray());

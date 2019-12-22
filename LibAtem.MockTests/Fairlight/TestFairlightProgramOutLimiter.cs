@@ -8,13 +8,16 @@ using Xunit.Abstractions;
 
 namespace LibAtem.MockTests.Fairlight
 {
+    [Collection("ServerClientPool")]
     public class TestFairlightProgramOutLimiter
     {
         private readonly ITestOutputHelper _output;
+        private readonly AtemServerClientPool _pool;
 
-        public TestFairlightProgramOutLimiter(ITestOutputHelper output)
+        public TestFairlightProgramOutLimiter(ITestOutputHelper output, AtemServerClientPool pool)
         {
             _output = output;
+            _pool = pool;
         }
 
         private static IBMDSwitcherFairlightAudioLimiter GetLimiter(AtemMockServerWrapper helper)
@@ -29,7 +32,7 @@ namespace LibAtem.MockTests.Fairlight
         public void TestLimiterEnabled()
         {
             var handler = CommandGenerator.CreateAutoCommandHandler<FairlightMixerMasterLimiterSetCommand, FairlightMixerMasterLimiterGetCommand>("LimiterEnabled");
-            AtemMockServerWrapper.Each(_output, handler, DeviceTestCases.FairlightMain, helper =>
+            AtemMockServerWrapper.Each(_output, _pool, handler, DeviceTestCases.FairlightMain, helper =>
             {
                 IBMDSwitcherFairlightAudioLimiter limiter = GetLimiter(helper);
 
@@ -47,7 +50,7 @@ namespace LibAtem.MockTests.Fairlight
         public void TestThreshold()
         {
             var handler = CommandGenerator.CreateAutoCommandHandler<FairlightMixerMasterLimiterSetCommand, FairlightMixerMasterLimiterGetCommand>("Threshold");
-            AtemMockServerWrapper.Each(_output, handler, DeviceTestCases.FairlightMain, helper =>
+            AtemMockServerWrapper.Each(_output, _pool, handler, DeviceTestCases.FairlightMain, helper =>
             {
                 IBMDSwitcherFairlightAudioLimiter limiter = GetLimiter(helper);
 
@@ -66,7 +69,7 @@ namespace LibAtem.MockTests.Fairlight
         public void TestAttack()
         {
             var handler = CommandGenerator.CreateAutoCommandHandler<FairlightMixerMasterLimiterSetCommand, FairlightMixerMasterLimiterGetCommand>("Attack");
-            AtemMockServerWrapper.Each(_output, handler, DeviceTestCases.FairlightMain, helper =>
+            AtemMockServerWrapper.Each(_output, _pool, handler, DeviceTestCases.FairlightMain, helper =>
             {
                 IBMDSwitcherFairlightAudioLimiter limiter = GetLimiter(helper);
 
@@ -85,7 +88,7 @@ namespace LibAtem.MockTests.Fairlight
         public void TestHold()
         {
             var handler = CommandGenerator.CreateAutoCommandHandler<FairlightMixerMasterLimiterSetCommand, FairlightMixerMasterLimiterGetCommand>("Hold");
-            AtemMockServerWrapper.Each(_output, handler, DeviceTestCases.FairlightMain, helper =>
+            AtemMockServerWrapper.Each(_output, _pool, handler, DeviceTestCases.FairlightMain, helper =>
             {
                 IBMDSwitcherFairlightAudioLimiter limiter = GetLimiter(helper);
 
@@ -104,7 +107,7 @@ namespace LibAtem.MockTests.Fairlight
         public void TestRelease()
         {
             var handler = CommandGenerator.CreateAutoCommandHandler<FairlightMixerMasterLimiterSetCommand, FairlightMixerMasterLimiterGetCommand>("Release");
-            AtemMockServerWrapper.Each(_output, handler, DeviceTestCases.FairlightMain, helper =>
+            AtemMockServerWrapper.Each(_output, _pool, handler, DeviceTestCases.FairlightMain, helper =>
             {
                 IBMDSwitcherFairlightAudioLimiter limiter = GetLimiter(helper);
 
@@ -124,7 +127,7 @@ namespace LibAtem.MockTests.Fairlight
         public void TestReset()
         {
             var handler = CommandGenerator.CreateAutoCommandHandler<FairlightMixerMasterLimiterSetCommand, FairlightMixerMasterLimiterGetCommand>("Release");
-            AtemMockServerWrapper.Each(_output, handler, DeviceTestCases.FairlightMain, helper =>
+            AtemMockServerWrapper.Each(_output, _pool, handler, DeviceTestCases.FairlightMain, helper =>
             {
                 IBMDSwitcherFairlightAudioLimiter limiter = GetLimiter(helper);
 

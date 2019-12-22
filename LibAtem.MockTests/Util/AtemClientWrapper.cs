@@ -10,9 +10,9 @@ using BMDSwitcherAPI;
 using log4net;
 using log4net.Config;
 using LibAtem.Commands;
-using LibAtem.ComparisonTests.State;
 using LibAtem.ComparisonTests.State.SDK;
 using LibAtem.DeviceProfile;
+using LibAtem.MockTests.DeviceMock;
 using LibAtem.Net;
 using Xunit;
 using LibAtem.State;
@@ -20,14 +20,6 @@ using LibAtem.State.Builder;
 
 namespace LibAtem.MockTests.Util
 {
-    [CollectionDefinition("Client")]
-    public class ClientCollection : ICollectionFixture<AtemClientWrapper>
-    {
-        // This class has no code, and is never created. Its purpose is simply
-        // to be the place to apply [CollectionDefinition] and all the
-        // ICollectionFixture<> interfaces.
-    }
-
     public sealed class AtemClientWrapper : IDisposable
     {
         private readonly Dictionary<CommandQueueKey, ICommand> _lastReceivedLibAtem;

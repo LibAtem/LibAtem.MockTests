@@ -8,13 +8,16 @@ using Xunit.Abstractions;
 
 namespace LibAtem.MockTests.Fairlight
 {
+    [Collection("ServerClientPool")]
     public class TestFairlightProgramOutCompressor
     {
         private readonly ITestOutputHelper _output;
+        private readonly AtemServerClientPool _pool;
 
-        public TestFairlightProgramOutCompressor(ITestOutputHelper output)
+        public TestFairlightProgramOutCompressor(ITestOutputHelper output, AtemServerClientPool pool)
         {
             _output = output;
+            _pool = pool;
         }
 
         private static IBMDSwitcherFairlightAudioCompressor GetCompressor(AtemMockServerWrapper helper)
@@ -32,7 +35,7 @@ namespace LibAtem.MockTests.Fairlight
                 CommandGenerator
                     .CreateAutoCommandHandler<FairlightMixerMasterCompressorSetCommand,
                         FairlightMixerMasterCompressorGetCommand>("CompressorEnabled");
-            AtemMockServerWrapper.Each(_output, handler, DeviceTestCases.FairlightMain, helper =>
+            AtemMockServerWrapper.Each(_output, _pool, handler, DeviceTestCases.FairlightMain, helper =>
             {
                 IBMDSwitcherFairlightAudioCompressor compressor = GetCompressor(helper);
 
@@ -53,7 +56,7 @@ namespace LibAtem.MockTests.Fairlight
                 CommandGenerator
                     .CreateAutoCommandHandler<FairlightMixerMasterCompressorSetCommand,
                         FairlightMixerMasterCompressorGetCommand>("Threshold");
-            AtemMockServerWrapper.Each(_output, handler, DeviceTestCases.FairlightMain, helper =>
+            AtemMockServerWrapper.Each(_output, _pool, handler, DeviceTestCases.FairlightMain, helper =>
             {
                 IBMDSwitcherFairlightAudioCompressor compressor = GetCompressor(helper);
 
@@ -75,7 +78,7 @@ namespace LibAtem.MockTests.Fairlight
                 CommandGenerator
                     .CreateAutoCommandHandler<FairlightMixerMasterCompressorSetCommand,
                         FairlightMixerMasterCompressorGetCommand>("Ratio");
-            AtemMockServerWrapper.Each(_output, handler, DeviceTestCases.FairlightMain, helper =>
+            AtemMockServerWrapper.Each(_output, _pool, handler, DeviceTestCases.FairlightMain, helper =>
             {
                 IBMDSwitcherFairlightAudioCompressor compressor = GetCompressor(helper);
 
@@ -97,7 +100,7 @@ namespace LibAtem.MockTests.Fairlight
                 CommandGenerator
                     .CreateAutoCommandHandler<FairlightMixerMasterCompressorSetCommand,
                         FairlightMixerMasterCompressorGetCommand>("Attack");
-            AtemMockServerWrapper.Each(_output, handler, DeviceTestCases.FairlightMain, helper =>
+            AtemMockServerWrapper.Each(_output, _pool, handler, DeviceTestCases.FairlightMain, helper =>
             {
                 IBMDSwitcherFairlightAudioCompressor compressor = GetCompressor(helper);
 
@@ -119,7 +122,7 @@ namespace LibAtem.MockTests.Fairlight
                 CommandGenerator
                     .CreateAutoCommandHandler<FairlightMixerMasterCompressorSetCommand,
                         FairlightMixerMasterCompressorGetCommand>("Hold");
-            AtemMockServerWrapper.Each(_output, handler, DeviceTestCases.FairlightMain, helper =>
+            AtemMockServerWrapper.Each(_output, _pool, handler, DeviceTestCases.FairlightMain, helper =>
             {
                 IBMDSwitcherFairlightAudioCompressor compressor = GetCompressor(helper);
 
@@ -141,7 +144,7 @@ namespace LibAtem.MockTests.Fairlight
                 CommandGenerator
                     .CreateAutoCommandHandler<FairlightMixerMasterCompressorSetCommand,
                         FairlightMixerMasterCompressorGetCommand>("Release");
-            AtemMockServerWrapper.Each(_output, handler, DeviceTestCases.FairlightMain, helper =>
+            AtemMockServerWrapper.Each(_output, _pool, handler, DeviceTestCases.FairlightMain, helper =>
             {
                 IBMDSwitcherFairlightAudioCompressor compressor = GetCompressor(helper);
 
@@ -161,7 +164,7 @@ namespace LibAtem.MockTests.Fairlight
         public void TestReset()
         {
             var handler = CommandGenerator.CreateAutoCommandHandler<FairlightMixerMasterLimiterSetCommand, FairlightMixerMasterLimiterGetCommand>("Release");
-            AtemMockServerWrapper.Each(_output, handler, DeviceTestCases.FairlightMain, helper =>
+            AtemMockServerWrapper.Each(_output, _pool, handler, DeviceTestCases.FairlightMain, helper =>
             {
                 IBMDSwitcherFairlightAudioLimiter limiter = GetLimiter(helper);
 

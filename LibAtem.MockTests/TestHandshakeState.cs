@@ -19,17 +19,17 @@ namespace LibAtem.MockTests
         }
 
         [Fact]
-        public void TestStateMock2ME() => RunTest(DeviceTestCases.Handshake2ME);
+        public void TestStateMock2ME() => RunTest(DeviceTestCases.Legacy2ME_8_0_1);
 
         [Fact]
-        public void TestStateMockConstellation() => RunTest(DeviceTestCases.HandshakeConstellation);
+        public void TestStateMockConstellation() => RunTest(DeviceTestCases.Constellation_8_0_2);
 
         [Fact]
-        public void TestStateMockMini() => RunTest(DeviceTestCases.HandshakeMini);
+        public void TestStateMockMini() => RunTest(DeviceTestCases.Mini_8_1);
         
-        private void RunTest(string filename)
+        private void RunTest(Tuple<ProtocolVersion, string> caseId)
         {
-            var commandData = WiresharkParser.BuildCommands(ProtocolVersion.V8_0_1, filename);
+            var commandData = WiresharkParser.BuildCommands(caseId.Item1, caseId.Item2);
             using var server = new AtemMockServer(commandData);
             using var helper = new AtemClientWrapper("127.0.0.1");
 

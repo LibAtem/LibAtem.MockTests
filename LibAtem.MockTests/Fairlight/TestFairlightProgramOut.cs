@@ -8,13 +8,16 @@ using Xunit.Abstractions;
 
 namespace LibAtem.MockTests.Fairlight
 {
+    [Collection("ServerClientPool")]
     public class TestFairlightProgramOut
     {
         private readonly ITestOutputHelper _output;
+        private readonly AtemServerClientPool _pool;
 
-        public TestFairlightProgramOut(ITestOutputHelper output)
+        public TestFairlightProgramOut(ITestOutputHelper output, AtemServerClientPool pool)
         {
             _output = output;
+            _pool = pool;
         }
 
 
@@ -47,7 +50,7 @@ namespace LibAtem.MockTests.Fairlight
         public void TestGain()
         {
             var handler = CommandGenerator.CreateAutoCommandHandler<FairlightMixerMasterSetCommand, FairlightMixerMasterGetCommand>("Gain");
-            AtemMockServerWrapper.Each(_output, handler, DeviceTestCases.FairlightMain, helper =>
+            AtemMockServerWrapper.Each(_output, _pool, handler, DeviceTestCases.FairlightMain, helper =>
             {
                 IBMDSwitcherFairlightAudioMixer mixer = GetFairlightMixer(helper);
                 AtemState stateBefore = helper.Helper.LibState;
@@ -68,7 +71,7 @@ namespace LibAtem.MockTests.Fairlight
         public void TestFollowFadeToBlack()
         {
             var handler = CommandGenerator.CreateAutoCommandHandler<FairlightMixerMasterSetCommand, FairlightMixerMasterGetCommand>("FollowFadeToBlack");
-            AtemMockServerWrapper.Each(_output, handler, DeviceTestCases.FairlightMain, helper =>
+            AtemMockServerWrapper.Each(_output, _pool, handler, DeviceTestCases.FairlightMain, helper =>
             {
                 IBMDSwitcherFairlightAudioMixer mixer = GetFairlightMixer(helper);
                 AtemState stateBefore = helper.Helper.LibState;
@@ -88,7 +91,7 @@ namespace LibAtem.MockTests.Fairlight
         public void TestMakeUp()
         {
             var handler = CommandGenerator.CreateAutoCommandHandler<FairlightMixerMasterSetCommand, FairlightMixerMasterGetCommand>("MakeUpGain");
-            AtemMockServerWrapper.Each(_output, handler, DeviceTestCases.FairlightMain, helper =>
+            AtemMockServerWrapper.Each(_output, _pool, handler, DeviceTestCases.FairlightMain, helper =>
             {
                 IBMDSwitcherFairlightAudioDynamicsProcessor dynamics = GetDynamics(helper);
 

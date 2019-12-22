@@ -3,12 +3,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using BMDSwitcherAPI;
-using LibAtem.Commands;
-using LibAtem.Common;
 using LibAtem.ComparisonTests.State;
 using LibAtem.State;
 using LibAtem.State.Builder;
-using LibAtem.Util;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -18,11 +15,9 @@ namespace LibAtem.MockTests.Util
     {
         public const int CommandWaitTime = 80;
 
-        private readonly AtemClientWrapper _client;
-        public AtemClientWrapper Client => _client;
-        public AtemStateBuilderSettings StateSettings => _client.StateSettings;
+        public AtemClientWrapper Client { get; }
 
-        private readonly List<ICommand> _receivedCommands;
+        public AtemStateBuilderSettings StateSettings => Client.StateSettings;
 
         private AutoResetEvent responseWait;
 
@@ -30,20 +25,15 @@ namespace LibAtem.MockTests.Util
 
         public AtemTestHelper(AtemClientWrapper client, ITestOutputHelper output)
         {
-            _client = client;
+            Client = client;
             Output = output;
-            _receivedCommands = new List<ICommand>();
 
-            _client.Client.OnReceive += OnReceive;
-
-            _client.SyncStates();
+            Client.SyncStates();
             AssertStatesMatch();
         }
 
         public void Dispose()
         {
-            _client.Client.OnReceive -= OnReceive;
-
             Assert.True(TestResult);
         }
 
@@ -57,23 +47,15 @@ namespace LibAtem.MockTests.Util
             }
             Assert.Empty(before);
         }
-
-        private void OnReceive(object sender, IReadOnlyList<ICommand> commands)
-        {
-            lock (_receivedCommands)
-            {
-                _receivedCommands.AddRange(commands);
-            }
-        }
-
+        
         public ITestOutputHelper Output { get; }
 
-        public AtemState SdkState => _client.SdkState;
-        public AtemState LibState => _client.LibState;
+        public AtemState SdkState => Client.SdkState;
+        public AtemState LibState => Client.LibState;
 
-        public IBMDSwitcher SdkSwitcher => _client.SdkSwitcher;
+        public IBMDSwitcher SdkSwitcher => Client.SdkSwitcher;
 
-        public LibAtem.DeviceProfile.DeviceProfile Profile => _client.Profile;
+        public LibAtem.DeviceProfile.DeviceProfile Profile => Client.Profile;
         
         public void SendAndWaitForChange(Action doSend, int timeout = -1)
         {
@@ -111,8 +93,8 @@ namespace LibAtem.MockTests.Util
                 }
             }
 
-            _client.OnStateChange += HandlerLib;
-            _client.OnSdkStateChange += HandlerSdk;
+            Client.OnStateChange += HandlerLib;
+            Client.OnSdkStateChange += HandlerSdk;
 
             doSend();
 
@@ -121,8 +103,8 @@ namespace LibAtem.MockTests.Util
             // The Sdk doesn't send the same notifies if nothing changed, so once the lib has finished, wait a small time for sdk to finish up
             sdkWait.WaitOne(timeout == -1 ? CommandWaitTime * 2 : timeout);
 
-            _client.OnStateChange -= HandlerLib;
-            _client.OnSdkStateChange -= HandlerSdk;
+            Client.OnStateChange -= HandlerLib;
+            Client.OnSdkStateChange -= HandlerSdk;
 
             if (pendingLib.Count > 0)
                 Output.WriteLine("SendAndWaitForMatching: Pending Lib changes: " + string.Join(", ", pendingLib));

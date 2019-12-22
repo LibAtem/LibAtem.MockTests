@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
-using System.Runtime.InteropServices;
 using System.Threading;
 using BMDSwitcherAPI;
 using LibAtem.Commands;
@@ -15,43 +14,51 @@ using Xunit.Abstractions;
 
 namespace LibAtem.MockTests.Util
 {
+    using TestCaseId = Tuple<ProtocolVersion, string>;
+
     public sealed class AtemMockServerWrapper : IDisposable
     {
         private readonly ITestOutputHelper _output;
+        private readonly AtemServerClientPool _pool;
 
         public AtemMockServer Server { get; }
         public AtemClientWrapper Clients { get; }
         public AtemTestHelper Helper { get; }
 
-        public AtemMockServerWrapper(ITestOutputHelper output, Func<ImmutableList<ICommand>, ICommand, IEnumerable<ICommand>> handler, string filename)
+        public AtemMockServerWrapper(ITestOutputHelper output, AtemServerClientPool pool, Func<ImmutableList<ICommand>, ICommand, IEnumerable<ICommand>> handler, TestCaseId caseId)
         {
             _output = output;
+            _pool = pool;
 
-            var commandData = WiresharkParser.BuildCommands(ProtocolVersion.V8_0_1, filename);
-            Server = new AtemMockServer(commandData);
+            Server = _pool.Server;
+            Server.CurrentCase = caseId.Item2;
+
+
             Clients = new AtemClientWrapper("127.0.0.1");
             Helper = new AtemTestHelper(Clients, _output);
             Server.HandleCommand = cmd => handler(Clients.LibAtemReceived, cmd);
+            /*
             Clients.SdkState.Info.LastTimecode = Clients.LibState.Info.LastTimecode = new Timecode() // TODO - this might be doing nothign..
             {
                 Second = Server.CurrentTime % 60,
                 Minute = Server.CurrentTime / 60
-            };
+            };*/
         }
 
         public void Dispose()
         {
             Helper.Dispose();
             Clients.Dispose();
-            Server.Dispose();
+            //Server.Dispose();
+            Server.CurrentCase = null;
         }
 
-        public static void Each(ITestOutputHelper output, Func<ImmutableList<ICommand>, ICommand, IEnumerable<ICommand>> handler, string[] filenames, Action<AtemMockServerWrapper> runner)
+        public static void Each(ITestOutputHelper output, AtemServerClientPool pool, Func<ImmutableList<ICommand>, ICommand, IEnumerable<ICommand>> handler, TestCaseId[] cases, Action<AtemMockServerWrapper> runner)
         {
-            Assert.NotEmpty(filenames);
-            filenames.ForEach(filename =>
+            Assert.NotEmpty(cases);
+            cases.ForEach(caseId =>
             {
-                using var helper = new AtemMockServerWrapper(output, handler, filename);
+                using var helper = new AtemMockServerWrapper(output, pool, handler, caseId);
                 runner(helper);
             });
         }

@@ -16,7 +16,7 @@ namespace LibAtem.MockTests.DeviceMock
         private static readonly ILog Log = LogManager.GetLogger(typeof(AtemMockServer));
 
         private readonly AtemConnectionList _connections;
-        private readonly IReadOnlyList<byte[]> _state;
+        private readonly IReadOnlyDictionary<string, IReadOnlyList<byte[]>> _handshakeStates;
 
         private readonly AutoResetEvent _receiveRunning;
         private bool _isDisposing = false;
@@ -28,17 +28,25 @@ namespace LibAtem.MockTests.DeviceMock
 
         public uint CurrentTime { get; private set; } = 100;
 
+        public string CurrentCase { get; set; }
+        //public uint CurrentGroup { get; set; }
+
         public Func<ICommand, IEnumerable<ICommand>> HandleCommand { get; set; }
 
-        public AtemMockServer(IReadOnlyList<byte[]> state, Func<ICommand, IEnumerable<ICommand>> handleCommand = null)
+        public AtemMockServer(IReadOnlyDictionary<string, IReadOnlyList<byte[]>> handshakeStates)
         {
-            _state = state;
-            HandleCommand = handleCommand;
+            _handshakeStates = handshakeStates;
             _connections = new AtemConnectionList();
 
             _receiveRunning = new AutoResetEvent(false);
             StartReceive();
             StartPingTimer();
+        }
+
+        public AtemMockServer(IReadOnlyList<byte[]> state) : this(
+            new Dictionary<string, IReadOnlyList<byte[]>>(new[] {KeyValuePair.Create("default", state)}))
+        {
+            CurrentCase = "default";
         }
 
         public void Dispose()
@@ -197,8 +205,8 @@ namespace LibAtem.MockTests.DeviceMock
         {
             try
             {
-
-                foreach (byte[] cmd in _state)
+                IReadOnlyList<byte[]> sendState = _handshakeStates[CurrentCase];
+                foreach (byte[] cmd in sendState)
                 {
                     var builder = new OutboundMessageBuilder();
                     if (!builder.TryAddData(cmd))

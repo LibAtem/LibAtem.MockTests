@@ -9,9 +9,10 @@ using Xunit.Abstractions;
 
 namespace LibAtem.MockTests.MixEffects
 {
+    [Collection("ServerClientPool")]
     public class TestAdvancedChromaKeyer : MixEffectsTestBase
     {
-        public TestAdvancedChromaKeyer(ITestOutputHelper output) : base(output)
+        public TestAdvancedChromaKeyer(ITestOutputHelper output, AtemServerClientPool pool) : base(output, pool)
         {
 
         }
@@ -21,7 +22,7 @@ namespace LibAtem.MockTests.MixEffects
         {
             bool tested = false;
             var handler = CommandGenerator.CreateAutoCommandHandler<MixEffectKeyAdvancedChromaPropertiesSetCommand, MixEffectKeyAdvancedChromaPropertiesGetCommand>("ForegroundLevel");
-            AtemMockServerWrapper.Each(Output, handler, DeviceTestCases.AdvancedChromaKeyer, helper =>
+            AtemMockServerWrapper.Each(Output, Pool, handler, DeviceTestCases.AdvancedChromaKeyer, helper =>
             {
                 var keyers = GetKeyers<IBMDSwitcherKeyAdvancedChromaParameters>(helper);
                 var useKeyers = SelectionOfGroup(keyers);
@@ -51,7 +52,7 @@ namespace LibAtem.MockTests.MixEffects
         {
             bool tested = false;
             var handler = CommandGenerator.CreateAutoCommandHandler<MixEffectKeyAdvancedChromaPropertiesSetCommand, MixEffectKeyAdvancedChromaPropertiesGetCommand>("BackgroundLevel");
-            AtemMockServerWrapper.Each(Output, handler, DeviceTestCases.AdvancedChromaKeyer, helper =>
+            AtemMockServerWrapper.Each(Output, Pool, handler, DeviceTestCases.AdvancedChromaKeyer, helper =>
             {
                 var keyers = GetKeyers<IBMDSwitcherKeyAdvancedChromaParameters>(helper);
                 var useKeyers = SelectionOfGroup(keyers);
@@ -81,7 +82,7 @@ namespace LibAtem.MockTests.MixEffects
         {
             bool tested = false;
             var handler = CommandGenerator.CreateAutoCommandHandler<MixEffectKeyAdvancedChromaPropertiesSetCommand, MixEffectKeyAdvancedChromaPropertiesGetCommand>("KeyEdge");
-            AtemMockServerWrapper.Each(Output, handler, DeviceTestCases.AdvancedChromaKeyer, helper =>
+            AtemMockServerWrapper.Each(Output, Pool, handler, DeviceTestCases.AdvancedChromaKeyer, helper =>
             {
                 var keyers = GetKeyers<IBMDSwitcherKeyAdvancedChromaParameters>(helper);
                 var useKeyers = SelectionOfGroup(keyers);
@@ -111,7 +112,7 @@ namespace LibAtem.MockTests.MixEffects
         {
             bool tested = false;
             var handler = CommandGenerator.CreateAutoCommandHandler<MixEffectKeyAdvancedChromaPropertiesSetCommand, MixEffectKeyAdvancedChromaPropertiesGetCommand>("SpillSuppression");
-            AtemMockServerWrapper.Each(Output, handler, DeviceTestCases.AdvancedChromaKeyer, helper =>
+            AtemMockServerWrapper.Each(Output, Pool, handler, DeviceTestCases.AdvancedChromaKeyer, helper =>
             {
                 var keyers = GetKeyers<IBMDSwitcherKeyAdvancedChromaParameters>(helper);
                 var useKeyers = SelectionOfGroup(keyers);
@@ -141,7 +142,7 @@ namespace LibAtem.MockTests.MixEffects
         {
             bool tested = false;
             var handler = CommandGenerator.CreateAutoCommandHandler<MixEffectKeyAdvancedChromaPropertiesSetCommand, MixEffectKeyAdvancedChromaPropertiesGetCommand>("FlareSuppression");
-            AtemMockServerWrapper.Each(Output, handler, DeviceTestCases.AdvancedChromaKeyer, helper =>
+            AtemMockServerWrapper.Each(Output, Pool, handler, DeviceTestCases.AdvancedChromaKeyer, helper =>
             {
                 var keyers = GetKeyers<IBMDSwitcherKeyAdvancedChromaParameters>(helper);
                 var useKeyers = SelectionOfGroup(keyers);
@@ -171,7 +172,7 @@ namespace LibAtem.MockTests.MixEffects
         {
             bool tested = false;
             var handler = CommandGenerator.CreateAutoCommandHandler<MixEffectKeyAdvancedChromaPropertiesSetCommand, MixEffectKeyAdvancedChromaPropertiesGetCommand>("Brightness");
-            AtemMockServerWrapper.Each(Output, handler, DeviceTestCases.AdvancedChromaKeyer, helper =>
+            AtemMockServerWrapper.Each(Output, Pool, handler, DeviceTestCases.AdvancedChromaKeyer, helper =>
             {
                 var keyers = GetKeyers<IBMDSwitcherKeyAdvancedChromaParameters>(helper);
                 var useKeyers = SelectionOfGroup(keyers);
@@ -201,7 +202,7 @@ namespace LibAtem.MockTests.MixEffects
         {
             bool tested = false;
             var handler = CommandGenerator.CreateAutoCommandHandler<MixEffectKeyAdvancedChromaPropertiesSetCommand, MixEffectKeyAdvancedChromaPropertiesGetCommand>("Contrast");
-            AtemMockServerWrapper.Each(Output, handler, DeviceTestCases.AdvancedChromaKeyer, helper =>
+            AtemMockServerWrapper.Each(Output, Pool, handler, DeviceTestCases.AdvancedChromaKeyer, helper =>
             {
                 var keyers = GetKeyers<IBMDSwitcherKeyAdvancedChromaParameters>(helper);
                 var useKeyers = SelectionOfGroup(keyers);
@@ -231,7 +232,7 @@ namespace LibAtem.MockTests.MixEffects
         {
             bool tested = false;
             var handler = CommandGenerator.CreateAutoCommandHandler<MixEffectKeyAdvancedChromaPropertiesSetCommand, MixEffectKeyAdvancedChromaPropertiesGetCommand>("Saturation");
-            AtemMockServerWrapper.Each(Output, handler, DeviceTestCases.AdvancedChromaKeyer, helper =>
+            AtemMockServerWrapper.Each(Output, Pool, handler, DeviceTestCases.AdvancedChromaKeyer, helper =>
             {
                 var keyers = GetKeyers<IBMDSwitcherKeyAdvancedChromaParameters>(helper);
                 var useKeyers = SelectionOfGroup(keyers);
@@ -261,7 +262,7 @@ namespace LibAtem.MockTests.MixEffects
         {
             bool tested = false;
             var handler = CommandGenerator.CreateAutoCommandHandler<MixEffectKeyAdvancedChromaPropertiesSetCommand, MixEffectKeyAdvancedChromaPropertiesGetCommand>("Red");
-            AtemMockServerWrapper.Each(Output, handler, DeviceTestCases.AdvancedChromaKeyer, helper =>
+            AtemMockServerWrapper.Each(Output, Pool, handler, DeviceTestCases.AdvancedChromaKeyer, helper =>
             {
                 var keyers = GetKeyers<IBMDSwitcherKeyAdvancedChromaParameters>(helper);
                 var useKeyers = SelectionOfGroup(keyers);
@@ -291,7 +292,7 @@ namespace LibAtem.MockTests.MixEffects
         {
             bool tested = false;
             var handler = CommandGenerator.CreateAutoCommandHandler<MixEffectKeyAdvancedChromaPropertiesSetCommand, MixEffectKeyAdvancedChromaPropertiesGetCommand>("Green");
-            AtemMockServerWrapper.Each(Output, handler, DeviceTestCases.AdvancedChromaKeyer, helper =>
+            AtemMockServerWrapper.Each(Output, Pool, handler, DeviceTestCases.AdvancedChromaKeyer, helper =>
             {
                 var keyers = GetKeyers<IBMDSwitcherKeyAdvancedChromaParameters>(helper);
                 var useKeyers = SelectionOfGroup(keyers);
@@ -321,7 +322,7 @@ namespace LibAtem.MockTests.MixEffects
         {
             bool tested = false;
             var handler = CommandGenerator.CreateAutoCommandHandler<MixEffectKeyAdvancedChromaPropertiesSetCommand, MixEffectKeyAdvancedChromaPropertiesGetCommand>("Blue");
-            AtemMockServerWrapper.Each(Output, handler, DeviceTestCases.AdvancedChromaKeyer, helper =>
+            AtemMockServerWrapper.Each(Output, Pool, handler, DeviceTestCases.AdvancedChromaKeyer, helper =>
             {
                 var keyers = GetKeyers<IBMDSwitcherKeyAdvancedChromaParameters>(helper);
                 var useKeyers = SelectionOfGroup(keyers);

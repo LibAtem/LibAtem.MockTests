@@ -12,10 +12,12 @@ namespace LibAtem.MockTests.MixEffects
     public abstract class MixEffectsTestBase
     {
         protected readonly ITestOutputHelper Output;
+        protected readonly AtemServerClientPool Pool;
 
-        protected internal MixEffectsTestBase(ITestOutputHelper output)
+        protected internal MixEffectsTestBase(ITestOutputHelper output, AtemServerClientPool pool)
         {
             Output = output;
+            Pool = pool;
         }
 
         protected static T GetMixEffect<T>(AtemMockServerWrapper helper) where T : class
