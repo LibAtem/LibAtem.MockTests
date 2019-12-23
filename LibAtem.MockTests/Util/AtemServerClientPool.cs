@@ -33,7 +33,10 @@ namespace LibAtem.MockTests.Util
         public AtemClientWrapper GetOrCreateClients(string caseId)
         {
             if (_clients.TryGetValue(caseId, out AtemClientWrapper client))
+            {
+                //Server.ResendDataDumps();
                 return client;
+            }
 
             return _clients[caseId] = new AtemClientWrapper("127.0.0.1");
         }

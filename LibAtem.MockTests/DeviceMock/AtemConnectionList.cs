@@ -1,6 +1,9 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 using System.Net;
 using LibAtem.Commands;
+using LibAtem.Net;
+using LibAtem.Util;
 using log4net;
 
 namespace LibAtem.MockTests.DeviceMock
@@ -14,6 +17,15 @@ namespace LibAtem.MockTests.DeviceMock
         public AtemConnectionList()
         {
             connections = new Dictionary<EndPoint, AtemServerConnection>();
+        }
+
+        public void SendDataDumps(IEnumerable<OutboundMessage> messages)
+        {
+            List<OutboundMessage> messages2 = messages.ToList();
+            lock (connections)
+            {
+                connections.ForEach(conn => { messages2.ForEach(conn.Value.QueueMessage); });
+            }
         }
 
         public AtemServerConnection FindOrCreateConnection(EndPoint ep, out bool isNew)

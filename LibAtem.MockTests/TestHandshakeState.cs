@@ -1,4 +1,8 @@
-﻿using System;
+﻿
+
+
+
+using System;
 using System.Collections.Generic;
 using LibAtem.ComparisonTests.State;
 using LibAtem.MockTests.DeviceMock;
@@ -25,7 +29,6 @@ namespace LibAtem.MockTests
 
         [Fact]
         public void TestStateMockMini() => RunTest(DeviceTestCases.Mini_8_1);
-
         
         [Fact]
         public void TestStateReal()

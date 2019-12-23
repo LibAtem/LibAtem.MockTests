@@ -62,16 +62,5 @@ namespace LibAtem.MockTests.MixEffects
             return result;
         }
 
-        protected static IEnumerable<T> SelectionOfGroup<T>(List<T> options, int randomCount = 3)
-        {
-            var rand = new Random();
-
-            for (int i = 0; i < randomCount && options.Count > 0; i++)
-            {
-                int ind = rand.Next(0, options.Count);
-                yield return options[ind];
-                options.RemoveAt(ind);
-            }
-        }
     }
 }

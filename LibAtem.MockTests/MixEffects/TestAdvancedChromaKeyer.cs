@@ -28,7 +28,7 @@ namespace LibAtem.MockTests.MixEffects
             AtemMockServerWrapper.Each(Output, Pool, handler, DeviceTestCases.AdvancedChromaKeyer, helper =>
             {
                 var keyers = GetKeyers<IBMDSwitcherKeyAdvancedChromaParameters>(helper);
-                var useKeyers = SelectionOfGroup(keyers);
+                var useKeyers = Randomiser.SelectionOfGroup(keyers);
 
                 foreach (Tuple<MixEffectBlockId, UpstreamKeyId, IBMDSwitcherKeyAdvancedChromaParameters> keyer in useKeyers)
                 {
@@ -58,7 +58,7 @@ namespace LibAtem.MockTests.MixEffects
             AtemMockServerWrapper.Each(Output, Pool, handler, DeviceTestCases.AdvancedChromaKeyer, helper =>
             {
                 var keyers = GetKeyers<IBMDSwitcherKeyAdvancedChromaParameters>(helper);
-                var useKeyers = SelectionOfGroup(keyers);
+                var useKeyers = Randomiser.SelectionOfGroup(keyers);
 
                 foreach (Tuple<MixEffectBlockId, UpstreamKeyId, IBMDSwitcherKeyAdvancedChromaParameters> keyer in useKeyers)
                 {
@@ -88,7 +88,7 @@ namespace LibAtem.MockTests.MixEffects
             AtemMockServerWrapper.Each(Output, Pool, handler, DeviceTestCases.AdvancedChromaKeyer, helper =>
             {
                 var keyers = GetKeyers<IBMDSwitcherKeyAdvancedChromaParameters>(helper);
-                var useKeyers = SelectionOfGroup(keyers);
+                var useKeyers = Randomiser.SelectionOfGroup(keyers);
 
                 foreach (Tuple<MixEffectBlockId, UpstreamKeyId, IBMDSwitcherKeyAdvancedChromaParameters> keyer in useKeyers)
                 {
@@ -118,7 +118,7 @@ namespace LibAtem.MockTests.MixEffects
             AtemMockServerWrapper.Each(Output, Pool, handler, DeviceTestCases.AdvancedChromaKeyer, helper =>
             {
                 var keyers = GetKeyers<IBMDSwitcherKeyAdvancedChromaParameters>(helper);
-                var useKeyers = SelectionOfGroup(keyers);
+                var useKeyers = Randomiser.SelectionOfGroup(keyers);
 
                 foreach (Tuple<MixEffectBlockId, UpstreamKeyId, IBMDSwitcherKeyAdvancedChromaParameters> keyer in useKeyers)
                 {
@@ -148,7 +148,7 @@ namespace LibAtem.MockTests.MixEffects
             AtemMockServerWrapper.Each(Output, Pool, handler, DeviceTestCases.AdvancedChromaKeyer, helper =>
             {
                 var keyers = GetKeyers<IBMDSwitcherKeyAdvancedChromaParameters>(helper);
-                var useKeyers = SelectionOfGroup(keyers);
+                var useKeyers = Randomiser.SelectionOfGroup(keyers);
 
                 foreach (Tuple<MixEffectBlockId, UpstreamKeyId, IBMDSwitcherKeyAdvancedChromaParameters> keyer in useKeyers)
                 {
@@ -178,7 +178,7 @@ namespace LibAtem.MockTests.MixEffects
             AtemMockServerWrapper.Each(Output, Pool, handler, DeviceTestCases.AdvancedChromaKeyer, helper =>
             {
                 var keyers = GetKeyers<IBMDSwitcherKeyAdvancedChromaParameters>(helper);
-                var useKeyers = SelectionOfGroup(keyers);
+                var useKeyers = Randomiser.SelectionOfGroup(keyers);
 
                 foreach (Tuple<MixEffectBlockId, UpstreamKeyId, IBMDSwitcherKeyAdvancedChromaParameters> keyer in useKeyers)
                 {
@@ -208,7 +208,7 @@ namespace LibAtem.MockTests.MixEffects
             AtemMockServerWrapper.Each(Output, Pool, handler, DeviceTestCases.AdvancedChromaKeyer, helper =>
             {
                 var keyers = GetKeyers<IBMDSwitcherKeyAdvancedChromaParameters>(helper);
-                var useKeyers = SelectionOfGroup(keyers);
+                var useKeyers = Randomiser.SelectionOfGroup(keyers);
 
                 foreach (Tuple<MixEffectBlockId, UpstreamKeyId, IBMDSwitcherKeyAdvancedChromaParameters> keyer in useKeyers)
                 {
@@ -238,7 +238,7 @@ namespace LibAtem.MockTests.MixEffects
             AtemMockServerWrapper.Each(Output, Pool, handler, DeviceTestCases.AdvancedChromaKeyer, helper =>
             {
                 var keyers = GetKeyers<IBMDSwitcherKeyAdvancedChromaParameters>(helper);
-                var useKeyers = SelectionOfGroup(keyers);
+                var useKeyers = Randomiser.SelectionOfGroup(keyers);
 
                 foreach (Tuple<MixEffectBlockId, UpstreamKeyId, IBMDSwitcherKeyAdvancedChromaParameters> keyer in useKeyers)
                 {
@@ -268,7 +268,7 @@ namespace LibAtem.MockTests.MixEffects
             AtemMockServerWrapper.Each(Output, Pool, handler, DeviceTestCases.AdvancedChromaKeyer, helper =>
             {
                 var keyers = GetKeyers<IBMDSwitcherKeyAdvancedChromaParameters>(helper);
-                var useKeyers = SelectionOfGroup(keyers);
+                var useKeyers = Randomiser.SelectionOfGroup(keyers);
 
                 foreach (Tuple<MixEffectBlockId, UpstreamKeyId, IBMDSwitcherKeyAdvancedChromaParameters> keyer in useKeyers)
                 {
@@ -298,7 +298,7 @@ namespace LibAtem.MockTests.MixEffects
             AtemMockServerWrapper.Each(Output, Pool, handler, DeviceTestCases.AdvancedChromaKeyer, helper =>
             {
                 var keyers = GetKeyers<IBMDSwitcherKeyAdvancedChromaParameters>(helper);
-                var useKeyers = SelectionOfGroup(keyers);
+                var useKeyers = Randomiser.SelectionOfGroup(keyers);
 
                 foreach (Tuple<MixEffectBlockId, UpstreamKeyId, IBMDSwitcherKeyAdvancedChromaParameters> keyer in useKeyers)
                 {
@@ -328,7 +328,7 @@ namespace LibAtem.MockTests.MixEffects
             AtemMockServerWrapper.Each(Output, Pool, handler, DeviceTestCases.AdvancedChromaKeyer, helper =>
             {
                 var keyers = GetKeyers<IBMDSwitcherKeyAdvancedChromaParameters>(helper);
-                var useKeyers = SelectionOfGroup(keyers);
+                var useKeyers = Randomiser.SelectionOfGroup(keyers);
 
                 foreach (Tuple<MixEffectBlockId, UpstreamKeyId, IBMDSwitcherKeyAdvancedChromaParameters> keyer in useKeyers)
                 {
@@ -362,7 +362,7 @@ namespace LibAtem.MockTests.MixEffects
             AtemMockServerWrapper.Each(Output, Pool, handler, DeviceTestCases.AdvancedChromaKeyer, helper =>
             {
                 var keyers = GetKeyers<IBMDSwitcherKeyAdvancedChromaParameters>(helper);
-                var useKeyers = SelectionOfGroup(keyers);
+                var useKeyers = Randomiser.SelectionOfGroup(keyers);
 
                 foreach (Tuple<MixEffectBlockId, UpstreamKeyId, IBMDSwitcherKeyAdvancedChromaParameters> keyer in useKeyers)
                 {
@@ -391,7 +391,7 @@ namespace LibAtem.MockTests.MixEffects
             AtemMockServerWrapper.Each(Output, Pool, handler, DeviceTestCases.AdvancedChromaKeyer, helper =>
             {
                 var keyers = GetKeyers<IBMDSwitcherKeyAdvancedChromaParameters>(helper);
-                var useKeyers = SelectionOfGroup(keyers);
+                var useKeyers = Randomiser.SelectionOfGroup(keyers);
 
                 foreach (Tuple<MixEffectBlockId, UpstreamKeyId, IBMDSwitcherKeyAdvancedChromaParameters> keyer in useKeyers)
                 {
@@ -420,7 +420,7 @@ namespace LibAtem.MockTests.MixEffects
             AtemMockServerWrapper.Each(Output, Pool, handler, DeviceTestCases.AdvancedChromaKeyer, helper =>
             {
                 var keyers = GetKeyers<IBMDSwitcherKeyAdvancedChromaParameters>(helper);
-                var useKeyers = SelectionOfGroup(keyers);
+                var useKeyers = Randomiser.SelectionOfGroup(keyers);
 
                 foreach (Tuple<MixEffectBlockId, UpstreamKeyId, IBMDSwitcherKeyAdvancedChromaParameters> keyer in useKeyers)
                 {
@@ -450,7 +450,7 @@ namespace LibAtem.MockTests.MixEffects
             AtemMockServerWrapper.Each(Output, Pool, handler, DeviceTestCases.AdvancedChromaKeyer, helper =>
             {
                 var keyers = GetKeyers<IBMDSwitcherKeyAdvancedChromaParameters>(helper);
-                var useKeyers = SelectionOfGroup(keyers);
+                var useKeyers = Randomiser.SelectionOfGroup(keyers);
 
                 foreach (Tuple<MixEffectBlockId, UpstreamKeyId, IBMDSwitcherKeyAdvancedChromaParameters> keyer in useKeyers)
                 {
@@ -480,7 +480,7 @@ namespace LibAtem.MockTests.MixEffects
             AtemMockServerWrapper.Each(Output, Pool, handler, DeviceTestCases.AdvancedChromaKeyer, helper =>
             {
                 var keyers = GetKeyers<IBMDSwitcherKeyAdvancedChromaParameters>(helper);
-                var useKeyers = SelectionOfGroup(keyers);
+                var useKeyers = Randomiser.SelectionOfGroup(keyers);
 
                 foreach (Tuple<MixEffectBlockId, UpstreamKeyId, IBMDSwitcherKeyAdvancedChromaParameters> keyer in useKeyers)
                 {
@@ -509,7 +509,7 @@ namespace LibAtem.MockTests.MixEffects
             AtemMockServerWrapper.Each(Output, Pool, SampledColorHandler, DeviceTestCases.AdvancedChromaKeyer, helper =>
             {
                 var keyers = GetKeyers<IBMDSwitcherKeyAdvancedChromaParameters>(helper);
-                var useKeyers = SelectionOfGroup(keyers);
+                var useKeyers = Randomiser.SelectionOfGroup(keyers);
 
                 foreach (Tuple<MixEffectBlockId, UpstreamKeyId, IBMDSwitcherKeyAdvancedChromaParameters> keyer in useKeyers)
                 {
@@ -574,7 +574,7 @@ namespace LibAtem.MockTests.MixEffects
             AtemMockServerWrapper.Each(Output, Pool, CreateResetHandler(keyerTarget), DeviceTestCases.AdvancedChromaKeyer, helper =>
             {
                 var keyers = GetKeyers<IBMDSwitcherKeyAdvancedChromaParameters>(helper);
-                var useKeyers = SelectionOfGroup(keyers);
+                var useKeyers = Randomiser.SelectionOfGroup(keyers);
 
                 foreach (Tuple<MixEffectBlockId, UpstreamKeyId, IBMDSwitcherKeyAdvancedChromaParameters> keyer in useKeyers)
                 {
@@ -611,7 +611,7 @@ namespace LibAtem.MockTests.MixEffects
             AtemMockServerWrapper.Each(Output, Pool, CreateResetHandler(keyerTarget), DeviceTestCases.AdvancedChromaKeyer, helper =>
             {
                 var keyers = GetKeyers<IBMDSwitcherKeyAdvancedChromaParameters>(helper);
-                var useKeyers = SelectionOfGroup(keyers);
+                var useKeyers = Randomiser.SelectionOfGroup(keyers);
 
                 foreach (Tuple<MixEffectBlockId, UpstreamKeyId, IBMDSwitcherKeyAdvancedChromaParameters> keyer in useKeyers)
                 {
@@ -648,7 +648,7 @@ namespace LibAtem.MockTests.MixEffects
             AtemMockServerWrapper.Each(Output, Pool, CreateResetHandler(keyerTarget), DeviceTestCases.AdvancedChromaKeyer, helper =>
             {
                 var keyers = GetKeyers<IBMDSwitcherKeyAdvancedChromaParameters>(helper);
-                var useKeyers = SelectionOfGroup(keyers);
+                var useKeyers = Randomiser.SelectionOfGroup(keyers);
 
                 foreach (Tuple<MixEffectBlockId, UpstreamKeyId, IBMDSwitcherKeyAdvancedChromaParameters> keyer in useKeyers)
                 {

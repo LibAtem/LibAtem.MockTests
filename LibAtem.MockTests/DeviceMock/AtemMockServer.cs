@@ -7,6 +7,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using LibAtem.Commands;
 using LibAtem.Net;
+using LibAtem.Util;
 using log4net;
 using ListExtensions = LibAtem.Util.ListExtensions;
 
@@ -47,6 +48,13 @@ namespace LibAtem.MockTests.DeviceMock
             new Dictionary<string, IReadOnlyList<byte[]>>(new[] {KeyValuePair.Create("default", state)}))
         {
             CurrentCase = "default";
+        }
+
+        public void SendCommands(params ICommand[] cmds)
+        {
+            var allCommands = cmds.ToList();
+            allCommands.Add(CreateTimeCommand());
+            _connections.SendCommands(allCommands);
         }
 
         public void Dispose()
@@ -163,9 +171,7 @@ namespace LibAtem.MockTests.DeviceMock
                                             if (res.Count == 0)
                                                 throw new Exception($"Unhandled command \"{cmd.GetType().Name}\" in server");
 
-                                            res = ListExtensions.WhereNotNull(res).ToList();
-                                            res.Add(CreateTimeCommand());
-                                            _connections.SendCommands(res);
+                                            SendCommands(ListExtensions.WhereNotNull(res).ToArray());
                                         });
                                     }
                                     //conn.HandleInner(_state, connection, cmds);
@@ -197,19 +203,29 @@ namespace LibAtem.MockTests.DeviceMock
             thread.Start();
         }
 
+        public void ResendDataDumps()
+        {
+            _connections.SendDataDumps(BuildDataDumps());
+        }
+
+        private IEnumerable<OutboundMessage> BuildDataDumps()
+        {
+            IReadOnlyList<byte[]> sendState = _handshakeStates[CurrentCase];
+            foreach (byte[] cmd in sendState)
+            {
+                var builder = new OutboundMessageBuilder();
+                if (!builder.TryAddData(cmd))
+                    throw new Exception("Failed to build message!");
+
+                yield return builder.Create();
+            }
+        }
+
         private void QueueDataDumps(AtemConnection conn)
         {
             try
             {
-                IReadOnlyList<byte[]> sendState = _handshakeStates[CurrentCase];
-                foreach (byte[] cmd in sendState)
-                {
-                    var builder = new OutboundMessageBuilder();
-                    if (!builder.TryAddData(cmd))
-                        throw new Exception("Failed to build message!");
-
-                    conn.QueueMessage(builder.Create());
-                }
+                BuildDataDumps().ForEach(conn.QueueMessage);
 
                 Log.InfoFormat("Sent all data to {0}", conn.Endpoint);
             }

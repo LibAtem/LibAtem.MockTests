@@ -78,11 +78,11 @@ namespace LibAtem.ComparisonTests.State.SDK
                     break;
                 case _BMDSwitcherFairlightAudioEqualizerBandEventType.bmdSwitcherFairlightAudioEqualizerBandEventTypeShapeChanged:
                     _props.GetShape(out _BMDSwitcherFairlightAudioEqualizerBandShape shape);
-                    _state.Shape = AtemEnumMaps.FairlightEqualizerShape.FindByValue(shape);
+                    _state.Shape = AtemEnumMaps.FairlightEqualizerBandShapeMap.FindByValue(shape);
                     break;
                 case _BMDSwitcherFairlightAudioEqualizerBandEventType.bmdSwitcherFairlightAudioEqualizerBandEventTypeFrequencyRangeChanged:
                     _props.GetFrequencyRange(out _BMDSwitcherFairlightAudioEqualizerBandFrequencyRange range);
-                    _state.FrequencyRange = AtemEnumMaps.FairlightEqualizerBandRange.FindByValue(range);
+                    _state.FrequencyRange = AtemEnumMaps.FairlightEqualizerFrequencyRangeMap.FindByValue(range);
                     break;
                 case _BMDSwitcherFairlightAudioEqualizerBandEventType.bmdSwitcherFairlightAudioEqualizerBandEventTypeFrequencyChanged:
                     _props.GetFrequency(out uint freq);

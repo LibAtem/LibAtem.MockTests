@@ -48,7 +48,7 @@ namespace LibAtem.ComparisonTests.State.SDK
             addCallback.Invoke(Props, new object[] {this});
         }
 
-        public void Dispose()
+        public virtual void Dispose()
         {
             DisposeMany(Children);
 

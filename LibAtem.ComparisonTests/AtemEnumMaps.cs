@@ -26,10 +26,11 @@ namespace LibAtem.ComparisonTests
         public static readonly IReadOnlyDictionary<MediaPlayerSource, _BMDSwitcherMediaPlayerSourceType> MediaPlayerSourceMap;
         public static readonly IReadOnlyDictionary<AudioMixOption, _BMDSwitcherAudioMixOption> AudioMixOptionMap;
         public static readonly IReadOnlyDictionary<AudioSourceType, _BMDSwitcherAudioInputType> AudioSourceTypeMap;
-        public static readonly IReadOnlyDictionary<FairlightEqualizerBandShape, _BMDSwitcherFairlightAudioEqualizerBandShape> FairlightEqualizerShape;
-        public static readonly IReadOnlyDictionary<FairlightEqualizerFrequencyRange, _BMDSwitcherFairlightAudioEqualizerBandFrequencyRange> FairlightEqualizerBandRange;
-        public static readonly IReadOnlyDictionary<FairlightInputType, _BMDSwitcherFairlightAudioInputType> FairlightAudioInputType;
-        public static readonly IReadOnlyDictionary<FairlightInputConfiguration, _BMDSwitcherFairlightAudioInputConfiguration> FairlightAudioInputConfiguration;
+        public static readonly IReadOnlyDictionary<FairlightEqualizerBandShape, _BMDSwitcherFairlightAudioEqualizerBandShape> FairlightEqualizerBandShapeMap;
+        public static readonly IReadOnlyDictionary<FairlightEqualizerFrequencyRange, _BMDSwitcherFairlightAudioEqualizerBandFrequencyRange> FairlightEqualizerFrequencyRangeMap;
+        public static readonly IReadOnlyDictionary<FairlightInputType, _BMDSwitcherFairlightAudioInputType> FairlightInputTypeMap;
+        public static readonly IReadOnlyDictionary<FairlightInputConfiguration, _BMDSwitcherFairlightAudioInputConfiguration> FairlightInputConfigurationMap;
+        public static readonly IReadOnlyDictionary<FairlightAudioMixOption, _BMDSwitcherFairlightAudioMixOption> FairlightAudioMixOptionMap;
 
         static AtemEnumMaps()
         {
@@ -248,7 +249,7 @@ namespace LibAtem.ComparisonTests
                 {AudioSourceType.MediaPlayer, _BMDSwitcherAudioInputType.bmdSwitcherAudioInputTypeMediaPlayer},
             };
 
-            FairlightEqualizerShape = new Dictionary<FairlightEqualizerBandShape, _BMDSwitcherFairlightAudioEqualizerBandShape>
+            FairlightEqualizerBandShapeMap = new Dictionary<FairlightEqualizerBandShape, _BMDSwitcherFairlightAudioEqualizerBandShape>
             {
                 {FairlightEqualizerBandShape.LowShelf, _BMDSwitcherFairlightAudioEqualizerBandShape.bmdSwitcherFairlightAudioEqualizerBandShapeLowShelf},
                 {FairlightEqualizerBandShape.LowPass, _BMDSwitcherFairlightAudioEqualizerBandShape.bmdSwitcherFairlightAudioEqualizerBandShapeLowPass},
@@ -257,25 +258,30 @@ namespace LibAtem.ComparisonTests
                 {FairlightEqualizerBandShape.HighPass, _BMDSwitcherFairlightAudioEqualizerBandShape.bmdSwitcherFairlightAudioEqualizerBandShapeHighPass},
                 {FairlightEqualizerBandShape.HighShelf, _BMDSwitcherFairlightAudioEqualizerBandShape.bmdSwitcherFairlightAudioEqualizerBandShapeHighShelf},
             };
-            FairlightEqualizerBandRange = new Dictionary<FairlightEqualizerFrequencyRange, _BMDSwitcherFairlightAudioEqualizerBandFrequencyRange>
+            FairlightEqualizerFrequencyRangeMap = new Dictionary<FairlightEqualizerFrequencyRange, _BMDSwitcherFairlightAudioEqualizerBandFrequencyRange>
             {
                 {FairlightEqualizerFrequencyRange.Low, _BMDSwitcherFairlightAudioEqualizerBandFrequencyRange.bmdSwitcherFairlightAudioEqualizerBandFrequencyRangeLow},
                 {FairlightEqualizerFrequencyRange.MidLow, _BMDSwitcherFairlightAudioEqualizerBandFrequencyRange.bmdSwitcherFairlightAudioEqualizerBandFrequencyRangeMidLow},
                 {FairlightEqualizerFrequencyRange.MidHigh, _BMDSwitcherFairlightAudioEqualizerBandFrequencyRange.bmdSwitcherFairlightAudioEqualizerBandFrequencyRangeMidHigh},
                 {FairlightEqualizerFrequencyRange.High, _BMDSwitcherFairlightAudioEqualizerBandFrequencyRange.bmdSwitcherFairlightAudioEqualizerBandFrequencyRangeHigh},
             };
-            FairlightAudioInputType = new Dictionary<FairlightInputType, _BMDSwitcherFairlightAudioInputType>
+            FairlightInputTypeMap = new Dictionary<FairlightInputType, _BMDSwitcherFairlightAudioInputType>
             {
                 {FairlightInputType.AudioIn, _BMDSwitcherFairlightAudioInputType.bmdSwitcherFairlightAudioInputTypeAudioIn},
                 {FairlightInputType.EmbeddedWithVideo, _BMDSwitcherFairlightAudioInputType.bmdSwitcherFairlightAudioInputTypeEmbeddedWithVideo},
                 {FairlightInputType.MADI, _BMDSwitcherFairlightAudioInputType.bmdSwitcherFairlightAudioInputTypeMADI},
                 {FairlightInputType.MediaPlayer, _BMDSwitcherFairlightAudioInputType.bmdSwitcherFairlightAudioInputTypeMediaPlayer},
             };
-            FairlightAudioInputConfiguration = new Dictionary<FairlightInputConfiguration, _BMDSwitcherFairlightAudioInputConfiguration>
+            FairlightInputConfigurationMap = new Dictionary<FairlightInputConfiguration, _BMDSwitcherFairlightAudioInputConfiguration>
             {
                 {FairlightInputConfiguration.Mono, _BMDSwitcherFairlightAudioInputConfiguration.bmdSwitcherFairlightAudioInputConfigurationMono},
                 {FairlightInputConfiguration.Stereo, _BMDSwitcherFairlightAudioInputConfiguration.bmdSwitcherFairlightAudioInputConfigurationStereo},
                 {FairlightInputConfiguration.DualMono, _BMDSwitcherFairlightAudioInputConfiguration.bmdSwitcherFairlightAudioInputConfigurationDualMono},
+            };
+            FairlightAudioMixOptionMap = new Dictionary<FairlightAudioMixOption, _BMDSwitcherFairlightAudioMixOption>{
+                {FairlightAudioMixOption.Off, _BMDSwitcherFairlightAudioMixOption.bmdSwitcherFairlightAudioMixOptionOff},
+                {FairlightAudioMixOption.On, _BMDSwitcherFairlightAudioMixOption.bmdSwitcherFairlightAudioMixOptionOn},
+                {FairlightAudioMixOption.AudioFollowVideo, _BMDSwitcherFairlightAudioMixOption.bmdSwitcherFairlightAudioMixOptionAudioFollowVideo},
             };
         }
 
@@ -455,25 +461,28 @@ namespace LibAtem.ComparisonTests
         [Fact]
         public void EnsureFairlightEqualizerShape()
         {
-            EnumMap.EnsureIsComplete(AtemEnumMaps.FairlightEqualizerShape);
+            EnumMap.EnsureIsComplete(AtemEnumMaps.FairlightEqualizerBandShapeMap);
         }
 
         [Fact]
         public void EnsureFairlightEqualizerBandRange()
         {
-            EnumMap.EnsureIsComplete(AtemEnumMaps.FairlightEqualizerBandRange);
+            EnumMap.EnsureIsComplete(AtemEnumMaps.FairlightEqualizerFrequencyRangeMap);
         }
 
         [Fact]
         public void EnsureFairlightAudioInputType()
         {
-            EnumMap.EnsureIsComplete(AtemEnumMaps.FairlightAudioInputType);
+            EnumMap.EnsureIsComplete(AtemEnumMaps.FairlightInputTypeMap);
         }
 
         [Fact]
         public void EnsureFairlightAudioInputConfiguration()
         {
-            EnumMap.EnsureIsComplete(AtemEnumMaps.FairlightAudioInputConfiguration);
+            EnumMap.EnsureIsComplete(AtemEnumMaps.FairlightInputConfigurationMap);
         }
+
+        [Fact]
+        public void EnsureFairlightAudioMixOptionMap() => EnumMap.EnsureIsComplete(AtemEnumMaps.FairlightAudioMixOptionMap);
     }
 }

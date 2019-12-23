@@ -13,6 +13,7 @@ namespace LibAtem.ComparisonTests.State.SDK
         public HyperDeckPropertiesCallback(SettingsState.HyperdeckState state, IBMDSwitcherHyperDeck props, Action<string> onChange) : base(props, onChange)
         {
             _state = state;
+            TriggerAllChanged();
         }
 
         public override void Notify(_BMDSwitcherHyperDeckEventType eventType)

@@ -71,6 +71,7 @@ namespace LibAtem.MockTests.Util
             {
                 try
                 {
+                    // TODO - this doesnt throw, it marks as failed, so this is a very broken exception catcher...
                     Helper.AssertStateChanged(expected);
                 }
                 catch (Exception)

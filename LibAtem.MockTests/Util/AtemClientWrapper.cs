@@ -12,7 +12,6 @@ using log4net.Config;
 using LibAtem.Commands;
 using LibAtem.ComparisonTests.State.SDK;
 using LibAtem.DeviceProfile;
-using LibAtem.MockTests.DeviceMock;
 using LibAtem.Net;
 using Xunit;
 using LibAtem.State;
@@ -107,7 +106,37 @@ namespace LibAtem.MockTests.Util
             WaitForHandshake();
         }
 
-        public AtemState SdkState => _sdkState.State.Clone();
+        public AtemState SdkState
+        {
+            get
+            {
+                var state = _sdkState.State.Clone();
+
+                /**
+                 * It is very hard to tell when the sdk has changed the sources in the iterator.
+                 * As a workaround, we instead do a fresh state build everytime we need a state.
+                 * TODO - verify this is still true now the SourceDelete command has been found.
+                 */
+                if (state.Fairlight != null)
+                {
+                    var mixer = SdkSwitcher as IBMDSwitcherFairlightAudioMixer;
+                    var iterator =
+                        AtemSDKConverter.CastSdk<IBMDSwitcherFairlightAudioInputIterator>(mixer.CreateIterator);
+
+                    state.Fairlight.Inputs.Clear();
+                    AtemSDKConverter
+                        .Iterate<IBMDSwitcherFairlightAudioInput>(
+                            iterator.Next,
+                            (inp, i) =>
+                            {
+                                inp.GetId(out long id);
+                                state.Fairlight.Inputs[id] = FairlightAudioInputStateBuilder.Build(inp);
+                            });
+                }
+
+                return state;
+            }
+        }
         public AtemState LibState => _libState.Clone();
 
         public void BindSdkState()

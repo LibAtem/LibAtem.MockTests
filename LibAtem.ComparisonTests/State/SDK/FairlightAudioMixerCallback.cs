@@ -32,7 +32,7 @@ namespace LibAtem.ComparisonTests.State.SDK
 
                 var inputState = state.Inputs[id] = new FairlightAudioState.InputState
                 {
-                    InputType = AtemEnumMaps.FairlightAudioInputType.FindByValue(type),
+                    InputType = AtemEnumMaps.FairlightInputTypeMap.FindByValue(type),
                     SupportedConfigurations = (FairlightInputConfiguration)configs
                 };
 
