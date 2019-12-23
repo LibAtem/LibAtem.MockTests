@@ -31,6 +31,7 @@ namespace LibAtem.ComparisonTests
         public static readonly IReadOnlyDictionary<FairlightInputType, _BMDSwitcherFairlightAudioInputType> FairlightInputTypeMap;
         public static readonly IReadOnlyDictionary<FairlightInputConfiguration, _BMDSwitcherFairlightAudioInputConfiguration> FairlightInputConfigurationMap;
         public static readonly IReadOnlyDictionary<FairlightAudioMixOption, _BMDSwitcherFairlightAudioMixOption> FairlightAudioMixOptionMap;
+        public static readonly IReadOnlyDictionary<FairlightAudioSourceType, _BMDSwitcherFairlightAudioSourceType> FairlightAudioSourceTypeMap;
 
         static AtemEnumMaps()
         {
@@ -283,6 +284,11 @@ namespace LibAtem.ComparisonTests
                 {FairlightAudioMixOption.On, _BMDSwitcherFairlightAudioMixOption.bmdSwitcherFairlightAudioMixOptionOn},
                 {FairlightAudioMixOption.AudioFollowVideo, _BMDSwitcherFairlightAudioMixOption.bmdSwitcherFairlightAudioMixOptionAudioFollowVideo},
             };
+            FairlightAudioSourceTypeMap = new Dictionary<FairlightAudioSourceType, _BMDSwitcherFairlightAudioSourceType>
+            {
+                {FairlightAudioSourceType.Mono, _BMDSwitcherFairlightAudioSourceType.bmdSwitcherFairlightAudioSourceTypeMono},
+                {FairlightAudioSourceType.Stereo, _BMDSwitcherFairlightAudioSourceType.bmdSwitcherFairlightAudioSourceTypeStereo},
+            };
         }
 
         public static Tk FindByValue<Tk, Tv>(this IReadOnlyDictionary<Tk, Tv> dict, Tv value)
@@ -484,5 +490,8 @@ namespace LibAtem.ComparisonTests
 
         [Fact]
         public void EnsureFairlightAudioMixOptionMap() => EnumMap.EnsureIsComplete(AtemEnumMaps.FairlightAudioMixOptionMap);
+
+        [Fact]
+        public void EnsureFairlightAudioSourceTypeMap() => EnumMap.EnsureIsComplete(AtemEnumMaps.FairlightAudioSourceTypeMap);
     }
 }

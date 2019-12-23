@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using BMDSwitcherAPI;
 using LibAtem.Commands.Audio.Fairlight;
@@ -25,7 +26,7 @@ namespace LibAtem.MockTests.Fairlight
             _pool = pool;
         }
         
-        private static IBMDSwitcherFairlightAudioInput GetInput(AtemMockServerWrapper helper, long targetId)
+        public static IBMDSwitcherFairlightAudioInput GetInput(AtemMockServerWrapper helper, long targetId)
         {
             IBMDSwitcherFairlightAudioMixer mixer = TestFairlightProgramOut.GetFairlightMixer(helper);
             var iterator = AtemSDKConverter.CastSdk<IBMDSwitcherFairlightAudioInputIterator>(mixer.CreateIterator);
@@ -34,7 +35,7 @@ namespace LibAtem.MockTests.Fairlight
             Assert.NotNull(input);
             return input;
         }
-
+        
         [Fact]
         public void TestActiveConfiguration()
         {
@@ -50,18 +51,17 @@ namespace LibAtem.MockTests.Fairlight
                     AtemState stateBefore = helper.Helper.LibState;
                     FairlightAudioState.InputState inputState = stateBefore.Fairlight.Inputs[id];
 
-                    input.GetSupportedConfigurations(out _BMDSwitcherFairlightAudioInputConfiguration supportedConfigurations);
-                    var testConfigs = supportedConfigurations.FindFlagComponents();
-                    Assert.NotEmpty(testConfigs);
+                    var testConfigs = AtemSDKConverter.GetFlagsValues(input.GetSupportedConfigurations,
+                        AtemEnumMaps.FairlightInputConfigurationMap);
                     // Need more than 1 config to allow for switching around
                     if (1 == testConfigs.Count) continue;
                     tested = true;
 
                     for (int i = 0; i < 5; i++)
                     {
-                        _BMDSwitcherFairlightAudioInputConfiguration target = testConfigs[i % testConfigs.Count];
-                        inputState.ActiveConfiguration = AtemEnumMaps.FairlightInputConfigurationMap.FindByValue(target);
-                        helper.SendAndWaitForChange(stateBefore, () => { input.SetConfiguration(target); });
+                        var target = testConfigs[i % testConfigs.Count];
+                        inputState.ActiveConfiguration = target.Item2;
+                        helper.SendAndWaitForChange(stateBefore, () => { input.SetConfiguration(target.Item1); });
                     }
                 }
             });

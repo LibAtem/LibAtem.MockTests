@@ -25,7 +25,6 @@ namespace LibAtem.MockTests.Util
         public delegate void StateChangeHandler(object sender, string path);
         public event StateChangeHandler OnSdkStateChange;
 
-
         public AtemSdkClientWrapper(string address, AtemStateBuilderSettings updateSettings)
         {
             var logRepository = LogManager.GetRepository(Assembly.GetExecutingAssembly());
@@ -92,7 +91,7 @@ namespace LibAtem.MockTests.Util
             // TODO - reenable once LibAtem allows disconnection
             // Assert.True(_disposeEvent.WaitOne(TimeSpan.FromSeconds(1)), "LibAtem: Cleanup timed out");
 
-            Thread.Sleep(500);
+            //Thread.Sleep(500);
         }
 
         public delegate void SwitcherEventHandler(object sender, object args);

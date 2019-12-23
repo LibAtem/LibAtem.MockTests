@@ -39,7 +39,7 @@ namespace LibAtem.MockTests.Fairlight
 
                 for (int i = 0; i < 5; i++)
                 {
-                    stateBefore.Fairlight.ProgramOut.Equalizer.Enabled= i % 2 > 0;
+                    stateBefore.Fairlight.ProgramOut.Equalizer.Enabled = i % 2 > 0;
                     helper.SendAndWaitForChange(stateBefore, () => { equalizer.SetEnabled(i % 2); });
                 }
             });

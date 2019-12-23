@@ -42,6 +42,13 @@ namespace LibAtem.ComparisonTests.State.SDK
             
             props.GetId(out long id);
             state.SourceId = id;
+            props.GetSupportedMixOptions(out _BMDSwitcherFairlightAudioMixOption supportedMixOptions);
+            state.SupportedMixOptions = (FairlightAudioMixOption) supportedMixOptions;
+            props.GetSourceType(out _BMDSwitcherFairlightAudioSourceType sourceType);
+            //state.SourceType = AtemEnumMaps.FairlightAudioSourceTypeMap.FindByValue(sourceType);
+
+            props.GetMaxDelayFrames(out ushort maxDelay);
+            state.MaxFramesDelay = maxDelay;
 
             props.GetInputGain(out double inputGain);
             state.Gain = inputGain;
@@ -52,9 +59,76 @@ namespace LibAtem.ComparisonTests.State.SDK
             props.GetMixOption(out _BMDSwitcherFairlightAudioMixOption mixOption);
             state.MixOption = AtemEnumMaps.FairlightAudioMixOptionMap.FindByValue(mixOption);
 
-            // TODO - remainder
+            var dynamics = AtemSDKConverter.CastSdk<IBMDSwitcherFairlightAudioDynamicsProcessor>(props.GetEffect);
+            dynamics.GetMakeupGain(out double makeupGain);
+            state.Dynamics.MakeUpGain = makeupGain;
+
+            var compressor = AtemSDKConverter.CastSdk<IBMDSwitcherFairlightAudioCompressor>(dynamics.GetProcessor);
+            ApplyCompressor(compressor, state.Dynamics.Compressor = new FairlightAudioState.CompressorState());
+            var limiter = AtemSDKConverter.CastSdk<IBMDSwitcherFairlightAudioLimiter>(dynamics.GetProcessor);
+            ApplyLimiter(limiter, state.Dynamics.Limiter = new FairlightAudioState.LimiterState());
+            var expander = AtemSDKConverter.CastSdk<IBMDSwitcherFairlightAudioExpander>(dynamics.GetProcessor);
+            ApplyExpander(expander, state.Dynamics.Expander = new FairlightAudioState.ExpanderState());
+
+            var eq = AtemSDKConverter.CastSdk<IBMDSwitcherFairlightAudioEqualizer>(props.GetEffect);
+            eq.GetEnabled(out int eqEnabled);
+            state.Equalizer.Enabled = eqEnabled != 0;
+            eq.GetGain(out double eqGain);
+            state.Equalizer.Gain = eqGain;
 
             return state;
+        }
+
+        private static void ApplyCompressor(IBMDSwitcherFairlightAudioCompressor compressor,
+            FairlightAudioState.CompressorState state)
+        {
+            compressor.GetEnabled(out int enabled);
+            state.CompressorEnabled = enabled != 0;
+            compressor.GetThreshold(out double threshold);
+            state.Threshold = threshold;
+            compressor.GetRatio(out double ratio);
+            state.Ratio = ratio;
+            compressor.GetAttack(out double attack);
+            state.Attack = attack;
+            compressor.GetRelease(out double release);
+            state.Release = release;
+            compressor.GetHold(out double hold);
+            state.Hold = hold;
+        }
+
+        private static void ApplyLimiter(IBMDSwitcherFairlightAudioLimiter limiter,
+            FairlightAudioState.LimiterState state)
+        {
+            limiter.GetEnabled(out int enabled);
+            state.LimiterEnabled = enabled != 0;
+            limiter.GetThreshold(out double threshold);
+            state.Threshold = threshold;
+            limiter.GetAttack(out double attack);
+            state.Attack = attack;
+            limiter.GetRelease(out double release);
+            state.Release = release;
+            limiter.GetHold(out double hold);
+            state.Hold = hold;
+        }
+        private static void ApplyExpander(IBMDSwitcherFairlightAudioExpander expander,
+            FairlightAudioState.ExpanderState state)
+        {
+            expander.GetEnabled(out int enabled);
+            state.ExpanderEnabled = enabled != 0;
+            expander.GetGateMode(out int gateMode);
+            state.GateEnabled = gateMode != 0;
+            expander.GetThreshold(out double threshold);
+            state.Threshold = threshold;
+            expander.GetRatio(out double ratio);
+            state.Ratio = ratio;
+            expander.GetRange(out double range);
+            state.Range = range;
+            expander.GetAttack(out double attack);
+            state.Attack = attack;
+            expander.GetRelease(out double release);
+            state.Release = release;
+            expander.GetHold(out double hold);
+            state.Hold = hold;
         }
     }
 
