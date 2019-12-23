@@ -22,7 +22,7 @@ namespace LibAtem.MockTests.Util
         private readonly AtemServerClientPool _pool;
 
         public AtemMockServer Server { get; }
-        public AtemClientWrapper Clients { get; }
+        public AtemSdkClientWrapper Clients { get; }
         public AtemTestHelper Helper { get; }
 
         public AtemMockServerWrapper(ITestOutputHelper output, AtemServerClientPool pool, Func<ImmutableList<ICommand>, ICommand, IEnumerable<ICommand>> handler, TestCaseId caseId)
@@ -32,26 +32,21 @@ namespace LibAtem.MockTests.Util
 
             Server = _pool.Server;
             Server.CurrentCase = caseId.Item2;
-            Clients = _pool.GetOrCreateClients(caseId.Item2);
+            Server.CurrentVersion = caseId.Item1; // TODO - we need to get the server to send this as a command, to make libatem happy (does that break sdk?)
+            Clients = new AtemSdkClientWrapper("127.0.0.1", _pool.StateSettings);
 
-
-            //Clients = new AtemClientWrapper("127.0.0.1");
-            Helper = new AtemTestHelper(Clients, _output);
-            Server.HandleCommand = cmd => handler(Clients.LibAtemReceived, cmd);
-            /*
-            Clients.SdkState.Info.LastTimecode = Clients.LibState.Info.LastTimecode = new Timecode() // TODO - this might be doing nothign..
-            {
-                Second = Server.CurrentTime % 60,
-                Minute = Server.CurrentTime / 60
-            };*/
+            var profile = _pool.GetDeviceProfile(caseId.Item2);
+            var startupState = _pool.GetDefaultState(caseId.Item2);
+            Helper = new AtemTestHelper(Clients, _output, _pool.LibAtemClient, profile, startupState, _pool.StateSettings);
+            Server.HandleCommand = cmd => handler(Server.GetParsedDataDump(), cmd);
         }
 
         public void Dispose()
         {
             Helper.Dispose();
-            //Clients.Dispose();
-            //Server.Dispose();
+            Clients.Dispose();
             Server.CurrentCase = null;
+            Server.CurrentVersion = ProtocolVersion.Minimum;
         }
 
         public static void Each(ITestOutputHelper output, AtemServerClientPool pool, Func<ImmutableList<ICommand>, ICommand, IEnumerable<ICommand>> handler, TestCaseId[] cases, Action<AtemMockServerWrapper> runner)
@@ -72,13 +67,13 @@ namespace LibAtem.MockTests.Util
                 try
                 {
                     // TODO - this doesnt throw, it marks as failed, so this is a very broken exception catcher...
-                    Helper.AssertStateChanged(expected);
+                    Helper.CheckStateChanges(expected);
                 }
                 catch (Exception)
                 {
                     // Try and sleep in case of a minor timing glitch
                     Thread.Sleep(200);
-                    Helper.AssertStateChanged(expected);
+                    Helper.CheckStateChanges(expected);
                 }
             }
         }

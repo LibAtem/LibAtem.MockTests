@@ -1,15 +1,28 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Reflection.Metadata.Ecma335;
-using System.Text;
+using LibAtem.Commands;
 using LibAtem.Net;
+using LibAtem.Util;
 using PcapngFile;
 
 namespace LibAtem.MockTests.Util
 {
     internal static class WiresharkParser
     {
+        public static IReadOnlyList<ICommand> ParseToCommands(ProtocolVersion version, IEnumerable<byte[]> payloads)
+        {
+            var result = new List<ICommand>();
+            foreach (byte[] payload in payloads)
+            {
+                foreach (ParsedCommand rawCmd in ReceivedPacket.ParseCommands(payload))
+                {
+                    result.AddIfNotNull(CommandParser.Parse(version, rawCmd));
+                }
+            }
+            return result;
+        }
+
         public static List<byte[]> BuildCommands(ProtocolVersion version, string filename, Action<ParsedCommand, CommandBuilder> mutateCommand = null)
         {
             var commands = ParseCommands(version, $"TestFiles/Handshake/{filename}.pcapng");

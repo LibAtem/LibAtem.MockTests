@@ -1,11 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Linq;
 using System.Net;
 using System.Net.Sockets;
 using System.Threading;
 using System.Threading.Tasks;
 using LibAtem.Commands;
+using LibAtem.MockTests.Util;
 using LibAtem.Net;
 using LibAtem.Util;
 using log4net;
@@ -31,6 +33,7 @@ namespace LibAtem.MockTests.DeviceMock
         public uint CurrentTime { get; private set; } = 100;
 
         public string CurrentCase { get; set; }
+        public ProtocolVersion CurrentVersion { get; set; } = ProtocolVersion.Minimum;
 
         public Func<ICommand, IEnumerable<ICommand>> HandleCommand { get; set; }
 
@@ -116,7 +119,7 @@ namespace LibAtem.MockTests.DeviceMock
                         var end = new IPEndPoint(IPAddress.Any, 0);
                         SocketReceiveFromResult v = await _socket.ReceiveFromAsync(buff, SocketFlags.None, end);
 
-                        AtemServerConnection conn = _connections.FindOrCreateConnection(v.RemoteEndPoint, out _);
+                        AtemServerConnection conn = _connections.FindOrCreateConnection(v.RemoteEndPoint, CurrentVersion, out _);
                         if (conn == null)
                             continue;
 
@@ -208,31 +211,21 @@ namespace LibAtem.MockTests.DeviceMock
             _connections.SendDataDumps(BuildDataDumps());
         }
 
+        public ImmutableList<ICommand> GetParsedDataDump()
+        {
+            return WiresharkParser.ParseToCommands(CurrentVersion, _handshakeStates[CurrentCase]).ToImmutableList();
+        }
+
         private IEnumerable<OutboundMessage> BuildDataDumps()
         {
-            IReadOnlyList<byte[]> sendState = _handshakeStates[CurrentCase];
-            foreach (byte[] cmd in sendState)
-            {
-                var builder = new OutboundMessageBuilder();
-                if (!builder.TryAddData(cmd))
-                    throw new Exception("Failed to build message!");
-
-                yield return builder.Create();
-            }
+            foreach (byte[] cmd in _handshakeStates[CurrentCase])
+                yield return new OutboundMessage(OutboundMessage.OutboundMessageType.Command, cmd);
         }
 
         private void QueueDataDumps(AtemConnection conn)
         {
-            try
-            {
-                BuildDataDumps().ForEach(conn.QueueMessage);
-
-                Log.InfoFormat("Sent all data to {0}", conn.Endpoint);
-            }
-            catch (Exception e)
-            {
-                Console.WriteLine(e.Message);
-            }
+            BuildDataDumps().ForEach(conn.QueueMessage);
+            Log.InfoFormat("Sent all data to {0}", conn.Endpoint);
         }
     }
 }

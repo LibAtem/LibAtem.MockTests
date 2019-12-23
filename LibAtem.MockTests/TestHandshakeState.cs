@@ -4,9 +4,16 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
+using System.Threading;
+using LibAtem.Commands;
 using LibAtem.ComparisonTests.State;
 using LibAtem.MockTests.DeviceMock;
 using LibAtem.MockTests.Util;
+using LibAtem.Net;
+using LibAtem.State;
+using LibAtem.State.Builder;
+using LibAtem.Util;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -33,10 +40,12 @@ namespace LibAtem.MockTests
         [Fact]
         public void TestStateReal()
         {
-            using var helper = new AtemClientWrapper("10.42.13.95");
-            helper.BindSdkState();
+            var stateSettings = new AtemStateBuilderSettings();
+            using var helper = new AtemSdkClientWrapper("10.42.13.95", stateSettings);
 
-            List<string> before = AtemStateComparer.AreEqual(helper.SdkState, helper.LibState);
+            var libAtemState = GetLibAtemState(stateSettings);
+
+            List<string> before = AtemStateComparer.AreEqual(helper.State, libAtemState);
             if (before.Count != 0 && _output != null)
             {
                 _output.WriteLine("state mismatch:");
@@ -44,16 +53,40 @@ namespace LibAtem.MockTests
             }
             Assert.Empty(before);
         }
-        
+
+        private AtemState GetLibAtemState(AtemStateBuilderSettings stateSettings)
+        {
+            using var client = new AtemClient("127.0.0.1", false);
+            var state = new AtemState();
+
+            AutoResetEvent handshakeEvent = new AutoResetEvent(false);
+            bool handshakeFinished = false;
+            client.OnReceive += (o, cmds) =>
+            {
+                cmds.ForEach(cmd => AtemStateBuilder.Update(state, cmd, stateSettings));
+
+                if (!handshakeFinished && cmds.Any(c => c is InitializationCompleteCommand))
+                {
+                    handshakeEvent.Set();
+                    handshakeFinished = true;
+                }
+            };
+            client.Connect();
+            Assert.True(handshakeEvent.WaitOne(5000));
+
+            return state;
+        }
 
         private void RunTest(Tuple<ProtocolVersion, string> caseId)
         {
             var commandData = WiresharkParser.BuildCommands(caseId.Item1, caseId.Item2);
             using var server = new AtemMockServer(commandData);
-            using var helper = new AtemClientWrapper("127.0.0.1");
-            helper.BindSdkState();
+            var stateSettings = new AtemStateBuilderSettings();
+            using var helper = new AtemSdkClientWrapper("127.0.0.1", stateSettings);
 
-            List<string> before = AtemStateComparer.AreEqual(helper.SdkState, helper.LibState);
+            var libAtemState = GetLibAtemState(stateSettings);
+
+            List<string> before = AtemStateComparer.AreEqual(helper.State, libAtemState);
             if (before.Count != 0 && _output != null)
             {
                 _output.WriteLine("state mismatch:");

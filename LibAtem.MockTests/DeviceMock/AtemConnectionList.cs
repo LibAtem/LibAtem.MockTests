@@ -28,7 +28,7 @@ namespace LibAtem.MockTests.DeviceMock
             }
         }
 
-        public AtemServerConnection FindOrCreateConnection(EndPoint ep, out bool isNew)
+        public AtemServerConnection FindOrCreateConnection(EndPoint ep, ProtocolVersion version, out bool isNew)
         {
             lock (connections)
             {
@@ -39,7 +39,7 @@ namespace LibAtem.MockTests.DeviceMock
                     return val;
                 }
                 
-                val = new AtemServerConnection(ep, 0x8008);// TODO - make dynamic
+                val = new AtemServerConnection(ep, 0x8008, version);// TODO - make dynamic
                 connections[ep] = val;
                 val.OnDisconnect += RemoveTimedOut;
 
