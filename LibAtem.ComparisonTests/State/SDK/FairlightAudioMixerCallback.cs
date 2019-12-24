@@ -81,7 +81,8 @@ namespace LibAtem.ComparisonTests.State.SDK
                     _state.FollowFadeToBlack = follow != 0;
                     break;
                 case _BMDSwitcherFairlightAudioMixerEventType.bmdSwitcherFairlightAudioMixerEventTypeAudioFollowVideoCrossfadeTransitionChanged:
-                    // TODO
+                    Props.GetAudioFollowVideoCrossfadeTransition(out int transition);
+                    _state.AudioFollowVideoCrossfadeTransitionEnabled = transition != 0;
                     break;
                 default:
                     throw new ArgumentOutOfRangeException(nameof(eventType), eventType, null);

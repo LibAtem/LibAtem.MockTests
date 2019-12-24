@@ -1,8 +1,12 @@
 ﻿using BMDSwitcherAPI;
+using LibAtem.Commands;
 using LibAtem.Commands.Audio.Fairlight;
 using LibAtem.ComparisonTests.State.SDK;
 using LibAtem.MockTests.Util;
 using LibAtem.State;
+using System;
+using System.Collections.Generic;
+using System.Collections.Immutable;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -34,6 +38,25 @@ namespace LibAtem.MockTests.Fairlight
             var dynamics = AtemSDKConverter.CastSdk<IBMDSwitcherFairlightAudioDynamicsProcessor>(mixer.GetMasterOutEffect);
             Assert.NotNull(dynamics);
             return dynamics;
+        }
+
+        public static Func<ImmutableList<ICommand>, ICommand, IEnumerable<ICommand>> CreateResetHandler(FairlightMixerMasterDynamicsResetCommand target)
+        {
+            return (previousCommands, cmd) =>
+            {
+                if (cmd is FairlightMixerMasterDynamicsResetCommand resetCmd)
+                {
+                    Assert.Equal(target.Compressor, resetCmd.Compressor);
+                    Assert.Equal(target.Limiter, resetCmd.Limiter);
+                    Assert.Equal(target.Expander, resetCmd.Expander);
+                    Assert.Equal(target.Dynamics, resetCmd.Dynamics);
+
+                    // Accept it
+                    return new ICommand[] { null };
+                }
+
+                return new ICommand[0];
+            };
         }
 
         /**
@@ -109,6 +132,23 @@ namespace LibAtem.MockTests.Fairlight
             });
         }
 
+        [Fact]
+        public void TestAudioFollowVideoCrossfadeTransitionEnabled()
+        {
+            var handler = CommandGenerator.CreateAutoCommandHandler<FairlightMixerMasterPropertiesSetCommand, FairlightMixerMasterPropertiesGetCommand>("AudioFollowVideoCrossfadeTransitionEnabled");
+            AtemMockServerWrapper.Each(_output, _pool, handler, DeviceTestCases.FairlightMain, helper =>
+            {
+                IBMDSwitcherFairlightAudioMixer mixer = GetFairlightMixer(helper);
+                AtemState stateBefore = helper.Helper.LibState;
+
+                for (int i = 0; i < 5; i++)
+                {
+                    stateBefore.Fairlight.ProgramOut.AudioFollowVideoCrossfadeTransitionEnabled = i % 2 > 0;
+                    helper.SendAndWaitForChange(stateBefore,
+                        () => { mixer.SetAudioFollowVideoCrossfadeTransition(i % 2); });
+                }
+            });
+        }
 
     }
 }

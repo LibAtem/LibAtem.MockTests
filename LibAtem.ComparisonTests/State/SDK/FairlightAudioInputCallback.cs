@@ -69,6 +69,8 @@ namespace LibAtem.ComparisonTests.State.SDK
 
             props.GetMaxDelayFrames(out ushort maxDelay);
             state.MaxFramesDelay = maxDelay;
+            props.GetDelayFrames(out ushort delay);
+            state.FramesDelay = delay;
 
             props.GetInputGain(out double inputGain);
             state.Gain = inputGain;

@@ -20,5 +20,6 @@ namespace LibAtem.MockTests
         public static readonly TestCaseId[] FairlightMain = { Mini_8_1, Constellation_8_0_2 };
         public static readonly TestCaseId[] FairlightAnalog = { Mini_8_1 };
         public static readonly TestCaseId[] FairlightXLR = { Constellation_8_0_2 };
+        public static readonly TestCaseId[] FairlightDelay = { Constellation_8_0_2 };
     }
 }

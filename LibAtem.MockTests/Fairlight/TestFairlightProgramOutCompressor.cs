@@ -159,23 +159,22 @@ namespace LibAtem.MockTests.Fairlight
             });
         }
 
-        /*
         [Fact]
         public void TestReset()
         {
-            var handler = CommandGenerator.CreateAutoCommandHandler<FairlightMixerMasterLimiterSetCommand, FairlightMixerMasterLimiterGetCommand>("Release");
+            var target = new FairlightMixerMasterDynamicsResetCommand { Compressor = true };
+            var handler = TestFairlightProgramOut.CreateResetHandler(target);
             AtemMockServerWrapper.Each(_output, _pool, handler, DeviceTestCases.FairlightMain, helper =>
             {
-                IBMDSwitcherFairlightAudioLimiter limiter = GetLimiter(helper);
+                IBMDSwitcherFairlightAudioCompressor compressor = GetCompressor(helper);
 
                 uint timeBefore = helper.Server.CurrentTime;
 
-                helper.SendAndWaitForChange(null, () => { limiter.Reset(); });
+                helper.SendAndWaitForChange(null, () => { compressor.Reset(); });
 
                 // It should have sent a response, but we dont expect any comparable data
                 Assert.NotEqual(timeBefore, helper.Server.CurrentTime);
             });
         }
-        */
     }
 }

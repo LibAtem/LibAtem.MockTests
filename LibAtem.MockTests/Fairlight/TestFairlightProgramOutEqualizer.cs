@@ -1,8 +1,11 @@
 ﻿using BMDSwitcherAPI;
+using LibAtem.Commands;
 using LibAtem.Commands.Audio.Fairlight;
 using LibAtem.ComparisonTests.State.SDK;
 using LibAtem.MockTests.Util;
 using LibAtem.State;
+using System.Collections.Generic;
+using System.Collections.Immutable;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -63,23 +66,36 @@ namespace LibAtem.MockTests.Fairlight
             });
         }
 
-        /*
         [Fact]
         public void TestReset()
         {
-            var handler = CommandGenerator.CreateAutoCommandHandler<FairlightMixerMasterLimiterSetCommand, FairlightMixerMasterLimiterGetCommand>("Release");
-            AtemMockServerWrapper.Each(_output, _pool, handler, DeviceTestCases.FairlightMain, helper =>
+            var target = new FairlightMixerMasterEqualizerResetCommand { Equalizer = true };
+
+            IEnumerable<ICommand> Handler(ImmutableList<ICommand> previousCommands, ICommand cmd)
             {
-                IBMDSwitcherFairlightAudioLimiter limiter = GetLimiter(helper);
+                if (cmd is FairlightMixerMasterEqualizerResetCommand resetCmd)
+                {
+                    Assert.Equal(target.Equalizer, resetCmd.Equalizer);
+
+                    // Accept it
+                    return new ICommand[] { null };
+                }
+
+                return new ICommand[0];
+            }
+
+            AtemMockServerWrapper.Each(_output, _pool, Handler, DeviceTestCases.FairlightMain, helper =>
+            {
+                IBMDSwitcherFairlightAudioEqualizer eq = GetEqualizer(helper);
 
                 uint timeBefore = helper.Server.CurrentTime;
 
-                helper.SendAndWaitForChange(null, () => { limiter.Reset(); });
+                helper.SendAndWaitForChange(null, () => { eq.Reset(); });
 
                 // It should have sent a response, but we dont expect any comparable data
                 Assert.NotEqual(timeBefore, helper.Server.CurrentTime);
             });
         }
-        */
+
     }
 }

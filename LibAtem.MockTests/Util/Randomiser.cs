@@ -11,7 +11,12 @@ namespace LibAtem.MockTests.Util
         {
             _random = new Random();
         }
-        
+
+        public static uint RangeInt(uint max)
+        {
+            return (uint) _random.Next((int) max);
+        }
+
         public static double Range(double min = -100, double max = 6, double rounding = 100)
         {
             double scale = max - min;

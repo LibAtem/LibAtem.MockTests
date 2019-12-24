@@ -83,10 +83,11 @@ namespace LibAtem.MockTests.Fairlight
             };
         }
 
-        public static void EachRandomSource(AtemMockServerWrapper helper, Action<AtemState, FairlightAudioState.InputSourceState, long, IBMDSwitcherFairlightAudioSource, int> fcn, int maxIterations = 5)
+        public static void EachRandomSource(AtemMockServerWrapper helper, Action<AtemState, FairlightAudioState.InputSourceState, long, IBMDSwitcherFairlightAudioSource, int> fcn, int maxIterations = 5, bool useAll = false)
         {
-            List<long> rawInputIds = helper.Helper.LibState.Fairlight.Inputs.Keys.ToList();
-            IEnumerable<long> useIds = Randomiser.SelectionOfGroup(rawInputIds, 2);
+            List<long> useIds = helper.Helper.LibState.Fairlight.Inputs.Keys.ToList();
+            if (!useAll) useIds = Randomiser.SelectionOfGroup(useIds, 2).ToList();
+
             foreach (long id in useIds)
             {
                 IBMDSwitcherFairlightAudioSource src = GetSource(helper, id);
@@ -243,10 +244,7 @@ namespace LibAtem.MockTests.Fairlight
         [Fact]
         public void TestEqualizerReset()
         {
-            var target = new FairlightMixerSourceEqualizerResetCommand()
-            {
-                Equalizer = true
-            };
+            var target = new FairlightMixerSourceEqualizerResetCommand { Equalizer = true };
 
             IEnumerable<ICommand> Handler(ImmutableList<ICommand> previousCommands, ICommand cmd)
             {
@@ -285,10 +283,7 @@ namespace LibAtem.MockTests.Fairlight
         [Fact]
         public void TestDynamicsReset()
         {
-            var target = new FairlightMixerSourceDynamicsResetCommand()
-            {
-                Dynamics = true
-            };
+            var target = new FairlightMixerSourceDynamicsResetCommand { Dynamics = true };
             var handler = CreateResetHandler(target);
             AtemMockServerWrapper.Each(_output, _pool, handler, DeviceTestCases.FairlightMain, helper =>
             {
@@ -307,6 +302,28 @@ namespace LibAtem.MockTests.Fairlight
                     Assert.NotEqual(timeBefore, helper.Server.CurrentTime);
                 }, 1);
             });
+        }
+
+        [Fact]
+        public void TestFramesDelay()
+        {
+            var handler = CommandGenerator.CreateAutoCommandHandler<FairlightMixerSourceSetCommand, FairlightMixerSourceGetCommand>("FramesDelay");
+            bool tested = false;
+            AtemMockServerWrapper.Each(_output, _pool, handler, DeviceTestCases.FairlightDelay, helper =>
+            {
+                EachRandomSource(helper, (stateBefore, srcState, inputId, src, i) =>
+                {
+                    src.GetMaxDelayFrames(out ushort maxDelay);
+                    //_output.WriteLine("{0} = {1}", inputId, maxDelay);
+                    if (maxDelay <= 1) return;
+                    tested = true;
+
+                    var target = 1 + Randomiser.RangeInt((uint) (maxDelay - 1));
+                    srcState.FramesDelay = target;
+                    helper.SendAndWaitForChange(stateBefore, () => { src.SetDelayFrames((ushort) target); });
+                }, 5, true);
+            });
+            Assert.True(tested);
         }
 
     }
