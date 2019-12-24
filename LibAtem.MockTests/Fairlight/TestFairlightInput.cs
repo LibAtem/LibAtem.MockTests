@@ -112,5 +112,40 @@ namespace LibAtem.MockTests.Fairlight
             });
         }
 
+        [Fact]
+        public void TestAnalogInputLevel()
+        {
+            var handler = CommandGenerator.CreateAutoCommandHandler<FairlightMixerAnalogAudioSetCommand, FairlightMixerAnalogAudioGetCommand>("InputLevel", true);
+            bool tested = false;
+            AtemMockServerWrapper.Each(_output, _pool, handler, DeviceTestCases.FairlightAnalog, helper =>
+            {
+                IEnumerable<long> useIds = Randomiser.SelectionOfGroup(helper.Helper.LibState.Fairlight.Inputs.Keys.ToList());
+                foreach (long id in useIds)
+                {
+                    IBMDSwitcherFairlightAudioInput input = GetInput(helper, id);
+                    if (input is IBMDSwitcherFairlightAnalogAudioInput analogInput)
+                    {
+                        AtemState stateBefore = helper.Helper.LibState;
+                        FairlightAudioState.AnalogState inputState = stateBefore.Fairlight.Inputs[id].Analog;
+
+                        var testConfigs = AtemSDKConverter.GetFlagsValues(analogInput.GetSupportedInputLevels,
+                            AtemEnumMaps.FairlightAnalogInputLevelMap);
+                        // Need more than 1 config to allow for switching around
+                        if (1 == testConfigs.Count) continue;
+                        tested = true;
+
+                        for (int i = 0; i < 5; i++)
+                        {
+                            var target = testConfigs[i % testConfigs.Count];
+                            inputState.InputLevel = target.Item2;
+                            helper.SendAndWaitForChange(stateBefore, () => { analogInput.SetInputLevel(target.Item1); });
+                        }
+                    }
+                    //
+                }
+            });
+            Assert.True(tested);
+        }
+
     }
 }

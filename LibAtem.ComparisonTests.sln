@@ -29,7 +29,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "FatAntelope", "LibAtem\FatA
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Logger", "Logger\Logger.csproj", "{D4A91DD9-463F-4AE8-BD44-E7504023166A}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LibAtem.MockTests", "LibAtem.MockTests\LibAtem.MockTests.csproj", "{7BE6B889-4BAA-4466-92F5-7506A79E79C5}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LibAtem.MockTests", "LibAtem.MockTests\LibAtem.MockTests.csproj", "{7BE6B889-4BAA-4466-92F5-7506A79E79C5}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

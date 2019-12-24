@@ -1,5 +1,6 @@
 ﻿using BMDSwitcherAPI;
 using LibAtem.Commands.Audio.Fairlight;
+using LibAtem.Common;
 using LibAtem.ComparisonTests.State.SDK;
 using LibAtem.MockTests.Util;
 using Xunit;
@@ -33,7 +34,7 @@ namespace LibAtem.MockTests.Fairlight
             var handler = CommandGenerator.CreateAutoCommandHandler<FairlightMixerSourceExpanderSetCommand, FairlightMixerSourceExpanderGetCommand>("ExpanderEnabled");
             AtemMockServerWrapper.Each(_output, _pool, handler, DeviceTestCases.FairlightMain, helper =>
             {
-                TestFairlightInputSource.EachRandomSource(helper, (stateBefore, srcState, src, i) =>
+                TestFairlightInputSource.EachRandomSource(helper, (stateBefore, srcState, inputId, src, i) =>
                 {
                     IBMDSwitcherFairlightAudioExpander expander = GetExpander(src);
 
@@ -49,7 +50,7 @@ namespace LibAtem.MockTests.Fairlight
             var handler = CommandGenerator.CreateAutoCommandHandler<FairlightMixerSourceExpanderSetCommand, FairlightMixerSourceExpanderGetCommand>("GateEnabled");
             AtemMockServerWrapper.Each(_output, _pool, handler, DeviceTestCases.FairlightMain, helper =>
             {
-                TestFairlightInputSource.EachRandomSource(helper, (stateBefore, srcState, src, i) =>
+                TestFairlightInputSource.EachRandomSource(helper, (stateBefore, srcState, inputId, src, i) =>
                 {
                     IBMDSwitcherFairlightAudioExpander expander = GetExpander(src);
 
@@ -65,7 +66,7 @@ namespace LibAtem.MockTests.Fairlight
             var handler = CommandGenerator.CreateAutoCommandHandler<FairlightMixerSourceExpanderSetCommand, FairlightMixerSourceExpanderGetCommand>("Threshold");
             AtemMockServerWrapper.Each(_output, _pool, handler, DeviceTestCases.FairlightMain, helper =>
             {
-                TestFairlightInputSource.EachRandomSource(helper, (stateBefore, srcState, src, i) =>
+                TestFairlightInputSource.EachRandomSource(helper, (stateBefore, srcState, inputId, src, i) =>
                 {
                     IBMDSwitcherFairlightAudioExpander expander = GetExpander(src);
 
@@ -82,7 +83,7 @@ namespace LibAtem.MockTests.Fairlight
             var handler = CommandGenerator.CreateAutoCommandHandler<FairlightMixerSourceExpanderSetCommand, FairlightMixerSourceExpanderGetCommand>("Attack");
             AtemMockServerWrapper.Each(_output, _pool, handler, DeviceTestCases.FairlightMain, helper =>
             {
-                TestFairlightInputSource.EachRandomSource(helper, (stateBefore, srcState, src, i) =>
+                TestFairlightInputSource.EachRandomSource(helper, (stateBefore, srcState, inputId, src, i) =>
                 {
                     IBMDSwitcherFairlightAudioExpander expander = GetExpander(src);
 
@@ -99,7 +100,7 @@ namespace LibAtem.MockTests.Fairlight
             var handler = CommandGenerator.CreateAutoCommandHandler<FairlightMixerSourceExpanderSetCommand, FairlightMixerSourceExpanderGetCommand>("Hold");
             AtemMockServerWrapper.Each(_output, _pool, handler, DeviceTestCases.FairlightMain, helper =>
             {
-                TestFairlightInputSource.EachRandomSource(helper, (stateBefore, srcState, src, i) =>
+                TestFairlightInputSource.EachRandomSource(helper, (stateBefore, srcState, inputId, src, i) =>
                 {
                     IBMDSwitcherFairlightAudioExpander expander = GetExpander(src);
 
@@ -116,7 +117,7 @@ namespace LibAtem.MockTests.Fairlight
             var handler = CommandGenerator.CreateAutoCommandHandler<FairlightMixerSourceExpanderSetCommand, FairlightMixerSourceExpanderGetCommand>("Release");
             AtemMockServerWrapper.Each(_output, _pool, handler, DeviceTestCases.FairlightMain, helper =>
             {
-                TestFairlightInputSource.EachRandomSource(helper, (stateBefore, srcState, src, i) =>
+                TestFairlightInputSource.EachRandomSource(helper, (stateBefore, srcState, inputId, src, i) =>
                 {
                     IBMDSwitcherFairlightAudioExpander expander = GetExpander(src);
 
@@ -133,7 +134,7 @@ namespace LibAtem.MockTests.Fairlight
             var handler = CommandGenerator.CreateAutoCommandHandler<FairlightMixerSourceExpanderSetCommand, FairlightMixerSourceExpanderGetCommand>("Range");
             AtemMockServerWrapper.Each(_output, _pool, handler, DeviceTestCases.FairlightMain, helper =>
             {
-                TestFairlightInputSource.EachRandomSource(helper, (stateBefore, srcState, src, i) =>
+                TestFairlightInputSource.EachRandomSource(helper, (stateBefore, srcState, inputId, src, i) =>
                 {
                     IBMDSwitcherFairlightAudioExpander expander = GetExpander(src);
 
@@ -150,7 +151,7 @@ namespace LibAtem.MockTests.Fairlight
             var handler = CommandGenerator.CreateAutoCommandHandler<FairlightMixerSourceExpanderSetCommand, FairlightMixerSourceExpanderGetCommand>("Ratio");
             AtemMockServerWrapper.Each(_output, _pool, handler, DeviceTestCases.FairlightMain, helper =>
             {
-                TestFairlightInputSource.EachRandomSource(helper, (stateBefore, srcState, src, i) =>
+                TestFairlightInputSource.EachRandomSource(helper, (stateBefore, srcState, inputId, src, i) =>
                 {
                     IBMDSwitcherFairlightAudioExpander expander = GetExpander(src);
 
@@ -161,23 +162,31 @@ namespace LibAtem.MockTests.Fairlight
             });
         }
 
-        /*
         [Fact]
         public void TestReset()
         {
-            var handler = CommandGenerator.CreateAutoCommandHandler<FairlightMixerLimiterSetCommand, FairlightMixerLimiterGetCommand>("Release");
+            var target = new FairlightMixerSourceDynamicsResetCommand()
+            {
+                Expander = true
+            };
+            var handler = TestFairlightInputSource.CreateResetHandler(target);
             AtemMockServerWrapper.Each(_output, _pool, handler, DeviceTestCases.FairlightMain, helper =>
             {
-                IBMDSwitcherFairlightAudioLimiter limiter = GetLimiter(helper);
+                TestFairlightInputSource.EachRandomSource(helper, (stateBefore, srcState, inputId, src, i) =>
+                {
+                    IBMDSwitcherFairlightAudioExpander expander= GetExpander(src);
 
-                uint timeBefore = helper.Server.CurrentTime;
+                    target.Index = (AudioSource)inputId;
+                    target.SourceId = srcState.SourceId;
 
-                helper.SendAndWaitForChange(null, () => { expander.Reset(); });
+                    uint timeBefore = helper.Server.CurrentTime;
 
-                // It should have sent a response, but we dont expect any comparable data
-                Assert.NotEqual(timeBefore, helper.Server.CurrentTime);
+                    helper.SendAndWaitForChange(null, () => { expander.Reset(); });
+
+                    // It should have sent a response, but we dont expect any comparable data
+                    Assert.NotEqual(timeBefore, helper.Server.CurrentTime);
+                }, 1);
             });
         }
-        */
     }
 }

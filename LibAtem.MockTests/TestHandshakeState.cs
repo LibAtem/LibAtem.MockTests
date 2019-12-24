@@ -43,7 +43,7 @@ namespace LibAtem.MockTests
             var stateSettings = new AtemStateBuilderSettings();
             using var helper = new AtemSdkClientWrapper("10.42.13.95", stateSettings);
 
-            var libAtemState = GetLibAtemState(stateSettings);
+            var libAtemState = GetLibAtemState(stateSettings, "10.42.13.95");
 
             List<string> before = AtemStateComparer.AreEqual(helper.State, libAtemState);
             if (before.Count != 0 && _output != null)
@@ -54,9 +54,9 @@ namespace LibAtem.MockTests
             Assert.Empty(before);
         }
 
-        private AtemState GetLibAtemState(AtemStateBuilderSettings stateSettings)
+        private AtemState GetLibAtemState(AtemStateBuilderSettings stateSettings, string address)
         {
-            using var client = new AtemClient("127.0.0.1", false);
+            using var client = new AtemClient(address, false);
             var state = new AtemState();
 
             AutoResetEvent handshakeEvent = new AutoResetEvent(false);
@@ -84,7 +84,7 @@ namespace LibAtem.MockTests
             var stateSettings = new AtemStateBuilderSettings();
             using var helper = new AtemSdkClientWrapper("127.0.0.1", stateSettings);
 
-            var libAtemState = GetLibAtemState(stateSettings);
+            var libAtemState = GetLibAtemState(stateSettings, "127.0.0.1");
 
             List<string> before = AtemStateComparer.AreEqual(helper.State, libAtemState);
             if (before.Count != 0 && _output != null)

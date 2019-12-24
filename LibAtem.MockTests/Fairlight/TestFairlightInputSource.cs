@@ -1,8 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Linq;
 using BMDSwitcherAPI;
+using LibAtem.Commands;
 using LibAtem.Commands.Audio.Fairlight;
+using LibAtem.Common;
 using LibAtem.ComparisonTests;
 using LibAtem.ComparisonTests.State.SDK;
 using LibAtem.MockTests.Util;
@@ -59,7 +62,28 @@ namespace LibAtem.MockTests.Fairlight
             return eq;
         }
 
-        public static void EachRandomSource(AtemMockServerWrapper helper, Action<AtemState, FairlightAudioState.InputSourceState, IBMDSwitcherFairlightAudioSource, int> fcn)
+        public static Func<ImmutableList<ICommand>, ICommand, IEnumerable<ICommand>> CreateResetHandler(FairlightMixerSourceDynamicsResetCommand target)
+        {
+            return (previousCommands, cmd) =>
+            {
+                if (cmd is FairlightMixerSourceDynamicsResetCommand resetCmd)
+                {
+                    Assert.Equal(target.Index, resetCmd.Index);
+                    Assert.Equal(target.SourceId, resetCmd.SourceId);
+                    Assert.Equal(target.Compressor, resetCmd.Compressor);
+                    Assert.Equal(target.Limiter, resetCmd.Limiter);
+                    Assert.Equal(target.Expander, resetCmd.Expander);
+                    Assert.Equal(target.Dynamics, resetCmd.Dynamics);
+
+                    // Accept it
+                    return new ICommand[] { null };
+                }
+
+                return new ICommand[0];
+            };
+        }
+
+        public static void EachRandomSource(AtemMockServerWrapper helper, Action<AtemState, FairlightAudioState.InputSourceState, long, IBMDSwitcherFairlightAudioSource, int> fcn, int maxIterations = 5)
         {
             List<long> rawInputIds = helper.Helper.LibState.Fairlight.Inputs.Keys.ToList();
             IEnumerable<long> useIds = Randomiser.SelectionOfGroup(rawInputIds, 2);
@@ -71,9 +95,9 @@ namespace LibAtem.MockTests.Fairlight
                 AtemState stateBefore = helper.Helper.LibState;
                 FairlightAudioState.InputSourceState srcState = stateBefore.Fairlight.Inputs[id].Sources.Single(s => s.SourceId == sourceId);
 
-                for (int i = 0; i < 5; i++)
+                for (int i = 0; i < maxIterations; i++)
                 {
-                    fcn(stateBefore, srcState, src, i);
+                    fcn(stateBefore, srcState, id, src, i);
                 }
             }
         }
@@ -87,7 +111,7 @@ namespace LibAtem.MockTests.Fairlight
             bool tested = false;
             AtemMockServerWrapper.Each(_output, _pool, handler, DeviceTestCases.FairlightMain, helper =>
             {
-                EachRandomSource(helper, (stateBefore, srcState, src, i) =>
+                EachRandomSource(helper, (stateBefore, srcState, inputId, src, i) =>
                 {
                     tested = true;
                     var target = Randomiser.Range();
@@ -105,7 +129,7 @@ namespace LibAtem.MockTests.Fairlight
             bool tested = false;
             AtemMockServerWrapper.Each(_output, _pool, handler, DeviceTestCases.FairlightMain, helper =>
             {
-                EachRandomSource(helper, (stateBefore, srcState, src, i) =>
+                EachRandomSource(helper, (stateBefore, srcState, inputId, src, i) =>
                 {
                     tested = true;
                     var target = Randomiser.Range();
@@ -123,7 +147,7 @@ namespace LibAtem.MockTests.Fairlight
             bool tested = false;
             AtemMockServerWrapper.Each(_output, _pool, handler, DeviceTestCases.FairlightMain, helper =>
             {
-                EachRandomSource(helper, (stateBefore, srcState, src, i) =>
+                EachRandomSource(helper, (stateBefore, srcState, inputId, src, i) =>
                 {
                     tested = true;
                     var target = Randomiser.Range(-100, 100);
@@ -141,7 +165,7 @@ namespace LibAtem.MockTests.Fairlight
             bool tested = false;
             AtemMockServerWrapper.Each(_output, _pool, handler, DeviceTestCases.FairlightMain, helper =>
             {
-                EachRandomSource(helper, (stateBefore, srcState, src, i) =>
+                EachRandomSource(helper, (stateBefore, srcState, inputId, src, i) =>
                 {
                     var testConfigs = AtemSDKConverter.GetFlagsValues(src.GetSupportedMixOptions,
                         AtemEnumMaps.FairlightAudioMixOptionMap);
@@ -164,7 +188,7 @@ namespace LibAtem.MockTests.Fairlight
             bool tested = false;
             AtemMockServerWrapper.Each(_output, _pool, handler, DeviceTestCases.FairlightMain, helper =>
             {
-                EachRandomSource(helper, (stateBefore, srcState, src, i) =>
+                EachRandomSource(helper, (stateBefore, srcState, inputId, src, i) =>
                 {
                     IBMDSwitcherFairlightAudioDynamicsProcessor dynamics = GetDynamics(src);
                     tested = true;
@@ -184,7 +208,7 @@ namespace LibAtem.MockTests.Fairlight
             bool tested = false;
             AtemMockServerWrapper.Each(_output, _pool, handler, DeviceTestCases.FairlightMain, helper =>
             {
-                EachRandomSource(helper, (stateBefore, srcState, src, i) =>
+                EachRandomSource(helper, (stateBefore, srcState, inputId, src, i) =>
                 {
                     IBMDSwitcherFairlightAudioEqualizer eq = GetEqualizer(src);
                     tested = true;
@@ -203,7 +227,7 @@ namespace LibAtem.MockTests.Fairlight
             bool tested = false;
             AtemMockServerWrapper.Each(_output, _pool, handler, DeviceTestCases.FairlightMain, helper =>
             {
-                EachRandomSource(helper, (stateBefore, srcState, src, i) =>
+                EachRandomSource(helper, (stateBefore, srcState, inputId, src, i) =>
                 {
                     IBMDSwitcherFairlightAudioEqualizer eq = GetEqualizer(src);
                     tested = true;
@@ -214,6 +238,75 @@ namespace LibAtem.MockTests.Fairlight
                 });
             });
             Assert.True(tested);
+        }
+
+        [Fact]
+        public void TestEqualizerReset()
+        {
+            var target = new FairlightMixerSourceEqualizerResetCommand()
+            {
+                Equalizer = true
+            };
+
+            IEnumerable<ICommand> Handler(ImmutableList<ICommand> previousCommands, ICommand cmd)
+            {
+                if (cmd is FairlightMixerSourceEqualizerResetCommand resetCmd)
+                {
+                    Assert.Equal(target.Index, resetCmd.Index);
+                    Assert.Equal(target.SourceId, resetCmd.SourceId);
+                    Assert.Equal(target.Equalizer, resetCmd.Equalizer);
+
+                    // Accept it
+                    return new ICommand[] {null};
+                }
+
+                return new ICommand[0];
+            }
+
+            AtemMockServerWrapper.Each(_output, _pool, Handler, DeviceTestCases.FairlightMain, helper =>
+            {
+                EachRandomSource(helper, (stateBefore, srcState, inputId, src, i) =>
+                {
+                    IBMDSwitcherFairlightAudioEqualizer eq = GetEqualizer(src);
+
+                    target.Index = (AudioSource)inputId;
+                    target.SourceId = srcState.SourceId;
+
+                    uint timeBefore = helper.Server.CurrentTime;
+
+                    helper.SendAndWaitForChange(null, () => { eq.Reset(); });
+
+                    // It should have sent a response, but we dont expect any comparable data
+                    Assert.NotEqual(timeBefore, helper.Server.CurrentTime);
+                }, 1);
+            });
+        }
+
+        [Fact]
+        public void TestDynamicsReset()
+        {
+            var target = new FairlightMixerSourceDynamicsResetCommand()
+            {
+                Dynamics = true
+            };
+            var handler = CreateResetHandler(target);
+            AtemMockServerWrapper.Each(_output, _pool, handler, DeviceTestCases.FairlightMain, helper =>
+            {
+                EachRandomSource(helper, (stateBefore, srcState, inputId, src, i) =>
+                {
+                    IBMDSwitcherFairlightAudioDynamicsProcessor dynamics = GetDynamics(src);
+
+                    target.Index = (AudioSource)inputId;
+                    target.SourceId = srcState.SourceId;
+
+                    uint timeBefore = helper.Server.CurrentTime;
+
+                    helper.SendAndWaitForChange(null, () => { dynamics.Reset(); });
+
+                    // It should have sent a response, but we dont expect any comparable data
+                    Assert.NotEqual(timeBefore, helper.Server.CurrentTime);
+                }, 1);
+            });
         }
 
     }

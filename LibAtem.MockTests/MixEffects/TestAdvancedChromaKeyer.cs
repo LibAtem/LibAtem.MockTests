@@ -555,13 +555,7 @@ namespace LibAtem.MockTests.MixEffects
                 yield return previousCmd;
             }
         }
-
-        private class KeyerIdSet
-        {
-            public MixEffectBlockId MixEffect { get; set; }
-            public UpstreamKeyId Keyer { get; set; }
-        }
-
+        
         [Fact]
         public void TestResetChromaCorrection()
         {
@@ -672,7 +666,6 @@ namespace LibAtem.MockTests.MixEffects
             });
             Assert.True(tested);
         }
-
 
         private static Func<ImmutableList<ICommand>, ICommand, IEnumerable<ICommand>> CreateResetHandler(MixEffectKeyAdvancedChromaResetCommand keyerTarget)
         {

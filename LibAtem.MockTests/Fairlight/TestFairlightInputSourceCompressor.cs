@@ -1,5 +1,6 @@
 ﻿using BMDSwitcherAPI;
 using LibAtem.Commands.Audio.Fairlight;
+using LibAtem.Common;
 using LibAtem.ComparisonTests.State.SDK;
 using LibAtem.MockTests.Util;
 using Xunit;
@@ -36,7 +37,7 @@ namespace LibAtem.MockTests.Fairlight
                         FairlightMixerSourceCompressorGetCommand>("CompressorEnabled");
             AtemMockServerWrapper.Each(_output, _pool, handler, DeviceTestCases.FairlightMain, helper =>
             {
-                TestFairlightInputSource.EachRandomSource(helper, (stateBefore, srcState, src, i) =>
+                TestFairlightInputSource.EachRandomSource(helper, (stateBefore, srcState, inputId, src, i) =>
                 {
                     IBMDSwitcherFairlightAudioCompressor compressor = GetCompressor(src);
                     srcState.Dynamics.Compressor.CompressorEnabled = i % 2 > 0;
@@ -54,7 +55,7 @@ namespace LibAtem.MockTests.Fairlight
                         FairlightMixerSourceCompressorGetCommand>("Threshold");
             AtemMockServerWrapper.Each(_output, _pool, handler, DeviceTestCases.FairlightMain, helper =>
             {
-                TestFairlightInputSource.EachRandomSource(helper, (stateBefore, srcState, src, i) =>
+                TestFairlightInputSource.EachRandomSource(helper, (stateBefore, srcState, inputId, src, i) =>
                 {
                     IBMDSwitcherFairlightAudioCompressor compressor = GetCompressor(src);
 
@@ -74,7 +75,7 @@ namespace LibAtem.MockTests.Fairlight
                         FairlightMixerSourceCompressorGetCommand>("Ratio");
             AtemMockServerWrapper.Each(_output, _pool, handler, DeviceTestCases.FairlightMain, helper =>
             {
-                TestFairlightInputSource.EachRandomSource(helper, (stateBefore, srcState, src, i) =>
+                TestFairlightInputSource.EachRandomSource(helper, (stateBefore, srcState, inputId, src, i) =>
                 {
                     IBMDSwitcherFairlightAudioCompressor compressor = GetCompressor(src);
 
@@ -94,7 +95,7 @@ namespace LibAtem.MockTests.Fairlight
                         FairlightMixerSourceCompressorGetCommand>("Attack");
             AtemMockServerWrapper.Each(_output, _pool, handler, DeviceTestCases.FairlightMain, helper =>
             {
-                TestFairlightInputSource.EachRandomSource(helper, (stateBefore, srcState, src, i) =>
+                TestFairlightInputSource.EachRandomSource(helper, (stateBefore, srcState, inputId, src, i) =>
                 {
                     IBMDSwitcherFairlightAudioCompressor compressor = GetCompressor(src);
 
@@ -114,7 +115,7 @@ namespace LibAtem.MockTests.Fairlight
                         FairlightMixerSourceCompressorGetCommand>("Hold");
             AtemMockServerWrapper.Each(_output, _pool, handler, DeviceTestCases.FairlightMain, helper =>
             {
-                TestFairlightInputSource.EachRandomSource(helper, (stateBefore, srcState, src, i) =>
+                TestFairlightInputSource.EachRandomSource(helper, (stateBefore, srcState, inputId, src, i) =>
                 {
                     IBMDSwitcherFairlightAudioCompressor compressor = GetCompressor(src);
 
@@ -134,7 +135,7 @@ namespace LibAtem.MockTests.Fairlight
                         FairlightMixerSourceCompressorGetCommand>("Release");
             AtemMockServerWrapper.Each(_output, _pool, handler, DeviceTestCases.FairlightMain, helper =>
             {
-                TestFairlightInputSource.EachRandomSource(helper, (stateBefore, srcState, src, i) =>
+                TestFairlightInputSource.EachRandomSource(helper, (stateBefore, srcState, inputId, src, i) =>
                 {
                     IBMDSwitcherFairlightAudioCompressor compressor = GetCompressor(src);
 
@@ -145,23 +146,31 @@ namespace LibAtem.MockTests.Fairlight
             });
         }
 
-        /*
         [Fact]
         public void TestReset()
         {
-            var handler = CommandGenerator.CreateAutoCommandHandler<FairlightMixerMasterLimiterSetCommand, FairlightMixerMasterLimiterGetCommand>("Release");
+            var target = new FairlightMixerSourceDynamicsResetCommand()
+            {
+                Compressor = true
+            };
+            var handler = TestFairlightInputSource.CreateResetHandler(target);
             AtemMockServerWrapper.Each(_output, _pool, handler, DeviceTestCases.FairlightMain, helper =>
             {
-                IBMDSwitcherFairlightAudioLimiter limiter = GetLimiter(helper);
+                TestFairlightInputSource.EachRandomSource(helper, (stateBefore, srcState, inputId, src, i) =>
+                {
+                    IBMDSwitcherFairlightAudioCompressor compressor = GetCompressor(src);
 
-                uint timeBefore = helper.Server.CurrentTime;
+                    target.Index = (AudioSource) inputId;
+                    target.SourceId= srcState.SourceId;
 
-                helper.SendAndWaitForChange(null, () => { limiter.Reset(); });
+                    uint timeBefore = helper.Server.CurrentTime;
 
-                // It should have sent a response, but we dont expect any comparable data
-                Assert.NotEqual(timeBefore, helper.Server.CurrentTime);
+                    helper.SendAndWaitForChange(null, () => { compressor.Reset(); });
+
+                    // It should have sent a response, but we dont expect any comparable data
+                    Assert.NotEqual(timeBefore, helper.Server.CurrentTime);
+                }, 1);
             });
         }
-        */
     }
 }

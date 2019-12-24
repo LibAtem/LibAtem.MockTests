@@ -11,13 +11,17 @@ namespace LibAtem.MockTests.Util
 {
     public static class CommandGenerator
     {
-        public static Func<ImmutableList<ICommand>, ICommand, IEnumerable<ICommand>> CreateAutoCommandHandler<TSet, TGet>(string name) where TGet : ICommand where TSet : ICommand
+        public static Func<ImmutableList<ICommand>, ICommand, IEnumerable<ICommand>> CreateAutoCommandHandler<TSet, TGet>(string name, bool disableMask = false) where TGet : ICommand where TSet : ICommand
         {
-            // Calculate what the mask should ssbe
-            PropertyInfo maskProp = typeof(TSet).GetProperty("Mask");
-            Assert.NotNull(maskProp);
-            dynamic expectedMask = Enum.Parse(maskProp.PropertyType, name);
-            Assert.NotEqual(0, (int)expectedMask);
+            object expectedMask = null;
+            if (!disableMask)
+            {
+                // Calculate what the mask should ssbe
+                PropertyInfo maskProp = typeof(TSet).GetProperty("Mask");
+                Assert.NotNull(maskProp);
+                expectedMask = Enum.Parse(maskProp.PropertyType, name);
+                Assert.NotEqual(0, (int) expectedMask);
+            }
 
             return (previousCommands, cmd) =>
             {
@@ -25,7 +29,10 @@ namespace LibAtem.MockTests.Util
                 {
                     // Ensure the mask is correct
                     dynamic dynCmd = setCmd;
-                    Assert.Equal(expectedMask, dynCmd.Mask);
+                    if (!disableMask)
+                    {
+                        Assert.Equal(expectedMask, dynCmd.Mask);
+                    }
 
                     // Find the command to base the result on
                     CommandQueueKey targetCommandKey = CommandQueueKey.ForGetter<TGet>(setCmd);

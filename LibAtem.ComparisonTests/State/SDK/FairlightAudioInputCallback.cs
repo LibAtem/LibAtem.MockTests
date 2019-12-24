@@ -23,6 +23,17 @@ namespace LibAtem.ComparisonTests.State.SDK
             props.GetType(out _BMDSwitcherFairlightAudioInputType type);
             state.InputType = AtemEnumMaps.FairlightInputTypeMap.FindByValue(type);
 
+            // Analog
+            if (props is IBMDSwitcherFairlightAnalogAudioInput analog)
+            {
+                state.Analog = new FairlightAudioState.AnalogState();
+                analog.GetInputLevel(out _BMDSwitcherFairlightAudioAnalogInputLevel level);
+                state.Analog.InputLevel = AtemEnumMaps.FairlightAnalogInputLevelMap.FindByValue(level);
+
+                analog.GetSupportedInputLevels(out _BMDSwitcherFairlightAudioAnalogInputLevel supportedLevels);
+                state.Analog.SupportedInputLevel = (FairlightAnalogInputLevel) supportedLevels;
+            }
+
             // Sources
             var iterator = AtemSDKConverter.CastSdk<IBMDSwitcherFairlightAudioSourceIterator>(props.CreateIterator);
             AtemSDKConverter.Iterate<IBMDSwitcherFairlightAudioSource>(
@@ -75,6 +86,13 @@ namespace LibAtem.ComparisonTests.State.SDK
             state.Equalizer.Enabled = eqEnabled != 0;
             eq.GetGain(out double eqGain);
             state.Equalizer.Gain = eqGain;
+
+            //var bands = AtemSDKConverter.CastSdk<IBMDSwitcherFairlightAudioEqualizerBandIterator>(eq.CreateIterator);
+            /*state.Equalizer.Bands = AtemSDKConverter.IterateList<IBMDSwitcherFairlightAudioEqualizerBand, FairlightAudioState.EqualizerBandState>(bands.Next, (band, i) =>
+            {
+                //
+                return null;
+            });*/
 
             return state;
         }
