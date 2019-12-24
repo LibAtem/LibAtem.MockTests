@@ -58,6 +58,14 @@ namespace LibAtem.ComparisonTests.State.SDK
                 */
             }
 
+            var monIter = AtemSDKConverter.CastSdk<IBMDSwitcherFairlightAudioHeadphoneOutputIterator>(props.CreateIterator);
+            state.Monitors = AtemSDKConverter.IterateList<IBMDSwitcherFairlightAudioHeadphoneOutput, FairlightAudioState.MonitorOutputState>(monIter.Next, (mon, id) =>
+            {
+                var monState = new FairlightAudioState.MonitorOutputState();
+                Children.Add(new FairlightAudioMixerMonitorCallback(monState, mon, AppendChange($"Monitors.{id}")));
+                return monState;
+            });
+
         }
 
         public override void Notify(_BMDSwitcherFairlightAudioMixerEventType eventType)
@@ -87,5 +95,45 @@ namespace LibAtem.ComparisonTests.State.SDK
             //throw new NotImplementedException();
         }
 
+    }
+
+    public sealed class FairlightAudioMixerMonitorCallback :
+        SdkCallbackBaseNotify<IBMDSwitcherFairlightAudioHeadphoneOutput, _BMDSwitcherFairlightAudioHeadphoneOutputEventType>,
+        IBMDSwitcherFairlightAudioHeadphoneOutputCallback
+    {
+        private readonly FairlightAudioState.MonitorOutputState _state;
+
+        public FairlightAudioMixerMonitorCallback(FairlightAudioState.MonitorOutputState state, IBMDSwitcherFairlightAudioHeadphoneOutput props,
+            Action<string> onChange) : base(props, onChange)
+        {
+            _state = state;
+            TriggerAllChanged();
+        }
+
+        public override void Notify(_BMDSwitcherFairlightAudioHeadphoneOutputEventType eventType)
+        {
+            switch (eventType) {
+                case _BMDSwitcherFairlightAudioHeadphoneOutputEventType.bmdSwitcherFairlightAudioHeadphoneOutputEventTypeGainChanged:
+                    Props.GetGain(out double gain);
+                    _state.Gain = gain;
+                    break;
+                case _BMDSwitcherFairlightAudioHeadphoneOutputEventType.bmdSwitcherFairlightAudioHeadphoneOutputEventTypeInputMasterOutGainChanged:
+                    Props.GetInputMasterOutGain(out double pgmGain);
+                    _state.InputMasterGain = pgmGain;
+                    break;
+                case _BMDSwitcherFairlightAudioHeadphoneOutputEventType.bmdSwitcherFairlightAudioHeadphoneOutputEventTypeInputTalkbackGainChanged:
+                    Props.GetInputTalkbackGain(out double tbGain);
+                    _state.InputTalkbackGain = tbGain;
+                    break;
+                case _BMDSwitcherFairlightAudioHeadphoneOutputEventType.bmdSwitcherFairlightAudioHeadphoneOutputEventTypeInputSidetoneGainChanged:
+                    Props.GetInputSidetoneGain(out double sidetoneGain);
+                    _state.InputSidetoneGain = sidetoneGain;
+                    break;
+                default:
+                    throw new ArgumentOutOfRangeException(nameof(eventType), eventType, null);
+            }
+
+            OnChange(null);
+        }
     }
 }

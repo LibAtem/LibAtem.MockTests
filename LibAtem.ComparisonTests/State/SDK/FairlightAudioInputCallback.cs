@@ -34,6 +34,15 @@ namespace LibAtem.ComparisonTests.State.SDK
                 state.Analog.SupportedInputLevel = (FairlightAnalogInputLevel) supportedLevels;
             }
 
+            // XLR
+            if (props is IBMDSwitcherFairlightAudioInputXLR xlr)
+            {
+                xlr.HasRCAToXLR(out int hasRcaToXlr);
+                state.SupportsRcaToXlr = hasRcaToXlr != 0;
+                xlr.GetRCAToXLREnabled(out int rcaToXlrEnabled);
+                state.RcaToXlrEnabled = rcaToXlrEnabled != 0;
+            }
+
             // Sources
             var iterator = AtemSDKConverter.CastSdk<IBMDSwitcherFairlightAudioSourceIterator>(props.CreateIterator);
             AtemSDKConverter.Iterate<IBMDSwitcherFairlightAudioSource>(

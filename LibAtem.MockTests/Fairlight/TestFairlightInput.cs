@@ -119,7 +119,7 @@ namespace LibAtem.MockTests.Fairlight
             bool tested = false;
             AtemMockServerWrapper.Each(_output, _pool, handler, DeviceTestCases.FairlightAnalog, helper =>
             {
-                IEnumerable<long> useIds = Randomiser.SelectionOfGroup(helper.Helper.LibState.Fairlight.Inputs.Keys.ToList());
+                IEnumerable<long> useIds = helper.Helper.LibState.Fairlight.Inputs.Keys.ToList();
                 foreach (long id in useIds)
                 {
                     IBMDSwitcherFairlightAudioInput input = GetInput(helper, id);
@@ -142,6 +142,37 @@ namespace LibAtem.MockTests.Fairlight
                         }
                     }
                     //
+                }
+            });
+            Assert.True(tested);
+        }
+
+        [Fact]
+        public void TestRcaToXlrEnabled()
+        {
+            var handler = CommandGenerator.CreateAutoCommandHandler<FairlightMixerInputSetCommand, FairlightMixerInputGetCommand>("RcaToXlrEnabled");
+            bool tested = false;
+            AtemMockServerWrapper.Each(_output, _pool, handler, DeviceTestCases.FairlightXLR, helper =>
+            {
+                IEnumerable<long> useIds = helper.Helper.LibState.Fairlight.Inputs.Keys.ToList();
+                foreach (long id in useIds)
+                {
+                    IBMDSwitcherFairlightAudioInput input = GetInput(helper, id);
+                    if (input is IBMDSwitcherFairlightAudioInputXLR xlrInput)
+                    {
+                        AtemState stateBefore = helper.Helper.LibState;
+                        FairlightAudioState.InputState inputState = stateBefore.Fairlight.Inputs[id];
+
+                        xlrInput.HasRCAToXLR(out int isAvailable);
+                        Assert.Equal(1, isAvailable);
+                        tested = true;
+
+                        for (int i = 0; i < 5; i++)
+                        {
+                            inputState.RcaToXlrEnabled = i % 2 != 0;
+                            helper.SendAndWaitForChange(stateBefore, () => { xlrInput.SetRCAToXLREnabled(i % 2); });
+                        }
+                    }
                 }
             });
             Assert.True(tested);
