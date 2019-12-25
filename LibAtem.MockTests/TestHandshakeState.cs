@@ -80,6 +80,23 @@ namespace LibAtem.MockTests
         private void RunTest(Tuple<ProtocolVersion, string> caseId)
         {
             var commandData = WiresharkParser.BuildCommands(caseId.Item1, caseId.Item2);
+            /*
+            var result = new List<string>();
+            foreach (byte[] payload in commandData)
+            {
+                foreach (ParsedCommand rawCmd in ReceivedPacket.ParseCommands(payload))
+                {
+                    if (CommandParser.Parse(caseId.Item1, rawCmd) == null)
+                    {
+                        _output.WriteLine("{0} - {1}", rawCmd.Name, rawCmd.BodyLength);
+                        result.Add(rawCmd.Name);
+                    }
+                }
+            }
+            Assert.Empty(result);
+            // */
+            
+
             using var server = new AtemMockServer(commandData);
             var stateSettings = new AtemStateBuilderSettings();
             using var helper = new AtemSdkClientWrapper("127.0.0.1", stateSettings);

@@ -5,6 +5,64 @@ using LibAtem.State;
 
 namespace LibAtem.ComparisonTests.State.SDK
 {
+    public static class FairlightAudioMixerStateBuilder
+    {
+        public static FairlightAudioState Build(IBMDSwitcherFairlightAudioMixer props)
+        {
+            var state = new FairlightAudioState();
+
+            // Effects
+            var dynamics = AtemSDKConverter.CastSdk<IBMDSwitcherFairlightAudioDynamicsProcessor>(props.GetMasterOutEffect);
+            var compressor = AtemSDKConverter.CastSdk<IBMDSwitcherFairlightAudioCompressor>(dynamics.GetProcessor);
+            FairlightAudioInputStateBuilder.ApplyCompressor(compressor, state.ProgramOut.Dynamics.Compressor = new FairlightAudioState.CompressorState());
+            var limiter = AtemSDKConverter.CastSdk<IBMDSwitcherFairlightAudioLimiter>(dynamics.GetProcessor);
+            FairlightAudioInputStateBuilder.ApplyLimiter(limiter, state.ProgramOut.Dynamics.Limiter = new FairlightAudioState.LimiterState());
+            // MasterOut appears to never have an expander
+            //var expander = AtemSDKConverter.CastSdk<IBMDSwitcherFairlightAudioExpander>(dynamics.GetProcessor);
+            //FairlightAudioInputStateBuilder.ApplyExpander(expander, state.ProgramOut.Dynamics.Expander = new FairlightAudioState.ExpanderState());
+
+            // Equalizer
+            var equalizer = AtemSDKConverter.CastSdk<IBMDSwitcherFairlightAudioEqualizer>(props.GetMasterOutEffect);
+            equalizer.GetEnabled(out int eqEnabled);
+            state.ProgramOut.Equalizer.Enabled = eqEnabled != 0;
+            equalizer.GetGain(out double eqGain);
+            state.ProgramOut.Equalizer.Gain = eqGain;
+            // TODO - bands
+
+            // Inputs
+            var iterator = AtemSDKConverter.CastSdk<IBMDSwitcherFairlightAudioInputIterator>(props.CreateIterator);
+            for (iterator.Next(out IBMDSwitcherFairlightAudioInput input); input != null; iterator.Next(out input))
+            {
+                input.GetId(out long id);
+                state.Inputs[id] = FairlightAudioInputStateBuilder.Build(input);
+            }
+
+            var monIter = AtemSDKConverter.CastSdk<IBMDSwitcherFairlightAudioHeadphoneOutputIterator>(props.CreateIterator);
+            state.Monitors = AtemSDKConverter.IterateList<IBMDSwitcherFairlightAudioHeadphoneOutput, FairlightAudioState.MonitorOutputState>(monIter.Next, (mon, id) =>
+            {
+                return BuildMonitor(mon);
+            });
+
+            return state;
+        }
+
+        private static FairlightAudioState.MonitorOutputState BuildMonitor(IBMDSwitcherFairlightAudioHeadphoneOutput props)
+        {
+            var state = new FairlightAudioState.MonitorOutputState();
+
+            props.GetGain(out double gain);
+            state.Gain = gain;
+            props.GetInputMasterOutGain(out double pgmGain);
+            state.InputMasterGain = pgmGain;
+            props.GetInputTalkbackGain(out double tbGain);
+            state.InputTalkbackGain = tbGain;
+            props.GetInputSidetoneGain(out double sidetoneGain);
+            state.InputSidetoneGain = sidetoneGain;
+
+            return state;
+        }
+    }
+
     public sealed class FairlightAudioMixerCallback : SdkCallbackBaseNotify<IBMDSwitcherFairlightAudioMixer, _BMDSwitcherFairlightAudioMixerEventType>, IBMDSwitcherFairlightAudioMixerCallback
     {
         private readonly FairlightAudioState.ProgramOutState _state;

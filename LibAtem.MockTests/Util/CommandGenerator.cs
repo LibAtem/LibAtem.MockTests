@@ -5,6 +5,7 @@ using System.Linq;
 using System.Reflection;
 using System.Text;
 using LibAtem.Commands;
+using LibAtem.Serialization;
 using Xunit;
 
 namespace LibAtem.MockTests.Util
@@ -47,6 +48,29 @@ namespace LibAtem.MockTests.Util
                     previousProp.SetValue(previousCmd, setProp.GetValue(setCmd));
 
                     return new ICommand[] { previousCmd };
+                }
+
+                return new ICommand[0];
+            };
+        }
+
+        public static Func<ImmutableList<ICommand>, ICommand, IEnumerable<ICommand>> MatchCommand<T>(T expectedCmd) where T : AutoSerializeBase
+        {
+            return (previousCommands, cmd) =>
+            {
+                if (cmd is T cmd2)
+                {
+                    AutoSerializeBase.CommandPropertySpec spec = AutoSerializeBase.GetPropertySpecForType(typeof(T));
+
+                    foreach(var prop in spec.Properties)
+                    {
+                        object expectedValue = prop.Getter.DynamicInvoke(expectedCmd);
+                        object actualValue = prop.Getter.DynamicInvoke(cmd2);
+                        Assert.Equal(expectedValue, actualValue);
+                    }
+
+                    // Accept it
+                    return new ICommand[] { null };
                 }
 
                 return new ICommand[0];

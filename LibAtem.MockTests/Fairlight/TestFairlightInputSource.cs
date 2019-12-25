@@ -62,27 +62,6 @@ namespace LibAtem.MockTests.Fairlight
             return eq;
         }
 
-        public static Func<ImmutableList<ICommand>, ICommand, IEnumerable<ICommand>> CreateResetHandler(FairlightMixerSourceDynamicsResetCommand target)
-        {
-            return (previousCommands, cmd) =>
-            {
-                if (cmd is FairlightMixerSourceDynamicsResetCommand resetCmd)
-                {
-                    Assert.Equal(target.Index, resetCmd.Index);
-                    Assert.Equal(target.SourceId, resetCmd.SourceId);
-                    Assert.Equal(target.Compressor, resetCmd.Compressor);
-                    Assert.Equal(target.Limiter, resetCmd.Limiter);
-                    Assert.Equal(target.Expander, resetCmd.Expander);
-                    Assert.Equal(target.Dynamics, resetCmd.Dynamics);
-
-                    // Accept it
-                    return new ICommand[] { null };
-                }
-
-                return new ICommand[0];
-            };
-        }
-
         public static void EachRandomSource(AtemMockServerWrapper helper, Action<AtemState, FairlightAudioState.InputSourceState, long, IBMDSwitcherFairlightAudioSource, int> fcn, int maxIterations = 5, bool useAll = false)
         {
             List<long> useIds = helper.Helper.LibState.Fairlight.Inputs.Keys.ToList();
@@ -245,23 +224,8 @@ namespace LibAtem.MockTests.Fairlight
         public void TestEqualizerReset()
         {
             var target = new FairlightMixerSourceEqualizerResetCommand { Equalizer = true };
-
-            IEnumerable<ICommand> Handler(ImmutableList<ICommand> previousCommands, ICommand cmd)
-            {
-                if (cmd is FairlightMixerSourceEqualizerResetCommand resetCmd)
-                {
-                    Assert.Equal(target.Index, resetCmd.Index);
-                    Assert.Equal(target.SourceId, resetCmd.SourceId);
-                    Assert.Equal(target.Equalizer, resetCmd.Equalizer);
-
-                    // Accept it
-                    return new ICommand[] {null};
-                }
-
-                return new ICommand[0];
-            }
-
-            AtemMockServerWrapper.Each(_output, _pool, Handler, DeviceTestCases.FairlightMain, helper =>
+            var handler = CommandGenerator.MatchCommand(target);
+            AtemMockServerWrapper.Each(_output, _pool, handler, DeviceTestCases.FairlightMain, helper =>
             {
                 EachRandomSource(helper, (stateBefore, srcState, inputId, src, i) =>
                 {
@@ -284,7 +248,7 @@ namespace LibAtem.MockTests.Fairlight
         public void TestDynamicsReset()
         {
             var target = new FairlightMixerSourceDynamicsResetCommand { Dynamics = true };
-            var handler = CreateResetHandler(target);
+            var handler = CommandGenerator.MatchCommand(target);
             AtemMockServerWrapper.Each(_output, _pool, handler, DeviceTestCases.FairlightMain, helper =>
             {
                 EachRandomSource(helper, (stateBefore, srcState, inputId, src, i) =>

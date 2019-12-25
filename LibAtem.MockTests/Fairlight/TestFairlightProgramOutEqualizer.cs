@@ -70,21 +70,8 @@ namespace LibAtem.MockTests.Fairlight
         public void TestReset()
         {
             var target = new FairlightMixerMasterEqualizerResetCommand { Equalizer = true };
-
-            IEnumerable<ICommand> Handler(ImmutableList<ICommand> previousCommands, ICommand cmd)
-            {
-                if (cmd is FairlightMixerMasterEqualizerResetCommand resetCmd)
-                {
-                    Assert.Equal(target.Equalizer, resetCmd.Equalizer);
-
-                    // Accept it
-                    return new ICommand[] { null };
-                }
-
-                return new ICommand[0];
-            }
-
-            AtemMockServerWrapper.Each(_output, _pool, Handler, DeviceTestCases.FairlightMain, helper =>
+            var handler = CommandGenerator.MatchCommand(target);
+            AtemMockServerWrapper.Each(_output, _pool, handler, DeviceTestCases.FairlightMain, helper =>
             {
                 IBMDSwitcherFairlightAudioEqualizer eq = GetEqualizer(helper);
 

@@ -559,13 +559,11 @@ namespace LibAtem.MockTests.MixEffects
         [Fact]
         public void TestResetChromaCorrection()
         {
-            MixEffectKeyAdvancedChromaResetCommand keyerTarget = new MixEffectKeyAdvancedChromaResetCommand
-            {
-                ChromaCorrection = true
-            };
+            MixEffectKeyAdvancedChromaResetCommand keyerTarget = new MixEffectKeyAdvancedChromaResetCommand { ChromaCorrection = true };
+            var handler = CommandGenerator.MatchCommand(keyerTarget);
 
             bool tested = false;
-            AtemMockServerWrapper.Each(Output, Pool, CreateResetHandler(keyerTarget), DeviceTestCases.AdvancedChromaKeyer, helper =>
+            AtemMockServerWrapper.Each(Output, Pool, handler, DeviceTestCases.AdvancedChromaKeyer, helper =>
             {
                 var keyers = GetKeyers<IBMDSwitcherKeyAdvancedChromaParameters>(helper);
                 var useKeyers = Randomiser.SelectionOfGroup(keyers);
@@ -596,13 +594,11 @@ namespace LibAtem.MockTests.MixEffects
         [Fact]
         public void TestResetKeyAdjustments()
         {
-            MixEffectKeyAdvancedChromaResetCommand keyerTarget = new MixEffectKeyAdvancedChromaResetCommand
-            {
-                KeyAdjustments = true
-            };
+            MixEffectKeyAdvancedChromaResetCommand keyerTarget = new MixEffectKeyAdvancedChromaResetCommand { KeyAdjustments = true };
+            var handler = CommandGenerator.MatchCommand(keyerTarget);
 
             bool tested = false;
-            AtemMockServerWrapper.Each(Output, Pool, CreateResetHandler(keyerTarget), DeviceTestCases.AdvancedChromaKeyer, helper =>
+            AtemMockServerWrapper.Each(Output, Pool, handler, DeviceTestCases.AdvancedChromaKeyer, helper =>
             {
                 var keyers = GetKeyers<IBMDSwitcherKeyAdvancedChromaParameters>(helper);
                 var useKeyers = Randomiser.SelectionOfGroup(keyers);
@@ -633,13 +629,11 @@ namespace LibAtem.MockTests.MixEffects
         [Fact]
         public void TestResetColorAdjustments()
         {
-            MixEffectKeyAdvancedChromaResetCommand keyerTarget = new MixEffectKeyAdvancedChromaResetCommand
-            {
-                ColorAdjustments = true
-            };
+            MixEffectKeyAdvancedChromaResetCommand keyerTarget = new MixEffectKeyAdvancedChromaResetCommand { ColorAdjustments = true };
+            var handler = CommandGenerator.MatchCommand(keyerTarget);
 
             bool tested = false;
-            AtemMockServerWrapper.Each(Output, Pool, CreateResetHandler(keyerTarget), DeviceTestCases.AdvancedChromaKeyer, helper =>
+            AtemMockServerWrapper.Each(Output, Pool, handler, DeviceTestCases.AdvancedChromaKeyer, helper =>
             {
                 var keyers = GetKeyers<IBMDSwitcherKeyAdvancedChromaParameters>(helper);
                 var useKeyers = Randomiser.SelectionOfGroup(keyers);
@@ -667,24 +661,5 @@ namespace LibAtem.MockTests.MixEffects
             Assert.True(tested);
         }
 
-        private static Func<ImmutableList<ICommand>, ICommand, IEnumerable<ICommand>> CreateResetHandler(MixEffectKeyAdvancedChromaResetCommand keyerTarget)
-        {
-            return (previousCommands, cmd) =>
-            {
-                if (cmd is MixEffectKeyAdvancedChromaResetCommand resetCmd)
-                {
-                    Assert.Equal(keyerTarget.MixEffectIndex, resetCmd.MixEffectIndex);
-                    Assert.Equal(keyerTarget.KeyerIndex, resetCmd.KeyerIndex);
-                    Assert.Equal(keyerTarget.ChromaCorrection, resetCmd.ChromaCorrection);
-                    Assert.Equal(keyerTarget.KeyAdjustments, resetCmd.KeyAdjustments);
-                    Assert.Equal(keyerTarget.ColorAdjustments, resetCmd.ColorAdjustments);
-
-                    // Accept it
-                    return new ICommand[] { null };
-                }
-
-                return new ICommand[0];
-            };
-        }
     }
 }

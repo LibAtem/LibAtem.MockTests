@@ -165,11 +165,8 @@ namespace LibAtem.MockTests.Fairlight
         [Fact]
         public void TestReset()
         {
-            var target = new FairlightMixerSourceDynamicsResetCommand()
-            {
-                Expander = true
-            };
-            var handler = TestFairlightInputSource.CreateResetHandler(target);
+            var target = new FairlightMixerSourceDynamicsResetCommand() { Expander = true };
+            var handler = CommandGenerator.MatchCommand(target);
             AtemMockServerWrapper.Each(_output, _pool, handler, DeviceTestCases.FairlightMain, helper =>
             {
                 TestFairlightInputSource.EachRandomSource(helper, (stateBefore, srcState, inputId, src, i) =>

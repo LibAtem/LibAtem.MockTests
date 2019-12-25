@@ -126,7 +126,7 @@ namespace LibAtem.MockTests.Fairlight
         public void TestReset()
         {
             var target = new FairlightMixerMasterDynamicsResetCommand { Limiter = true };
-            var handler = TestFairlightProgramOut.CreateResetHandler(target);
+            var handler = CommandGenerator.MatchCommand(target);
             AtemMockServerWrapper.Each(_output, _pool, handler, DeviceTestCases.FairlightMain, helper =>
             {
                 IBMDSwitcherFairlightAudioLimiter limiter = GetLimiter(helper);

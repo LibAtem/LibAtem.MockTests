@@ -67,6 +67,8 @@ namespace LibAtem.MockTests.Util
                 if (state.Fairlight != null)
                 {
                     var mixer = SdkSwitcher as IBMDSwitcherFairlightAudioMixer;
+                    state.Fairlight = FairlightAudioMixerStateBuilder.Build(mixer);
+                    /*
                     var iterator =
                         AtemSDKConverter.CastSdk<IBMDSwitcherFairlightAudioInputIterator>(mixer.CreateIterator);
 
@@ -79,6 +81,7 @@ namespace LibAtem.MockTests.Util
                                 inp.GetId(out long id);
                                 state.Fairlight.Inputs[id] = FairlightAudioInputStateBuilder.Build(inp);
                             });
+                            */
                 }
 
                 return state;

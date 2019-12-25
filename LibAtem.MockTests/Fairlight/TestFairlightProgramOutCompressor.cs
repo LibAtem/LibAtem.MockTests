@@ -163,7 +163,7 @@ namespace LibAtem.MockTests.Fairlight
         public void TestReset()
         {
             var target = new FairlightMixerMasterDynamicsResetCommand { Compressor = true };
-            var handler = TestFairlightProgramOut.CreateResetHandler(target);
+            var handler = CommandGenerator.MatchCommand(target);
             AtemMockServerWrapper.Each(_output, _pool, handler, DeviceTestCases.FairlightMain, helper =>
             {
                 IBMDSwitcherFairlightAudioCompressor compressor = GetCompressor(helper);

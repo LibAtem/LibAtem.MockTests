@@ -65,7 +65,7 @@ namespace LibAtem.ComparisonTests.State.SDK
             props.GetSupportedMixOptions(out _BMDSwitcherFairlightAudioMixOption supportedMixOptions);
             state.SupportedMixOptions = (FairlightAudioMixOption) supportedMixOptions;
             props.GetSourceType(out _BMDSwitcherFairlightAudioSourceType sourceType);
-            //state.SourceType = AtemEnumMaps.FairlightAudioSourceTypeMap.FindByValue(sourceType);
+            state.SourceType = AtemEnumMaps.FairlightAudioSourceTypeMap.FindByValue(sourceType);
 
             props.GetMaxDelayFrames(out ushort maxDelay);
             state.MaxFramesDelay = maxDelay;
@@ -108,7 +108,7 @@ namespace LibAtem.ComparisonTests.State.SDK
             return state;
         }
 
-        private static void ApplyCompressor(IBMDSwitcherFairlightAudioCompressor compressor,
+        public static void ApplyCompressor(IBMDSwitcherFairlightAudioCompressor compressor,
             FairlightAudioState.CompressorState state)
         {
             compressor.GetEnabled(out int enabled);
@@ -125,7 +125,7 @@ namespace LibAtem.ComparisonTests.State.SDK
             state.Hold = hold;
         }
 
-        private static void ApplyLimiter(IBMDSwitcherFairlightAudioLimiter limiter,
+        public static void ApplyLimiter(IBMDSwitcherFairlightAudioLimiter limiter,
             FairlightAudioState.LimiterState state)
         {
             limiter.GetEnabled(out int enabled);
@@ -139,7 +139,7 @@ namespace LibAtem.ComparisonTests.State.SDK
             limiter.GetHold(out double hold);
             state.Hold = hold;
         }
-        private static void ApplyExpander(IBMDSwitcherFairlightAudioExpander expander,
+        public static void ApplyExpander(IBMDSwitcherFairlightAudioExpander expander,
             FairlightAudioState.ExpanderState state)
         {
             expander.GetEnabled(out int enabled);
