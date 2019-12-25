@@ -27,25 +27,15 @@ namespace LibAtem.MockTests.MixEffects
             var handler = CommandGenerator.CreateAutoCommandHandler<MixEffectKeyAdvancedChromaPropertiesSetCommand, MixEffectKeyAdvancedChromaPropertiesGetCommand>("ForegroundLevel");
             AtemMockServerWrapper.Each(Output, Pool, handler, DeviceTestCases.AdvancedChromaKeyer, helper =>
             {
-                var keyers = GetKeyers<IBMDSwitcherKeyAdvancedChromaParameters>(helper);
-                var useKeyers = Randomiser.SelectionOfGroup(keyers);
-
-                foreach (Tuple<MixEffectBlockId, UpstreamKeyId, IBMDSwitcherKeyAdvancedChromaParameters> keyer in useKeyers)
+                SelectionOfKeyers<IBMDSwitcherKeyAdvancedChromaParameters>(helper, (stateBefore, keyerBefore, sdkKeyer, meId, keyId, i) =>
                 {
                     tested = true;
-                    AtemState stateBefore = helper.Helper.LibState;
-                    MixEffectState.KeyerAdvancedChromaState keyerBefore = stateBefore.MixEffects[(int) keyer.Item1].Keyers[(int) keyer.Item2].AdvancedChroma;
-                    Assert.NotNull(keyerBefore);
+                    Assert.NotNull(keyerBefore.AdvancedChroma);
 
-                    IBMDSwitcherKeyAdvancedChromaParameters sdkKeyer = keyer.Item3;
-
-                    for (int i = 0; i < 5; i++)
-                    {
-                        var target = Randomiser.Range(0, 100, 10);
-                        keyerBefore.Properties.ForegroundLevel = target;
-                        helper.SendAndWaitForChange(stateBefore, () => { sdkKeyer.SetForegroundLevel(target / 100); });
-                    }
-                }
+                    var target = Randomiser.Range(0, 100, 10);
+                    keyerBefore.AdvancedChroma.Properties.ForegroundLevel = target;
+                    helper.SendAndWaitForChange(stateBefore, () => { sdkKeyer.SetForegroundLevel(target / 100); });
+                });
             });
             Assert.True(tested);
         }
@@ -57,25 +47,15 @@ namespace LibAtem.MockTests.MixEffects
             var handler = CommandGenerator.CreateAutoCommandHandler<MixEffectKeyAdvancedChromaPropertiesSetCommand, MixEffectKeyAdvancedChromaPropertiesGetCommand>("BackgroundLevel");
             AtemMockServerWrapper.Each(Output, Pool, handler, DeviceTestCases.AdvancedChromaKeyer, helper =>
             {
-                var keyers = GetKeyers<IBMDSwitcherKeyAdvancedChromaParameters>(helper);
-                var useKeyers = Randomiser.SelectionOfGroup(keyers);
-
-                foreach (Tuple<MixEffectBlockId, UpstreamKeyId, IBMDSwitcherKeyAdvancedChromaParameters> keyer in useKeyers)
+                SelectionOfKeyers<IBMDSwitcherKeyAdvancedChromaParameters>(helper, (stateBefore, keyerBefore, sdkKeyer, meId, keyId, i) =>
                 {
                     tested = true;
-                    AtemState stateBefore = helper.Helper.LibState;
-                    MixEffectState.KeyerAdvancedChromaState keyerBefore = stateBefore.MixEffects[(int)keyer.Item1].Keyers[(int)keyer.Item2].AdvancedChroma;
-                    Assert.NotNull(keyerBefore);
+                    Assert.NotNull(keyerBefore.AdvancedChroma);
 
-                    IBMDSwitcherKeyAdvancedChromaParameters sdkKeyer = keyer.Item3;
-
-                    for (int i = 0; i < 5; i++)
-                    {
-                        var target = Randomiser.Range(0, 100, 10);
-                        keyerBefore.Properties.BackgroundLevel = target;
-                        helper.SendAndWaitForChange(stateBefore, () => { sdkKeyer.SetBackgroundLevel(target / 100); });
-                    }
-                }
+                    var target = Randomiser.Range(0, 100, 10);
+                    keyerBefore.AdvancedChroma.Properties.BackgroundLevel = target;
+                    helper.SendAndWaitForChange(stateBefore, () => { sdkKeyer.SetBackgroundLevel(target / 100); });
+                });
             });
             Assert.True(tested);
         }
@@ -87,25 +67,15 @@ namespace LibAtem.MockTests.MixEffects
             var handler = CommandGenerator.CreateAutoCommandHandler<MixEffectKeyAdvancedChromaPropertiesSetCommand, MixEffectKeyAdvancedChromaPropertiesGetCommand>("KeyEdge");
             AtemMockServerWrapper.Each(Output, Pool, handler, DeviceTestCases.AdvancedChromaKeyer, helper =>
             {
-                var keyers = GetKeyers<IBMDSwitcherKeyAdvancedChromaParameters>(helper);
-                var useKeyers = Randomiser.SelectionOfGroup(keyers);
-
-                foreach (Tuple<MixEffectBlockId, UpstreamKeyId, IBMDSwitcherKeyAdvancedChromaParameters> keyer in useKeyers)
+                SelectionOfKeyers<IBMDSwitcherKeyAdvancedChromaParameters>(helper, (stateBefore, keyerBefore, sdkKeyer, meId, keyId, i) =>
                 {
                     tested = true;
-                    AtemState stateBefore = helper.Helper.LibState;
-                    MixEffectState.KeyerAdvancedChromaState keyerBefore = stateBefore.MixEffects[(int)keyer.Item1].Keyers[(int)keyer.Item2].AdvancedChroma;
-                    Assert.NotNull(keyerBefore);
+                    Assert.NotNull(keyerBefore.AdvancedChroma);
 
-                    IBMDSwitcherKeyAdvancedChromaParameters sdkKeyer = keyer.Item3;
-
-                    for (int i = 0; i < 5; i++)
-                    {
-                        var target = Randomiser.Range(0, 100, 10);
-                        keyerBefore.Properties.KeyEdge = target;
-                        helper.SendAndWaitForChange(stateBefore, () => { sdkKeyer.SetKeyEdge(target / 100); });
-                    }
-                }
+                    var target = Randomiser.Range(0, 100, 10);
+                    keyerBefore.AdvancedChroma.Properties.KeyEdge = target;
+                    helper.SendAndWaitForChange(stateBefore, () => { sdkKeyer.SetKeyEdge(target / 100); });
+                });
             });
             Assert.True(tested);
         }
@@ -117,25 +87,15 @@ namespace LibAtem.MockTests.MixEffects
             var handler = CommandGenerator.CreateAutoCommandHandler<MixEffectKeyAdvancedChromaPropertiesSetCommand, MixEffectKeyAdvancedChromaPropertiesGetCommand>("SpillSuppression");
             AtemMockServerWrapper.Each(Output, Pool, handler, DeviceTestCases.AdvancedChromaKeyer, helper =>
             {
-                var keyers = GetKeyers<IBMDSwitcherKeyAdvancedChromaParameters>(helper);
-                var useKeyers = Randomiser.SelectionOfGroup(keyers);
-
-                foreach (Tuple<MixEffectBlockId, UpstreamKeyId, IBMDSwitcherKeyAdvancedChromaParameters> keyer in useKeyers)
+                SelectionOfKeyers<IBMDSwitcherKeyAdvancedChromaParameters>(helper, (stateBefore, keyerBefore, sdkKeyer, meId, keyId, i) =>
                 {
                     tested = true;
-                    AtemState stateBefore = helper.Helper.LibState;
-                    MixEffectState.KeyerAdvancedChromaState keyerBefore = stateBefore.MixEffects[(int)keyer.Item1].Keyers[(int)keyer.Item2].AdvancedChroma;
-                    Assert.NotNull(keyerBefore);
+                    Assert.NotNull(keyerBefore.AdvancedChroma);
 
-                    IBMDSwitcherKeyAdvancedChromaParameters sdkKeyer = keyer.Item3;
-
-                    for (int i = 0; i < 5; i++)
-                    {
-                        var target = Randomiser.Range(0, 100, 10);
-                        keyerBefore.Properties.SpillSuppression = target;
-                        helper.SendAndWaitForChange(stateBefore, () => { sdkKeyer.SetSpillSuppress(target / 100); });
-                    }
-                }
+                    var target = Randomiser.Range(0, 100, 10);
+                    keyerBefore.AdvancedChroma.Properties.SpillSuppression = target;
+                    helper.SendAndWaitForChange(stateBefore, () => { sdkKeyer.SetSpillSuppress(target / 100); });
+                });
             });
             Assert.True(tested);
         }
@@ -147,25 +107,15 @@ namespace LibAtem.MockTests.MixEffects
             var handler = CommandGenerator.CreateAutoCommandHandler<MixEffectKeyAdvancedChromaPropertiesSetCommand, MixEffectKeyAdvancedChromaPropertiesGetCommand>("FlareSuppression");
             AtemMockServerWrapper.Each(Output, Pool, handler, DeviceTestCases.AdvancedChromaKeyer, helper =>
             {
-                var keyers = GetKeyers<IBMDSwitcherKeyAdvancedChromaParameters>(helper);
-                var useKeyers = Randomiser.SelectionOfGroup(keyers);
-
-                foreach (Tuple<MixEffectBlockId, UpstreamKeyId, IBMDSwitcherKeyAdvancedChromaParameters> keyer in useKeyers)
+                SelectionOfKeyers<IBMDSwitcherKeyAdvancedChromaParameters>(helper, (stateBefore, keyerBefore, sdkKeyer, meId, keyId, i) =>
                 {
                     tested = true;
-                    AtemState stateBefore = helper.Helper.LibState;
-                    MixEffectState.KeyerAdvancedChromaState keyerBefore = stateBefore.MixEffects[(int)keyer.Item1].Keyers[(int)keyer.Item2].AdvancedChroma;
-                    Assert.NotNull(keyerBefore);
+                    Assert.NotNull(keyerBefore.AdvancedChroma);
 
-                    IBMDSwitcherKeyAdvancedChromaParameters sdkKeyer = keyer.Item3;
-
-                    for (int i = 0; i < 5; i++)
-                    {
-                        var target = Randomiser.Range(0, 100, 10);
-                        keyerBefore.Properties.FlareSuppression = target;
-                        helper.SendAndWaitForChange(stateBefore, () => { sdkKeyer.SetFlareSuppress(target / 100); });
-                    }
-                }
+                    var target = Randomiser.Range(0, 100, 10);
+                    keyerBefore.AdvancedChroma.Properties.FlareSuppression = target;
+                    helper.SendAndWaitForChange(stateBefore, () => { sdkKeyer.SetFlareSuppress(target / 100); });
+                });
             });
             Assert.True(tested);
         }
@@ -177,25 +127,15 @@ namespace LibAtem.MockTests.MixEffects
             var handler = CommandGenerator.CreateAutoCommandHandler<MixEffectKeyAdvancedChromaPropertiesSetCommand, MixEffectKeyAdvancedChromaPropertiesGetCommand>("Brightness");
             AtemMockServerWrapper.Each(Output, Pool, handler, DeviceTestCases.AdvancedChromaKeyer, helper =>
             {
-                var keyers = GetKeyers<IBMDSwitcherKeyAdvancedChromaParameters>(helper);
-                var useKeyers = Randomiser.SelectionOfGroup(keyers);
-
-                foreach (Tuple<MixEffectBlockId, UpstreamKeyId, IBMDSwitcherKeyAdvancedChromaParameters> keyer in useKeyers)
+                SelectionOfKeyers<IBMDSwitcherKeyAdvancedChromaParameters>(helper, (stateBefore, keyerBefore, sdkKeyer, meId, keyId, i) =>
                 {
                     tested = true;
-                    AtemState stateBefore = helper.Helper.LibState;
-                    MixEffectState.KeyerAdvancedChromaState keyerBefore = stateBefore.MixEffects[(int)keyer.Item1].Keyers[(int)keyer.Item2].AdvancedChroma;
-                    Assert.NotNull(keyerBefore);
+                    Assert.NotNull(keyerBefore.AdvancedChroma);
 
-                    IBMDSwitcherKeyAdvancedChromaParameters sdkKeyer = keyer.Item3;
-
-                    for (int i = 0; i < 5; i++)
-                    {
-                        var target = Randomiser.Range(-100, 100, 10);
-                        keyerBefore.Properties.Brightness = target;
-                        helper.SendAndWaitForChange(stateBefore, () => { sdkKeyer.SetBrightness(target / 100); });
-                    }
-                }
+                    var target = Randomiser.Range(-100, 100, 10);
+                    keyerBefore.AdvancedChroma.Properties.Brightness = target;
+                    helper.SendAndWaitForChange(stateBefore, () => { sdkKeyer.SetBrightness(target / 100); });
+                });
             });
             Assert.True(tested);
         }
@@ -207,25 +147,15 @@ namespace LibAtem.MockTests.MixEffects
             var handler = CommandGenerator.CreateAutoCommandHandler<MixEffectKeyAdvancedChromaPropertiesSetCommand, MixEffectKeyAdvancedChromaPropertiesGetCommand>("Contrast");
             AtemMockServerWrapper.Each(Output, Pool, handler, DeviceTestCases.AdvancedChromaKeyer, helper =>
             {
-                var keyers = GetKeyers<IBMDSwitcherKeyAdvancedChromaParameters>(helper);
-                var useKeyers = Randomiser.SelectionOfGroup(keyers);
-
-                foreach (Tuple<MixEffectBlockId, UpstreamKeyId, IBMDSwitcherKeyAdvancedChromaParameters> keyer in useKeyers)
+                SelectionOfKeyers<IBMDSwitcherKeyAdvancedChromaParameters>(helper, (stateBefore, keyerBefore, sdkKeyer, meId, keyId, i) =>
                 {
                     tested = true;
-                    AtemState stateBefore = helper.Helper.LibState;
-                    MixEffectState.KeyerAdvancedChromaState keyerBefore = stateBefore.MixEffects[(int)keyer.Item1].Keyers[(int)keyer.Item2].AdvancedChroma;
-                    Assert.NotNull(keyerBefore);
+                    Assert.NotNull(keyerBefore.AdvancedChroma);
 
-                    IBMDSwitcherKeyAdvancedChromaParameters sdkKeyer = keyer.Item3;
-
-                    for (int i = 0; i < 5; i++)
-                    {
-                        var target = Randomiser.Range(-100, 100, 10);
-                        keyerBefore.Properties.Contrast = target;
-                        helper.SendAndWaitForChange(stateBefore, () => { sdkKeyer.SetContrast(target / 100); });
-                    }
-                }
+                    var target = Randomiser.Range(-100, 100, 10);
+                    keyerBefore.AdvancedChroma.Properties.Contrast = target;
+                    helper.SendAndWaitForChange(stateBefore, () => { sdkKeyer.SetContrast(target / 100); });
+                });
             });
             Assert.True(tested);
         }
@@ -237,25 +167,15 @@ namespace LibAtem.MockTests.MixEffects
             var handler = CommandGenerator.CreateAutoCommandHandler<MixEffectKeyAdvancedChromaPropertiesSetCommand, MixEffectKeyAdvancedChromaPropertiesGetCommand>("Saturation");
             AtemMockServerWrapper.Each(Output, Pool, handler, DeviceTestCases.AdvancedChromaKeyer, helper =>
             {
-                var keyers = GetKeyers<IBMDSwitcherKeyAdvancedChromaParameters>(helper);
-                var useKeyers = Randomiser.SelectionOfGroup(keyers);
-
-                foreach (Tuple<MixEffectBlockId, UpstreamKeyId, IBMDSwitcherKeyAdvancedChromaParameters> keyer in useKeyers)
+                SelectionOfKeyers<IBMDSwitcherKeyAdvancedChromaParameters>(helper, (stateBefore, keyerBefore, sdkKeyer, meId, keyId, i) =>
                 {
                     tested = true;
-                    AtemState stateBefore = helper.Helper.LibState;
-                    MixEffectState.KeyerAdvancedChromaState keyerBefore = stateBefore.MixEffects[(int)keyer.Item1].Keyers[(int)keyer.Item2].AdvancedChroma;
-                    Assert.NotNull(keyerBefore);
+                    Assert.NotNull(keyerBefore.AdvancedChroma);
 
-                    IBMDSwitcherKeyAdvancedChromaParameters sdkKeyer = keyer.Item3;
-
-                    for (int i = 0; i < 5; i++)
-                    {
-                        var target = Randomiser.Range(0, 200, 10);
-                        keyerBefore.Properties.Saturation = target;
-                        helper.SendAndWaitForChange(stateBefore, () => { sdkKeyer.SetSaturation(target / 100); });
-                    }
-                }
+                    var target = Randomiser.Range(0, 200, 10);
+                    keyerBefore.AdvancedChroma.Properties.Saturation = target;
+                    helper.SendAndWaitForChange(stateBefore, () => { sdkKeyer.SetSaturation(target / 100); });
+                });
             });
             Assert.True(tested);
         }
@@ -267,25 +187,15 @@ namespace LibAtem.MockTests.MixEffects
             var handler = CommandGenerator.CreateAutoCommandHandler<MixEffectKeyAdvancedChromaPropertiesSetCommand, MixEffectKeyAdvancedChromaPropertiesGetCommand>("Red");
             AtemMockServerWrapper.Each(Output, Pool, handler, DeviceTestCases.AdvancedChromaKeyer, helper =>
             {
-                var keyers = GetKeyers<IBMDSwitcherKeyAdvancedChromaParameters>(helper);
-                var useKeyers = Randomiser.SelectionOfGroup(keyers);
-
-                foreach (Tuple<MixEffectBlockId, UpstreamKeyId, IBMDSwitcherKeyAdvancedChromaParameters> keyer in useKeyers)
+                SelectionOfKeyers<IBMDSwitcherKeyAdvancedChromaParameters>(helper, (stateBefore, keyerBefore, sdkKeyer, meId, keyId, i) =>
                 {
                     tested = true;
-                    AtemState stateBefore = helper.Helper.LibState;
-                    MixEffectState.KeyerAdvancedChromaState keyerBefore = stateBefore.MixEffects[(int)keyer.Item1].Keyers[(int)keyer.Item2].AdvancedChroma;
-                    Assert.NotNull(keyerBefore);
+                    Assert.NotNull(keyerBefore.AdvancedChroma);
 
-                    IBMDSwitcherKeyAdvancedChromaParameters sdkKeyer = keyer.Item3;
-
-                    for (int i = 0; i < 5; i++)
-                    {
-                        var target = Randomiser.Range(-100, 100, 10);
-                        keyerBefore.Properties.Red = target;
-                        helper.SendAndWaitForChange(stateBefore, () => { sdkKeyer.SetRed(target / 100); });
-                    }
-                }
+                    var target = Randomiser.Range(-100, 100, 10);
+                    keyerBefore.AdvancedChroma.Properties.Red = target;
+                    helper.SendAndWaitForChange(stateBefore, () => { sdkKeyer.SetRed(target / 100); });
+                });
             });
             Assert.True(tested);
         }
@@ -297,25 +207,15 @@ namespace LibAtem.MockTests.MixEffects
             var handler = CommandGenerator.CreateAutoCommandHandler<MixEffectKeyAdvancedChromaPropertiesSetCommand, MixEffectKeyAdvancedChromaPropertiesGetCommand>("Green");
             AtemMockServerWrapper.Each(Output, Pool, handler, DeviceTestCases.AdvancedChromaKeyer, helper =>
             {
-                var keyers = GetKeyers<IBMDSwitcherKeyAdvancedChromaParameters>(helper);
-                var useKeyers = Randomiser.SelectionOfGroup(keyers);
-
-                foreach (Tuple<MixEffectBlockId, UpstreamKeyId, IBMDSwitcherKeyAdvancedChromaParameters> keyer in useKeyers)
+                SelectionOfKeyers<IBMDSwitcherKeyAdvancedChromaParameters>(helper, (stateBefore, keyerBefore, sdkKeyer, meId, keyId, i) =>
                 {
                     tested = true;
-                    AtemState stateBefore = helper.Helper.LibState;
-                    MixEffectState.KeyerAdvancedChromaState keyerBefore = stateBefore.MixEffects[(int)keyer.Item1].Keyers[(int)keyer.Item2].AdvancedChroma;
-                    Assert.NotNull(keyerBefore);
+                    Assert.NotNull(keyerBefore.AdvancedChroma);
 
-                    IBMDSwitcherKeyAdvancedChromaParameters sdkKeyer = keyer.Item3;
-
-                    for (int i = 0; i < 5; i++)
-                    {
-                        var target = Randomiser.Range(-100, 100, 10);
-                        keyerBefore.Properties.Green = target;
-                        helper.SendAndWaitForChange(stateBefore, () => { sdkKeyer.SetGreen(target / 100); });
-                    }
-                }
+                    var target = Randomiser.Range(-100, 100, 10);
+                    keyerBefore.AdvancedChroma.Properties.Green = target;
+                    helper.SendAndWaitForChange(stateBefore, () => { sdkKeyer.SetGreen(target / 100); });
+                });
             });
             Assert.True(tested);
         }
@@ -327,25 +227,15 @@ namespace LibAtem.MockTests.MixEffects
             var handler = CommandGenerator.CreateAutoCommandHandler<MixEffectKeyAdvancedChromaPropertiesSetCommand, MixEffectKeyAdvancedChromaPropertiesGetCommand>("Blue");
             AtemMockServerWrapper.Each(Output, Pool, handler, DeviceTestCases.AdvancedChromaKeyer, helper =>
             {
-                var keyers = GetKeyers<IBMDSwitcherKeyAdvancedChromaParameters>(helper);
-                var useKeyers = Randomiser.SelectionOfGroup(keyers);
-
-                foreach (Tuple<MixEffectBlockId, UpstreamKeyId, IBMDSwitcherKeyAdvancedChromaParameters> keyer in useKeyers)
+                SelectionOfKeyers<IBMDSwitcherKeyAdvancedChromaParameters>(helper, (stateBefore, keyerBefore, sdkKeyer, meId, keyId, i) =>
                 {
                     tested = true;
-                    AtemState stateBefore = helper.Helper.LibState;
-                    MixEffectState.KeyerAdvancedChromaState keyerBefore = stateBefore.MixEffects[(int)keyer.Item1].Keyers[(int)keyer.Item2].AdvancedChroma;
-                    Assert.NotNull(keyerBefore);
+                    Assert.NotNull(keyerBefore.AdvancedChroma);
 
-                    IBMDSwitcherKeyAdvancedChromaParameters sdkKeyer = keyer.Item3;
-
-                    for (int i = 0; i < 5; i++)
-                    {
-                        var target = Randomiser.Range(-100, 100, 10);
-                        keyerBefore.Properties.Blue = target;
-                        helper.SendAndWaitForChange(stateBefore, () => { sdkKeyer.SetBlue(target / 100); });
-                    }
-                }
+                    var target = Randomiser.Range(-100, 100, 10);
+                    keyerBefore.AdvancedChroma.Properties.Blue = target;
+                    helper.SendAndWaitForChange(stateBefore, () => { sdkKeyer.SetBlue(target / 100); });
+                });
             });
             Assert.True(tested);
         }
@@ -361,24 +251,14 @@ namespace LibAtem.MockTests.MixEffects
             var handler = CommandGenerator.CreateAutoCommandHandler<MixEffectKeyAdvancedChromaSampleSetCommand, MixEffectKeyAdvancedChromaSampleGetCommand>("EnableCursor");
             AtemMockServerWrapper.Each(Output, Pool, handler, DeviceTestCases.AdvancedChromaKeyer, helper =>
             {
-                var keyers = GetKeyers<IBMDSwitcherKeyAdvancedChromaParameters>(helper);
-                var useKeyers = Randomiser.SelectionOfGroup(keyers);
-
-                foreach (Tuple<MixEffectBlockId, UpstreamKeyId, IBMDSwitcherKeyAdvancedChromaParameters> keyer in useKeyers)
+                SelectionOfKeyers<IBMDSwitcherKeyAdvancedChromaParameters>(helper, (stateBefore, keyerBefore, sdkKeyer, meId, keyId, i) =>
                 {
                     tested = true;
-                    AtemState stateBefore = helper.Helper.LibState;
-                    MixEffectState.KeyerAdvancedChromaState keyerBefore = stateBefore.MixEffects[(int)keyer.Item1].Keyers[(int)keyer.Item2].AdvancedChroma;
-                    Assert.NotNull(keyerBefore);
+                    Assert.NotNull(keyerBefore.AdvancedChroma);
 
-                    IBMDSwitcherKeyAdvancedChromaParameters sdkKeyer = keyer.Item3;
-
-                    for (int i = 0; i < 5; i++)
-                    {
-                        keyerBefore.Sample.EnableCursor = i % 2 == 1;
-                        helper.SendAndWaitForChange(stateBefore, () => { sdkKeyer.SetSamplingModeEnabled(i % 2); });
-                    }
-                }
+                    keyerBefore.AdvancedChroma.Sample.EnableCursor = i % 2 == 1;
+                    helper.SendAndWaitForChange(stateBefore, () => { sdkKeyer.SetSamplingModeEnabled(i % 2); });
+                });
             });
             Assert.True(tested);
         }
@@ -390,24 +270,14 @@ namespace LibAtem.MockTests.MixEffects
             var handler = CommandGenerator.CreateAutoCommandHandler<MixEffectKeyAdvancedChromaSampleSetCommand, MixEffectKeyAdvancedChromaSampleGetCommand>("Preview");
             AtemMockServerWrapper.Each(Output, Pool, handler, DeviceTestCases.AdvancedChromaKeyer, helper =>
             {
-                var keyers = GetKeyers<IBMDSwitcherKeyAdvancedChromaParameters>(helper);
-                var useKeyers = Randomiser.SelectionOfGroup(keyers);
-
-                foreach (Tuple<MixEffectBlockId, UpstreamKeyId, IBMDSwitcherKeyAdvancedChromaParameters> keyer in useKeyers)
+                SelectionOfKeyers<IBMDSwitcherKeyAdvancedChromaParameters>(helper, (stateBefore, keyerBefore, sdkKeyer, meId, keyId, i) =>
                 {
                     tested = true;
-                    AtemState stateBefore = helper.Helper.LibState;
-                    MixEffectState.KeyerAdvancedChromaState keyerBefore = stateBefore.MixEffects[(int)keyer.Item1].Keyers[(int)keyer.Item2].AdvancedChroma;
-                    Assert.NotNull(keyerBefore);
+                    Assert.NotNull(keyerBefore.AdvancedChroma);
 
-                    IBMDSwitcherKeyAdvancedChromaParameters sdkKeyer = keyer.Item3;
-
-                    for (int i = 0; i < 5; i++)
-                    {
-                        keyerBefore.Sample.Preview = i % 2 == 1;
-                        helper.SendAndWaitForChange(stateBefore, () => { sdkKeyer.SetPreviewEnabled(i % 2); });
-                    }
-                }
+                    keyerBefore.AdvancedChroma.Sample.Preview = i % 2 == 1;
+                    helper.SendAndWaitForChange(stateBefore, () => { sdkKeyer.SetPreviewEnabled(i % 2); });
+                });
             });
             Assert.True(tested);
         }
@@ -419,25 +289,15 @@ namespace LibAtem.MockTests.MixEffects
             var handler = CommandGenerator.CreateAutoCommandHandler<MixEffectKeyAdvancedChromaSampleSetCommand, MixEffectKeyAdvancedChromaSampleGetCommand>("CursorX");
             AtemMockServerWrapper.Each(Output, Pool, handler, DeviceTestCases.AdvancedChromaKeyer, helper =>
             {
-                var keyers = GetKeyers<IBMDSwitcherKeyAdvancedChromaParameters>(helper);
-                var useKeyers = Randomiser.SelectionOfGroup(keyers);
-
-                foreach (Tuple<MixEffectBlockId, UpstreamKeyId, IBMDSwitcherKeyAdvancedChromaParameters> keyer in useKeyers)
+                SelectionOfKeyers<IBMDSwitcherKeyAdvancedChromaParameters>(helper, (stateBefore, keyerBefore, sdkKeyer, meId, keyId, i) =>
                 {
                     tested = true;
-                    AtemState stateBefore = helper.Helper.LibState;
-                    MixEffectState.KeyerAdvancedChromaState keyerBefore = stateBefore.MixEffects[(int)keyer.Item1].Keyers[(int)keyer.Item2].AdvancedChroma;
-                    Assert.NotNull(keyerBefore);
+                    Assert.NotNull(keyerBefore.AdvancedChroma);
 
-                    IBMDSwitcherKeyAdvancedChromaParameters sdkKeyer = keyer.Item3;
-
-                    for (int i = 0; i < 5; i++)
-                    {
-                        var target = Randomiser.Range(-15.3, 15.3, 1000);
-                        keyerBefore.Sample.CursorX = target;
-                        helper.SendAndWaitForChange(stateBefore, () => { sdkKeyer.SetCursorXPosition(target); });
-                    }
-                }
+                    var target = Randomiser.Range(-15.3, 15.3, 1000);
+                    keyerBefore.AdvancedChroma.Sample.CursorX = target;
+                    helper.SendAndWaitForChange(stateBefore, () => { sdkKeyer.SetCursorXPosition(target); });
+                });
             });
             Assert.True(tested);
         }
@@ -449,25 +309,15 @@ namespace LibAtem.MockTests.MixEffects
             var handler = CommandGenerator.CreateAutoCommandHandler<MixEffectKeyAdvancedChromaSampleSetCommand, MixEffectKeyAdvancedChromaSampleGetCommand>("CursorY");
             AtemMockServerWrapper.Each(Output, Pool, handler, DeviceTestCases.AdvancedChromaKeyer, helper =>
             {
-                var keyers = GetKeyers<IBMDSwitcherKeyAdvancedChromaParameters>(helper);
-                var useKeyers = Randomiser.SelectionOfGroup(keyers);
-
-                foreach (Tuple<MixEffectBlockId, UpstreamKeyId, IBMDSwitcherKeyAdvancedChromaParameters> keyer in useKeyers)
+                SelectionOfKeyers<IBMDSwitcherKeyAdvancedChromaParameters>(helper, (stateBefore, keyerBefore, sdkKeyer, meId, keyId, i) =>
                 {
                     tested = true;
-                    AtemState stateBefore = helper.Helper.LibState;
-                    MixEffectState.KeyerAdvancedChromaState keyerBefore = stateBefore.MixEffects[(int)keyer.Item1].Keyers[(int)keyer.Item2].AdvancedChroma;
-                    Assert.NotNull(keyerBefore);
+                    Assert.NotNull(keyerBefore.AdvancedChroma);
 
-                    IBMDSwitcherKeyAdvancedChromaParameters sdkKeyer = keyer.Item3;
-
-                    for (int i = 0; i < 5; i++)
-                    {
-                        var target = Randomiser.Range(-8.3, 8.3, 1000);
-                        keyerBefore.Sample.CursorY = target;
-                        helper.SendAndWaitForChange(stateBefore, () => { sdkKeyer.SetCursorYPosition(target); });
-                    }
-                }
+                    var target = Randomiser.Range(-8.3, 8.3, 1000);
+                    keyerBefore.AdvancedChroma.Sample.CursorY = target;
+                    helper.SendAndWaitForChange(stateBefore, () => { sdkKeyer.SetCursorYPosition(target); });
+                });
             });
             Assert.True(tested);
         }
@@ -479,25 +329,15 @@ namespace LibAtem.MockTests.MixEffects
             var handler = CommandGenerator.CreateAutoCommandHandler<MixEffectKeyAdvancedChromaSampleSetCommand, MixEffectKeyAdvancedChromaSampleGetCommand>("CursorSize");
             AtemMockServerWrapper.Each(Output, Pool, handler, DeviceTestCases.AdvancedChromaKeyer, helper =>
             {
-                var keyers = GetKeyers<IBMDSwitcherKeyAdvancedChromaParameters>(helper);
-                var useKeyers = Randomiser.SelectionOfGroup(keyers);
-
-                foreach (Tuple<MixEffectBlockId, UpstreamKeyId, IBMDSwitcherKeyAdvancedChromaParameters> keyer in useKeyers)
+                SelectionOfKeyers<IBMDSwitcherKeyAdvancedChromaParameters>(helper, (stateBefore, keyerBefore, sdkKeyer, meId, keyId, i) =>
                 {
                     tested = true;
-                    AtemState stateBefore = helper.Helper.LibState;
-                    MixEffectState.KeyerAdvancedChromaState keyerBefore = stateBefore.MixEffects[(int)keyer.Item1].Keyers[(int)keyer.Item2].AdvancedChroma;
-                    Assert.NotNull(keyerBefore);
+                    Assert.NotNull(keyerBefore.AdvancedChroma);
 
-                    IBMDSwitcherKeyAdvancedChromaParameters sdkKeyer = keyer.Item3;
-
-                    for (int i = 0; i < 5; i++)
-                    {
-                        var target = Randomiser.Range(6.25, 99.25, 100);
-                        keyerBefore.Sample.CursorSize = target;
-                        helper.SendAndWaitForChange(stateBefore, () => { sdkKeyer.SetCursorSize(target / 100); });
-                    }
-                }
+                    var target = Randomiser.Range(6.25, 99.25, 100);
+                    keyerBefore.AdvancedChroma.Sample.CursorSize = target;
+                    helper.SendAndWaitForChange(stateBefore, () => { sdkKeyer.SetCursorSize(target / 100); });
+                });
             });
             Assert.True(tested);
         }
@@ -508,30 +348,20 @@ namespace LibAtem.MockTests.MixEffects
             bool tested = false;
             AtemMockServerWrapper.Each(Output, Pool, SampledColorHandler, DeviceTestCases.AdvancedChromaKeyer, helper =>
             {
-                var keyers = GetKeyers<IBMDSwitcherKeyAdvancedChromaParameters>(helper);
-                var useKeyers = Randomiser.SelectionOfGroup(keyers);
-
-                foreach (Tuple<MixEffectBlockId, UpstreamKeyId, IBMDSwitcherKeyAdvancedChromaParameters> keyer in useKeyers)
+                SelectionOfKeyers<IBMDSwitcherKeyAdvancedChromaParameters>(helper, (stateBefore, keyerBefore, sdkKeyer, meId, keyId, i) =>
                 {
                     tested = true;
-                    AtemState stateBefore = helper.Helper.LibState;
-                    MixEffectState.KeyerAdvancedChromaState keyerBefore = stateBefore.MixEffects[(int)keyer.Item1].Keyers[(int)keyer.Item2].AdvancedChroma;
-                    Assert.NotNull(keyerBefore);
+                    Assert.NotNull(keyerBefore.AdvancedChroma);
 
-                    IBMDSwitcherKeyAdvancedChromaParameters sdkKeyer = keyer.Item3;
-
-                    for (int i = 0; i < 5; i++)
-                    {
-                        var targetY = Randomiser.Range(0, 1, 10000);
-                        var targetCb = Randomiser.Range(0, 1, 10000);
-                        var targetCr = Randomiser.Range(0, 1, 10000);
-                        keyerBefore.Sample.SampledY = targetY;
-                        keyerBefore.Sample.SampledCb = targetCb;
-                        keyerBefore.Sample.SampledCr = targetCr;
-                        helper.SendAndWaitForChange(stateBefore,
-                            () => { sdkKeyer.SetSampledColor(targetY, targetCb, targetCr); });
-                    }
-                }
+                    var targetY = Randomiser.Range(0, 1, 10000);
+                    var targetCb = Randomiser.Range(0, 1, 10000);
+                    var targetCr = Randomiser.Range(0, 1, 10000);
+                    keyerBefore.AdvancedChroma.Sample.SampledY = targetY;
+                    keyerBefore.AdvancedChroma.Sample.SampledCb = targetCb;
+                    keyerBefore.AdvancedChroma.Sample.SampledCr = targetCr;
+                    helper.SendAndWaitForChange(stateBefore,
+                        () => { sdkKeyer.SetSampledColor(targetY, targetCb, targetCr); });
+                });
             });
             Assert.True(tested);
         }
@@ -565,20 +395,13 @@ namespace LibAtem.MockTests.MixEffects
             bool tested = false;
             AtemMockServerWrapper.Each(Output, Pool, handler, DeviceTestCases.AdvancedChromaKeyer, helper =>
             {
-                var keyers = GetKeyers<IBMDSwitcherKeyAdvancedChromaParameters>(helper);
-                var useKeyers = Randomiser.SelectionOfGroup(keyers);
-
-                foreach (Tuple<MixEffectBlockId, UpstreamKeyId, IBMDSwitcherKeyAdvancedChromaParameters> keyer in useKeyers)
+                SelectionOfKeyers<IBMDSwitcherKeyAdvancedChromaParameters>(helper, (stateBefore, keyerBefore, sdkKeyer, meId, keyId, i) =>
                 {
                     tested = true;
-                    AtemState stateBefore = helper.Helper.LibState;
-                    MixEffectState.KeyerAdvancedChromaState keyerBefore = stateBefore.MixEffects[(int)keyer.Item1].Keyers[(int)keyer.Item2].AdvancedChroma;
-                    Assert.NotNull(keyerBefore);
+                    Assert.NotNull(keyerBefore.AdvancedChroma);
 
-                    IBMDSwitcherKeyAdvancedChromaParameters sdkKeyer = keyer.Item3;
-
-                    keyerTarget.MixEffectIndex = keyer.Item1;
-                    keyerTarget.KeyerIndex = keyer.Item2;
+                    keyerTarget.MixEffectIndex = meId;
+                    keyerTarget.KeyerIndex = keyId;
 
                     uint timeBefore = helper.Server.CurrentTime;
 
@@ -586,7 +409,7 @@ namespace LibAtem.MockTests.MixEffects
 
                     // It should have sent a response, but we dont expect any comparable data
                     Assert.NotEqual(timeBefore, helper.Server.CurrentTime);
-                }
+                }, 1);
             });
             Assert.True(tested);
         }
@@ -600,20 +423,13 @@ namespace LibAtem.MockTests.MixEffects
             bool tested = false;
             AtemMockServerWrapper.Each(Output, Pool, handler, DeviceTestCases.AdvancedChromaKeyer, helper =>
             {
-                var keyers = GetKeyers<IBMDSwitcherKeyAdvancedChromaParameters>(helper);
-                var useKeyers = Randomiser.SelectionOfGroup(keyers);
-
-                foreach (Tuple<MixEffectBlockId, UpstreamKeyId, IBMDSwitcherKeyAdvancedChromaParameters> keyer in useKeyers)
+                SelectionOfKeyers<IBMDSwitcherKeyAdvancedChromaParameters>(helper, (stateBefore, keyerBefore, sdkKeyer, meId, keyId, i) =>
                 {
                     tested = true;
-                    AtemState stateBefore = helper.Helper.LibState;
-                    MixEffectState.KeyerAdvancedChromaState keyerBefore = stateBefore.MixEffects[(int)keyer.Item1].Keyers[(int)keyer.Item2].AdvancedChroma;
-                    Assert.NotNull(keyerBefore);
+                    Assert.NotNull(keyerBefore.AdvancedChroma);
 
-                    IBMDSwitcherKeyAdvancedChromaParameters sdkKeyer = keyer.Item3;
-
-                    keyerTarget.MixEffectIndex = keyer.Item1;
-                    keyerTarget.KeyerIndex = keyer.Item2;
+                    keyerTarget.MixEffectIndex = meId;
+                    keyerTarget.KeyerIndex = keyId;
 
                     uint timeBefore = helper.Server.CurrentTime;
 
@@ -621,7 +437,7 @@ namespace LibAtem.MockTests.MixEffects
 
                     // It should have sent a response, but we dont expect any comparable data
                     Assert.NotEqual(timeBefore, helper.Server.CurrentTime);
-                }
+                }, 1);
             });
             Assert.True(tested);
         }
@@ -635,20 +451,13 @@ namespace LibAtem.MockTests.MixEffects
             bool tested = false;
             AtemMockServerWrapper.Each(Output, Pool, handler, DeviceTestCases.AdvancedChromaKeyer, helper =>
             {
-                var keyers = GetKeyers<IBMDSwitcherKeyAdvancedChromaParameters>(helper);
-                var useKeyers = Randomiser.SelectionOfGroup(keyers);
-
-                foreach (Tuple<MixEffectBlockId, UpstreamKeyId, IBMDSwitcherKeyAdvancedChromaParameters> keyer in useKeyers)
+                SelectionOfKeyers<IBMDSwitcherKeyAdvancedChromaParameters>(helper, (stateBefore, keyerBefore, sdkKeyer, meId, keyId, i) =>
                 {
                     tested = true;
-                    AtemState stateBefore = helper.Helper.LibState;
-                    MixEffectState.KeyerAdvancedChromaState keyerBefore = stateBefore.MixEffects[(int)keyer.Item1].Keyers[(int)keyer.Item2].AdvancedChroma;
-                    Assert.NotNull(keyerBefore);
+                    Assert.NotNull(keyerBefore.AdvancedChroma);
 
-                    IBMDSwitcherKeyAdvancedChromaParameters sdkKeyer = keyer.Item3;
-
-                    keyerTarget.MixEffectIndex = keyer.Item1;
-                    keyerTarget.KeyerIndex = keyer.Item2;
+                    keyerTarget.MixEffectIndex = meId;
+                    keyerTarget.KeyerIndex = keyId;
 
                     uint timeBefore = helper.Server.CurrentTime;
 
@@ -656,7 +465,7 @@ namespace LibAtem.MockTests.MixEffects
 
                     // It should have sent a response, but we dont expect any comparable data
                     Assert.NotEqual(timeBefore, helper.Server.CurrentTime);
-                }
+                }, 1);
             });
             Assert.True(tested);
         }

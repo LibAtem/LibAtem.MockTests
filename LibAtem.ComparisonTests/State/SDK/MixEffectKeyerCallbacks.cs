@@ -330,7 +330,7 @@ namespace LibAtem.ComparisonTests.State.SDK
             {
                 case _BMDSwitcherKeyPatternParametersEventType.bmdSwitcherKeyPatternParametersEventTypePatternChanged:
                     Props.GetPattern(out _BMDSwitcherPatternStyle pattern);
-                    _state.Style = AtemEnumMaps.PatternMap.FindByValue(pattern);
+                    _state.Pattern = AtemEnumMaps.PatternMap.FindByValue(pattern);
                     break;
                 case _BMDSwitcherKeyPatternParametersEventType.bmdSwitcherKeyPatternParametersEventTypeSizeChanged:
                     Props.GetSize(out double size);

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace LibAtem.MockTests.Util
 {
@@ -15,6 +16,15 @@ namespace LibAtem.MockTests.Util
         public static uint RangeInt(uint max)
         {
             return (uint) _random.Next((int) max);
+        }
+
+        public static T EnumValue<T>()
+        {
+            var rand = new Random();
+            var vals = Enum.GetValues(typeof(T)).OfType<T>().ToArray();
+            if (vals.Length == 0) throw new ArgumentOutOfRangeException("No enum values");
+            var ind = rand.Next(0, vals.Length - 1);
+            return vals[ind];
         }
 
         public static double Range(double min = -100, double max = 6, double rounding = 100)

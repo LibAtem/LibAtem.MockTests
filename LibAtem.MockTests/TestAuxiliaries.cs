@@ -58,9 +58,8 @@ namespace LibAtem.MockTests
                         stateBefore.Auxiliaries[(int)auxId].Source = src;
                         helper.SendAndWaitForChange(stateBefore, () =>
                         {
-                            aux.SetInputSource((long) src);
+                            aux.SetInputSource((long)src);
                         });
-                        _output.WriteLine($"Set to {src}");
                     }
                 }
             });

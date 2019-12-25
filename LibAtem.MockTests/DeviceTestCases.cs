@@ -14,6 +14,7 @@ namespace LibAtem.MockTests
         public static readonly TestCaseId[] All = { Mini_8_1, Constellation_8_0_2, Legacy2ME_8_0_1 };
 
 
+        public static readonly TestCaseId[] ChromaKeyer = { Legacy2ME_8_0_1 };
         public static readonly TestCaseId[] AdvancedChromaKeyer = { Mini_8_1, Constellation_8_0_2 };
 
         // Audio

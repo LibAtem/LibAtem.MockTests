@@ -5,6 +5,7 @@ using BMDSwitcherAPI;
 using LibAtem.Common;
 using LibAtem.ComparisonTests.State.SDK;
 using LibAtem.MockTests.Util;
+using LibAtem.State;
 using Xunit.Abstractions;
 
 namespace LibAtem.MockTests.MixEffects
@@ -60,6 +61,23 @@ namespace LibAtem.MockTests.MixEffects
             }
 
             return result;
+        }
+
+        protected static void SelectionOfKeyers<T>(AtemMockServerWrapper helper, Action<AtemState, MixEffectState.KeyerState, T, MixEffectBlockId, UpstreamKeyId, int> fcn, int iterations = 5) where T : class
+        {
+            var keyers = GetKeyers<T>(helper);
+            var useKeyers = Randomiser.SelectionOfGroup(keyers);
+
+            foreach (Tuple<MixEffectBlockId, UpstreamKeyId, T> keyer in useKeyers)
+            {
+                AtemState stateBefore = helper.Helper.LibState;
+                MixEffectState.KeyerState keyerBefore = stateBefore.MixEffects[(int)keyer.Item1].Keyers[(int)keyer.Item2];
+
+                for (int i = 0; i < iterations; i++)
+                {
+                    fcn(stateBefore, keyerBefore, keyer.Item3, keyer.Item1, keyer.Item2, i);
+                }
+            }
         }
 
     }
