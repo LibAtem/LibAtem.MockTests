@@ -135,6 +135,26 @@ namespace LibAtem.ComparisonTests.State
                         yield return "Value: " + name + prop.Name + " Expected: " + oldVal + " Actual: " + newVal;
                     }
                 }
+                else if (prop.PropertyType == typeof(double[]))
+                {
+                    var oldDbl = (double[])oldVal;
+                    var newDbl = (double[])newVal;
+
+                    string arrToStr(double[] arr) => "[" + string.Join(", ", arr.Select(a => $"{a:0.####}")) + "]";
+
+                    ToleranceAttribute attr = prop.GetCustomAttribute<ToleranceAttribute>();
+                    if (attr != null)
+                    {
+                        if (!oldDbl.SequenceEqual(newDbl, attr))
+                        {
+                            yield return "Value: " + name + prop.Name + " Expected: " + arrToStr(oldDbl) + " Actual: " + arrToStr(newDbl);
+                        }
+                    }
+                    else if (!oldDbl.SequenceEqual(newDbl))
+                    {
+                        yield return "Value: " + name + prop.Name + " Expected: " + arrToStr(oldDbl) + " Actual: " + arrToStr(newDbl);
+                    }
+                }
                 else if (prop.PropertyType == typeof(uint))
                 {
                     UintToleranceAttribute attr = prop.GetCustomAttribute<UintToleranceAttribute>();

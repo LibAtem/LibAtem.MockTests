@@ -59,11 +59,13 @@ namespace LibAtem.MockTests.Util
             });
         }
 
-        public void SendAndWaitForChange(AtemState expected, Action doSend, int timeout = -1)
+        public void SendAndWaitForChange(AtemState expected, Action doSend, int timeout = -1, Action<AtemState, AtemState> mutateStates = null)
         {
             Helper.SendAndWaitForChange(doSend, timeout);
             if (expected != null)
             {
+                Helper.CheckStateChanges(expected, mutateStates);
+                /*
                 try
                 {
                     // TODO - this doesnt throw, it marks as failed, so this is a very broken exception catcher...
@@ -75,6 +77,7 @@ namespace LibAtem.MockTests.Util
                     Thread.Sleep(200);
                     Helper.CheckStateChanges(expected);
                 }
+                */
             }
         }
 

@@ -50,11 +50,10 @@ namespace LibAtem.MockTests.Fairlight
             });
         }
 
-        /*
         [Fact]
-        public void TestTestProgramOutPeaks()
+        public void TestResetProgramOutPeaks()
         {
-            var expected = new FairlightMixerSendLevelsCommand();
+            var expected = new FairlightMixerResetPeakLevelsCommand { Master = true };
             var handler = CommandGenerator.MatchCommand(expected);
             AtemMockServerWrapper.Each(_output, _pool, handler, DeviceTestCases.FairlightMain, helper =>
             {
@@ -68,6 +67,25 @@ namespace LibAtem.MockTests.Fairlight
                 // It should have sent a response, but we dont expect any comparable data
                 Assert.NotEqual(timeBefore, helper.Server.CurrentTime);
             });
-        }*/
+        }
+
+        [Fact]
+        public void TestResetAllPeaks()
+        {
+            var expected = new FairlightMixerResetPeakLevelsCommand { All = true };
+            var handler = CommandGenerator.MatchCommand(expected);
+            AtemMockServerWrapper.Each(_output, _pool, handler, DeviceTestCases.FairlightMain, helper =>
+            {
+                IBMDSwitcherFairlightAudioMixer mixer = GetFairlightMixer(helper);
+                AtemState stateBefore = helper.Helper.LibState;
+
+                uint timeBefore = helper.Server.CurrentTime;
+
+                helper.SendAndWaitForChange(null, () => { mixer.ResetAllPeakLevels(); });
+
+                // It should have sent a response, but we dont expect any comparable data
+                Assert.NotEqual(timeBefore, helper.Server.CurrentTime);
+            });
+        }
     }
 }

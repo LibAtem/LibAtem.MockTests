@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.CompilerServices;
 
 namespace LibAtem.MockTests.Util
 {
@@ -48,6 +49,15 @@ namespace LibAtem.MockTests.Util
                 yield return options[ind];
                 options.RemoveAt(ind);
             }
+        }
+        public static double[] ConvertDoubleArray(uint len, ref double vals)
+        {
+            var res = new double[len];
+            for (int i = 0; i < len; i++)
+            {
+                res[i] = Unsafe.Add(ref vals, i);
+            }
+            return res;
         }
     }
 

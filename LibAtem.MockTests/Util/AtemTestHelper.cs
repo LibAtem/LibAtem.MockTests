@@ -144,10 +144,14 @@ namespace LibAtem.MockTests.Util
             Output.WriteLine("");
         }
 
-        public void CheckStateChanges(AtemState expected)
+        public void CheckStateChanges(AtemState expected, Action<AtemState, AtemState> mutateStates = null)
         {
-            List<string> sdk = AtemStateComparer.AreEqual(expected, SdkState);
-            List<string> lib = AtemStateComparer.AreEqual(expected, LibState);
+            AtemState sdkState = SdkState;
+            AtemState libState = LibState;
+            mutateStates?.Invoke(sdkState, libState);
+
+            List<string> sdk = AtemStateComparer.AreEqual(expected, sdkState);
+            List<string> lib = AtemStateComparer.AreEqual(expected, libState);
 
             if (sdk.Count > 0 || lib.Count > 0)
             {

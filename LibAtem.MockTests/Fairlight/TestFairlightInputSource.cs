@@ -1,9 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Collections.Immutable;
 using System.Linq;
 using BMDSwitcherAPI;
-using LibAtem.Commands;
 using LibAtem.Commands.Audio.Fairlight;
 using LibAtem.Common;
 using LibAtem.ComparisonTests;
@@ -69,6 +67,8 @@ namespace LibAtem.MockTests.Fairlight
 
             foreach (long id in useIds)
             {
+                helper.Helper.SyncStates();
+
                 IBMDSwitcherFairlightAudioSource src = GetSource(helper, id);
                 src.GetId(out long sourceId);
 
@@ -269,6 +269,54 @@ namespace LibAtem.MockTests.Fairlight
         }
 
         [Fact]
+        public void TestDynamicsResetInputPeakLevels()
+        {
+            var expected = new FairlightMixerSourceResetPeakLevelsCommand { DynamicsInput = true };
+            var handler = CommandGenerator.MatchCommand(expected);
+            AtemMockServerWrapper.Each(_output, _pool, handler, DeviceTestCases.FairlightMain, helper =>
+            {
+                EachRandomSource(helper, (stateBefore, srcState, inputId, src, i) =>
+                {
+                    IBMDSwitcherFairlightAudioDynamicsProcessor dynamics = GetDynamics(src);
+
+                    expected.Index = (AudioSource)inputId;
+                    expected.SourceId = srcState.SourceId;
+
+                    uint timeBefore = helper.Server.CurrentTime;
+
+                    helper.SendAndWaitForChange(null, () => { dynamics.ResetInputPeakLevels(); });
+
+                    // It should have sent a response, but we dont expect any comparable data
+                    Assert.NotEqual(timeBefore, helper.Server.CurrentTime);
+                });
+            });
+        }
+
+        [Fact]
+        public void TestDynamicsResetOutputPeakLevels()
+        {
+            var expected = new FairlightMixerSourceResetPeakLevelsCommand { DynamicsOutput = true };
+            var handler = CommandGenerator.MatchCommand(expected);
+            AtemMockServerWrapper.Each(_output, _pool, handler, DeviceTestCases.FairlightMain, helper =>
+            {
+                EachRandomSource(helper, (stateBefore, srcState, inputId, src, i) =>
+                {
+                    IBMDSwitcherFairlightAudioDynamicsProcessor dynamics = GetDynamics(src);
+
+                    expected.Index = (AudioSource)inputId;
+                    expected.SourceId = srcState.SourceId;
+
+                    uint timeBefore = helper.Server.CurrentTime;
+
+                    helper.SendAndWaitForChange(null, () => { dynamics.ResetOutputPeakLevels(); });
+
+                    // It should have sent a response, but we dont expect any comparable data
+                    Assert.NotEqual(timeBefore, helper.Server.CurrentTime);
+                });
+            });
+        }
+
+        [Fact]
         public void TestFramesDelay()
         {
             var handler = CommandGenerator.CreateAutoCommandHandler<FairlightMixerSourceSetCommand, FairlightMixerSourceGetCommand>("FramesDelay");
@@ -288,6 +336,232 @@ namespace LibAtem.MockTests.Fairlight
                 }, 5, true);
             });
             Assert.True(tested);
+        }
+
+        [Fact]
+        public void TestResetPeakLevels()
+        {
+            var expected = new FairlightMixerSourceResetPeakLevelsCommand { Output = true };
+            var handler = CommandGenerator.MatchCommand(expected);
+            AtemMockServerWrapper.Each(_output, _pool, handler, DeviceTestCases.FairlightMain, helper =>
+            {
+                EachRandomSource(helper, (stateBefore, srcState, inputId, src, i) =>
+                {
+                    uint timeBefore = helper.Server.CurrentTime;
+
+                    expected.Index = (AudioSource)inputId;
+                    expected.SourceId = srcState.SourceId;
+
+                    helper.SendAndWaitForChange(null, () => { src.ResetOutputPeakLevels(); });
+
+                    // It should have sent a response, but we dont expect any comparable data
+                    Assert.NotEqual(timeBefore, helper.Server.CurrentTime);
+                });
+            });
+        }
+        
+        private class MainLevelCallback : IBMDSwitcherFairlightAudioSourceCallback
+        {
+            public double[] Levels { get; private set; } = new double[0];
+            public double[] Peaks { get; private set; } = new double[0];
+
+            public void Reset()
+            {
+                Levels = Peaks = new double[0];
+            }
+
+            public void Notify(_BMDSwitcherFairlightAudioSourceEventType eventType)
+            {
+                // Ignore
+            }
+
+            public void OutputLevelNotification(uint numLevels, ref double levels, uint numPeakLevels, ref double peakLevels)
+            {
+                Levels = Randomiser.ConvertDoubleArray(numLevels, ref levels);
+                Peaks = Randomiser.ConvertDoubleArray(numPeakLevels, ref peakLevels);
+            }
+        }
+
+        [Fact]
+        public void TestLevelsAndPeaks()
+        {
+            AtemMockServerWrapper.Each(_output, _pool, null, DeviceTestCases.FairlightMain, helper =>
+            {
+                EachRandomSource(helper, (stateBefore, srcState, inputId, src, i) =>
+                {
+                    var cb = new MainLevelCallback();
+                    using (new UseCallback<MainLevelCallback>(cb, src.AddCallback, src.RemoveCallback))
+                    {
+                        cb.Reset();
+
+                        long sourceId = srcState.SourceId;
+                        var testCmd = new FairlightMixerSourceLevelsCommand
+                        {
+                            Index = (AudioSource)inputId,
+                            SourceId = sourceId,
+
+                            LeftLevel = Randomiser.Range(-100, 0),
+                            RightLevel = Randomiser.Range(-100, 0),
+                            LeftPeak = Randomiser.Range(-100, 0),
+                            RightPeak = Randomiser.Range(-100, 0),
+                        };
+
+                        srcState.Levels = new FairlightAudioState.LevelsState
+                        {
+                            Levels = new[] { testCmd.LeftLevel, testCmd.RightLevel },
+                            Peaks = new[] { testCmd.LeftPeak, testCmd.RightPeak },
+                            DynamicsInputLevels = new double[2],
+                            DynamicsInputPeaks = new double[2],
+                            DynamicsOutputLevels = new double[2],
+                            DynamicsOutputPeaks = new double[2],
+                        };
+
+                        helper.SendAndWaitForChange(stateBefore, () =>
+                        {
+                            helper.Server.SendCommands(testCmd);
+                        }, -1, (sdkState, libState) =>
+                        {
+                            var srcState = sdkState.Fairlight.Inputs[(long)testCmd.Index].Sources.Single(s => s.SourceId == testCmd.SourceId);
+                            srcState.Levels = new FairlightAudioState.LevelsState
+                            {
+                                Levels = cb.Levels,
+                                Peaks = cb.Peaks,
+                                DynamicsInputLevels = new double[2],
+                                DynamicsInputPeaks = new double[2],
+                                DynamicsOutputLevels = new double[2],
+                                DynamicsOutputPeaks = new double[2],
+                            };
+                        });
+                    }
+                });
+            });
+        }
+
+        [Fact]
+        public void TestDynamicsLevelsAndPeaks()
+        {
+            AtemMockServerWrapper.Each(_output, _pool, null, DeviceTestCases.FairlightMain, helper =>
+            {
+                EachRandomSource(helper, (stateBefore, srcState, inputId, src, i) =>
+                {
+                    var cb = new TestFairlightProgramOut.DynamicsLevelCallback();
+                    var dynamics = AtemSDKConverter.CastSdk<IBMDSwitcherFairlightAudioDynamicsProcessor>(src.GetEffect);
+                    using (new UseCallback<TestFairlightProgramOut.DynamicsLevelCallback>(cb, dynamics.AddCallback, dynamics.RemoveCallback))
+                    {
+                        cb.Reset();
+
+                        long sourceId = srcState.SourceId;
+                        var testCmd = new FairlightMixerSourceLevelsCommand
+                        {
+                            Index = (AudioSource)inputId,
+                            SourceId = sourceId,
+
+                            InputLeftLevel = Randomiser.Range(-100, 0),
+                            InputLeftPeak = Randomiser.Range(-100, 0),
+                            InputRightLevel = Randomiser.Range(-100, 0),
+                            InputRightPeak = Randomiser.Range(-100, 0),
+                            OutputLeftLevel = Randomiser.Range(-100, 0),
+                            OutputLeftPeak = Randomiser.Range(-100, 0),
+                            OutputRightLevel = Randomiser.Range(-100, 0),
+                            OutputRightPeak = Randomiser.Range(-100, 0),
+                        };
+
+                        srcState.Levels = new FairlightAudioState.LevelsState
+                        {
+                            Levels = new double[2],
+                            Peaks = new double[2],
+                            DynamicsInputLevels = new[] { testCmd.InputLeftLevel, testCmd.InputRightLevel },
+                            DynamicsInputPeaks = new[] { testCmd.InputLeftPeak, testCmd.InputRightPeak },
+                            DynamicsOutputLevels = new[] { testCmd.OutputLeftLevel, testCmd.OutputRightLevel },
+                            DynamicsOutputPeaks = new[] { testCmd.OutputLeftPeak, testCmd.OutputRightPeak },
+                        };
+
+                        helper.SendAndWaitForChange(stateBefore, () =>
+                        {
+                            helper.Server.SendCommands(testCmd);
+                        }, -1, (sdkState, libState) =>
+                        {
+                            var srcState = sdkState.Fairlight.Inputs[(long)testCmd.Index].Sources.Single(s => s.SourceId == testCmd.SourceId);
+                            srcState.Levels = new FairlightAudioState.LevelsState
+                            {
+                                Levels = new double[2],
+                                Peaks = new double[2],
+                                DynamicsInputLevels = cb.InputLevels,
+                                DynamicsInputPeaks = cb.InputPeaks,
+                                DynamicsOutputLevels = cb.OutputLevels,
+                                DynamicsOutputPeaks = cb.OutputPeaks,
+                            };
+                        });
+                    }
+                });
+            });
+        }
+
+        [Fact]
+        public void TestDynamicsGainReduction()
+        {
+            AtemMockServerWrapper.Each(_output, _pool, null, DeviceTestCases.FairlightMain, helper =>
+            {
+                EachRandomSource(helper, (stateBefore, srcState, inputId, src, i) =>
+                {
+                    var cbCompressor = new TestFairlightProgramOut.DynamicEffectsLevelCallback();
+                    var cbLimiter = new TestFairlightProgramOut.DynamicEffectsLevelCallback();
+                    var cbExpander = new TestFairlightProgramOut.DynamicEffectsLevelCallback();
+                    var dynamics = AtemSDKConverter.CastSdk<IBMDSwitcherFairlightAudioDynamicsProcessor>(src.GetEffect);
+                    var limiter = AtemSDKConverter.CastSdk<IBMDSwitcherFairlightAudioLimiter>(dynamics.GetProcessor);
+                    var expander = AtemSDKConverter.CastSdk<IBMDSwitcherFairlightAudioExpander>(dynamics.GetProcessor);
+                    var compressor = AtemSDKConverter.CastSdk<IBMDSwitcherFairlightAudioCompressor>(dynamics.GetProcessor);
+
+                    using (new UseCallback<TestFairlightProgramOut.DynamicEffectsLevelCallback>(cbCompressor, compressor.AddCallback, compressor.RemoveCallback))
+                    using (new UseCallback<TestFairlightProgramOut.DynamicEffectsLevelCallback>(cbLimiter, limiter.AddCallback, limiter.RemoveCallback))
+                    using (new UseCallback<TestFairlightProgramOut.DynamicEffectsLevelCallback>(cbExpander, expander.AddCallback, expander.RemoveCallback))
+                    {
+                        long sourceId = srcState.SourceId;
+                        var testCmd = new FairlightMixerSourceLevelsCommand
+                        {
+                            Index = (AudioSource)inputId,
+                            SourceId = sourceId,
+
+                            CompressorGainReduction = Randomiser.Range(-100, 0),
+                            LimiterGainReduction = Randomiser.Range(-100, 0),
+                            ExpanderGainReduction = Randomiser.Range(-100, 0)
+                        };
+
+                        srcState.Levels = new FairlightAudioState.LevelsState
+                        {
+                            Levels = new double[2],
+                            Peaks = new double[2],
+                            DynamicsInputLevels = new double[2],
+                            DynamicsInputPeaks = new double[2],
+                            DynamicsOutputLevels = new double[2],
+                            DynamicsOutputPeaks = new double[2],
+                            CompressorGainReductionLevel = testCmd.CompressorGainReduction,
+                            LimiterGainReductionLevel = testCmd.LimiterGainReduction,
+                            ExpanderGainReductionLevel = testCmd.ExpanderGainReduction
+                        };
+
+                        helper.SendAndWaitForChange(stateBefore, () =>
+                        {
+                            helper.Server.SendCommands(testCmd);
+                        }, -1, (sdkState, libState) =>
+                        {
+                            var srcState = sdkState.Fairlight.Inputs[(long)testCmd.Index].Sources.Single(s => s.SourceId == testCmd.SourceId);
+                            srcState.Levels = new FairlightAudioState.LevelsState
+                            {
+                                Levels = new double[2],
+                                Peaks = new double[2],
+                                DynamicsInputLevels = new double[2],
+                                DynamicsInputPeaks = new double[2],
+                                DynamicsOutputLevels = new double[2],
+                                DynamicsOutputPeaks = new double[2],
+                                CompressorGainReductionLevel = cbCompressor.GainReduction.Single(),
+                                LimiterGainReductionLevel = cbLimiter.GainReduction.Single(),
+                                ExpanderGainReductionLevel = cbExpander.GainReduction.Single(),
+                            };
+                        });
+                    }
+                });
+            });
         }
 
     }
