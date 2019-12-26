@@ -339,6 +339,51 @@ namespace LibAtem.MockTests.Fairlight
         }
 
         [Fact]
+        public void TestHasStereoSimulation()
+        {
+            var handler = CommandGenerator.CreateAutoCommandHandler<FairlightMixerSourceSetCommand, FairlightMixerSourceGetCommand>("StereoSimulation");
+            bool tested = false;
+            AtemMockServerWrapper.Each(_output, _pool, handler, DeviceTestCases.FairlightDelay, helper =>
+            {
+                var rawPackets = WiresharkParser.BuildCommands(helper.Server.CurrentVersion, helper.Server.CurrentCase);
+                var rawCommands = WiresharkParser.ParseToCommands(helper.Server.CurrentVersion, rawPackets);
+                EachRandomSource(helper, (stateBefore, srcState, inputId, src, i) =>
+                {
+                    src.HasStereoSimulation(out int available);
+                    if (available != 0) return;
+                    tested = true;
+
+                    var srcCommand = rawCommands.OfType<FairlightMixerSourceGetCommand>().Single(c => c.Index == (AudioSource)inputId && c.SourceId == srcState.SourceId);
+                    srcCommand.HasStereoSimulation = true;
+
+                    srcState.HasStereoSimulation = true;
+                    helper.SendAndWaitForChange(stateBefore, () => { helper.Server.SendCommands(srcCommand); });
+                });
+            });
+            Assert.True(tested);
+        }
+
+        [Fact]
+        public void TestStereoSimulation()
+        {
+            var handler = CommandGenerator.CreateAutoCommandHandler<FairlightMixerSourceSetCommand, FairlightMixerSourceGetCommand>("StereoSimulation");
+            AtemMockServerWrapper.Each(_output, _pool, handler, DeviceTestCases.FairlightDelay, helper =>
+            {
+                var rawPackets = WiresharkParser.BuildCommands(helper.Server.CurrentVersion, helper.Server.CurrentCase);
+                var rawCommands = WiresharkParser.ParseToCommands(helper.Server.CurrentVersion, rawPackets);
+                EachRandomSource(helper, (stateBefore, srcState, inputId, src, i) =>
+                {
+                    helper.SendAndWaitForChange(stateBefore, () =>
+                    {
+                        var target = Randomiser.Range(0, 100, 100);
+                        srcState.StereoSimulation = target;
+                        src.SetStereoSimulationIntensity(target);
+                    });
+                });
+            });
+        }
+
+        [Fact]
         public void TestResetPeakLevels()
         {
             var expected = new FairlightMixerSourceResetPeakLevelsCommand { Output = true };

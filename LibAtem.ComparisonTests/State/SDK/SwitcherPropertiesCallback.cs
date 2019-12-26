@@ -108,7 +108,7 @@ namespace LibAtem.ComparisonTests.State.SDK
             else if (Props is IBMDSwitcherFairlightAudioMixer fairlightMixer)
             {
                 _state.Fairlight = new FairlightAudioState();
-                Children.Add(new FairlightAudioMixerCallback(_state.Fairlight, fairlightMixer, AppendChange("Fairlight")));
+                // Note: This is only used by LibAtem.MockTests, and that builds a state on demand rather than via callbacks
             }
         }
 

@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using BMDSwitcherAPI;
 using LibAtem.Commands.Audio.Fairlight;
@@ -8,7 +7,6 @@ using LibAtem.ComparisonTests;
 using LibAtem.ComparisonTests.State.SDK;
 using LibAtem.MockTests.Util;
 using LibAtem.State;
-using LibAtem.Util;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -76,6 +74,8 @@ namespace LibAtem.MockTests.Fairlight
                 IEnumerable<long> useIds = Randomiser.SelectionOfGroup(helper.Helper.LibState.Fairlight.Inputs.Keys.ToList());
                 foreach (long id in useIds)
                 {
+                    helper.Helper.SyncStates();
+
                     IBMDSwitcherFairlightAudioInput input = GetInput(helper, id);
 
                     AtemState stateBefore = helper.Helper.LibState;
@@ -87,15 +87,24 @@ namespace LibAtem.MockTests.Fairlight
                         Gain = -23.7,
                     });
 
+                    int sourceId = 944;
+                    void mangleState(AtemState sdkState, AtemState libState)
+                    {
+                        FairlightAudioState.InputSourceState srcState = sdkState.Fairlight.Inputs[id].Sources.Single(s => s.SourceId == sourceId);
+                        srcState.Dynamics.Limiter = null;
+                        srcState.Dynamics.Compressor = null;
+                        srcState.Dynamics.Expander = null;
+                    }
+
                     helper.SendAndWaitForChange(stateBefore, () => {
                         helper.Server.SendCommands(new FairlightMixerSourceGetCommand
                         {
                             Index = (AudioSource)id,
-                            SourceId = 944,
+                            SourceId = sourceId,
                             MixOption = FairlightAudioMixOption.Off,
                             Gain = -23.7,
                         });
-                    });
+                    }, -1, mangleState);
 
                     var removeSourceId = inputState.Sources[0].SourceId;
                     inputState.Sources.RemoveAt(0);
@@ -106,7 +115,7 @@ namespace LibAtem.MockTests.Fairlight
                             Index = (AudioSource)id,
                             SourceId = removeSourceId,
                         });
-                    });
+                    }, -1, mangleState);
                 }
 
             });
