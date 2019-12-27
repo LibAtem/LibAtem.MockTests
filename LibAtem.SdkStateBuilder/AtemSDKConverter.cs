@@ -2,9 +2,8 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.InteropServices;
-using Xunit;
 
-namespace LibAtem.ComparisonTests.State.SDK
+namespace LibAtem.SdkStateBuilder
 {
     public static class AtemSDKConverter
     {
@@ -43,7 +42,8 @@ namespace LibAtem.ComparisonTests.State.SDK
         {
             fcn(out TS supportedValues);
             List<TS> components = supportedValues.FindFlagComponents();
-            Assert.NotEmpty(components);
+            if (components.Count == 0)
+                throw new Exception("No Flag Values");
 
             return components.Select(v => Tuple.Create(v, map.FindByValue(v))).ToList();
         }

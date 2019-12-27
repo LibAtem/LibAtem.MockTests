@@ -97,7 +97,6 @@ namespace LibAtem.MockTests.Util
             var sdkWait = new ManualResetEvent(false);
 
             var pendingLib = expected.ToList();
-            var pendingSdk = expected.ToList();
 
             void HandlerLib(object sender, string queueKey)
             {
@@ -110,15 +109,13 @@ namespace LibAtem.MockTests.Util
                         libWait.Set();
                 }
             }
-            void HandlerSdk(object sender, string queueKey)
+            void HandlerSdk(object sender)
             {
-                Output.WriteLine("SendAndWaitForMatching: Got Sdk change: " + queueKey);
+                Output.WriteLine("SendAndWaitForMatching: Got Sdk change");
 
-                lock (pendingSdk)
+                lock (sdkWait)
                 {
-                    pendingSdk.Remove(queueKey);
-                    if (pendingSdk.Count == 0)
-                        sdkWait.Set();
+                    sdkWait.Set();
                 }
             }
 
@@ -137,9 +134,6 @@ namespace LibAtem.MockTests.Util
 
             if (pendingLib.Count > 0)
                 Output.WriteLine("SendAndWaitForMatching: Pending Lib changes: " + string.Join(", ", pendingLib));
-
-            if (pendingSdk.Count > 0)
-                Output.WriteLine("SendAndWaitForMatching: Pending Sdk changes: " + string.Join(", ", pendingSdk));
 
             Output.WriteLine("");
         }

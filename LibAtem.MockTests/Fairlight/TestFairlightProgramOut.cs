@@ -1,7 +1,7 @@
 ﻿using BMDSwitcherAPI;
 using LibAtem.Commands.Audio.Fairlight;
-using LibAtem.ComparisonTests.State.SDK;
 using LibAtem.MockTests.Util;
+using LibAtem.SdkStateBuilder;
 using LibAtem.State;
 using System.Linq;
 using Xunit;
@@ -35,16 +35,6 @@ namespace LibAtem.MockTests.Fairlight
             Assert.NotNull(dynamics);
             return dynamics;
         }
-
-        /**
-         * Notes:
-         * The flow is to always send commands via the sdk.
-         * We then verify we interpret the commands correctly by deserializing in the server.
-         * And the response we send proves that we understand the response structure.
-         *
-         * TODO - perhaps we should drop working with LibAtem in the client side of these tests?
-         * The only benefit to keeping it is to verify that the state building is correct (which tbh is a good idea)
-         */
 
         [Fact]
         public void TestGain()

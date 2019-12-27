@@ -3,8 +3,8 @@ using System.Collections.Generic;
 using System.Linq;
 using BMDSwitcherAPI;
 using LibAtem.Common;
-using LibAtem.ComparisonTests.State.SDK;
 using LibAtem.MockTests.Util;
+using LibAtem.SdkStateBuilder;
 using LibAtem.State;
 using Xunit.Abstractions;
 

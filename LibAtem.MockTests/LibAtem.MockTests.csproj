@@ -32,6 +32,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\LibAtem.ComparisonTests\LibAtem.ComparisonTests.csproj" />
+    <ProjectReference Include="..\LibAtem.SdkStateBuilder\LibAtem.SdkStateBuilder.csproj" />
     <ProjectReference Include="..\LibAtem\LibAtem.DeviceProfile\LibAtem.DeviceProfile.csproj" />
     <ProjectReference Include="..\LibAtem\LibAtem.State\LibAtem.State.csproj" />
     <ProjectReference Include="..\LibAtem\LibAtem\LibAtem.csproj" />

@@ -1,9 +1,8 @@
 ﻿using BMDSwitcherAPI;
 using LibAtem.Common;
 using LibAtem.State;
-using ListExtensions = LibAtem.Util.ListExtensions;
 
-namespace LibAtem.ComparisonTests.State.SDK
+namespace LibAtem.SdkStateBuilder
 {
     public static class FairlightAudioInputStateBuilder
     {
@@ -45,7 +44,12 @@ namespace LibAtem.ComparisonTests.State.SDK
             var iterator = AtemSDKConverter.CastSdk<IBMDSwitcherFairlightAudioSourceIterator>(props.CreateIterator);
             AtemSDKConverter.Iterate<IBMDSwitcherFairlightAudioSource>(
                 iterator.Next,
-                (src, id) => { ListExtensions.AddIfNotNull(state.Sources, BuildSource(src)); });
+                (src, id) =>
+                {
+                    var val = BuildSource(src);
+                    if (val != null)
+                        state.Sources.Add(val);
+                });
 
             return state;
         }

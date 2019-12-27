@@ -2,14 +2,13 @@
 using System.IO;
 using System.Reflection;
 using System.Runtime.InteropServices;
-using System.Threading;
 using BMDSwitcherAPI;
 using log4net;
 using log4net.Config;
-using LibAtem.ComparisonTests.State.SDK;
 using Xunit;
 using LibAtem.State;
 using LibAtem.State.Builder;
+using LibAtem.SdkStateBuilder;
 
 namespace LibAtem.MockTests.Util
 {
@@ -17,12 +16,12 @@ namespace LibAtem.MockTests.Util
     {
         private readonly IBMDSwitcherDiscovery _switcherDiscovery;
         private readonly IBMDSwitcher _sdkSwitcher;
-        private readonly AtemSDKComparisonMonitor _sdkState;
+        private readonly AtemSDKStateMonitor _sdkState;
         private readonly AtemStateBuilderSettings _updateSettings;
 
         public IBMDSwitcher SdkSwitcher => _sdkSwitcher;
         
-        public delegate void StateChangeHandler(object sender, string path);
+        public delegate void StateChangeHandler(object sender);
         public event StateChangeHandler OnSdkStateChange;
 
         public AtemSdkClientWrapper(string address, AtemStateBuilderSettings updateSettings)
@@ -49,44 +48,11 @@ namespace LibAtem.MockTests.Util
 
             _sdkSwitcher.AddCallback(new SwitcherConnectionMonitor()); // TODO - make this monitor work better!
 
-            _sdkState = new AtemSDKComparisonMonitor(_sdkSwitcher, _updateSettings);
-            _sdkState.OnStateChange += (s, e) => OnSdkStateChange?.Invoke(s, e);
+            _sdkState = new AtemSDKStateMonitor(_sdkSwitcher);
+            _sdkState.OnStateChange += (s) => OnSdkStateChange?.Invoke(s);
         }
 
-        public AtemState State
-        {
-            get
-            {
-                var state = _sdkState.State.Clone();
-
-                /**
-                 * It is very hard to tell when the sdk has changed the sources in the iterator.
-                 * As a workaround, we instead do a fresh state build everytime we need a state.
-                 * TODO - verify this is still true now the SourceDelete command has been found.
-                 */
-                if (state.Fairlight != null)
-                {
-                    var mixer = SdkSwitcher as IBMDSwitcherFairlightAudioMixer;
-                    state.Fairlight = FairlightAudioMixerStateBuilder.Build(mixer);
-                    /*
-                    var iterator =
-                        AtemSDKConverter.CastSdk<IBMDSwitcherFairlightAudioInputIterator>(mixer.CreateIterator);
-
-                    state.Fairlight.Inputs.Clear();
-                    AtemSDKConverter
-                        .Iterate<IBMDSwitcherFairlightAudioInput>(
-                            iterator.Next,
-                            (inp, i) =>
-                            {
-                                inp.GetId(out long id);
-                                state.Fairlight.Inputs[id] = FairlightAudioInputStateBuilder.Build(inp);
-                            });
-                            */
-                }
-
-                return state;
-            }
-        }
+        public AtemState State => SdkStateBuilder.SdkStateBuilder.Build(SdkSwitcher, _updateSettings);
         
         public void Dispose()
         {
