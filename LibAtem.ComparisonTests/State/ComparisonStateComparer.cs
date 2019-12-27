@@ -103,9 +103,9 @@ namespace LibAtem.ComparisonTests.State
                     var oldList = (IReadOnlyList<object>)oldVal;
                     var newList = (IReadOnlyList<object>)newVal;
 
-                    if (newList.Count != oldList.Count)
+                    if (newList?.Count != oldList?.Count)
                     {
-                        yield return "Value: " + name + prop.Name + " length mismatch Expected: " + oldList.Count + " Actual: " + newList.Count;
+                        yield return "Value: " + name + prop.Name + " length mismatch Expected: " + oldList?.Count + " Actual: " + newList?.Count;
                         continue;
                     }
 
@@ -184,7 +184,7 @@ namespace LibAtem.ComparisonTests.State
                 }
                 else if (!prop.PropertyType.IsClass || prop.PropertyType == typeof(string))
                 {
-                    if (!oldVal.Equals(newVal))
+                    if (oldVal == null || !oldVal.Equals(newVal))
                     {
                         yield return "Value: " + name + prop.Name + " Expected: " + oldVal + " Actual: " + newVal;
                     }
