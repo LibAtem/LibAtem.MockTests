@@ -1,5 +1,8 @@
 ﻿using BMDSwitcherAPI;
+using LibAtem.Common;
 using LibAtem.State;
+using System;
+using System.Collections.Generic;
 
 namespace LibAtem.SdkStateBuilder
 {
@@ -38,18 +41,16 @@ namespace LibAtem.SdkStateBuilder
             // TODO - bands
 
             // Inputs
+            state.Tally = new Dictionary<Tuple<AudioSource, long>, bool>();
             var iterator = AtemSDKConverter.CastSdk<IBMDSwitcherFairlightAudioInputIterator>(props.CreateIterator);
             for (iterator.Next(out IBMDSwitcherFairlightAudioInput input); input != null; iterator.Next(out input))
             {
                 input.GetId(out long id);
-                state.Inputs[id] = FairlightAudioInputStateBuilder.Build(input);
+                state.Inputs[id] = FairlightAudioInputStateBuilder.Build(input, (AudioSource)id, state.Tally);
             }
 
             var monIter = AtemSDKConverter.CastSdk<IBMDSwitcherFairlightAudioHeadphoneOutputIterator>(props.CreateIterator);
-            state.Monitors = AtemSDKConverter.IterateList<IBMDSwitcherFairlightAudioHeadphoneOutput, FairlightAudioState.MonitorOutputState>(monIter.Next, (mon, id) =>
-            {
-                return BuildMonitor(mon);
-            });
+            state.Monitors = AtemSDKConverter.IterateList<IBMDSwitcherFairlightAudioHeadphoneOutput, FairlightAudioState.MonitorOutputState>(monIter.Next, (mon, id) => BuildMonitor(mon));
 
             return state;
         }

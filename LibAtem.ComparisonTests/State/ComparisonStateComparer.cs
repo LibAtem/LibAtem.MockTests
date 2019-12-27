@@ -74,9 +74,9 @@ namespace LibAtem.ComparisonTests.State
                     dynamic oldDict = Convert.ChangeType(oldVal, prop.PropertyType);
                     dynamic newDict = Convert.ChangeType(newVal, prop.PropertyType);
 
-                    if (newDict.Count != oldDict.Count)
+                    if (newDict == null || newDict?.Count != oldDict?.Count)
                     {
-                        yield return "Value: " + name + prop.Name + " length mismatch Expected: " + oldDict.Count + " Actual: " + newDict.Count;
+                        yield return "Value: " + name + prop.Name + " length mismatch Expected: " + oldDict?.Count + " Actual: " + newDict?.Count;
                         continue;
                     }
                     

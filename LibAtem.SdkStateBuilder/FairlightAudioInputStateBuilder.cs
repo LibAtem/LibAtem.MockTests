@@ -1,12 +1,14 @@
 ﻿using BMDSwitcherAPI;
 using LibAtem.Common;
 using LibAtem.State;
+using System;
+using System.Collections.Generic;
 
 namespace LibAtem.SdkStateBuilder
 {
     public static class FairlightAudioInputStateBuilder
     {
-        public static FairlightAudioState.InputState Build(IBMDSwitcherFairlightAudioInput props)
+        public static FairlightAudioState.InputState Build(IBMDSwitcherFairlightAudioInput props, AudioSource inputId, Dictionary<Tuple<AudioSource, long>, bool> tally)
         {
             var state = new FairlightAudioState.InputState();
 
@@ -46,7 +48,7 @@ namespace LibAtem.SdkStateBuilder
                 iterator.Next,
                 (src, id) =>
                 {
-                    var val = BuildSource(src);
+                    var val = BuildSource(src, inputId, tally);
                     if (val != null)
                         state.Sources.Add(val);
                 });
@@ -54,7 +56,7 @@ namespace LibAtem.SdkStateBuilder
             return state;
         }
 
-        private static FairlightAudioState.InputSourceState BuildSource(IBMDSwitcherFairlightAudioSource props)
+        private static FairlightAudioState.InputSourceState BuildSource(IBMDSwitcherFairlightAudioSource props, AudioSource inputId, Dictionary<Tuple<AudioSource, long>, bool> tally)
         {
             var state = new FairlightAudioState.InputSourceState();
 
@@ -86,6 +88,9 @@ namespace LibAtem.SdkStateBuilder
             state.HasStereoSimulation = hasStereoSimulation != 0;
             props.GetStereoSimulationIntensity(out double stereoSimulation);
             state.StereoSimulation = stereoSimulation;
+
+            props.IsMixedIn(out int mixedIn);
+            tally[Tuple.Create(inputId, id)] = mixedIn != 0;
 
             var dynamics = AtemSDKConverter.CastSdk<IBMDSwitcherFairlightAudioDynamicsProcessor>(props.GetEffect);
             dynamics.GetMakeupGain(out double makeupGain);
