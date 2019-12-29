@@ -37,6 +37,7 @@ namespace LibAtem.MockTests
         [Fact]
         public void TestStateMockMini() => RunTest(DeviceTestCases.Mini_8_1);
         
+        /*
         [Fact]
         public void TestStateReal()
         {
@@ -53,6 +54,7 @@ namespace LibAtem.MockTests
             }
             Assert.Empty(before);
         }
+        */
 
         private AtemState GetLibAtemState(AtemStateBuilderSettings stateSettings, string address)
         {

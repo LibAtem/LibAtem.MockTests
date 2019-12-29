@@ -3,9 +3,12 @@ using System.Collections.Generic;
 using System.Linq;
 using BMDSwitcherAPI;
 using LibAtem.Common;
+using LibAtem.ComparisonTests.Util;
+using LibAtem.DeviceProfile;
 using LibAtem.MockTests.Util;
 using LibAtem.SdkStateBuilder;
 using LibAtem.State;
+using Xunit;
 using Xunit.Abstractions;
 
 namespace LibAtem.MockTests.MixEffects
@@ -80,5 +83,28 @@ namespace LibAtem.MockTests.MixEffects
             }
         }
 
+        protected static void EachMixEffect<T>(AtemMockServerWrapper helper, Action<AtemState, MixEffectState, T, MixEffectBlockId, int> fcn, int iterations = 5) where T : class
+        {
+            List<Tuple<MixEffectBlockId, T>> mixEffects = GetMixEffects<T>(helper);
+            foreach (Tuple<MixEffectBlockId, T> me in mixEffects)
+            {
+                AtemState stateBefore = helper.Helper.LibState;
+                MixEffectState meBefore = stateBefore.MixEffects[(int)me.Item1];
+
+                for (int i = 0; i < iterations; i++)
+                {
+                    fcn(stateBefore, meBefore, me.Item2, me.Item1, i);
+                }
+            }
+        }
+
+        protected static VideoSource[] GetTransitionSourcesSelection(AtemMockServerWrapper helper)
+        {
+            List<VideoSource> deviceSources = helper.Helper.LibState.Settings.Inputs.Keys.ToList();
+            VideoSource[] validSources = deviceSources.Where(s =>
+                s.IsAvailable(helper.Helper.Profile, InternalPortType.Mask) &&
+                s.IsAvailable(SourceAvailability.KeySource)).ToArray();
+            return VideoSourceUtil.TakeSelection(validSources);
+        }
     }
 }
