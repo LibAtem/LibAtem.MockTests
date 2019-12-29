@@ -1,7 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Threading;
 using BMDSwitcherAPI;
 using LibAtem.Commands;
 using LibAtem.ComparisonTests.State;
@@ -17,8 +15,6 @@ namespace LibAtem.MockTests.Util
     {
         private readonly AtemClient _libAtemClient;
         private AtemState _libAtemState;
-
-        public const int CommandWaitTime = 80;
 
         public AtemSdkClientWrapper SdkClient { get; }
 
@@ -87,56 +83,6 @@ namespace LibAtem.MockTests.Util
         public AtemState LibState => _libAtemState.Clone();
 
         public IBMDSwitcher SdkSwitcher => SdkClient.SdkSwitcher;
-
-        
-        public void SendAndWaitForChange(Action doSend, int timeout = -1)
-        {
-            var expected = new[] {"Info.LastTimecode"};
-
-            var libWait = new ManualResetEvent(false);
-            var sdkWait = new ManualResetEvent(false);
-
-            var pendingLib = expected.ToList();
-
-            void HandlerLib(object sender, string queueKey)
-            {
-                Output.WriteLine("SendAndWaitForMatching: Got Lib change: " + queueKey);
-
-                lock (pendingLib)
-                {
-                    pendingLib.Remove(queueKey);
-                    if (pendingLib.Count == 0)
-                        libWait.Set();
-                }
-            }
-            void HandlerSdk(object sender)
-            {
-                Output.WriteLine("SendAndWaitForMatching: Got Sdk change");
-
-                lock (sdkWait)
-                {
-                    sdkWait.Set();
-                }
-            }
-
-            OnLibAtemStateChange += HandlerLib;
-            SdkClient.OnSdkStateChange += HandlerSdk;
-
-            doSend();
-
-            // Wait for the expected time. If no response, then go with last data
-            libWait.WaitOne(timeout == -1 ? CommandWaitTime * 3 : timeout);
-            // The Sdk doesn't send the same notifies if nothing changed, so once the lib has finished, wait a small time for sdk to finish up
-            sdkWait.WaitOne(timeout == -1 ? CommandWaitTime * 2 : timeout);
-
-            OnLibAtemStateChange -= HandlerLib;
-            SdkClient.OnSdkStateChange -= HandlerSdk;
-
-            if (pendingLib.Count > 0)
-                Output.WriteLine("SendAndWaitForMatching: Pending Lib changes: " + string.Join(", ", pendingLib));
-
-            Output.WriteLine("");
-        }
 
         public void CheckStateChanges(AtemState expected, Action<AtemState, AtemState> mutateStates = null)
         {

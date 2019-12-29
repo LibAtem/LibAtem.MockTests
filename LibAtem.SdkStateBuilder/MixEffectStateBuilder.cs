@@ -1,6 +1,7 @@
 ﻿using BMDSwitcherAPI;
 using LibAtem.Common;
 using LibAtem.State;
+using System;
 using System.Collections.Generic;
 
 namespace LibAtem.SdkStateBuilder
@@ -23,18 +24,29 @@ namespace LibAtem.SdkStateBuilder
             state.Sources.Preview = (VideoSource)preview;
             props.GetFadeToBlackFramesRemaining(out uint frames);
             state.FadeToBlack.Status.RemainingFrames = frames;
-            /* Props.GetInFadeToBlack(out int inFadeToBlack);
-            _state.FadeToBlack.Status.InTransition = inFadeToBlack != 0;
-            OnChange("FadeToBlack.Status");*/
             props.GetFadeToBlackRate(out uint rate);
             state.FadeToBlack.Properties.Rate = rate;
             props.GetFadeToBlackFullyBlack(out int isFullyBlack);
             state.FadeToBlack.Status.IsFullyBlack = isFullyBlack != 0;
-            props.GetFadeToBlackFullyBlack(out int inTransition);
+            props.GetFadeToBlackInTransition(out int inTransition);
             state.FadeToBlack.Status.InTransition = inTransition != 0;
 
             if (props is IBMDSwitcherTransitionParameters trans)
+            {
                 BuildTransition(state.Transition, trans);
+
+                props.GetPreviewTransition(out int previewTrans);
+                state.Transition.Properties.Preview = previewTrans != 0;
+                props.GetPreviewLive(out int previewLive);
+                state.Transition.Properties.IsInPreview = previewLive != 0;
+
+                props.GetTransitionPosition(out double position);
+                state.Transition.Position.HandlePosition = position;
+                props.GetTransitionFramesRemaining(out uint framesRemaining);
+                state.Transition.Position.RemainingFrames = framesRemaining;
+                props.GetInTransition(out int inTransition2);
+                state.Transition.Position.InTransition = inTransition2 != 0;
+            }
 
             var iterator = AtemSDKConverter.CastSdk<IBMDSwitcherKeyIterator>(props.CreateIterator);
             state.Keyers = AtemSDKConverter.IterateList<IBMDSwitcherKey, MixEffectState.KeyerState>(iterator.Next,
@@ -184,7 +196,7 @@ namespace LibAtem.SdkStateBuilder
 
             
             props.GetType(out _BMDSwitcherKeyType type);
-            state.Properties.Mode = AtemEnumMaps.MixEffectKeyTypeMap.FindByValue(type);
+            state.Properties.KeyType = AtemEnumMaps.MixEffectKeyTypeMap.FindByValue(type);
             props.GetInputCut(out long inputCut);
             state.Properties.CutSource = (VideoSource)inputCut;
             props.GetInputFill(out long input);
@@ -344,7 +356,7 @@ namespace LibAtem.SdkStateBuilder
             props.GetLightSourceDirection(out double deg);
             state.LightSourceDirection = deg;
             props.GetLightSourceAltitude(out double alt);
-            state.LightSourceAltitude = (uint)(alt * 100);
+            state.LightSourceAltitude = (uint)Math.Round(alt * 100);
             props.GetBorderEnabled(out int on);
             state.BorderEnabled = on != 0;
             props.GetBorderBevel(out _BMDSwitcherBorderBevelOption bevel);
@@ -354,15 +366,15 @@ namespace LibAtem.SdkStateBuilder
             props.GetBorderWidthOut(out double widthOut);
             state.BorderOuterWidth = widthOut;
             props.GetBorderSoftnessIn(out double softIn);
-            state.BorderInnerSoftness = (uint)(softIn * 100);
+            state.BorderInnerSoftness = (uint)Math.Round(softIn * 100);
             props.GetBorderSoftnessOut(out double softOut);
-            state.BorderOuterSoftness = (uint)(softOut * 100);
+            state.BorderOuterSoftness = (uint)Math.Round(softOut * 100);
             props.GetBorderBevelSoftness(out double bevelSoft);
-            state.BorderBevelSoftness = (uint)(bevelSoft * 100);
+            state.BorderBevelSoftness = (uint)Math.Round(bevelSoft * 100);
             props.GetBorderBevelPosition(out double bevelPosition);
-            state.BorderBevelPosition = (uint)(bevelPosition * 100);
+            state.BorderBevelPosition = (uint)Math.Round(bevelPosition * 100);
             props.GetBorderOpacity(out double opacity);
-            state.BorderOpacity = (uint)(opacity * 100);
+            state.BorderOpacity = (uint)Math.Round(opacity * 100);
             props.GetBorderHue(out double hue);
             state.BorderHue = hue;
             props.GetBorderSaturation(out double sat);
@@ -404,7 +416,7 @@ namespace LibAtem.SdkStateBuilder
             var state = new MixEffectState.KeyerFlyFrameState();
 
             props.GetBorderOpacity(out double opacity);
-            state.BorderOpacity = (uint)(opacity * 100);
+            state.BorderOpacity = (uint)Math.Round(opacity * 100);
 
             // TODO MaskEnabled?
             props.GetMaskTop(out double maskTop);
@@ -431,13 +443,13 @@ namespace LibAtem.SdkStateBuilder
             props.GetBorderWidthIn(out double widthIn);
             state.InnerWidth = widthIn;
             props.GetBorderSoftnessOut(out double borderSoftnessOut);
-            state.OuterSoftness = (uint)(borderSoftnessOut * 100);
+            state.OuterSoftness = (uint)Math.Round(borderSoftnessOut * 100);
             props.GetBorderSoftnessIn(out double borderSoftnessIn);
-            state.InnerSoftness = (uint)(borderSoftnessIn * 100);
+            state.InnerSoftness = (uint)Math.Round(borderSoftnessIn * 100);
             props.GetBorderBevelSoftness(out double borderBevelSoftness);
-            state.BevelSoftness = (uint)(borderBevelSoftness * 100);
+            state.BevelSoftness = (uint)Math.Round(borderBevelSoftness * 100);
             props.GetBorderBevelPosition(out double borderBevelPosition);
-            state.BevelPosition = (uint)(borderBevelPosition * 100);
+            state.BevelPosition = (uint)Math.Round(borderBevelPosition * 100);
             props.GetBorderHue(out double hue);
             state.BorderHue = hue;
             props.GetBorderSaturation(out double sat);
@@ -447,7 +459,7 @@ namespace LibAtem.SdkStateBuilder
             props.GetBorderLightSourceDirection(out double deg);
             state.LightSourceDirection = deg;
             props.GetBorderLightSourceAltitude(out double alt);
-            state.LightSourceAltitude = (uint)(alt * 100);
+            state.LightSourceAltitude = (uint)Math.Round(alt * 100);
 
             return state;
         }

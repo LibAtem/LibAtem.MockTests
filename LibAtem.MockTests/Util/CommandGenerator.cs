@@ -14,13 +14,17 @@ namespace LibAtem.MockTests.Util
     {
         public static Func<ImmutableList<ICommand>, ICommand, IEnumerable<ICommand>> CreateAutoCommandHandler<TSet, TGet>(string name, bool disableMask = false) where TGet : ICommand where TSet : ICommand
         {
+            return CreateAutoCommandHandler<TSet, TGet>(new[] { name }, disableMask);
+        }
+        public static Func<ImmutableList<ICommand>, ICommand, IEnumerable<ICommand>> CreateAutoCommandHandler<TSet, TGet>(string[] names, bool disableMask = false) where TGet : ICommand where TSet : ICommand
+        {
             object expectedMask = null;
             if (!disableMask)
             {
                 // Calculate what the mask should ssbe
                 PropertyInfo maskProp = typeof(TSet).GetProperty("Mask");
                 Assert.NotNull(maskProp);
-                expectedMask = Enum.Parse(maskProp.PropertyType, name);
+                expectedMask = Enum.Parse(maskProp.PropertyType, string.Join(",", names));
                 Assert.NotEqual(0, (int) expectedMask);
             }
 
@@ -41,11 +45,14 @@ namespace LibAtem.MockTests.Util
                     Assert.NotNull(previousCmd);
 
                     // Now copy the value across
-                    PropertyInfo previousProp = typeof(TGet).GetProperty(name);
-                    Assert.NotNull(previousProp);
-                    PropertyInfo setProp = typeof(TSet).GetProperty(name);
-                    Assert.NotNull(setProp);
-                    previousProp.SetValue(previousCmd, setProp.GetValue(setCmd));
+                    foreach (string name in names)
+                    {
+                        PropertyInfo previousProp = typeof(TGet).GetProperty(name);
+                        Assert.NotNull(previousProp);
+                        PropertyInfo setProp = typeof(TSet).GetProperty(name);
+                        Assert.NotNull(setProp);
+                        previousProp.SetValue(previousCmd, setProp.GetValue(setCmd));
+                    }
 
                     return new ICommand[] { previousCmd };
                 }

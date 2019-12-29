@@ -12,9 +12,9 @@ namespace LibAtem.SdkStateBuilder
             var state = new SuperSourceState();
 
             props.GetInputFill(out long input);
-            state.Properties.ArtFillInput = (VideoSource)input;
+            state.Properties.ArtFillSource = (VideoSource)input;
             props.GetInputCut(out long cutInput);
-            state.Properties.ArtKeyInput = (VideoSource)cutInput;
+            state.Properties.ArtCutSource = (VideoSource)cutInput;
             props.GetArtOption(out _BMDSwitcherSuperSourceArtOption option);
             state.Properties.ArtOption = AtemEnumMaps.SuperSourceArtOptionMap.FindByValue(option);
             props.GetPreMultiplied(out int preMultiplied);
@@ -46,13 +46,13 @@ namespace LibAtem.SdkStateBuilder
             props.GetBorderWidthIn(out double widthIn);
             state.InnerWidth = widthIn;
             props.GetBorderSoftnessOut(out double softnessOut);
-            state.OuterSoftness = (uint)(softnessOut * 100);
+            state.OuterSoftness = (uint)Math.Round(softnessOut * 100);
             props.GetBorderSoftnessIn(out double softnessIn);
-            state.InnerSoftness = (uint)(softnessIn * 100);
+            state.InnerSoftness = (uint)Math.Round(softnessIn * 100);
             props.GetBorderBevelSoftness(out double bevelSoftness);
-            state.BevelSoftness = (uint)(bevelSoftness * 100);
+            state.BevelSoftness = (uint)Math.Round(bevelSoftness * 100);
             props.GetBorderBevelPosition(out double bevelPosition);
-            state.BevelPosition = (uint)(bevelPosition * 100);
+            state.BevelPosition = (uint)Math.Round(bevelPosition * 100);
             props.GetBorderHue(out double hue);
             state.Hue = hue;
             props.GetBorderSaturation(out double sat);
@@ -72,7 +72,7 @@ namespace LibAtem.SdkStateBuilder
             props.GetEnabled(out int enabled);
             state.Enabled = enabled != 0;
             props.GetInputSource(out long input);
-            state.InputSource = (VideoSource)input;
+            state.Source = (VideoSource)input;
             props.GetPositionX(out double xPos);
             state.PositionX = xPos;
             props.GetPositionY(out double yPos);

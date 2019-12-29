@@ -13,7 +13,7 @@ namespace LibAtem.SdkStateBuilder
         public static readonly IReadOnlyDictionary<MixEffectKeyType, _BMDSwitcherKeyType> MixEffectKeyTypeMap;
         public static readonly IReadOnlyDictionary<Pattern, _BMDSwitcherPatternStyle> PatternMap;
         public static readonly IReadOnlyDictionary<StingerSource, _BMDSwitcherStingerTransitionSource> StingerSourceMap;
-        public static readonly IReadOnlyDictionary<TStyle, _BMDSwitcherTransitionStyle> TransitionStyleMap;
+        public static readonly IReadOnlyDictionary<TransitionStyle, _BMDSwitcherTransitionStyle> TransitionStyleMap;
         public static readonly IReadOnlyDictionary<VideoMode, _BMDSwitcherVideoMode> VideoModesMap;
         public static readonly IReadOnlyDictionary<DownConvertMode, _BMDSwitcherDownConversionMethod> SDDownconvertModesMap;
         public static readonly IReadOnlyDictionary<SerialMode, _BMDSwitcherSerialPortFunction> SerialModeMap;
@@ -124,13 +124,13 @@ namespace LibAtem.SdkStateBuilder
                 {StingerSource.MediaPlayer4, _BMDSwitcherStingerTransitionSource.bmdSwitcherStingerTransitionSourceMediaPlayer4},
             };
 
-            TransitionStyleMap = new Dictionary<TStyle, _BMDSwitcherTransitionStyle>
+            TransitionStyleMap = new Dictionary<TransitionStyle, _BMDSwitcherTransitionStyle>
             {
-                {TStyle.Mix, _BMDSwitcherTransitionStyle.bmdSwitcherTransitionStyleMix},
-                {TStyle.Dip, _BMDSwitcherTransitionStyle.bmdSwitcherTransitionStyleDip},
-                {TStyle.DVE, _BMDSwitcherTransitionStyle.bmdSwitcherTransitionStyleDVE},
-                {TStyle.Stinger, _BMDSwitcherTransitionStyle.bmdSwitcherTransitionStyleStinger},
-                {TStyle.Wipe, _BMDSwitcherTransitionStyle.bmdSwitcherTransitionStyleWipe},
+                {TransitionStyle.Mix, _BMDSwitcherTransitionStyle.bmdSwitcherTransitionStyleMix},
+                {TransitionStyle.Dip, _BMDSwitcherTransitionStyle.bmdSwitcherTransitionStyleDip},
+                {TransitionStyle.DVE, _BMDSwitcherTransitionStyle.bmdSwitcherTransitionStyleDVE},
+                {TransitionStyle.Stinger, _BMDSwitcherTransitionStyle.bmdSwitcherTransitionStyleStinger},
+                {TransitionStyle.Wipe, _BMDSwitcherTransitionStyle.bmdSwitcherTransitionStyleWipe},
             };
 
             VideoModesMap = new Dictionary<VideoMode, _BMDSwitcherVideoMode>

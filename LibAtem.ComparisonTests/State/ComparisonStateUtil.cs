@@ -81,7 +81,7 @@ namespace LibAtem.ComparisonTests.State
         {
             yield return state.Properties.FillSource;
 
-            switch (state.Properties.Mode)
+            switch (state.Properties.KeyType)
             {
                 case MixEffectKeyType.Luma:
                     yield return state.Properties.CutSource;

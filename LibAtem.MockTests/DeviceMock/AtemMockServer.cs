@@ -35,7 +35,8 @@ namespace LibAtem.MockTests.DeviceMock
         public string CurrentCase { get; set; }
         public ProtocolVersion CurrentVersion { get; set; } = ProtocolVersion.Minimum;
 
-        public Func<ICommand, IEnumerable<ICommand>> HandleCommand { get; set; }
+        public List<ReceivedPacket> PendingPackets { get; } = new List<ReceivedPacket>();
+        public AutoResetEvent HasPendingPackets{ get; } = new AutoResetEvent(false);
 
         public AtemMockServer(IReadOnlyDictionary<string, IReadOnlyList<byte[]>> handshakeStates)
         {
@@ -159,24 +160,22 @@ namespace LibAtem.MockTests.DeviceMock
 
                         if (!conn.IsOpened)
                         {
+                            conn.OnReceivePacket += (sender, pkt) =>
+                            {
+                                lock (PendingPackets)
+                                {
+                                    // Queue the packets for parsing and processing in the main thread
+                                    PendingPackets.Add(pkt);
+                                    HasPendingPackets.Set();
+                                }
+                            };
                             var recvThread = new Thread(o =>
                             {
                                 while (!conn.HasTimedOut || conn.HasCommandsToProcess)
                                 {
-                                    List<ICommand> cmds = conn.GetNextCommands();
+                                    // We dont want this, but we dont want this to build up and be a memory leak
+                                    conn.GetNextCommands();
 
-                                    Log.DebugFormat("Recieved {0} commands", cmds.Count);
-                                    if (HandleCommand != null)
-                                    {
-                                        cmds.ForEach(cmd =>
-                                        {
-                                            List<ICommand> res = HandleCommand(cmd).ToList();
-                                            if (res.Count == 0)
-                                                throw new Exception($"Unhandled command \"{cmd.GetType().Name}\" in server");
-
-                                            SendCommands(ListExtensions.WhereNotNull(res).ToArray());
-                                        });
-                                    }
                                     //conn.HandleInner(_state, connection, cmds);
                                 }
                             });
