@@ -35,3 +35,4 @@ logs/
 
 *.out
 AtemEmulator/state.xml
+AtemSDK

@@ -7,7 +7,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Log4Net.Async" Version="2.0.4" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="16.4.0" />
     <PackageReference Include="NAudio" Version="1.8.5" />
     <PackageReference Include="xunit" Version="2.4.1" />
@@ -36,15 +35,27 @@
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
   </ItemGroup>
-  <ItemGroup>
-    <COMReference Include="BMDSwitcherAPI">
-      <Guid>{8A92B919-156C-4D61-94EF-03F9BE4004B0}</Guid>
-      <VersionMajor>1</VersionMajor>
-      <VersionMinor>0</VersionMinor>
-      <Lcid>0</Lcid>
-      <WrapperTool>tlbimp</WrapperTool>
-      <Isolated>False</Isolated>
-    </COMReference>
-  </ItemGroup>
+
+  <Choose>
+    <When Condition=" '$(GITHUB_WORKFLOW)'!='' ">
+      <ItemGroup>
+        <Reference Include="Interop.BMDSwitcherAPI">
+          <HintPath>..\AtemSDK\v8.1\Interop.BMDSwitcherAPI.dll</HintPath>
+        </Reference>
+      </ItemGroup>
+    </When>
+    <Otherwise>
+      <ItemGroup>
+        <COMReference Include="BMDSwitcherAPI">
+          <Guid>{8A92B919-156C-4D61-94EF-03F9BE4004B0}</Guid>
+          <VersionMajor>1</VersionMajor>
+          <VersionMinor>0</VersionMinor>
+          <Lcid>0</Lcid>
+          <WrapperTool>tlbimp</WrapperTool>
+          <Isolated>False</Isolated>
+        </COMReference>
+      </ItemGroup>
+    </Otherwise>
+  </Choose>
 
 </Project>

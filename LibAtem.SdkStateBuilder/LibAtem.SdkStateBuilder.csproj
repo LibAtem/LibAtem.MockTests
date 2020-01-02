@@ -12,10 +12,26 @@
     <ProjectReference Include="..\LibAtem\LibAtem.State\LibAtem.State.csproj" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Reference Include="Interop.BMDSwitcherAPI">
-      <HintPath>..\LibAtem.ComparisonTests\obj\Debug\netcoreapp2.1\Interop.BMDSwitcherAPI.dll</HintPath>
-    </Reference>
-  </ItemGroup>
+  <Choose>
+    <When Condition=" '$(GITHUB_WORKFLOW)'!='' ">
+      <ItemGroup>
+        <Reference Include="Interop.BMDSwitcherAPI">
+          <HintPath>..\AtemSDK\v8.1\Interop.BMDSwitcherAPI.dll</HintPath>
+        </Reference>
+      </ItemGroup>
+    </When>
+    <Otherwise>
+      <ItemGroup>
+        <COMReference Include="BMDSwitcherAPI">
+          <Guid>{8A92B919-156C-4D61-94EF-03F9BE4004B0}</Guid>
+          <VersionMajor>1</VersionMajor>
+          <VersionMinor>0</VersionMinor>
+          <Lcid>0</Lcid>
+          <WrapperTool>tlbimp</WrapperTool>
+          <Isolated>False</Isolated>
+        </COMReference>
+      </ItemGroup>
+    </Otherwise>
+  </Choose>
 
 </Project>

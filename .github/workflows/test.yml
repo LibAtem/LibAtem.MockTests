@@ -1,0 +1,28 @@
+name: Run Tests
+
+on: [push]
+
+jobs:
+  build:
+
+    runs-on: windows-latest
+
+    steps:
+    - uses: actions/checkout@v1
+      with:
+        submodules: recursive
+    - name: Checkout SDK
+      uses: actions/checkout@v2
+      with:
+        repository: julusian/atemsdk
+        token: ${{ secrets.ATEMSDK_TOKEN }}
+        path: AtemSDK
+    - name: Setup .NET Core
+      uses: actions/setup-dotnet@v1
+      with:
+        dotnet-version: 3.1.100
+    - name: Test
+      run: |
+        regsvr32 $Env:GITHUB_WORKSPACE/AtemSDK/v8.1/BMDSwitcherAPI.dll /s
+        regsvr32 $Env:GITHUB_WORKSPACE/AtemSDK/v8.1/BMDSwitcherAPI64.dll /s
+        dotnet test LibAtem.MockTests

@@ -7,17 +7,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <COMReference Include="BMDSwitcherAPI.dll">
-      <Guid>8a92b919-156c-4d61-94ef-03f9be4004b0</Guid>
-      <VersionMajor>1</VersionMajor>
-      <VersionMinor>0</VersionMinor>
-      <WrapperTool>tlbimp</WrapperTool>
-      <Lcid>0</Lcid>
-      <Isolated>false</Isolated>
-    </COMReference>
-  </ItemGroup>
-
-  <ItemGroup>
     <PackageReference Include="log4net" Version="2.0.8" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="16.4.0" />
     <PackageReference Include="PcapngFile" Version="1.0.4" />
@@ -41,6 +30,28 @@
   <ItemGroup>
     <Folder Include="TestFiles\" />
   </ItemGroup>
+
+  <Choose>
+    <When Condition=" '$(GITHUB_WORKFLOW)'!='' ">
+      <ItemGroup>
+        <Reference Include="Interop.BMDSwitcherAPI">
+          <HintPath>..\AtemSDK\v8.1\Interop.BMDSwitcherAPI.dll</HintPath>
+        </Reference>
+      </ItemGroup>
+    </When>
+    <Otherwise>
+      <ItemGroup>
+        <COMReference Include="BMDSwitcherAPI">
+          <Guid>{8A92B919-156C-4D61-94EF-03F9BE4004B0}</Guid>
+          <VersionMajor>1</VersionMajor>
+          <VersionMinor>0</VersionMinor>
+          <Lcid>0</Lcid>
+          <WrapperTool>tlbimp</WrapperTool>
+          <Isolated>False</Isolated>
+        </COMReference>
+      </ItemGroup>
+    </Otherwise>
+  </Choose>
 
   <ItemGroup>
     <None Update="TestFiles\Handshake\8.0.1-2me.pcapng">
