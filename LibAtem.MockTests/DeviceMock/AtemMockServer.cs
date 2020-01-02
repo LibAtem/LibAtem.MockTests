@@ -89,7 +89,7 @@ namespace LibAtem.MockTests.DeviceMock
         private static Socket CreateSocket()
         {
             Socket serverSocket = new Socket(AddressFamily.InterNetwork, SocketType.Dgram, ProtocolType.Udp);
-            IPEndPoint ipEndPoint = new IPEndPoint(IPAddress.Any, 9910);
+            IPEndPoint ipEndPoint = new IPEndPoint(IPAddress.Loopback, 9910);
             serverSocket.Bind(ipEndPoint);
 
             return serverSocket;
@@ -208,6 +208,8 @@ namespace LibAtem.MockTests.DeviceMock
         public void ResendDataDumps()
         {
             _connections.SendDataDumps(BuildDataDumps());
+            CurrentTime = 99;
+            SendCommands(); // Send a time
         }
 
         public ImmutableList<ICommand> GetParsedDataDump()

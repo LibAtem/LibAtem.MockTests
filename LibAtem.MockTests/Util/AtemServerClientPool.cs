@@ -29,6 +29,7 @@ namespace LibAtem.MockTests.Util
 
         public AtemMockServer Server { get; }
         public AtemClient LibAtemClient { get; }
+        public AtemSdkClientWrapper SdkClient { get; }
         public AtemStateBuilderSettings StateSettings { get; }
 
         public AtemServerClientPool()
@@ -70,6 +71,9 @@ namespace LibAtem.MockTests.Util
                 connectionEvent.Set();
             };
             LibAtemClient.Connect();
+
+            SdkClient = new AtemSdkClientWrapper("127.0.0.1", StateSettings);
+
             Assert.True(connectionEvent.WaitOne(TimeSpan.FromSeconds(3)), "LibAtem: Connection attempt timed out");
         }
 
@@ -80,6 +84,7 @@ namespace LibAtem.MockTests.Util
         {
             _isDisposing = true;
             LibAtemClient.Dispose();
+            SdkClient.Dispose();
             Server.Dispose();
         }
     }

@@ -24,7 +24,8 @@ namespace LibAtem.MockTests.DeviceMock
             List<OutboundMessage> messages2 = messages.ToList();
             lock (connections)
             {
-                connections.ForEach(conn => { messages2.ForEach(conn.Value.QueueMessage); });
+                // minor optimisation by skipping the libatem client
+                connections.Skip(1).ForEach(conn => { messages2.ForEach(conn.Value.QueueMessage); });
             }
         }
 

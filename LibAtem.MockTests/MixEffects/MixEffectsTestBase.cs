@@ -31,7 +31,7 @@ namespace LibAtem.MockTests.MixEffects
 
         protected static List<Tuple<MixEffectBlockId, T>> GetMixEffects<T>(AtemMockServerWrapper helper) where T : class
         {
-            var iterator = AtemSDKConverter.CastSdk<IBMDSwitcherMixEffectBlockIterator>(helper.Clients.SdkSwitcher.CreateIterator);
+            var iterator = AtemSDKConverter.CastSdk<IBMDSwitcherMixEffectBlockIterator>(helper.SdkClient.SdkSwitcher.CreateIterator);
 
             var result = new List<Tuple<MixEffectBlockId, T>>();
             int index = 0;

@@ -24,7 +24,7 @@ namespace LibAtem.MockTests.Util
         private readonly Func<ImmutableList<ICommand>, ICommand, IEnumerable<ICommand>> _handler;
 
         public AtemMockServer Server { get; }
-        public AtemSdkClientWrapper Clients { get; }
+        public AtemSdkClientWrapper SdkClient { get; }
         public AtemTestHelper Helper { get; }
 
         public AtemMockServerWrapper(ITestOutputHelper output, AtemServerClientPool pool, Func<ImmutableList<ICommand>, ICommand, IEnumerable<ICommand>> handler, TestCaseId caseId)
@@ -35,17 +35,22 @@ namespace LibAtem.MockTests.Util
             Server = _pool.Server;
             Server.CurrentCase = caseId.Item2;
             Server.CurrentVersion = caseId.Item1; // TODO - we need to get the server to send this as a command, to make libatem happy (does that break sdk?)
-            Clients = new AtemSdkClientWrapper("127.0.0.1", _pool.StateSettings);
+            SdkClient = _pool.SdkClient;
+
+            var resetEvent = new ManualResetEvent(false);
+            void TmpHandler(object o) => resetEvent.Set();
+            SdkClient.OnSdkStateChange += TmpHandler;
+            Server.ResendDataDumps();
+            resetEvent.WaitOne(2000); // TODO - monitor result
+            SdkClient.OnSdkStateChange -= TmpHandler;
 
             var profile = _pool.GetDeviceProfile(caseId.Item2);
-            Helper = new AtemTestHelper(Clients, _output, _pool.LibAtemClient, profile, _pool.StateSettings);
-            //Server.HandleCommand = cmd => handler(Server.GetParsedDataDump(), cmd);
+            Helper = new AtemTestHelper(SdkClient, _output, _pool.LibAtemClient, profile, _pool.StateSettings);
         }
 
         public void Dispose()
         {
             Helper.Dispose();
-            Clients.Dispose();
             Server.CurrentCase = null;
             Server.CurrentVersion = ProtocolVersion.Minimum;
             lock (Server.PendingPackets)

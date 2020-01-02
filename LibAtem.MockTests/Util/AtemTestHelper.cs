@@ -35,26 +35,32 @@ namespace LibAtem.MockTests.Util
             Profile = profile;
             StateSettings = stateSettings;
 
+            SyncStates();
             _libAtemClient.OnReceive += LibAtemReceive;
 
-            SyncStates();
             AssertStatesMatch();
         }
 
         public void SyncStates()
         {
-           _libAtemState = SdkClient.BuildState();
+            lock (_libAtemClient)
+            {
+                _libAtemState = SdkClient.BuildState();
+            }
         }
 
         private void LibAtemReceive(object sender, IReadOnlyList<ICommand> commands)
         {
-            foreach (ICommand cmd in commands)
+            lock (_libAtemClient)
             {
-                // TODO - handle result?
-                IUpdateResult result = AtemStateBuilder.Update(_libAtemState, cmd, StateSettings);
-                foreach (string change in result.ChangedPaths)
+                foreach (ICommand cmd in commands)
                 {
-                    OnLibAtemStateChange?.Invoke(this, change);
+                    // TODO - handle result?
+                    IUpdateResult result = AtemStateBuilder.Update(_libAtemState, cmd, StateSettings);
+                    foreach (string change in result.ChangedPaths)
+                    {
+                        OnLibAtemStateChange?.Invoke(this, change);
+                    }
                 }
             }
         }
@@ -79,7 +85,14 @@ namespace LibAtem.MockTests.Util
         public ITestOutputHelper Output { get; }
 
         public AtemState BuildSdkState() => SdkClient.BuildState();
-        public AtemState BuildLibState() => _libAtemState.Clone();
+
+        public AtemState BuildLibState()
+        {
+            lock (_libAtemClient)
+            {
+                return _libAtemState.Clone();
+            }
+        }
 
         public IBMDSwitcher SdkSwitcher => SdkClient.SdkSwitcher;
 

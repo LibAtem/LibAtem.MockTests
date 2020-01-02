@@ -14,9 +14,9 @@ namespace LibAtem.MockTests.Util
 {
     public sealed class AtemSdkClientWrapper : IDisposable
     {
-        private IBMDSwitcherDiscovery _switcherDiscovery;
-        private IBMDSwitcher _sdkSwitcher;
-        private AtemSDKStateMonitor _sdkState;
+        private readonly IBMDSwitcherDiscovery _switcherDiscovery;
+        private readonly IBMDSwitcher _sdkSwitcher;
+        private readonly AtemSDKStateMonitor _sdkState;
         private readonly AtemStateBuilderSettings _updateSettings;
 
         public IBMDSwitcher SdkSwitcher => _sdkSwitcher;
@@ -57,10 +57,6 @@ namespace LibAtem.MockTests.Util
         public void Dispose()
         {
             _sdkState.Dispose();
-            _sdkSwitcher = null;
-            _sdkState = null;
-            _switcherDiscovery = null;
-            GC.Collect();
             // TODO - reenable once LibAtem allows disconnection
             // Assert.True(_disposeEvent.WaitOne(TimeSpan.FromSeconds(1)), "LibAtem: Cleanup timed out");
 
