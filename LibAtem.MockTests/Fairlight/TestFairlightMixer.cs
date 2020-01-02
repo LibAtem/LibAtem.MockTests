@@ -37,7 +37,7 @@ namespace LibAtem.MockTests.Fairlight
             AtemMockServerWrapper.Each(_output, _pool, handler, DeviceTestCases.FairlightMain, helper =>
             {
                 IBMDSwitcherFairlightAudioMixer mixer = GetFairlightMixer(helper);
-                AtemState stateBefore = helper.Helper.LibState;
+                AtemState stateBefore = helper.Helper.BuildLibState();
 
                 for (int i = 0; i < 5; i++)
                 {
@@ -61,7 +61,7 @@ namespace LibAtem.MockTests.Fairlight
             AtemMockServerWrapper.Each(_output, _pool, handler, DeviceTestCases.FairlightMain, helper =>
             {
                 IBMDSwitcherFairlightAudioMixer mixer = GetFairlightMixer(helper);
-                AtemState stateBefore = helper.Helper.LibState;
+                AtemState stateBefore = helper.Helper.BuildLibState();
 
                 uint timeBefore = helper.Server.CurrentTime;
 
@@ -80,7 +80,7 @@ namespace LibAtem.MockTests.Fairlight
             AtemMockServerWrapper.Each(_output, _pool, handler, DeviceTestCases.FairlightMain, helper =>
             {
                 IBMDSwitcherFairlightAudioMixer mixer = GetFairlightMixer(helper);
-                AtemState stateBefore = helper.Helper.LibState;
+                AtemState stateBefore = helper.Helper.BuildLibState();
 
                 uint timeBefore = helper.Server.CurrentTime;
 
@@ -97,7 +97,7 @@ namespace LibAtem.MockTests.Fairlight
             AtemMockServerWrapper.Each(_output, _pool, null, DeviceTestCases.FairlightMain, helper =>
             {
                 IBMDSwitcherFairlightAudioMixer mixer = GetFairlightMixer(helper);
-                AtemState stateBefore = helper.Helper.LibState;
+                AtemState stateBefore = helper.Helper.BuildLibState();
 
                 for (int i = 0; i < 5; i++)
                 {

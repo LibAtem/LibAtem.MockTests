@@ -40,12 +40,12 @@ namespace LibAtem.MockTests.Fairlight
             bool tested = false;
             AtemMockServerWrapper.Each(_output, _pool, handler, DeviceTestCases.FairlightMain, helper =>
             {
-                IEnumerable<long> useIds = Randomiser.SelectionOfGroup(helper.Helper.LibState.Fairlight.Inputs.Keys.ToList());
+                IEnumerable<long> useIds = Randomiser.SelectionOfGroup(helper.Helper.BuildLibState().Fairlight.Inputs.Keys.ToList());
                 foreach (long id in useIds)
                 {
                     IBMDSwitcherFairlightAudioInput input = GetInput(helper, id);
 
-                    AtemState stateBefore = helper.Helper.LibState;
+                    AtemState stateBefore = helper.Helper.BuildLibState();
                     FairlightAudioState.InputState inputState = stateBefore.Fairlight.Inputs[id];
 
                     var testConfigs = AtemSDKConverter.GetFlagsValues(input.GetSupportedConfigurations,
@@ -70,14 +70,14 @@ namespace LibAtem.MockTests.Fairlight
         {
             AtemMockServerWrapper.Each(_output, _pool, null, DeviceTestCases.FairlightMain, helper =>
             {
-                IEnumerable<long> useIds = Randomiser.SelectionOfGroup(helper.Helper.LibState.Fairlight.Inputs.Keys.ToList());
+                IEnumerable<long> useIds = Randomiser.SelectionOfGroup(helper.Helper.BuildLibState().Fairlight.Inputs.Keys.ToList());
                 foreach (long id in useIds)
                 {
                     helper.Helper.SyncStates();
 
                     IBMDSwitcherFairlightAudioInput input = GetInput(helper, id);
 
-                    AtemState stateBefore = helper.Helper.LibState;
+                    AtemState stateBefore = helper.Helper.BuildLibState();
                     FairlightAudioState.InputState inputState = stateBefore.Fairlight.Inputs[id];
                     inputState.Sources.Add(new FairlightAudioState.InputSourceState
                     {
@@ -127,13 +127,13 @@ namespace LibAtem.MockTests.Fairlight
             bool tested = false;
             AtemMockServerWrapper.Each(_output, _pool, handler, DeviceTestCases.FairlightAnalog, helper =>
             {
-                IEnumerable<long> useIds = helper.Helper.LibState.Fairlight.Inputs.Keys.ToList();
+                IEnumerable<long> useIds = helper.Helper.BuildLibState().Fairlight.Inputs.Keys.ToList();
                 foreach (long id in useIds)
                 {
                     IBMDSwitcherFairlightAudioInput input = GetInput(helper, id);
                     if (input is IBMDSwitcherFairlightAnalogAudioInput analogInput)
                     {
-                        AtemState stateBefore = helper.Helper.LibState;
+                        AtemState stateBefore = helper.Helper.BuildLibState();
                         FairlightAudioState.AnalogState inputState = stateBefore.Fairlight.Inputs[id].Analog;
 
                         var testConfigs = AtemSDKConverter.GetFlagsValues(analogInput.GetSupportedInputLevels,
@@ -162,13 +162,13 @@ namespace LibAtem.MockTests.Fairlight
             bool tested = false;
             AtemMockServerWrapper.Each(_output, _pool, handler, DeviceTestCases.FairlightXLR, helper =>
             {
-                IEnumerable<long> useIds = helper.Helper.LibState.Fairlight.Inputs.Keys.ToList();
+                IEnumerable<long> useIds = helper.Helper.BuildLibState().Fairlight.Inputs.Keys.ToList();
                 foreach (long id in useIds)
                 {
                     IBMDSwitcherFairlightAudioInput input = GetInput(helper, id);
                     if (input is IBMDSwitcherFairlightAudioInputXLR xlrInput)
                     {
-                        AtemState stateBefore = helper.Helper.LibState;
+                        AtemState stateBefore = helper.Helper.BuildLibState();
                         FairlightAudioState.InputState inputState = stateBefore.Fairlight.Inputs[id];
 
                         xlrInput.HasRCAToXLR(out int isAvailable);

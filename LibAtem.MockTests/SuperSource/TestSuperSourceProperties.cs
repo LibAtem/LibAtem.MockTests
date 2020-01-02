@@ -142,7 +142,7 @@ namespace LibAtem.MockTests.SuperSource
             var handler = CommandGenerator.CreateAutoCommandHandler<SuperSourcePropertiesSetV8Command, SuperSourcePropertiesGetV8Command>("ArtFillSource");
             AtemMockServerWrapper.Each(_output, _pool, handler, DeviceTestCases.SuperSource, helper =>
             {
-                List<VideoSource> deviceSources = helper.Helper.LibState.Settings.Inputs.Keys.ToList();
+                List<VideoSource> deviceSources = helper.Helper.BuildLibState().Settings.Inputs.Keys.ToList();
                 VideoSource[] validSources = deviceSources.Where(s =>
                     s.IsAvailable(helper.Helper.Profile, InternalPortType.Mask | InternalPortType.Auxiliary | InternalPortType.MEOutput | InternalPortType.SuperSource) &&
                     s.IsAvailable(SourceAvailability.SuperSourceArt)).ToArray();
@@ -169,7 +169,7 @@ namespace LibAtem.MockTests.SuperSource
             var handler = CommandGenerator.CreateAutoCommandHandler<SuperSourcePropertiesSetV8Command, SuperSourcePropertiesGetV8Command>("ArtCutSource");
             AtemMockServerWrapper.Each(_output, _pool, handler, DeviceTestCases.SuperSource, helper =>
             {
-                List<VideoSource> deviceSources = helper.Helper.LibState.Settings.Inputs.Keys.ToList();
+                List<VideoSource> deviceSources = helper.Helper.BuildLibState().Settings.Inputs.Keys.ToList();
                 VideoSource[] validSources = deviceSources.Where(s =>
                     s.IsAvailable(helper.Helper.Profile, InternalPortType.Mask | InternalPortType.Auxiliary | InternalPortType.MEOutput | InternalPortType.SuperSource) &&
                     s.IsAvailable(SourceAvailability.SuperSourceArt)).ToArray();

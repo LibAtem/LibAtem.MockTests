@@ -61,7 +61,7 @@ namespace LibAtem.MockTests.Fairlight
 
         public static void EachRandomSource(AtemMockServerWrapper helper, Action<AtemState, FairlightAudioState.InputSourceState, long, IBMDSwitcherFairlightAudioSource, int> fcn, int maxIterations = 5, bool useAll = false)
         {
-            List<long> useIds = helper.Helper.LibState.Fairlight.Inputs.Keys.ToList();
+            List<long> useIds = helper.Helper.BuildLibState().Fairlight.Inputs.Keys.ToList();
             if (!useAll) useIds = Randomiser.SelectionOfGroup(useIds, 2).ToList();
 
             foreach (long id in useIds)
@@ -71,7 +71,7 @@ namespace LibAtem.MockTests.Fairlight
                 IBMDSwitcherFairlightAudioSource src = GetSource(helper, id);
                 src.GetId(out long sourceId);
 
-                AtemState stateBefore = helper.Helper.LibState;
+                AtemState stateBefore = helper.Helper.BuildLibState();
                 FairlightAudioState.InputSourceState srcState = stateBefore.Fairlight.Inputs[id].Sources.Single(s => s.SourceId == sourceId);
 
                 for (int i = 0; i < maxIterations; i++)

@@ -73,7 +73,7 @@ namespace LibAtem.MockTests.MixEffects
 
             foreach (Tuple<MixEffectBlockId, UpstreamKeyId, T> keyer in useKeyers)
             {
-                AtemState stateBefore = helper.Helper.LibState;
+                AtemState stateBefore = helper.Helper.BuildLibState();
                 MixEffectState.KeyerState keyerBefore = stateBefore.MixEffects[(int)keyer.Item1].Keyers[(int)keyer.Item2];
 
                 for (int i = 0; i < iterations; i++)
@@ -88,7 +88,7 @@ namespace LibAtem.MockTests.MixEffects
             List<Tuple<MixEffectBlockId, T>> mixEffects = GetMixEffects<T>(helper);
             foreach (Tuple<MixEffectBlockId, T> me in mixEffects)
             {
-                AtemState stateBefore = helper.Helper.LibState;
+                AtemState stateBefore = helper.Helper.BuildLibState();
                 MixEffectState meBefore = stateBefore.MixEffects[(int)me.Item1];
 
                 for (int i = 0; i < iterations; i++)
@@ -100,7 +100,7 @@ namespace LibAtem.MockTests.MixEffects
 
         protected static VideoSource[] GetTransitionSourcesSelection(AtemMockServerWrapper helper)
         {
-            List<VideoSource> deviceSources = helper.Helper.LibState.Settings.Inputs.Keys.ToList();
+            List<VideoSource> deviceSources = helper.Helper.BuildLibState().Settings.Inputs.Keys.ToList();
             VideoSource[] validSources = deviceSources.Where(s =>
                 s.IsAvailable(helper.Helper.Profile, InternalPortType.Mask) &&
                 s.IsAvailable(SourceAvailability.KeySource)).ToArray();

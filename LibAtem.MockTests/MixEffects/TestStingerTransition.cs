@@ -25,7 +25,7 @@ namespace LibAtem.MockTests.MixEffects
             var handler = CommandGenerator.CreateAutoCommandHandler<TransitionStingerSetCommand, TransitionStingerGetCommand>("Source");
             AtemMockServerWrapper.Each(Output, Pool, handler, DeviceTestCases.All, helper =>
             {
-                int mpCount = helper.Helper.LibState.MediaPlayers.Count;
+                int mpCount = helper.Helper.BuildLibState().MediaPlayers.Count;
                 List<StingerSource> sources = Enum.GetValues(typeof(StingerSource)).OfType<StingerSource>().Where(s => ((int)s) < mpCount).ToList();
                 if (sources.Count <= 1) return;
 

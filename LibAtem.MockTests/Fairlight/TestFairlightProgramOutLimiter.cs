@@ -36,7 +36,7 @@ namespace LibAtem.MockTests.Fairlight
             {
                 IBMDSwitcherFairlightAudioLimiter limiter = GetLimiter(helper);
 
-                AtemState stateBefore = helper.Helper.LibState;
+                AtemState stateBefore = helper.Helper.BuildLibState();
 
                 for (int i = 0; i < 5; i++)
                 {
@@ -54,7 +54,7 @@ namespace LibAtem.MockTests.Fairlight
             {
                 IBMDSwitcherFairlightAudioLimiter limiter = GetLimiter(helper);
 
-                AtemState stateBefore = helper.Helper.LibState;
+                AtemState stateBefore = helper.Helper.BuildLibState();
 
                 for (int i = 0; i < 5; i++)
                 {
@@ -73,7 +73,7 @@ namespace LibAtem.MockTests.Fairlight
             {
                 IBMDSwitcherFairlightAudioLimiter limiter = GetLimiter(helper);
 
-                AtemState stateBefore = helper.Helper.LibState;
+                AtemState stateBefore = helper.Helper.BuildLibState();
 
                 for (int i = 0; i < 5; i++)
                 {
@@ -92,7 +92,7 @@ namespace LibAtem.MockTests.Fairlight
             {
                 IBMDSwitcherFairlightAudioLimiter limiter = GetLimiter(helper);
 
-                AtemState stateBefore = helper.Helper.LibState;
+                AtemState stateBefore = helper.Helper.BuildLibState();
 
                 for (int i = 0; i < 5; i++)
                 {
@@ -111,7 +111,7 @@ namespace LibAtem.MockTests.Fairlight
             {
                 IBMDSwitcherFairlightAudioLimiter limiter = GetLimiter(helper);
 
-                AtemState stateBefore = helper.Helper.LibState;
+                AtemState stateBefore = helper.Helper.BuildLibState();
 
                 for (int i = 0; i < 5; i++)
                 {

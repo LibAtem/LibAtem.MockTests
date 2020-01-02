@@ -177,7 +177,7 @@ namespace LibAtem.ComparisonTests.State
                 {
                     byte[] oldVal2 = (byte[]) oldVal;
                     byte[] newVal2 = (byte[]) newVal;
-                    if (!oldVal2.SequenceEqual(newVal2))
+                    if (oldVal2 == null || newVal2 == null || !oldVal2.SequenceEqual(newVal2))
                     {
                         yield return "Value: " + name + prop.Name + " Expected: " + oldVal + " Actual: " + newVal;
                     }

@@ -14,9 +14,9 @@ namespace LibAtem.MockTests.Util
 {
     public sealed class AtemSdkClientWrapper : IDisposable
     {
-        private readonly IBMDSwitcherDiscovery _switcherDiscovery;
-        private readonly IBMDSwitcher _sdkSwitcher;
-        private readonly AtemSDKStateMonitor _sdkState;
+        private IBMDSwitcherDiscovery _switcherDiscovery;
+        private IBMDSwitcher _sdkSwitcher;
+        private AtemSDKStateMonitor _sdkState;
         private readonly AtemStateBuilderSettings _updateSettings;
 
         public IBMDSwitcher SdkSwitcher => _sdkSwitcher;
@@ -46,37 +46,25 @@ namespace LibAtem.MockTests.Util
                 throw new Exception($"SDK Connection failure: {failReason}");
             }
 
-            _sdkSwitcher.AddCallback(new SwitcherConnectionMonitor()); // TODO - make this monitor work better!
+            //_sdkSwitcher.AddCallback(new SwitcherConnectionMonitor()); // TODO - make this monitor work better!
 
             _sdkState = new AtemSDKStateMonitor(_sdkSwitcher);
             _sdkState.OnStateChange += (s) => OnSdkStateChange?.Invoke(s);
         }
 
-        public AtemState State => SdkStateBuilder.SdkStateBuilder.Build(SdkSwitcher, _updateSettings);
+        public AtemState BuildState() => SdkStateBuilder.SdkStateBuilder.Build(SdkSwitcher, _updateSettings);
         
         public void Dispose()
         {
             _sdkState.Dispose();
+            _sdkSwitcher = null;
+            _sdkState = null;
+            _switcherDiscovery = null;
+            GC.Collect();
             // TODO - reenable once LibAtem allows disconnection
             // Assert.True(_disposeEvent.WaitOne(TimeSpan.FromSeconds(1)), "LibAtem: Cleanup timed out");
 
             //Thread.Sleep(500);
-        }
-
-        public delegate void SwitcherEventHandler(object sender, object args);
-
-        private class SwitcherConnectionMonitor : IBMDSwitcherCallback
-        {
-            // Events:
-            public event SwitcherEventHandler SwitcherDisconnected;
-
-            void IBMDSwitcherCallback.Notify(_BMDSwitcherEventType eventType, _BMDSwitcherVideoMode coreVideoMode)
-            {
-                if (eventType == _BMDSwitcherEventType.bmdSwitcherEventTypeDisconnected)
-                {
-                    SwitcherDisconnected?.Invoke(this, null);
-                }
-            }
         }
         
     }

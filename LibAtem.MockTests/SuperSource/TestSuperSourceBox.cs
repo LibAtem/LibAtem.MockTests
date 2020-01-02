@@ -47,7 +47,7 @@ namespace LibAtem.MockTests.SuperSource
             var handler = CommandGenerator.CreateAutoCommandHandler<SuperSourceBoxSetV8Command, SuperSourceBoxGetV8Command>("Source");
             AtemMockServerWrapper.Each(_output, _pool, handler, DeviceTestCases.SuperSource, helper =>
             {
-                List<VideoSource> deviceSources = helper.Helper.LibState.Settings.Inputs.Keys.ToList();
+                List<VideoSource> deviceSources = helper.Helper.BuildLibState().Settings.Inputs.Keys.ToList();
                 VideoSource[] validSources = deviceSources.Where(s =>
                     s.IsAvailable(helper.Helper.Profile, InternalPortType.Mask | InternalPortType.Auxiliary | InternalPortType.MEOutput | InternalPortType.SuperSource) &&
                     s.IsAvailable(SourceAvailability.SuperSourceBox)).ToArray();

@@ -105,7 +105,7 @@ namespace LibAtem.MockTests
 
             var libAtemState = GetLibAtemState(stateSettings, "127.0.0.1");
 
-            List<string> before = AtemStateComparer.AreEqual(helper.State, libAtemState);
+            List<string> before = AtemStateComparer.AreEqual(helper.BuildState(), libAtemState);
             if (before.Count != 0 && _output != null)
             {
                 _output.WriteLine("state mismatch:");

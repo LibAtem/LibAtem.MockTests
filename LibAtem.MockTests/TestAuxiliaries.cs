@@ -44,7 +44,7 @@ namespace LibAtem.MockTests
                     aux.GetInputAvailabilityMask(out _BMDSwitcherInputAvailability availabilityMask);
                     Assert.Equal(availabilityMask, (_BMDSwitcherInputAvailability)((int)SourceAvailability.Auxiliary << 2));
 
-                    AtemState stateBefore = helper.Helper.LibState;
+                    AtemState stateBefore = helper.Helper.BuildLibState();
 
                     List<VideoSource> deviceSources = stateBefore.Settings.Inputs.Keys.ToList();
 

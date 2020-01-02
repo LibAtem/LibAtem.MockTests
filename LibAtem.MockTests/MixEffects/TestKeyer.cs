@@ -182,7 +182,7 @@ namespace LibAtem.MockTests.MixEffects
             var handler = CommandGenerator.CreateAutoCommandHandler<MixEffectKeyFillSourceSetCommand, MixEffectKeyPropertiesGetCommand>("FillSource", true);
             AtemMockServerWrapper.Each(Output, Pool, handler, DeviceTestCases.All, helper =>
             {
-                List<VideoSource> deviceSources = helper.Helper.LibState.Settings.Inputs.Keys.ToList();
+                List<VideoSource> deviceSources = helper.Helper.BuildLibState().Settings.Inputs.Keys.ToList();
                 VideoSource[] validSources = deviceSources.Where(s =>
                     s.IsAvailable(helper.Helper.Profile, InternalPortType.Mask | InternalPortType.Auxiliary | InternalPortType.MEOutput | InternalPortType.SuperSource) &&
                     s.IsAvailable(SourceAvailability.KeySource)).ToArray();
@@ -205,7 +205,7 @@ namespace LibAtem.MockTests.MixEffects
             var handler = CommandGenerator.CreateAutoCommandHandler<MixEffectKeyCutSourceSetCommand, MixEffectKeyPropertiesGetCommand>("CutSource", true);
             AtemMockServerWrapper.Each(Output, Pool, handler, DeviceTestCases.All, helper =>
             {
-                List<VideoSource> deviceSources = helper.Helper.LibState.Settings.Inputs.Keys.ToList();
+                List<VideoSource> deviceSources = helper.Helper.BuildLibState().Settings.Inputs.Keys.ToList();
                 VideoSource[] validSources = deviceSources.Where(s =>
                     s.IsAvailable(helper.Helper.Profile, InternalPortType.Mask | InternalPortType.Auxiliary | InternalPortType.MEOutput | InternalPortType.SuperSource) &&
                     s.IsAvailable(SourceAvailability.KeySource)).ToArray();

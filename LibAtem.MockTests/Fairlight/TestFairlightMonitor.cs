@@ -41,7 +41,7 @@ namespace LibAtem.MockTests.Fairlight
                 if (monitor == null) return;
                 tested = true;
 
-                AtemState stateBefore = helper.Helper.LibState;
+                AtemState stateBefore = helper.Helper.BuildLibState();
                 FairlightAudioState.MonitorOutputState monState = stateBefore.Fairlight.Monitors.Single();
 
                 for (int i = 0; i < 5; i++)
@@ -65,7 +65,7 @@ namespace LibAtem.MockTests.Fairlight
                 if (monitor == null) return;
                 tested = true;
 
-                AtemState stateBefore = helper.Helper.LibState;
+                AtemState stateBefore = helper.Helper.BuildLibState();
                 FairlightAudioState.MonitorOutputState monState = stateBefore.Fairlight.Monitors.Single();
 
                 for (int i = 0; i < 5; i++)
@@ -89,7 +89,7 @@ namespace LibAtem.MockTests.Fairlight
                 if (monitor == null) return;
                 tested = true;
 
-                AtemState stateBefore = helper.Helper.LibState;
+                AtemState stateBefore = helper.Helper.BuildLibState();
                 FairlightAudioState.MonitorOutputState monState = stateBefore.Fairlight.Monitors.Single();
 
                 for (int i = 0; i < 5; i++)
@@ -113,7 +113,7 @@ namespace LibAtem.MockTests.Fairlight
                 if (monitor == null) return;
                 tested = true;
 
-                AtemState stateBefore = helper.Helper.LibState;
+                AtemState stateBefore = helper.Helper.BuildLibState();
                 FairlightAudioState.MonitorOutputState monState = stateBefore.Fairlight.Monitors.Single();
 
                 for (int i = 0; i < 5; i++)

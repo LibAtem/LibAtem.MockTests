@@ -25,7 +25,7 @@ namespace LibAtem.MockTests.MixEffects
             var handler = CommandGenerator.CreateAutoCommandHandler<ProgramInputSetCommand, ProgramInputGetCommand>("Source", true);
             AtemMockServerWrapper.Each(Output, Pool, handler, DeviceTestCases.All, helper =>
             {
-                List<VideoSource> deviceSources = helper.Helper.LibState.Settings.Inputs.Keys.ToList();
+                List<VideoSource> deviceSources = helper.Helper.BuildLibState().Settings.Inputs.Keys.ToList();
                 List<VideoSource> validSources = deviceSources.Where(s =>
                     s.IsAvailable(helper.Helper.Profile, InternalPortType.Mask | InternalPortType.Auxiliary | InternalPortType.MEOutput)).ToList();
                 VideoSource[] sampleSources = Randomiser.SelectionOfGroup(validSources).ToArray();
@@ -51,7 +51,7 @@ namespace LibAtem.MockTests.MixEffects
             var handler = CommandGenerator.CreateAutoCommandHandler<PreviewInputSetCommand, PreviewInputGetCommand>("Source", true);
             AtemMockServerWrapper.Each(Output, Pool, handler, DeviceTestCases.All, helper =>
             {
-                List<VideoSource> deviceSources = helper.Helper.LibState.Settings.Inputs.Keys.ToList();
+                List<VideoSource> deviceSources = helper.Helper.BuildLibState().Settings.Inputs.Keys.ToList();
                 List<VideoSource> validSources = deviceSources.Where(s =>
                     s.IsAvailable(helper.Helper.Profile, InternalPortType.Mask | InternalPortType.Auxiliary | InternalPortType.MEOutput)).ToList();
                 VideoSource[] sampleSources = Randomiser.SelectionOfGroup(validSources).ToArray();

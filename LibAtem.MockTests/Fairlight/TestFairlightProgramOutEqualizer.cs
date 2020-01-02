@@ -38,7 +38,7 @@ namespace LibAtem.MockTests.Fairlight
             AtemMockServerWrapper.Each(_output, _pool, handler, DeviceTestCases.FairlightMain, helper =>
             {
                 IBMDSwitcherFairlightAudioEqualizer equalizer = GetEqualizer(helper);
-                AtemState stateBefore = helper.Helper.LibState;
+                AtemState stateBefore = helper.Helper.BuildLibState();
 
                 for (int i = 0; i < 5; i++)
                 {
@@ -55,7 +55,7 @@ namespace LibAtem.MockTests.Fairlight
             AtemMockServerWrapper.Each(_output, _pool, handler, DeviceTestCases.FairlightMain, helper =>
             {
                 IBMDSwitcherFairlightAudioEqualizer equalizer = GetEqualizer(helper);
-                AtemState stateBefore = helper.Helper.LibState;
+                AtemState stateBefore = helper.Helper.BuildLibState();
 
                 for (int i = 0; i < 5; i++)
                 {

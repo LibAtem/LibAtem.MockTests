@@ -44,7 +44,7 @@ namespace LibAtem.MockTests
         {
             foreach (Tuple<DownstreamKeyId, IBMDSwitcherDownstreamKey> c in GetKeyers(helper))
             {
-                AtemState stateBefore = helper.Helper.LibState;
+                AtemState stateBefore = helper.Helper.BuildLibState();
                 DownstreamKeyerState dskBefore = stateBefore.DownstreamKeyers[(int)c.Item1];
                 Assert.NotNull(dskBefore);
 
@@ -253,7 +253,7 @@ namespace LibAtem.MockTests
             var handler = CommandGenerator.CreateAutoCommandHandler<DownstreamKeyFillSourceSetCommand, DownstreamKeySourceGetCommand>("FillSource", true);
             AtemMockServerWrapper.Each(_output, _pool, handler, DeviceTestCases.All, helper =>
             {
-                List<VideoSource> deviceSources = helper.Helper.LibState.Settings.Inputs.Keys.ToList();
+                List<VideoSource> deviceSources = helper.Helper.BuildLibState().Settings.Inputs.Keys.ToList();
                 VideoSource[] validSources = deviceSources.Where(s =>
                     s.IsAvailable(helper.Helper.Profile, InternalPortType.Mask | InternalPortType.Auxiliary | InternalPortType.MEOutput | InternalPortType.SuperSource) &&
                     s.IsAvailable(SourceAvailability.KeySource)).ToArray();
@@ -276,7 +276,7 @@ namespace LibAtem.MockTests
             var handler = CommandGenerator.CreateAutoCommandHandler<DownstreamKeyCutSourceSetCommand, DownstreamKeySourceGetCommand>("CutSource", true);
             AtemMockServerWrapper.Each(_output, _pool, handler, DeviceTestCases.All, helper =>
             {
-                List<VideoSource> deviceSources = helper.Helper.LibState.Settings.Inputs.Keys.ToList();
+                List<VideoSource> deviceSources = helper.Helper.BuildLibState().Settings.Inputs.Keys.ToList();
                 VideoSource[] validSources = deviceSources.Where(s =>
                     s.IsAvailable(helper.Helper.Profile, InternalPortType.Mask | InternalPortType.Auxiliary | InternalPortType.MEOutput | InternalPortType.SuperSource) &&
                     s.IsAvailable(SourceAvailability.KeySource)).ToArray();

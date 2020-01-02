@@ -27,10 +27,9 @@ namespace LibAtem.MockTests.Util
         public delegate void CommandKeyHandler(object sender, string path);
         public event CommandKeyHandler OnLibAtemStateChange;
 
-        public AtemTestHelper(AtemSdkClientWrapper client, ITestOutputHelper output, AtemClient libAtemClient, DeviceProfile.DeviceProfile profile, AtemState libAtemState, AtemStateBuilderSettings stateSettings)
+        public AtemTestHelper(AtemSdkClientWrapper client, ITestOutputHelper output, AtemClient libAtemClient, DeviceProfile.DeviceProfile profile, AtemStateBuilderSettings stateSettings)
         {
             _libAtemClient = libAtemClient;
-            _libAtemState = libAtemState;
             SdkClient = client;
             Output = output;
             Profile = profile;
@@ -44,7 +43,7 @@ namespace LibAtem.MockTests.Util
 
         public void SyncStates()
         {
-           _libAtemState = SdkClient.State;
+           _libAtemState = SdkClient.BuildState();
         }
 
         private void LibAtemReceive(object sender, IReadOnlyList<ICommand> commands)
@@ -68,7 +67,7 @@ namespace LibAtem.MockTests.Util
 
         public void AssertStatesMatch()
         {
-            List<string> before = AtemStateComparer.AreEqual(SdkState, LibState);
+            List<string> before = AtemStateComparer.AreEqual(BuildSdkState(), BuildLibState());
             if (before.Count != 0 && Output != null)
             {
                 Output.WriteLine("state mismatch:");
@@ -79,15 +78,15 @@ namespace LibAtem.MockTests.Util
         
         public ITestOutputHelper Output { get; }
 
-        public AtemState SdkState => SdkClient.State;
-        public AtemState LibState => _libAtemState.Clone();
+        public AtemState BuildSdkState() => SdkClient.BuildState();
+        public AtemState BuildLibState() => _libAtemState.Clone();
 
         public IBMDSwitcher SdkSwitcher => SdkClient.SdkSwitcher;
 
         public void CheckStateChanges(AtemState expected, Action<AtemState, AtemState> mutateStates = null)
         {
-            AtemState sdkState = SdkState;
-            AtemState libState = LibState;
+            AtemState sdkState = BuildSdkState();
+            AtemState libState = BuildLibState();
             mutateStates?.Invoke(sdkState, libState);
 
             List<string> sdk = AtemStateComparer.AreEqual(expected, sdkState);

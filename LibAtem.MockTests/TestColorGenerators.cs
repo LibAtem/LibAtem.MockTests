@@ -28,7 +28,7 @@ namespace LibAtem.MockTests
             foreach (KeyValuePair<VideoSource, IBMDSwitcherInputColor> c in helper.GetSdkInputsOfType<IBMDSwitcherInputColor>())
             {
                 ColorGeneratorId id = AtemEnumMaps.GetSourceIdForGen(c.Key);
-                AtemState stateBefore = helper.Helper.LibState;
+                AtemState stateBefore = helper.Helper.BuildLibState();
                 ColorState colBefore = stateBefore.ColorGenerators[(int)id];
 
                 for (int i = 0; i < iterations; i++)

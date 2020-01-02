@@ -43,7 +43,7 @@ namespace LibAtem.MockTests.Fairlight
             AtemMockServerWrapper.Each(_output, _pool, handler, DeviceTestCases.FairlightMain, helper =>
             {
                 IBMDSwitcherFairlightAudioMixer mixer = GetFairlightMixer(helper);
-                AtemState stateBefore = helper.Helper.LibState;
+                AtemState stateBefore = helper.Helper.BuildLibState();
 
                 for (int i = 0; i < 5; i++)
                 {
@@ -64,7 +64,7 @@ namespace LibAtem.MockTests.Fairlight
             AtemMockServerWrapper.Each(_output, _pool, handler, DeviceTestCases.FairlightMain, helper =>
             {
                 IBMDSwitcherFairlightAudioMixer mixer = GetFairlightMixer(helper);
-                AtemState stateBefore = helper.Helper.LibState;
+                AtemState stateBefore = helper.Helper.BuildLibState();
 
                 for (int i = 0; i < 5; i++)
                 {
@@ -85,7 +85,7 @@ namespace LibAtem.MockTests.Fairlight
             {
                 IBMDSwitcherFairlightAudioDynamicsProcessor dynamics = GetDynamics(helper);
 
-                AtemState stateBefore = helper.Helper.LibState;
+                AtemState stateBefore = helper.Helper.BuildLibState();
 
                 for (int i = 0; i < 5; i++)
                 {
@@ -106,7 +106,7 @@ namespace LibAtem.MockTests.Fairlight
             AtemMockServerWrapper.Each(_output, _pool, handler, DeviceTestCases.FairlightMain, helper =>
             {
                 IBMDSwitcherFairlightAudioMixer mixer = GetFairlightMixer(helper);
-                AtemState stateBefore = helper.Helper.LibState;
+                AtemState stateBefore = helper.Helper.BuildLibState();
 
                 for (int i = 0; i < 5; i++)
                 {
@@ -153,7 +153,7 @@ namespace LibAtem.MockTests.Fairlight
                     {
                         cb.Reset();
 
-                        AtemState expectedState = helper.Helper.LibState;
+                        AtemState expectedState = helper.Helper.BuildLibState();
 
                         var testCmd = new FairlightMixerMasterLevelsCommand
                         {
@@ -239,7 +239,7 @@ namespace LibAtem.MockTests.Fairlight
                     {
                         cb.Reset();
 
-                        AtemState expectedState = helper.Helper.LibState;
+                        AtemState expectedState = helper.Helper.BuildLibState();
                         FairlightAudioState.ProgramOutState pgmOutState = expectedState.Fairlight.ProgramOut;
 
                         var testCmd = new FairlightMixerMasterLevelsCommand
@@ -335,7 +335,7 @@ namespace LibAtem.MockTests.Fairlight
                         cbCompressor.Reset();
                         cbLimiter.Reset();
 
-                        AtemState expectedState = helper.Helper.LibState;
+                        AtemState expectedState = helper.Helper.BuildLibState();
 
                         var testCmd = new FairlightMixerMasterLevelsCommand
                         {

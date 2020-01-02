@@ -16,7 +16,7 @@ namespace LibAtem.MockTests.SuperSource
             Dictionary<VideoSource, IBMDSwitcherInputSuperSource> ssrcs = helper.GetSdkInputsOfType<IBMDSwitcherInputSuperSource>();
             foreach (KeyValuePair<VideoSource, IBMDSwitcherInputSuperSource> ssrc in ssrcs)
             {
-                AtemState stateBefore = helper.Helper.LibState;
+                AtemState stateBefore = helper.Helper.BuildLibState();
                 SuperSourceId id = (SuperSourceId)(ssrc.Key - VideoSource.SuperSource);
                 SuperSourceState ssrcBefore = stateBefore.SuperSources[(int)id];
                 Assert.NotNull(ssrcBefore);
@@ -53,7 +53,7 @@ namespace LibAtem.MockTests.SuperSource
             var boxes = Randomiser.SelectionOfGroup(allBoxes);
             foreach (Tuple<SuperSourceId, SuperSourceBoxId, IBMDSwitcherSuperSourceBox> box in boxes)
             {
-                AtemState stateBefore = helper.Helper.LibState;
+                AtemState stateBefore = helper.Helper.BuildLibState();
 
                 SuperSourceState.BoxState boxBefore = stateBefore.SuperSources[(int)box.Item1].Boxes[(int)box.Item2];
                 Assert.NotNull(boxBefore);

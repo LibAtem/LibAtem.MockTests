@@ -38,8 +38,7 @@ namespace LibAtem.MockTests.Util
             Clients = new AtemSdkClientWrapper("127.0.0.1", _pool.StateSettings);
 
             var profile = _pool.GetDeviceProfile(caseId.Item2);
-            var startupState = _pool.GetDefaultState(caseId.Item2);
-            Helper = new AtemTestHelper(Clients, _output, _pool.LibAtemClient, profile, startupState, _pool.StateSettings);
+            Helper = new AtemTestHelper(Clients, _output, _pool.LibAtemClient, profile, _pool.StateSettings);
             //Server.HandleCommand = cmd => handler(Server.GetParsedDataDump(), cmd);
         }
 

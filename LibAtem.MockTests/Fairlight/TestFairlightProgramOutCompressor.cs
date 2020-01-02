@@ -39,7 +39,7 @@ namespace LibAtem.MockTests.Fairlight
             {
                 IBMDSwitcherFairlightAudioCompressor compressor = GetCompressor(helper);
 
-                AtemState stateBefore = helper.Helper.LibState;
+                AtemState stateBefore = helper.Helper.BuildLibState();
 
                 for (int i = 0; i < 5; i++)
                 {
@@ -60,7 +60,7 @@ namespace LibAtem.MockTests.Fairlight
             {
                 IBMDSwitcherFairlightAudioCompressor compressor = GetCompressor(helper);
 
-                AtemState stateBefore = helper.Helper.LibState;
+                AtemState stateBefore = helper.Helper.BuildLibState();
 
                 for (int i = 0; i < 5; i++)
                 {
@@ -82,7 +82,7 @@ namespace LibAtem.MockTests.Fairlight
             {
                 IBMDSwitcherFairlightAudioCompressor compressor = GetCompressor(helper);
 
-                AtemState stateBefore = helper.Helper.LibState;
+                AtemState stateBefore = helper.Helper.BuildLibState();
 
                 for (int i = 0; i < 5; i++)
                 {
@@ -104,7 +104,7 @@ namespace LibAtem.MockTests.Fairlight
             {
                 IBMDSwitcherFairlightAudioCompressor compressor = GetCompressor(helper);
 
-                AtemState stateBefore = helper.Helper.LibState;
+                AtemState stateBefore = helper.Helper.BuildLibState();
 
                 for (int i = 0; i < 5; i++)
                 {
@@ -126,7 +126,7 @@ namespace LibAtem.MockTests.Fairlight
             {
                 IBMDSwitcherFairlightAudioCompressor compressor = GetCompressor(helper);
 
-                AtemState stateBefore = helper.Helper.LibState;
+                AtemState stateBefore = helper.Helper.BuildLibState();
 
                 for (int i = 0; i < 5; i++)
                 {
@@ -148,7 +148,7 @@ namespace LibAtem.MockTests.Fairlight
             {
                 IBMDSwitcherFairlightAudioCompressor compressor = GetCompressor(helper);
 
-                AtemState stateBefore = helper.Helper.LibState;
+                AtemState stateBefore = helper.Helper.BuildLibState();
 
                 for (int i = 0; i < 5; i++)
                 {
