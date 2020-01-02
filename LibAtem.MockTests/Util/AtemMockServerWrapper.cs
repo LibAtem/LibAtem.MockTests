@@ -65,7 +65,7 @@ namespace LibAtem.MockTests.Util
 
         public void SendAndWaitForChange(AtemState expected, Action doSend, int timeout = -1, Action<AtemState, AtemState> mutateStates = null)
         {
-            SendAndWaitForChangeInner(doSend, timeout);
+            SendAndWaitForChangeInner(doSend);
             if (expected != null)
             {
                 Helper.CheckStateChanges(expected, mutateStates);
@@ -86,20 +86,20 @@ namespace LibAtem.MockTests.Util
         }
 
         public const int CommandWaitTime = 80;
-        private void SendAndWaitForChangeInner(Action doSend, int timeout = -1)
+        private void SendAndWaitForChangeInner(Action doSend)
         {
             var libWait = new ManualResetEvent(false);
             var sdkWait = new ManualResetEvent(false);
 
             void HandlerLib(object sender, string queueKey)
             {
-                Helper.Output.WriteLine("SendAndWaitForMatching: Got Lib change: " + queueKey);
+                // Helper.Output.WriteLine("SendAndWaitForMatching: Got Lib change: " + queueKey);
                 if (queueKey == "Info.LastTimecode")
                     libWait.Set();
             }
             void HandlerSdk(object sender)
             {
-                Helper.Output.WriteLine("SendAndWaitForMatching: Got Sdk change");
+                // Helper.Output.WriteLine("SendAndWaitForMatching: Got Sdk change");
                 sdkWait.Set();
             }
 
@@ -117,7 +117,7 @@ namespace LibAtem.MockTests.Util
 
             if (_handler != null)
             {
-                Assert.True(Server.HasPendingPackets.WaitOne(500));
+                Assert.True(Server.HasPendingPackets.WaitOne(1000));
                 // if (!ok) Helper.Output.WriteLine("SendAndWaitForMatching: Server did not receive packet");
 
                 lock (Server.PendingPackets)
@@ -149,9 +149,9 @@ namespace LibAtem.MockTests.Util
             }
 
             // Wait for the expected time. If no response, then go with last data
-            bool libTimedOut = libWait.WaitOne(timeout == -1 ? CommandWaitTime * 3 : timeout);
+            bool libTimedOut = libWait.WaitOne(1000);
             // The Sdk doesn't send the same notifies if nothing changed, so once the lib has finished, wait a small time for sdk to finish up
-            bool sdkTimedOut = sdkWait.WaitOne(timeout == -1 ? CommandWaitTime * 2 : timeout);
+            bool sdkTimedOut = sdkWait.WaitOne(500);
 
             Helper.OnLibAtemStateChange -= HandlerLib;
             Helper.SdkClient.OnSdkStateChange -= HandlerSdk;
