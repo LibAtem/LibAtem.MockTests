@@ -5,6 +5,14 @@
 
     <IsPackable>false</IsPackable>
     <NoWarn>NU1701</NoWarn>
+    <Platforms>v8.1;v8.1.1</Platforms>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Platform)'=='v8.1.1'">
+    <DefineConstants>ATEM_v8_1_1</DefineConstants>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Platform)'=='v8.1'">
+    <DefineConstants>ATEM_v8_1</DefineConstants>
   </PropertyGroup>
 
   <ItemGroup>
@@ -33,10 +41,17 @@
   </ItemGroup>
 
   <Choose>
-    <When Condition=" '$(GITHUB_WORKFLOW)'!='' ">
+    <When Condition=" '$(Platform)'=='v8.1' ">
       <ItemGroup>
         <Reference Include="Interop.BMDSwitcherAPI">
           <HintPath>..\AtemSDK\v8.1\Interop.BMDSwitcherAPI.dll</HintPath>
+        </Reference>
+      </ItemGroup>
+    </When>
+    <When Condition=" '$(Platform)'=='v8.1.1' ">
+      <ItemGroup>
+        <Reference Include="Interop.BMDSwitcherAPI">
+          <HintPath>..\AtemSDK\v8.1.1\Interop.BMDSwitcherAPI.dll</HintPath>
         </Reference>
       </ItemGroup>
     </When>
@@ -55,6 +70,9 @@
   </Choose>
 
   <ItemGroup>
+    <None Update="TestFiles\Handshake\2me-v8.1.data">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
     <None Update="TestFiles\Handshake\8.0.1-2me.pcapng">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
@@ -62,6 +80,15 @@
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
     <None Update="TestFiles\Handshake\8.1-mini.pcapng">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="TestFiles\Handshake\constellation-v8.0.2.data">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="TestFiles\Handshake\mini-v8.1.1.data">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="TestFiles\Handshake\mini-v8.1.data">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
     <None Update="xunit.runner.json">
