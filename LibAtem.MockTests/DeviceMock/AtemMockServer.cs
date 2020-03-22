@@ -150,6 +150,7 @@ namespace LibAtem.MockTests.DeviceMock
                                     Task.Delay(3).Wait();
                                 }
                             });
+                            sendThread.Name = "AtemMockServer.Send";
                             sendThread.Start();
 
                             await _socket.SendToAsync(new ArraySegment<byte>(test, 0, 20), SocketFlags.None,
@@ -179,6 +180,7 @@ namespace LibAtem.MockTests.DeviceMock
                                     //conn.HandleInner(_state, connection, cmds);
                                 }
                             });
+                            recvThread.Name = "AtemMockServer.Receive";
                             recvThread.Start();
                         }
 
@@ -202,6 +204,7 @@ namespace LibAtem.MockTests.DeviceMock
                 // Notify finished
                 _receiveRunning.Set();
             });
+            thread.Name = "AtemMockServer.Accept";
             thread.Start();
         }
 
@@ -214,7 +217,7 @@ namespace LibAtem.MockTests.DeviceMock
 
         public ImmutableList<ICommand> GetParsedDataDump()
         {
-            return WiresharkParser.ParseToCommands(CurrentVersion, _handshakeStates[CurrentCase]).ToImmutableList();
+            return DumpParser.ParseToCommands(CurrentVersion, _handshakeStates[CurrentCase]).ToImmutableList();
         }
 
         private IEnumerable<OutboundMessage> BuildDataDumps()

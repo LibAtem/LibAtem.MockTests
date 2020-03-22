@@ -177,7 +177,9 @@ namespace LibAtem.MockTests.Fairlight
 
                         for (int i = 0; i < 5; i++)
                         {
-                            inputState.RcaToXlrEnabled = i % 2 != 0;
+                            inputState.Analog.InputLevel = i % 2 != 0
+                                ? FairlightAnalogInputLevel.ProLine
+                                : FairlightAnalogInputLevel.ConsumerLine;
                             helper.SendAndWaitForChange(stateBefore, () => { xlrInput.SetRCAToXLREnabled(i % 2); });
                         }
                     }

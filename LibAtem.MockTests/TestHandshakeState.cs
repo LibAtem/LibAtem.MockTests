@@ -81,7 +81,7 @@ namespace LibAtem.MockTests
 
         private void RunTest(Tuple<ProtocolVersion, string> caseId)
         {
-            var commandData = WiresharkParser.BuildCommands(caseId.Item1, caseId.Item2);
+            var commandData = DumpParser.BuildCommands(caseId.Item1, caseId.Item2);
             /*
             var result = new List<string>();
             foreach (byte[] payload in commandData)

@@ -41,10 +41,10 @@ namespace LibAtem.MockTests.Util
             var commandData = new Dictionary<string, IReadOnlyList<byte[]>>();
             foreach (Tuple<ProtocolVersion, string> caseId in DeviceTestCases.All)
             {
-                var payloads = WiresharkParser.BuildCommands(caseId.Item1, caseId.Item2);
+                var payloads = DumpParser.BuildCommands(caseId.Item1, caseId.Item2);
                 commandData[caseId.Item2] = payloads;
 
-                IReadOnlyList<ICommand> commands = WiresharkParser.ParseToCommands(caseId.Item1, payloads);
+                IReadOnlyList<ICommand> commands = DumpParser.ParseToCommands(caseId.Item1, payloads);
 
                 // Build the device profile
                 var deviceProfileBuilder = new DeviceProfile.DeviceProfileHandler();

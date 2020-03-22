@@ -33,14 +33,23 @@ namespace LibAtem.SdkStateBuilder
                 state.Analog.SupportedInputLevel = (FairlightAnalogInputLevel) supportedLevels;
             }
 
+#if ATEM_v8_1
             // XLR
             if (props is IBMDSwitcherFairlightAudioInputXLR xlr)
             {
+                if (state.Analog == null) state.Analog = new FairlightAudioState.AnalogState();
+
                 xlr.HasRCAToXLR(out int hasRcaToXlr);
-                state.SupportsRcaToXlr = hasRcaToXlr != 0;
+                state.Analog.SupportedInputLevel =
+                    FairlightAnalogInputLevel.ConsumerLine | FairlightAnalogInputLevel.ProLine;
                 xlr.GetRCAToXLREnabled(out int rcaToXlrEnabled);
-                state.RcaToXlrEnabled = rcaToXlrEnabled != 0;
+                state.Analog.InputLevel = rcaToXlrEnabled != 0
+                    ? FairlightAnalogInputLevel.ConsumerLine
+                    : FairlightAnalogInputLevel.ProLine;
             }
+#else
+            // TODO
+#endif
 
             // Sources
             var iterator = AtemSDKConverter.CastSdk<IBMDSwitcherFairlightAudioSourceIterator>(props.CreateIterator);
