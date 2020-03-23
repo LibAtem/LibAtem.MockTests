@@ -22,8 +22,9 @@ namespace LibAtem.MockTests.Util
         private readonly ITestOutputHelper _output;
         private readonly AtemServerClientPool _pool;
         private readonly Func<ImmutableList<ICommand>, ICommand, IEnumerable<ICommand>> _handler;
+        private readonly AtemMockServerPoolItem _case;
 
-        public AtemMockServer Server { get; }
+        public AtemMockServer Server => _case.Server;
         public AtemSdkClientWrapper SdkClient { get; }
         public AtemTestHelper Helper { get; }
 
@@ -32,33 +33,31 @@ namespace LibAtem.MockTests.Util
             _output = output;
             _pool = pool;
             _handler = handler;
-            Server = _pool.Server;
-            Server.CurrentCase = caseId.Item2;
-            Server.CurrentVersion = caseId.Item1; // TODO - we need to get the server to send this as a command, to make libatem happy (does that break sdk?)
-            SdkClient = _pool.SdkClient;
+
+            _case = _pool.GetCase(caseId.Item2);
+            SdkClient = _case.SelectSdkClient();
 
             var resetEvent = new ManualResetEvent(false);
             void TmpHandler(object o) => resetEvent.Set();
             SdkClient.OnSdkStateChange += TmpHandler;
-            Server.ResendDataDumps();
+            Server.ResetClient(SdkClient.Id);
             resetEvent.WaitOne(2000); // TODO - monitor result
             SdkClient.OnSdkStateChange -= TmpHandler;
 
-            var profile = _pool.GetDeviceProfile(caseId.Item2);
-            Helper = new AtemTestHelper(SdkClient, _output, _pool.LibAtemClient, profile, _pool.StateSettings);
+            Helper = new AtemTestHelper(SdkClient, _output, _case.LibAtemClient, _case.DeviceProfile, _pool.StateSettings);
         }
 
         public void Dispose()
         {
             Helper.Dispose();
-            Server.CurrentCase = null;
-            Server.CurrentVersion = ProtocolVersion.Minimum;
+            _case.ResetSdkClient(SdkClient);
             lock (Server.PendingPackets)
                 Assert.Empty(Server.PendingPackets);
         }
 
         public static void Each(ITestOutputHelper output, AtemServerClientPool pool, Func<ImmutableList<ICommand>, ICommand, IEnumerable<ICommand>> handler, TestCaseId[] cases, Action<AtemMockServerWrapper> runner)
         {
+            cases = cases.Where(c => !string.IsNullOrEmpty(c.Item2)).ToArray();
             Assert.NotEmpty(cases);
             cases.ForEach(caseId =>
             {

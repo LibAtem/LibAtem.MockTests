@@ -24,12 +24,16 @@ namespace LibAtem.MockTests.Util
         public delegate void StateChangeHandler(object sender);
         public event StateChangeHandler OnSdkStateChange;
 
-        public AtemSdkClientWrapper(string address, AtemStateBuilderSettings updateSettings)
+        public int Id { get; }
+
+        public AtemSdkClientWrapper(string address, AtemStateBuilderSettings updateSettings, int id)
         {
             var logRepository = LogManager.GetRepository(Assembly.GetExecutingAssembly());
             XmlConfigurator.Configure(logRepository, new FileInfo("log4net.config"));
             if (!logRepository.Configured) // Default to all on the console
                 BasicConfigurator.Configure(logRepository);
+
+            Id = id;
 
             _updateSettings = updateSettings;
 
@@ -57,8 +61,6 @@ namespace LibAtem.MockTests.Util
         public void Dispose()
         {
             _sdkState.Dispose();
-            // TODO - reenable once LibAtem allows disconnection
-            // Assert.True(_disposeEvent.WaitOne(TimeSpan.FromSeconds(1)), "LibAtem: Cleanup timed out");
 
             //Thread.Sleep(500);
         }

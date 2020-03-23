@@ -14,9 +14,12 @@ namespace LibAtem.MockTests.DeviceMock
 
         private readonly Dictionary<EndPoint, AtemServerConnection> connections;
 
+        public List<AtemServerConnection> OrderedConnections { get; }
+
         public AtemConnectionList()
         {
             connections = new Dictionary<EndPoint, AtemServerConnection>();
+            OrderedConnections = new List<AtemServerConnection>();
         }
 
         public void SendDataDumps(IEnumerable<OutboundMessage> messages)
@@ -42,6 +45,7 @@ namespace LibAtem.MockTests.DeviceMock
                 
                 val = new AtemServerConnection(ep, 0x8008, version);// TODO - make dynamic
                 connections[ep] = val;
+                OrderedConnections.Add(val);
                 val.OnDisconnect += RemoveTimedOut;
 
                 Log.InfoFormat("New connection from {0}", ep);

@@ -19,50 +19,47 @@ namespace LibAtem.MockTests.Util
         // ICollectionFixture<> interfaces.
     }
 
-    public sealed class AtemServerClientPool : IDisposable
+    public sealed class AtemMockServerPoolItem : IDisposable
     {
-        private readonly Dictionary<string, DeviceProfile.DeviceProfile> _deviceProfiles;
-        private readonly Dictionary<string, AtemState> _defaultStates;
+        private readonly AtemStateBuilderSettings _builderSettings;
+        private readonly string _bindIp;
+        private readonly Queue<AtemSdkClientWrapper> _sdkClients;
+        private readonly List<AtemSdkClientWrapper> _updatingClients;
+        private int _nextSdkId;
+
+        public DeviceProfile.DeviceProfile DeviceProfile { get; }
+        public AtemState DefaultState { get; }
+        public AtemMockServer Server { get; }
+        public AtemClient LibAtemClient { get; }
 
         private bool _isDisposing;
         private bool _libAtemConnected;
 
-        public AtemMockServer Server { get; }
-        public AtemClient LibAtemClient { get; }
-        public AtemSdkClientWrapper SdkClient { get; }
-        public AtemStateBuilderSettings StateSettings { get; }
-
-        public AtemServerClientPool()
+        public AtemMockServerPoolItem(string caseId, AtemStateBuilderSettings builderSettings, string bindIp)
         {
-            _deviceProfiles = new Dictionary<string, DeviceProfile.DeviceProfile>();
-            _defaultStates = new Dictionary<string, AtemState>();
-            StateSettings = new AtemStateBuilderSettings();
+            _builderSettings = builderSettings;
+            _bindIp = bindIp;
+            _sdkClients = new Queue<AtemSdkClientWrapper>();
+            _updatingClients = new List<AtemSdkClientWrapper>();
+            _nextSdkId = 1;
 
-            var commandData = new Dictionary<string, IReadOnlyList<byte[]>>();
-            foreach (Tuple<ProtocolVersion, string> caseId in DeviceTestCases.All)
-            {
-                var payloads = DumpParser.BuildCommands(caseId.Item1, caseId.Item2);
-                commandData[caseId.Item2] = payloads;
+            List<byte[]> payloads = DumpParser.BuildCommands(DeviceTestCases.Version, caseId);
+            IReadOnlyList<ICommand> commands = DumpParser.ParseToCommands(DeviceTestCases.Version, payloads);
 
-                IReadOnlyList<ICommand> commands = DumpParser.ParseToCommands(caseId.Item1, payloads);
+            // Build the device profile
+            var deviceProfileBuilder = new DeviceProfile.DeviceProfileHandler();
+            deviceProfileBuilder.HandleCommands(null, commands);
+            DeviceProfile = deviceProfileBuilder.Profile;
 
-                // Build the device profile
-                var deviceProfileBuilder = new DeviceProfile.DeviceProfileHandler();
-                deviceProfileBuilder.HandleCommands(null, commands);
-                _deviceProfiles[caseId.Item2] = deviceProfileBuilder.Profile;
+            // Build a default state
+            var state = new AtemState();
+            commands.ForEach(cmd => AtemStateBuilder.Update(state, cmd, builderSettings));
+            DefaultState = state;
 
-                // Build a default state
-                var state = new AtemState();
-                commands.ForEach(cmd => AtemStateBuilder.Update(state, cmd, StateSettings));
-                _defaultStates[caseId.Item2] = state;
-            }
-            Server = new AtemMockServer(commandData);
-            // We need the server to have some data for the LibAtem connection.
-            Server.CurrentCase = DeviceTestCases.All[0].Item2;
-            Server.CurrentVersion = DeviceTestCases.All[0].Item1;
+            Server = new AtemMockServer(bindIp, payloads, DeviceTestCases.Version);
 
             var connectionEvent = new AutoResetEvent(false);
-            LibAtemClient = new AtemClient("127.0.0.1", false);
+            LibAtemClient = new AtemClient(bindIp, false);
             LibAtemClient.OnDisconnect += o => { Assert.True(_isDisposing, "LibAtem: Disconnect before disposing"); };
             LibAtemClient.OnConnection += o =>
             {
@@ -72,20 +69,81 @@ namespace LibAtem.MockTests.Util
             };
             LibAtemClient.Connect();
 
-            SdkClient = new AtemSdkClientWrapper("127.0.0.1", StateSettings);
+            //SdkClient = new AtemSdkClientWrapper(bindIp", StateSettings);
 
             Assert.True(connectionEvent.WaitOne(TimeSpan.FromSeconds(3)), "LibAtem: Connection attempt timed out");
         }
 
-        public DeviceProfile.DeviceProfile GetDeviceProfile(string caseId) => _deviceProfiles[caseId];
-        public AtemState GetDefaultState(string caseId) => _defaultStates[caseId].Clone();
-        
+        public AtemSdkClientWrapper SelectSdkClient()
+        {
+            lock (_sdkClients)
+            {
+                if (_sdkClients.TryDequeue(out AtemSdkClientWrapper client))
+                    return client;
+            }
+
+            return new AtemSdkClientWrapper(_bindIp, _builderSettings, _nextSdkId++);
+        }
+
+        public void ResetSdkClient(AtemSdkClientWrapper client)
+        {
+            lock (_updatingClients)
+                _updatingClients.Add(client);
+
+            void TmpHandler(object o)
+            {
+                client.OnSdkStateChange -= TmpHandler;
+                lock (_updatingClients)
+                    _updatingClients.Remove(client);
+
+                lock (_sdkClients)
+                    _sdkClients.Enqueue(client);
+
+            }
+            client.OnSdkStateChange += TmpHandler;
+
+            Server.ResetClient(client.Id);
+        }
+
         public void Dispose()
         {
             _isDisposing = true;
             LibAtemClient.Dispose();
-            SdkClient.Dispose();
+            //SdkClient.Dispose();
             Server.Dispose();
+
+            lock (_updatingClients)
+                _updatingClients.ForEach(client => client.Dispose());
+            lock (_sdkClients)
+                _sdkClients.ForEach(client => client.Dispose());
+        }
+    }
+
+    public sealed class AtemServerClientPool : IDisposable
+    {
+        private readonly Dictionary<string, AtemMockServerPoolItem> _pool;
+
+        public AtemStateBuilderSettings StateSettings { get; }
+
+        public AtemServerClientPool()
+        {
+            _pool = new Dictionary<string, AtemMockServerPoolItem>();
+            StateSettings = new AtemStateBuilderSettings();
+        }
+
+        public AtemMockServerPoolItem GetCase(string caseId)
+        {
+            if (!_pool.TryGetValue(caseId, out AtemMockServerPoolItem item))
+            {
+                string bindIp = $"127.0.1.{_pool.Count + 1}";
+                item = _pool[caseId] = new AtemMockServerPoolItem(caseId, StateSettings, bindIp);
+            }
+            return item;
+        }
+
+        public void Dispose()
+        {
+            _pool.ForEach(item => item.Value.Dispose());
         }
     }
 }

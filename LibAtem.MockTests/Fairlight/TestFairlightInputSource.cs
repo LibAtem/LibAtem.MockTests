@@ -344,8 +344,7 @@ namespace LibAtem.MockTests.Fairlight
             bool tested = false;
             AtemMockServerWrapper.Each(_output, _pool, handler, DeviceTestCases.FairlightDelay, helper =>
             {
-                var rawPackets = DumpParser.BuildCommands(helper.Server.CurrentVersion, helper.Server.CurrentCase);
-                var rawCommands = DumpParser.ParseToCommands(helper.Server.CurrentVersion, rawPackets);
+                var rawCommands = helper.Server.GetParsedDataDump();
                 EachRandomSource(helper, (stateBefore, srcState, inputId, src, i) =>
                 {
                     src.HasStereoSimulation(out int available);
@@ -368,8 +367,6 @@ namespace LibAtem.MockTests.Fairlight
             var handler = CommandGenerator.CreateAutoCommandHandler<FairlightMixerSourceSetCommand, FairlightMixerSourceGetCommand>("StereoSimulation");
             AtemMockServerWrapper.Each(_output, _pool, handler, DeviceTestCases.FairlightDelay, helper =>
             {
-                var rawPackets = DumpParser.BuildCommands(helper.Server.CurrentVersion, helper.Server.CurrentCase);
-                var rawCommands = DumpParser.ParseToCommands(helper.Server.CurrentVersion, rawPackets);
                 EachRandomSource(helper, (stateBefore, srcState, inputId, src, i) =>
                 {
                     helper.SendAndWaitForChange(stateBefore, () =>

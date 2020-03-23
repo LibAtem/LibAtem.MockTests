@@ -99,9 +99,9 @@ namespace LibAtem.MockTests
             // */
             
 
-            using var server = new AtemMockServer(commandData);
+            using var server = new AtemMockServer("127.0.0.1", commandData, caseId.Item1);
             var stateSettings = new AtemStateBuilderSettings();
-            using var helper = new AtemSdkClientWrapper("127.0.0.1", stateSettings);
+            using var helper = new AtemSdkClientWrapper("127.0.0.1", stateSettings, 1);
 
             var libAtemState = GetLibAtemState(stateSettings, "127.0.0.1");
 

@@ -41,7 +41,7 @@ namespace LibAtem.MockTests.Util
 
                     // Find the command to base the result on
                     CommandQueueKey targetCommandKey = CommandQueueKey.ForGetter<TGet>(setCmd);
-                    TGet previousCmd = previousCommands.OfType<TGet>().Last(c => targetCommandKey.Equals(new CommandQueueKey(c)));
+                    TGet previousCmd = previousCommands.OfType<TGet>().LastOrDefault(c => targetCommandKey.Equals(new CommandQueueKey(c)));
                     Assert.NotNull(previousCmd);
 
                     // Now copy the value across

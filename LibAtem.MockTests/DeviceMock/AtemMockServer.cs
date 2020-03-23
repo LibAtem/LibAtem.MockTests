@@ -11,7 +11,6 @@ using LibAtem.MockTests.Util;
 using LibAtem.Net;
 using LibAtem.Util;
 using log4net;
-using ListExtensions = LibAtem.Util.ListExtensions;
 
 namespace LibAtem.MockTests.DeviceMock
 {
@@ -20,7 +19,7 @@ namespace LibAtem.MockTests.DeviceMock
         private static readonly ILog Log = LogManager.GetLogger(typeof(AtemMockServer));
 
         private readonly AtemConnectionList _connections;
-        private readonly IReadOnlyDictionary<string, IReadOnlyList<byte[]>> _handshakeStates;
+        private readonly IReadOnlyList<byte[]> _handshake;
 
         private readonly AutoResetEvent _receiveRunning;
         private bool _isDisposing = false;
@@ -32,26 +31,20 @@ namespace LibAtem.MockTests.DeviceMock
 
         public uint CurrentTime { get; private set; } = 100;
 
-        public string CurrentCase { get; set; }
-        public ProtocolVersion CurrentVersion { get; set; } = ProtocolVersion.Minimum;
+        public ProtocolVersion CurrentVersion { get; }
 
         public List<ReceivedPacket> PendingPackets { get; } = new List<ReceivedPacket>();
-        public AutoResetEvent HasPendingPackets{ get; } = new AutoResetEvent(false);
+        public AutoResetEvent HasPendingPackets { get; } = new AutoResetEvent(false);
 
-        public AtemMockServer(IReadOnlyDictionary<string, IReadOnlyList<byte[]>> handshakeStates)
+        public AtemMockServer(string bindIp, IReadOnlyList<byte[]> handshake, ProtocolVersion version)
         {
-            _handshakeStates = handshakeStates;
+            _handshake = handshake;
             _connections = new AtemConnectionList();
+            CurrentVersion = version;
 
             _receiveRunning = new AutoResetEvent(false);
-            StartReceive();
+            StartReceive(bindIp);
             StartPingTimer();
-        }
-
-        public AtemMockServer(IReadOnlyList<byte[]> state) : this(
-            new Dictionary<string, IReadOnlyList<byte[]>>(new[] {KeyValuePair.Create("default", state)}))
-        {
-            CurrentCase = "default";
         }
 
         public void SendCommands(params ICommand[] cmds)
@@ -86,18 +79,18 @@ namespace LibAtem.MockTests.DeviceMock
             }, null, 0, AtemConstants.PingInterval));
         }
 
-        private static Socket CreateSocket()
+        private static Socket CreateSocket(string bindIp)
         {
             Socket serverSocket = new Socket(AddressFamily.InterNetwork, SocketType.Dgram, ProtocolType.Udp);
-            IPEndPoint ipEndPoint = new IPEndPoint(IPAddress.Loopback, 9910);
+            IPEndPoint ipEndPoint = new IPEndPoint(IPAddress.Parse(bindIp), 9910);
             serverSocket.Bind(ipEndPoint);
 
             return serverSocket;
         }
 
-        private TimeCodeCommand CreateTimeCommand()
+        private TimeCodeCommand CreateTimeCommand(uint? rawTime = null)
         {
-            uint time = CurrentTime++;
+            uint time = rawTime ?? CurrentTime++;
 
             var cmd = new TimeCodeCommand();
             cmd.Second += time % 60;
@@ -105,9 +98,9 @@ namespace LibAtem.MockTests.DeviceMock
             return cmd;
         }
 
-        private void StartReceive()
+        private void StartReceive(string bindIp)
         {
-            _socket = CreateSocket();
+            _socket = CreateSocket(bindIp);
 
             var thread = new Thread(async () =>
             {
@@ -150,7 +143,6 @@ namespace LibAtem.MockTests.DeviceMock
                                     Task.Delay(3).Wait();
                                 }
                             });
-                            sendThread.Name = "AtemMockServer.Send";
                             sendThread.Start();
 
                             await _socket.SendToAsync(new ArraySegment<byte>(test, 0, 20), SocketFlags.None,
@@ -180,7 +172,6 @@ namespace LibAtem.MockTests.DeviceMock
                                     //conn.HandleInner(_state, connection, cmds);
                                 }
                             });
-                            recvThread.Name = "AtemMockServer.Receive";
                             recvThread.Start();
                         }
 
@@ -204,25 +195,40 @@ namespace LibAtem.MockTests.DeviceMock
                 // Notify finished
                 _receiveRunning.Set();
             });
-            thread.Name = "AtemMockServer.Accept";
             thread.Start();
         }
 
+        public void ResetClient(int id)
+        {
+            var client = _connections.OrderedConnections[id];
+            BuildDataDumps().ForEach(client.QueueMessage);
+            _connections.SendCommands(new List<ICommand> {CreateTimeCommand(90000)});
+        }
+
+        public void ReadyClient(int id)
+        {
+            var client = _connections.OrderedConnections[id];
+            CurrentTime = 99;
+            SendCommands(); // Send a time
+        }
+
+        /*
         public void ResendDataDumps()
         {
             _connections.SendDataDumps(BuildDataDumps());
             CurrentTime = 99;
             SendCommands(); // Send a time
         }
+        */
 
         public ImmutableList<ICommand> GetParsedDataDump()
         {
-            return DumpParser.ParseToCommands(CurrentVersion, _handshakeStates[CurrentCase]).ToImmutableList();
+            return DumpParser.ParseToCommands(CurrentVersion, _handshake).ToImmutableList();
         }
 
         private IEnumerable<OutboundMessage> BuildDataDumps()
         {
-            foreach (byte[] cmd in _handshakeStates[CurrentCase])
+            foreach (byte[] cmd in _handshake)
                 yield return new OutboundMessage(OutboundMessage.OutboundMessageType.Command, cmd);
         }
 

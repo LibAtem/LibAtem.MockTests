@@ -6,7 +6,14 @@ namespace LibAtem.MockTests
 
     internal static class DeviceTestCases
     {
+#if ATEM_v8_1_1
+        public static readonly ProtocolVersion Version = ProtocolVersion.V8_1_1;
+        public static readonly TestCaseId Mini = Tuple.Create(ProtocolVersion.V8_1_1, "mini-v8.1.1");
+#else
+        public static readonly ProtocolVersion Version = ProtocolVersion.V8_0_1;
         public static readonly TestCaseId Mini_8_1 = Tuple.Create(ProtocolVersion.V8_0_1, "mini-v8.1");
+#endif
+
         public static readonly TestCaseId Constellation_8_0_2 = Tuple.Create(ProtocolVersion.V8_0_1, "constellation-v8.0.2");
         public static readonly TestCaseId Legacy2ME_8_0_1 = Tuple.Create(ProtocolVersion.V8_0_1, "2me-v8.1");
 

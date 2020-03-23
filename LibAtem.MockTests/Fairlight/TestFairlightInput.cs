@@ -155,6 +155,7 @@ namespace LibAtem.MockTests.Fairlight
             Assert.True(tested);
         }
 
+#if ATEM_v8_1
         [Fact]
         public void TestRcaToXlrEnabled()
         {
@@ -187,6 +188,6 @@ namespace LibAtem.MockTests.Fairlight
             });
             Assert.True(tested);
         }
-
+#endif
     }
 }

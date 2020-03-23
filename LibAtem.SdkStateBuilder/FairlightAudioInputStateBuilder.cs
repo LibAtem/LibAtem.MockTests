@@ -37,15 +37,18 @@ namespace LibAtem.SdkStateBuilder
             // XLR
             if (props is IBMDSwitcherFairlightAudioInputXLR xlr)
             {
-                if (state.Analog == null) state.Analog = new FairlightAudioState.AnalogState();
-
                 xlr.HasRCAToXLR(out int hasRcaToXlr);
-                state.Analog.SupportedInputLevel =
-                    FairlightAnalogInputLevel.ConsumerLine | FairlightAnalogInputLevel.ProLine;
-                xlr.GetRCAToXLREnabled(out int rcaToXlrEnabled);
-                state.Analog.InputLevel = rcaToXlrEnabled != 0
-                    ? FairlightAnalogInputLevel.ConsumerLine
-                    : FairlightAnalogInputLevel.ProLine;
+                if (hasRcaToXlr != 0)
+                {
+                    if (state.Analog == null) state.Analog = new FairlightAudioState.AnalogState();
+
+                    state.Analog.SupportedInputLevel =
+                        FairlightAnalogInputLevel.ConsumerLine | FairlightAnalogInputLevel.ProLine;
+                    xlr.GetRCAToXLREnabled(out int rcaToXlrEnabled);
+                    state.Analog.InputLevel = rcaToXlrEnabled != 0
+                        ? FairlightAnalogInputLevel.ConsumerLine
+                        : FairlightAnalogInputLevel.ProLine;
+                }
             }
 #else
             // TODO
