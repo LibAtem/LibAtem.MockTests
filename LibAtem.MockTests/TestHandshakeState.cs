@@ -35,7 +35,7 @@ namespace LibAtem.MockTests
         public void TestStateMockConstellation() => RunTest(DeviceTestCases.Constellation_8_0_2);
 
         [Fact]
-        public void TestStateMockMini() => RunTest(DeviceTestCases.Mini_8_1);
+        public void TestStateMockMini() => RunTest(DeviceTestCases.Mini);
         
         /*
         [Fact]
@@ -79,9 +79,9 @@ namespace LibAtem.MockTests
             return state;
         }
 
-        private void RunTest(Tuple<ProtocolVersion, string> caseId)
+        private void RunTest(string caseId)
         {
-            var commandData = DumpParser.BuildCommands(caseId.Item1, caseId.Item2);
+            var commandData = DumpParser.BuildCommands(DeviceTestCases.Version, caseId);
             /*
             var result = new List<string>();
             foreach (byte[] payload in commandData)
@@ -99,7 +99,7 @@ namespace LibAtem.MockTests
             // */
             
 
-            using var server = new AtemMockServer("127.0.0.1", commandData, caseId.Item1);
+            using var server = new AtemMockServer("127.0.0.1", commandData, DeviceTestCases.Version);
             var stateSettings = new AtemStateBuilderSettings();
             using var helper = new AtemSdkClientWrapper("127.0.0.1", stateSettings, 1);
 

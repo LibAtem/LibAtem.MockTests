@@ -28,13 +28,13 @@ namespace LibAtem.MockTests.Util
         public AtemSdkClientWrapper SdkClient { get; }
         public AtemTestHelper Helper { get; }
 
-        public AtemMockServerWrapper(ITestOutputHelper output, AtemServerClientPool pool, Func<ImmutableList<ICommand>, ICommand, IEnumerable<ICommand>> handler, TestCaseId caseId)
+        public AtemMockServerWrapper(ITestOutputHelper output, AtemServerClientPool pool, Func<ImmutableList<ICommand>, ICommand, IEnumerable<ICommand>> handler, string caseId)
         {
             _output = output;
             _pool = pool;
             _handler = handler;
 
-            _case = _pool.GetCase(caseId.Item2);
+            _case = _pool.GetCase(caseId);
             SdkClient = _case.SelectSdkClient();
 
             var resetEvent = new ManualResetEvent(false);
@@ -55,9 +55,9 @@ namespace LibAtem.MockTests.Util
                 Assert.Empty(Server.PendingPackets);
         }
 
-        public static void Each(ITestOutputHelper output, AtemServerClientPool pool, Func<ImmutableList<ICommand>, ICommand, IEnumerable<ICommand>> handler, TestCaseId[] cases, Action<AtemMockServerWrapper> runner)
+        public static void Each(ITestOutputHelper output, AtemServerClientPool pool, Func<ImmutableList<ICommand>, ICommand, IEnumerable<ICommand>> handler, string[] cases, Action<AtemMockServerWrapper> runner)
         {
-            cases = cases.Where(c => !string.IsNullOrEmpty(c.Item2)).ToArray();
+            cases = cases.Where(c => !string.IsNullOrEmpty(c)).ToArray();
             Assert.NotEmpty(cases);
             cases.ForEach(caseId =>
             {
