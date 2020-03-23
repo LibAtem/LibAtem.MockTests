@@ -23,6 +23,7 @@ jobs:
         dotnet-version: 3.1.100
     - name: Test
       run: |
+        $Env:WORKFLOW_VERSION = 'v8.1'
         regsvr32 $Env:GITHUB_WORKSPACE/AtemSDK/v8.1/BMDSwitcherAPI.dll /s
         regsvr32 $Env:GITHUB_WORKSPACE/AtemSDK/v8.1/BMDSwitcherAPI64.dll /s
         dotnet test LibAtem.MockTests -c Release
