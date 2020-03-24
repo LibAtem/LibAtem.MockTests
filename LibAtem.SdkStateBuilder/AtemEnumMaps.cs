@@ -292,6 +292,9 @@ namespace LibAtem.SdkStateBuilder
             {
                 {FairlightAnalogInputLevel.Microphone, _BMDSwitcherFairlightAudioAnalogInputLevel.bmdSwitcherFairlightAudioAnalogInputLevelMicrophone},
                 {FairlightAnalogInputLevel.ConsumerLine, _BMDSwitcherFairlightAudioAnalogInputLevel.bmdSwitcherFairlightAudioAnalogInputLevelConsumerLine},
+#if  ATEM_v8_1_1
+                {FairlightAnalogInputLevel.ProLine, _BMDSwitcherFairlightAudioAnalogInputLevel.bmdSwitcherFairlightAudioAnalogInputLevelProLine },
+#endif
             };
         }
 

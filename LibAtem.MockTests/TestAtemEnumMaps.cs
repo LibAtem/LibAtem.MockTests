@@ -25,7 +25,7 @@ namespace LibAtem.MockTests
             List<T1> validVals = vals.Where(v =>
             {
                 SinceAttribute attr = v.GetPossibleAttribute<T1, SinceAttribute>();
-                return attr == null ||  currentVersion > attr.Version;
+                return attr == null ||  currentVersion >= attr.Version;
             }).ToList();
 
             // Check that no values are defined which should not
