@@ -6,6 +6,7 @@ using LibAtem.ComparisonTests.State;
 using LibAtem.Net;
 using LibAtem.State;
 using LibAtem.State.Builder;
+using LibAtem.Util;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -88,10 +89,24 @@ namespace LibAtem.MockTests.Util
 
         public AtemState BuildLibState()
         {
+            AtemState libState = null;
             lock (_libAtemClient)
             {
-                return _libAtemState.Clone();
+                libState = _libAtemState.Clone();
             }
+
+#if ATEM_v8_1
+            // Before 8.1.2, the sdk was broken when trying to access the equalizer bands, so we need to discard this data to match
+            libState.Fairlight?.Inputs.ForEach(input =>
+            {
+                input.Value.Sources.ForEach(source =>
+                {
+                    source.Equalizer.Bands = new List<FairlightAudioState.EqualizerBandState>();
+                });
+            });
+#endif
+
+            return libState;
         }
 
         public IBMDSwitcher SdkSwitcher => SdkClient.SdkSwitcher;
