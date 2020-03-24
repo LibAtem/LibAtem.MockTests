@@ -25,8 +25,12 @@ namespace LibAtem.MockTests
 
         // Audio
         public static readonly string[] FairlightMain = { Mini, Constellation };
+#if ATEM_V8_0_1
         public static readonly string[] FairlightAnalog = { Mini };
         public static readonly string[] FairlightXLR = { Constellation };
+#elif ATEM_v8_1_1
+        public static readonly string[] FairlightAnalog = { Mini, Constellation };
+#endif
         public static readonly string[] FairlightDelay = { Constellation };
     }
 }

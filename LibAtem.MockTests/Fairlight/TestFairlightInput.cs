@@ -120,6 +120,7 @@ namespace LibAtem.MockTests.Fairlight
             });
         }
 
+#if ATEM_v8_1
         [Fact]
         public void TestAnalogInputLevel()
         {
@@ -149,13 +150,11 @@ namespace LibAtem.MockTests.Fairlight
                             helper.SendAndWaitForChange(stateBefore, () => { analogInput.SetInputLevel(target.Item1); });
                         }
                     }
-                    //
                 }
             });
             Assert.True(tested);
         }
 
-#if ATEM_v8_1
         [Fact]
         public void TestRcaToXlrEnabled()
         {
@@ -182,6 +181,77 @@ namespace LibAtem.MockTests.Fairlight
                                 ? FairlightAnalogInputLevel.ConsumerLine
                                 : FairlightAnalogInputLevel.ProLine;
                             helper.SendAndWaitForChange(stateBefore, () => { xlrInput.SetRCAToXLREnabled(i % 2); });
+                        }
+                    }
+                }
+            });
+            Assert.True(tested);
+        }
+#else
+        [Fact]
+        public void TestHasAnalogInputLevel()
+        {
+            bool tested = false;
+            AtemMockServerWrapper.Each(_output, _pool, null, DeviceTestCases.FairlightAnalog, helper =>
+            {
+                var rawCommands = helper.Server.GetParsedDataDump();
+
+                IEnumerable<long> useIds = helper.Helper.BuildLibState().Fairlight.Inputs.Keys.ToList();
+                foreach (long id in useIds)
+                {
+                    IBMDSwitcherFairlightAudioInput input = GetInput(helper, id);
+                    if (input is IBMDSwitcherFairlightAnalogAudioInput analog)
+                    {
+                        AtemState stateBefore = helper.Helper.BuildLibState();
+                        FairlightAudioState.InputState inputState = stateBefore.Fairlight.Inputs[id];
+
+                        analog.GetSupportedInputLevels(out _BMDSwitcherFairlightAudioAnalogInputLevel supportedLevels);
+                        Assert.NotEqual(0, (int)supportedLevels);
+                        Assert.NotNull(inputState.Analog);
+                        tested = true;
+
+                        var srcCommand = rawCommands.OfType<FairlightMixerInputGetV811Command>().Single(c => c.Index == (AudioSource)id);
+                        var useLevels = inputState.Analog.SupportedInputLevel.FindFlagComponents();
+
+                        for (int i = 0; i < 5; i++)
+                        {
+                            inputState.Analog.SupportedInputLevel = srcCommand.SupportedInputLevels =
+                                useLevels[i % useLevels.Count];
+
+                            helper.SendAndWaitForChange(stateBefore, () => { helper.Server.SendCommands(srcCommand); });
+                        }
+                    }
+                }
+            });
+            Assert.True(tested);
+        }
+        [Fact]
+        public void TestAnalogInputLevel()
+        {
+            var handler = CommandGenerator.CreateAutoCommandHandler<FairlightMixerInputSetV811Command, FairlightMixerInputGetV811Command>("ActiveInputLevel");
+            bool tested = false;
+            AtemMockServerWrapper.Each(_output, _pool, handler, DeviceTestCases.FairlightAnalog, helper =>
+            {
+                IEnumerable<long> useIds = helper.Helper.BuildLibState().Fairlight.Inputs.Keys.ToList();
+                foreach (long id in useIds)
+                {
+                    IBMDSwitcherFairlightAudioInput input = GetInput(helper, id);
+                    if (input is IBMDSwitcherFairlightAnalogAudioInput analogInput)
+                    {
+                        AtemState stateBefore = helper.Helper.BuildLibState();
+                        FairlightAudioState.AnalogState inputState = stateBefore.Fairlight.Inputs[id].Analog;
+
+                        var testConfigs = AtemSDKConverter.GetFlagsValues(analogInput.GetSupportedInputLevels,
+                            AtemEnumMaps.FairlightAnalogInputLevelMap);
+                        // Need more than 1 config to allow for switching around
+                        if (1 == testConfigs.Count) continue;
+                        tested = true;
+
+                        for (int i = 0; i < 5; i++)
+                        {
+                            var target = testConfigs[i % testConfigs.Count];
+                            inputState.InputLevel = target.Item2;
+                            helper.SendAndWaitForChange(stateBefore, () => { analogInput.SetInputLevel(target.Item1); });
                         }
                     }
                 }
