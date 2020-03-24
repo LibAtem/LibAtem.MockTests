@@ -29,10 +29,10 @@ namespace LibAtem.MockTests
         }
 
         [Fact]
-        public void TestStateMock2ME() => RunTest(DeviceTestCases.Legacy2ME_8_0_1);
+        public void TestStateMock2ME() => RunTest(DeviceTestCases.Legacy2ME);
 
         [Fact(Skip = "Doesn't work at the moment")]
-        public void TestStateMockConstellation() => RunTest(DeviceTestCases.Constellation_8_0_2);
+        public void TestStateMockConstellation() => RunTest(DeviceTestCases.Constellation);
 
         [Fact]
         public void TestStateMockMini() => RunTest(DeviceTestCases.Mini);
@@ -81,6 +81,8 @@ namespace LibAtem.MockTests
 
         private void RunTest(string caseId)
         {
+            if (caseId == "") return;
+
             var commandData = DumpParser.BuildCommands(DeviceTestCases.Version, caseId);
             /*
             var result = new List<string>();
