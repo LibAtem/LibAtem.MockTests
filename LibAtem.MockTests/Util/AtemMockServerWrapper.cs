@@ -151,10 +151,11 @@ namespace LibAtem.MockTests.Util
                 }
             }
 
+            var targetTime = DateTime.Now.AddMilliseconds(2000);
             // Wait for the expected time. If no response, then go with last data
-            bool libTimedOut = libWait.WaitOne(1000);
+            bool libTimedOut = libWait.WaitOne(targetTime.Subtract(DateTime.Now));
             // The Sdk doesn't send the same notifies if nothing changed, so once the lib has finished, wait a small time for sdk to finish up
-            bool sdkTimedOut = sdkWait.WaitOne(500);
+            bool sdkTimedOut = sdkWait.WaitOne(targetTime.Subtract(DateTime.Now));
 
             Helper.OnLibAtemStateChange -= HandlerLib;
             Helper.SdkClient.OnSdkStateChange -= HandlerSdk;

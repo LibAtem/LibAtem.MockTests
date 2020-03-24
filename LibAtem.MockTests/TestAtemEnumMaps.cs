@@ -4,25 +4,44 @@ using LibAtem.SdkStateBuilder;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
+using LibAtem.Util;
+using NAudio.MediaFoundation;
 using Xunit;
 
 namespace LibAtem.MockTests
 {
     internal static class EnumMap
     {
-        public static void EnsureIsComplete<T1, T2>(IReadOnlyDictionary<T1, T2> map)
+        public static void EnsureIsComplete<T1, T2>(IReadOnlyDictionary<T1, T2> map, bool? unmatchedZero = null)
+        where T1 : System.IConvertible
         {
-            List<T1> vals = Enum.GetValues(typeof(T1)).OfType<T1>().ToList();
+            ProtocolVersion currentVersion = DeviceTestCases.Version;
 
-            List<T1> missing = vals.Where(v => !map.ContainsKey(v)).ToList();
+            List<T1> vals = Enum.GetValues(typeof(T1)).OfType<T1>().ToList();
+            if (unmatchedZero.GetValueOrDefault(false))
+                vals = vals.Where(v => Convert.ToInt32(v) != 0).ToList();
+            
+            List<T1> validVals = vals.Where(v =>
+            {
+                SinceAttribute attr = v.GetPossibleAttribute<T1, SinceAttribute>();
+                return attr == null ||  currentVersion > attr.Version;
+            }).ToList();
+
+            // Check that no values are defined which should not
+            List<T1> badVals = vals.Except(validVals).ToList();
+            List<T1> definedBadVals = badVals.Where(map.ContainsKey).ToList();
+            Assert.Empty(definedBadVals);
+
+            List<T1> missing = validVals.Where(v => !map.ContainsKey(v)).ToList();
             Assert.Empty(missing);
 
             // Expect map and values to have the same number
-            Assert.Equal(vals.Count, map.Count);
+            Assert.Equal(validVals.Count, map.Count);
             Assert.Equal(Enum.GetValues(typeof(T2)).Length, map.Count);
 
             // Expect all the map values to be unique
-            Assert.Equal(vals.Count, map.Select(v => v.Value).Distinct().Count());
+            Assert.Equal(validVals.Count, map.Select(v => v.Value).Distinct().Count());
         }
 
         public static void EnsureIsMatching<T1, T2>()
@@ -69,7 +88,7 @@ namespace LibAtem.MockTests
         public void EnsureSerialModeMapIsComplete() => EnumMap.EnsureIsComplete(AtemEnumMaps.SerialModeMap);
 
         [Fact]
-        public void EnsureMultiViewLayoutMapIsComplete() => EnumMap.EnsureIsComplete(AtemEnumMaps.MultiViewLayoutMap);
+        public void EnsureMultiViewLayoutMapIsComplete() => EnumMap.EnsureIsComplete(AtemEnumMaps.MultiViewLayoutMap, true);
 
         [Fact]
         public void EnsureInternalPortMapIsComplete() => EnumMap.EnsureIsComplete(AtemEnumMaps.InternalPortTypeMap);
