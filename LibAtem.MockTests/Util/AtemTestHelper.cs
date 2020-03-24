@@ -95,9 +95,14 @@ namespace LibAtem.MockTests.Util
                 libState = _libAtemState.Clone();
             }
 
+            return SanitiseStateIncompabalities(libState);
+        }
+
+        public static AtemState SanitiseStateIncompabalities(AtemState state)
+        {
 #if ATEM_v8_1
             // Before 8.1.2, the sdk was broken when trying to access the equalizer bands, so we need to discard this data to match
-            libState.Fairlight?.Inputs.ForEach(input =>
+            state.Fairlight?.Inputs.ForEach(input =>
             {
                 input.Value.Sources.ForEach(source =>
                 {
@@ -106,7 +111,7 @@ namespace LibAtem.MockTests.Util
             });
 #endif
 
-            return libState;
+            return state;
         }
 
         public IBMDSwitcher SdkSwitcher => SdkClient.SdkSwitcher;

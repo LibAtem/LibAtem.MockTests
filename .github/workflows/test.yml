@@ -3,7 +3,7 @@ name: Run Tests
 on: [push]
 
 jobs:
-  test v8.0.3 - v8.1.0:
+  test_v8.0.3_-_v8.1.0:
     runs-on: windows-latest
     steps:
     - uses: actions/checkout@v1
@@ -25,7 +25,7 @@ jobs:
         regsvr32 $Env:GITHUB_WORKSPACE/AtemSDK/v8.1/BMDSwitcherAPI.dll /s
         regsvr32 $Env:GITHUB_WORKSPACE/AtemSDK/v8.1/BMDSwitcherAPI64.dll /s
         dotnet test LibAtem.MockTests -c Release
-  test v8.1.1 - v8.1.2:
+  test_v8.1.1_-_v8.1.2:
     runs-on: windows-latest
     steps:
     - uses: actions/checkout@v1
