@@ -5,10 +5,10 @@
     <Platforms>v8.1;v8.1.1</Platforms>
   </PropertyGroup>
 
-  <PropertyGroup Condition="'$(Platform)'=='v8.1.1'">
+  <PropertyGroup Condition=" '$(Platform)'=='v8.1.1' OR '$(WORKFLOW_VERSION)'=='v8.1.1' ">
     <DefineConstants>ATEM_v8_1_1</DefineConstants>
   </PropertyGroup>
-  <PropertyGroup Condition="'$(Platform)'=='v8.1'">
+  <PropertyGroup Condition=" '$(Platform)'=='v8.1' OR '$(WORKFLOW_VERSION)'=='v8.1' ">
     <DefineConstants>ATEM_v8_1</DefineConstants>
   </PropertyGroup>
 
