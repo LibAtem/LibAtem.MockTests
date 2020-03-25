@@ -32,5 +32,6 @@ namespace LibAtem.MockTests
         public static readonly string[] FairlightAnalog = { Mini, Constellation };
 #endif
         public static readonly string[] FairlightDelay = { Constellation };
+        public static readonly string[] ClassicAudioMain = { Legacy2ME };
     }
 }
