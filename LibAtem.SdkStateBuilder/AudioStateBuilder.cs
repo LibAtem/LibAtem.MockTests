@@ -1,4 +1,5 @@
-﻿using BMDSwitcherAPI;
+﻿using System.Collections.Generic;
+using BMDSwitcherAPI;
 using LibAtem.Common;
 using LibAtem.State;
 
@@ -17,11 +18,16 @@ namespace LibAtem.SdkStateBuilder
             props.GetProgramOutFollowFadeToBlack(out int follow);
             state.ProgramOut.FollowFadeToBlack = follow != 0;
 
+            state.Tally = new Dictionary<AudioSource, bool>();
+
             var inputIt = AtemSDKConverter.CastSdk<IBMDSwitcherAudioInputIterator>(props.CreateIterator);
             AtemSDKConverter.Iterate<IBMDSwitcherAudioInput>(inputIt.Next, (port, i) =>
             {
                 port.GetAudioInputId(out long inputId);
                 state.Inputs[inputId] = BuildInput(port);
+
+                port.IsMixedIn(out int isMixedIn);
+                state.Tally[(AudioSource) inputId] = isMixedIn != 0;
             });
 
             var monIt = AtemSDKConverter.CastSdk<IBMDSwitcherAudioMonitorOutputIterator>(props.CreateIterator);

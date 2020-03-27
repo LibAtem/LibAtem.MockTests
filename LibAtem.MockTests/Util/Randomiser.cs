@@ -19,10 +19,10 @@ namespace LibAtem.MockTests.Util
             return (uint) _random.Next((int) max);
         }
 
-        public static T EnumValue<T>()
+        public static T EnumValue<T>(params T[] omit)
         {
             var rand = new Random();
-            var vals = Enum.GetValues(typeof(T)).OfType<T>().ToArray();
+            var vals = Enum.GetValues(typeof(T)).OfType<T>().Except(omit).ToArray();
             if (vals.Length == 0) throw new ArgumentOutOfRangeException("No enum values");
             var ind = rand.Next(0, vals.Length - 1);
             return vals[ind];
@@ -37,6 +37,10 @@ namespace LibAtem.MockTests.Util
         public static double RoundTo(double value, double rounding)
         {
             return Math.Round(value * rounding) / rounding;
+        }
+        public static double FloorTo(double value, double rounding)
+        {
+            return Math.Floor(value * rounding) / rounding;
         }
 
         public static IEnumerable<T> SelectionOfGroup<T>(List<T> options, int randomCount = 3)

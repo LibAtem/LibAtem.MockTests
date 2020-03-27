@@ -61,7 +61,7 @@ namespace LibAtem.MockTests.Util
             };
         }
 
-        public static Func<ImmutableList<ICommand>, ICommand, IEnumerable<ICommand>> MatchCommand<T>(T expectedCmd) where T : AutoSerializeBase
+        public static Func<ImmutableList<ICommand>, ICommand, IEnumerable<ICommand>> MatchCommand<T>(T expectedCmd, params string[] ignoreProps) where T : AutoSerializeBase
         {
             return (previousCommands, cmd) =>
             {
@@ -71,6 +71,9 @@ namespace LibAtem.MockTests.Util
 
                     foreach(var prop in spec.Properties)
                     {
+                        if (ignoreProps.Contains(prop.PropInfo.Name))
+                            continue;
+
                         object expectedValue = prop.Getter.DynamicInvoke(expectedCmd);
                         object actualValue = prop.Getter.DynamicInvoke(cmd2);
                         Assert.Equal(expectedValue, actualValue);

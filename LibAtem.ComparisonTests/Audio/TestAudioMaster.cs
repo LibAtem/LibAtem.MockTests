@@ -117,6 +117,7 @@ namespace LibAtem.ComparisonTests.Audio
                 new AudioMasterGainTestDefinition(helper, helper.SdkSwitcher as IBMDSwitcherAudioMixer).Run();
         }
 
+        /*
         [Fact]
         public void TestLevels()
         {
@@ -274,5 +275,6 @@ namespace LibAtem.ComparisonTests.Audio
                 helper.AssertStatesMatch();
             }
         }
+        */
     }
 }
