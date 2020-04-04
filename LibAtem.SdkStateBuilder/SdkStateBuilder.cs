@@ -100,11 +100,13 @@ namespace LibAtem.SdkStateBuilder
             state.Pool = Enumerable.Range(0, (int)count).Select(i =>
             {
                 pool.IsValid((uint)i, out int valid);
+                pool.HasUnsupportedOps((uint)i, out int unsupported);
                 pool.GetName((uint)i, out string name);
                 pool.GetDescription((uint)i, out string description);
                 return new MacroState.ItemState
                 {
                     IsUsed = valid != 0,
+                    HasUnsupportedOps = unsupported != 0,
                     Name = name,
                     Description = description
                 };
