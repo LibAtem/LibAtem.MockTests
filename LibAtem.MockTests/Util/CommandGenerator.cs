@@ -65,26 +65,51 @@ namespace LibAtem.MockTests.Util
         {
             return (previousCommands, cmd) =>
             {
-                if (cmd is T cmd2)
+                if (ValidateCommandMatches(cmd, expectedCmd, ignoreProps))
                 {
-                    AutoSerializeBase.CommandPropertySpec spec = AutoSerializeBase.GetPropertySpecForType(typeof(T));
-
-                    foreach(var prop in spec.Properties)
-                    {
-                        if (ignoreProps.Contains(prop.PropInfo.Name))
-                            continue;
-
-                        object expectedValue = prop.Getter.DynamicInvoke(expectedCmd);
-                        object actualValue = prop.Getter.DynamicInvoke(cmd2);
-                        Assert.Equal(expectedValue, actualValue);
-                    }
-
                     // Accept it
                     return new ICommand[] { null };
                 }
 
                 return new ICommand[0];
             };
+        }
+
+        public static Func<ImmutableList<ICommand>, ICommand, IEnumerable<ICommand>> EchoCommand<T>(T expectedCmd, params string[] ignoreProps) where T : AutoSerializeBase
+        {
+            return (previousCommands, cmd) =>
+            {
+                if (expectedCmd == null || ValidateCommandMatches(cmd, expectedCmd, ignoreProps))
+                {
+                    // Echo it
+                    return new[] {cmd};
+                }
+
+                return new ICommand[0];
+            };
+        }
+
+        private static bool ValidateCommandMatches<T>(ICommand cmd, T expectedCmd, params string[] ignoreProps) where T : AutoSerializeBase
+        {
+            if (cmd is T cmd2)
+            {
+                AutoSerializeBase.CommandPropertySpec spec = AutoSerializeBase.GetPropertySpecForType(typeof(T));
+
+                foreach (var prop in spec.Properties)
+                {
+                    if (ignoreProps.Contains(prop.PropInfo.Name))
+                        continue;
+
+                    object expectedValue = prop.Getter.DynamicInvoke(expectedCmd);
+                    object actualValue = prop.Getter.DynamicInvoke(cmd2);
+                    Assert.Equal(expectedValue, actualValue);
+                }
+
+                // Accept it
+                return true;
+            }
+
+            return false;
         }
     }
 }

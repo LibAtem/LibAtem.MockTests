@@ -25,6 +25,8 @@ namespace LibAtem.SdkStateBuilder
             state.SupportsProgramPreviewSwapped = supportsSwap != 0;
             props.SupportsQuadrantLayout(out int supportsQuadrants);
             state.SupportsQuadrantLayout = supportsQuadrants != 0;
+            props.CanToggleSafeAreaEnabled(out int supportsToggleSafeArea);
+            state.SupportsToggleSafeArea = supportsToggleSafeArea != 0;
 
             props.GetLayout(out _BMDSwitcherMultiViewLayout layout);
             state.Properties.Layout = (MultiViewLayoutV8)layout;
@@ -41,14 +43,14 @@ namespace LibAtem.SdkStateBuilder
             state.Windows = Enumerable.Range(0, (int)count).Select(window =>
             {
                 props.GetWindowInput((uint)window, out long input);
-                //_props.GetSafeAreaEnabled((uint) window, out int enabled);
+                props.GetSafeAreaEnabled((uint) window, out int enabled);
                 //_props.CurrentInputSupportsSafeArea((uint) window, out int supportsSafeArea);
 
                 var st = new MultiViewerState.WindowState
                 {
                     Source = (VideoSource)input,
                     // SupportsSafeArea = supportsSafeArea != 0,
-                    // SafeAreaEnabled = enabled != 0,
+                    SafeAreaEnabled = enabled != 0,
                 };
 
                 if (state.SupportsVuMeters)

@@ -31,6 +31,7 @@ namespace LibAtem.SdkStateBuilder
         public static readonly IReadOnlyDictionary<FairlightAudioMixOption, _BMDSwitcherFairlightAudioMixOption> FairlightAudioMixOptionMap;
         public static readonly IReadOnlyDictionary<FairlightAudioSourceType, _BMDSwitcherFairlightAudioSourceType> FairlightAudioSourceTypeMap;
         public static readonly IReadOnlyDictionary<FairlightAnalogInputLevel, _BMDSwitcherFairlightAudioAnalogInputLevel> FairlightAnalogInputLevelMap;
+        public static readonly IReadOnlyDictionary<SDI3GOutputLevel, _BMDSwitcher3GSDIOutputLevel> SDI3GOutputLevelMap;
 
         static AtemEnumMaps()
         {
@@ -295,6 +296,12 @@ namespace LibAtem.SdkStateBuilder
 #if  ATEM_v8_1_1
                 {FairlightAnalogInputLevel.ProLine, _BMDSwitcherFairlightAudioAnalogInputLevel.bmdSwitcherFairlightAudioAnalogInputLevelProLine },
 #endif
+            };
+
+            SDI3GOutputLevelMap = new Dictionary<SDI3GOutputLevel, _BMDSwitcher3GSDIOutputLevel>
+            {
+                {SDI3GOutputLevel.LevelA, _BMDSwitcher3GSDIOutputLevel.bmdSwitcher3GSDIOutputLevelA},
+                {SDI3GOutputLevel.LevelB, _BMDSwitcher3GSDIOutputLevel.bmdSwitcher3GSDIOutputLevelB},
             };
         }
 

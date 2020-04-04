@@ -30,6 +30,34 @@ namespace LibAtem.SdkStateBuilder
                 DropFrame = dropFrame != 0
             };
 
+            try
+            {
+                switcher.Get3GSDIOutputLevel(out _BMDSwitcher3GSDIOutputLevel outputLevel);
+                state.Settings.SDI3GLevel = AtemEnumMaps.SDI3GOutputLevelMap.FindByValue(outputLevel);
+            }
+            catch (Exception e)
+            {
+                // This call fails on models which dont do 3g sdi
+                state.Settings.SDI3GLevel = 0;
+            }
+            try
+            {
+                switcher.GetSuperSourceCascade(out int cascade);
+                state.Settings.SuperSourceCascade = cascade != 0;
+            }
+            catch (Exception e)
+            {
+                // This call fails on models which dont have multiple ssrc
+                state.Settings.SuperSourceCascade = false;
+            }
+
+            switcher.GetPowerStatus(out _BMDSwitcherPowerStatus powerStatus);
+            state.Power = new[]
+            {
+                powerStatus.HasFlag(_BMDSwitcherPowerStatus.bmdSwitcherPowerStatusSupply1),
+                powerStatus.HasFlag(_BMDSwitcherPowerStatus.bmdSwitcherPowerStatusSupply2),
+            };
+
             SourceStateBuilder.Build(state, switcher);
             Hyperdecks(state, switcher);
             SerialPorts(state, switcher);

@@ -117,6 +117,25 @@ namespace LibAtem.ComparisonTests.State
                             yield return r;
                     }
                 }
+                else if (prop.PropertyType.IsArray)
+                {
+                    dynamic oldList = oldVal;
+                    dynamic newList = newVal;
+
+                    if (newList?.Length != oldList?.Length)
+                    {
+                        yield return "Value: " + name + prop.Name + " length mismatch Expected: " + oldList?.Length + " Actual: " + newList?.Length;
+                        continue;
+                    }
+
+                    string newName = name + prop.Name + ".";
+                    for (int i = 0; i < newList.Length; i++)
+                    {
+                        IEnumerable<string> res = CompareObject($"{newName}{i}.", ignoreNodes, oldList[i], newList[i]);
+                        foreach (string r in res)
+                            yield return r;
+                    }
+                }
                 else if (prop.PropertyType == typeof(double))
                 {
                     ToleranceAttribute attr = prop.GetCustomAttribute<ToleranceAttribute>();

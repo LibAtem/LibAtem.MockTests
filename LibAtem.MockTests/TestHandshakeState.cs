@@ -29,9 +29,9 @@ namespace LibAtem.MockTests
         }
 
         [Fact]
-        public void TestStateMock2ME() => RunTest(DeviceTestCases.Legacy2ME);
+        public void TestStateMock2ME() => RunTest(DeviceTestCases.TwoME);
 
-        [Fact(Skip = "Doesn't work at the moment")]
+        [Fact] //(Skip = "Doesn't work at the moment")]
         public void TestStateMockConstellation() => RunTest(DeviceTestCases.Constellation);
 
         [Fact]

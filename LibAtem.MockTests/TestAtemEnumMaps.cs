@@ -128,5 +128,8 @@ namespace LibAtem.MockTests
 
         [Fact]
         public void EnsureFairlightAnalogInputLevelMap() => EnumMap.EnsureIsComplete(AtemEnumMaps.FairlightAnalogInputLevelMap);
+
+        [Fact]
+        public void EnsureSDI3GOutputLevelMap() => EnumMap.EnsureIsComplete(AtemEnumMaps.SDI3GOutputLevelMap);
     }
 }
