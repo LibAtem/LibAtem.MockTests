@@ -39,7 +39,7 @@ namespace LibAtem.ComparisonTests.State
             return res.Count == 0;
         }
 
-        private static IEnumerable<string> CompareObject(string name, IReadOnlyList<string> ignoreNodes, object state1, object state2)
+        public static IEnumerable<string> CompareObject(string name, IReadOnlyList<string> ignoreNodes, object state1, object state2)
         {
             if (state1 == null)
             {

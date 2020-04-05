@@ -55,6 +55,8 @@ namespace LibAtem.SdkStateBuilder
             state.Properties.AvailableExternalPortTypes = (ExternalPortTypeFlags)types;
             props.GetCurrentExternalPortType(out _BMDSwitcherExternalPortType value);
             state.Properties.CurrentExternalPortType = (ExternalPortTypeFlags)value;
+            props.GetPortType(out _BMDSwitcherPortType internalType);
+            state.Properties.InternalPortType = AtemEnumMaps.InternalPortTypeMap.FindByValue(internalType);
 
             return state;
         }

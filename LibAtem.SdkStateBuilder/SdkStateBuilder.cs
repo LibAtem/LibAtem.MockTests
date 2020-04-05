@@ -4,6 +4,7 @@ using LibAtem.State;
 using LibAtem.State.Builder;
 using LibAtem.Util;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 
 namespace LibAtem.SdkStateBuilder
@@ -63,6 +64,8 @@ namespace LibAtem.SdkStateBuilder
             SerialPorts(state, switcher);
             Macros(state.Macros, switcher);
             MediaPoolStateBuilder.Build(state.MediaPool, switcher);
+            //TalkbackStateBuilder.Build(state, switcher);
+            MixMinusOutputs(state, switcher);
 
             state.DownstreamKeyers = DownstreamKeyerStateBuilder.Build(switcher);
             state.MediaPlayers = MediaPlayerStateBuilder.Build(switcher, updateSettings, state.MediaPool.Clips.Count > 0);
@@ -74,8 +77,6 @@ namespace LibAtem.SdkStateBuilder
             if (switcher is IBMDSwitcherAudioMixer audioMixer)
             {
                 state.Audio = AudioStateBuilder.Build(audioMixer);
-                if (switcher is IBMDSwitcherTalkback talkback)
-                    TalkbackStateBuilder.Build(state.Audio.Talkback, talkback);
             }
 
             return state;
@@ -151,11 +152,30 @@ namespace LibAtem.SdkStateBuilder
                 props.GetAutoRollOnTakeFrameDelay(out ushort frameDelay);
                 st.AutoRollFrameDelay = frameDelay;
                 props.GetNetworkAddress(out uint address);
-                st.NetworkAddress = address == 0 ? null : IPUtil.IPToString(BitConverter.GetBytes(address));
+                st.NetworkAddress = address == 0 ? null : IPUtil.IPToString(BitConverter.GetBytes(address).Reverse().ToArray());
 
                 return st;
             });
         }
 
+        private static void MixMinusOutputs(AtemState state, IBMDSwitcher switcher)
+        {
+            var iterator = AtemSDKConverter.CastSdk<IBMDSwitcherMixMinusOutputIterator>(switcher.CreateIterator);
+            state.Settings.MixMinusOutputs = AtemSDKConverter.IterateList<IBMDSwitcherMixMinusOutput, SettingsState.MixMinusOutputState>(iterator.Next,
+                (props, id) =>
+                {
+                    props.GetAvailableAudioModes(out _BMDSwitcherMixMinusOutputAudioMode availableModes);
+                    props.GetAudioMode(out _BMDSwitcherMixMinusOutputAudioMode mode);
+                    props.GetMinusAudioInputId(out long inputId);
+                    //props.HasMinusAudioInputId(out int );
+
+                    return new SettingsState.MixMinusOutputState
+                    {
+                        AudioInputId = inputId,
+                        SupportedModes = AtemEnumMaps.MixMinusModeMap.FindFlagsByValue(availableModes),
+                        Mode = AtemEnumMaps.MixMinusModeMap.FindByValue(mode),
+                    };
+                });
+        }
     }
 }

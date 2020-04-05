@@ -31,10 +31,16 @@ namespace LibAtem.SdkStateBuilder
             });
 
             var monIt = AtemSDKConverter.CastSdk<IBMDSwitcherAudioMonitorOutputIterator>(props.CreateIterator);
-            state.Monitors =
+            state.MonitorOutputs =
                 AtemSDKConverter.IterateList<IBMDSwitcherAudioMonitorOutput, AudioState.MonitorOutputState>(
                     monIt.Next,
                     (mon, id) => BuildMonitor(mon));
+
+            var headphoneIt = AtemSDKConverter.CastSdk<IBMDSwitcherAudioHeadphoneOutputIterator>(props.CreateIterator);
+            state.HeadphoneOutputs =
+                AtemSDKConverter.IterateList<IBMDSwitcherAudioHeadphoneOutput, AudioState.HeadphoneOutputState>(
+                    headphoneIt.Next,
+                    (hp, id) => BuildHeadphone(hp));
 
             return state;
         }
@@ -55,6 +61,19 @@ namespace LibAtem.SdkStateBuilder
             props.GetBalance(out double balance);
             state.Properties.Balance = balance * 50;
 
+            if (props is IBMDSwitcherAudioInputXLR xlrProps)
+            {
+                xlrProps.HasRCAToXLR(out int supportsXlr);
+                if (supportsXlr != 0)
+                {
+                    xlrProps.GetRCAToXLREnabled(out int xlrEnabled);
+                    state.Analog = new AudioState.InputState.AnalogState
+                    {
+                        RcaToXlr = xlrEnabled != 0
+                    };
+                }
+            }
+
             return state;
         }
 
@@ -74,10 +93,25 @@ namespace LibAtem.SdkStateBuilder
             state.SoloSource = (AudioSource)soloInput;
             props.GetDim(out int dim);
             state.Dim = dim != 0;
-            /*
             props.GetDimLevel(out double dimLevel);
-            state.DimLevel = dimLevel;
-            */
+            state.DimLevel = (uint) (dimLevel * 100);
+
+            return state;
+        }
+
+        private static AudioState.HeadphoneOutputState BuildHeadphone(IBMDSwitcherAudioHeadphoneOutput props)
+        {
+            var state = new AudioState.HeadphoneOutputState();
+
+            props.GetGain(out double gain);
+            props.GetInputProgramOutGain(out double programGain);
+            props.GetInputSidetoneGain(out double sidetoneGain);
+            props.GetInputTalkbackGain(out double talkbackGain);
+
+            state.Gain = gain;
+            state.ProgramOutGain = programGain;
+            state.SidetoneGain = sidetoneGain;
+            state.TalkbackGain = talkbackGain;
 
             return state;
         }

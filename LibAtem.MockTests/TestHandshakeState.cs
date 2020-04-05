@@ -31,12 +31,18 @@ namespace LibAtem.MockTests
         [Fact]
         public void TestStateMock2ME() => RunTest(DeviceTestCases.TwoME);
 
+        [Fact]
+        public void TestStateMock2ME4K() => RunTest(DeviceTestCases.TwoME4K);
+
         [Fact] //(Skip = "Doesn't work at the moment")]
         public void TestStateMockConstellation() => RunTest(DeviceTestCases.Constellation);
 
         [Fact]
         public void TestStateMockMini() => RunTest(DeviceTestCases.Mini);
-        
+
+        [Fact]
+        public void TestStateMockTVSHD() => RunTest(DeviceTestCases.TVSHD);
+
         /*
         [Fact]
         public void TestStateReal()

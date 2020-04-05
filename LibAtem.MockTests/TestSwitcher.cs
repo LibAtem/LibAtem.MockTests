@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
 using BMDSwitcherAPI;
 using LibAtem.Commands;
@@ -12,7 +11,6 @@ using LibAtem.SdkStateBuilder;
 using LibAtem.State;
 using Xunit;
 using Xunit.Abstractions;
-using AtemSDKConverter = LibAtem.ComparisonTests.AtemSDKConverter;
 
 namespace LibAtem.MockTests
 {

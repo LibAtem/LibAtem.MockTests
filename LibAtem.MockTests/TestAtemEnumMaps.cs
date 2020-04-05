@@ -131,5 +131,11 @@ namespace LibAtem.MockTests
 
         [Fact]
         public void EnsureSDI3GOutputLevelMap() => EnumMap.EnsureIsComplete(AtemEnumMaps.SDI3GOutputLevelMap);
+
+        [Fact]
+        public void EnsureTalkbackChannelMap() => EnumMap.EnsureIsComplete(AtemEnumMaps.TalkbackChannelMap);
+
+        [Fact]
+        public void EnsureMixMinusModeMap() => EnumMap.EnsureIsComplete(AtemEnumMaps.MixMinusModeMap);
     }
 }

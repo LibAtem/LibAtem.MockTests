@@ -2,6 +2,7 @@
 using LibAtem.Common;
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Linq;
 
 namespace LibAtem.SdkStateBuilder
@@ -32,6 +33,8 @@ namespace LibAtem.SdkStateBuilder
         public static readonly IReadOnlyDictionary<FairlightAudioSourceType, _BMDSwitcherFairlightAudioSourceType> FairlightAudioSourceTypeMap;
         public static readonly IReadOnlyDictionary<FairlightAnalogInputLevel, _BMDSwitcherFairlightAudioAnalogInputLevel> FairlightAnalogInputLevelMap;
         public static readonly IReadOnlyDictionary<SDI3GOutputLevel, _BMDSwitcher3GSDIOutputLevel> SDI3GOutputLevelMap;
+        public static readonly IReadOnlyDictionary<TalkbackChannel, _BMDSwitcherTalkbackId> TalkbackChannelMap;
+        public static readonly IReadOnlyDictionary<MixMinusMode, _BMDSwitcherMixMinusOutputAudioMode> MixMinusModeMap;
 
         static AtemEnumMaps()
         {
@@ -302,6 +305,18 @@ namespace LibAtem.SdkStateBuilder
             {
                 {SDI3GOutputLevel.LevelA, _BMDSwitcher3GSDIOutputLevel.bmdSwitcher3GSDIOutputLevelA},
                 {SDI3GOutputLevel.LevelB, _BMDSwitcher3GSDIOutputLevel.bmdSwitcher3GSDIOutputLevelB},
+            };
+
+            TalkbackChannelMap = new Dictionary<TalkbackChannel, _BMDSwitcherTalkbackId>
+            {
+                {TalkbackChannel.Production, _BMDSwitcherTalkbackId.bmdSwitcherTalkbackIdProduction},
+                {TalkbackChannel.Engineering, _BMDSwitcherTalkbackId.bmdSwitcherTalkbackIdEngineering},
+            };
+
+            MixMinusModeMap = new Dictionary<MixMinusMode, _BMDSwitcherMixMinusOutputAudioMode>
+            {
+                {MixMinusMode.ProgramOut, _BMDSwitcherMixMinusOutputAudioMode.bmdSwitcherMixMinusOutputAudioModeProgramOut},
+                {MixMinusMode.MixMinus, _BMDSwitcherMixMinusOutputAudioMode.bmdSwitcherMixMinusOutputAudioModeMixMinus}
             };
         }
 
