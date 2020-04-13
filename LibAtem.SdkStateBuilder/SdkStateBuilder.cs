@@ -166,12 +166,18 @@ namespace LibAtem.SdkStateBuilder
                 {
                     props.GetAvailableAudioModes(out _BMDSwitcherMixMinusOutputAudioMode availableModes);
                     props.GetAudioMode(out _BMDSwitcherMixMinusOutputAudioMode mode);
-                    props.GetMinusAudioInputId(out long inputId);
-                    //props.HasMinusAudioInputId(out int );
+                    props.HasMinusAudioInputId(out int hasInputId);
+                    
+                    long inputId = 0;
+                    if (hasInputId != 0)
+                    {
+                        // TODO - is this good?
+                        props.GetMinusAudioInputId(out inputId);
+                    }
 
                     return new SettingsState.MixMinusOutputState
                     {
-                        AudioInputId = inputId,
+                        AudioInputId = (AudioSource) inputId,
                         SupportedModes = AtemEnumMaps.MixMinusModeMap.FindFlagsByValue(availableModes),
                         Mode = AtemEnumMaps.MixMinusModeMap.FindByValue(mode),
                     };

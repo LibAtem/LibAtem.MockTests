@@ -4,7 +4,6 @@ using System.Collections.Immutable;
 using System.Linq;
 using BMDSwitcherAPI;
 using LibAtem.Commands;
-using LibAtem.Commands.Macro;
 using LibAtem.Commands.Media;
 using LibAtem.Common;
 using LibAtem.MockTests.Util;

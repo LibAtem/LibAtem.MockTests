@@ -15,8 +15,6 @@ using Xunit.Abstractions;
 
 namespace LibAtem.MockTests.Util
 {
-    using TestCaseId = Tuple<ProtocolVersion, string>;
-
     public sealed class AtemMockServerWrapper : IDisposable
     {
         private readonly ITestOutputHelper _output;
@@ -66,9 +64,18 @@ namespace LibAtem.MockTests.Util
             });
         }
 
-        public void SendAndWaitForChange(AtemState expected, Action doSend, int timeout = -1, Action<AtemState, AtemState> mutateStates = null)
+        public void SendFromServerAndWaitForChange(AtemState expected, ICommand cmd, int timeout = -1,
+            Action<AtemState, AtemState> mutateStates = null)
         {
-            SendAndWaitForChangeInner(doSend);
+            SendAndWaitForChange(expected, () =>
+            {
+                Server.SendCommands(cmd);
+            }, timeout, mutateStates, true);
+        }
+
+        public void SendAndWaitForChange(AtemState expected, Action doSend, int timeout = -1, Action<AtemState, AtemState> mutateStates = null, bool skipHandler = false)
+        {
+            SendAndWaitForChangeInner(doSend, skipHandler);
             if (expected != null)
             {
                 Helper.CheckStateChanges(expected, mutateStates);
@@ -89,7 +96,7 @@ namespace LibAtem.MockTests.Util
         }
 
         public const int CommandWaitTime = 80;
-        private void SendAndWaitForChangeInner(Action doSend)
+        private void SendAndWaitForChangeInner(Action doSend, bool skipHandler = false)
         {
             var libWait = new ManualResetEvent(false);
             var sdkWait = new ManualResetEvent(false);
@@ -118,7 +125,7 @@ namespace LibAtem.MockTests.Util
                 doSend();
             }
 
-            if (_handler != null)
+            if (!skipHandler && _handler != null)
             {
                 Assert.True(Server.HasPendingPackets.WaitOne(1000));
                 // if (!ok) Helper.Output.WriteLine("SendAndWaitForMatching: Server did not receive packet");
@@ -164,8 +171,6 @@ namespace LibAtem.MockTests.Util
                 Helper.Output.WriteLine("SendAndWaitForMatching: Missed Lib change");
             if (!sdkTimedOut)
                 Helper.Output.WriteLine("SendAndWaitForMatching: Missed Sdk change");
-
-            Helper.Output.WriteLine("");
         }
 
         public Dictionary<VideoSource, T> GetSdkInputsOfType<T>() where T : class

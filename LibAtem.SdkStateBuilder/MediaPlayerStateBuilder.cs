@@ -25,10 +25,14 @@ namespace LibAtem.SdkStateBuilder
             state.Clips = Enumerable.Range(0, (int)clipCount).Select(i =>
             {
                 pool.GetClip((uint)i, out IBMDSwitcherClip clip);
+                clip.GetMaxFrameCount(out uint maxFrameCount);
+                clip.IsValid(out int valid);
                 clip.GetName(out string name);
                 return new MediaPoolState.ClipState
                 {
-                    Name = name
+                    IsUsed = valid != 0,
+                    Name = name,
+                    MaxFrames = maxFrameCount,
                 };
             }).ToList();
         }
