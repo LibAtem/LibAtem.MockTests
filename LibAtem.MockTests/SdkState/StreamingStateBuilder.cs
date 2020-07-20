@@ -8,6 +8,7 @@ namespace LibAtem.MockTests.SdkState
     {
         public static void Build(AtemState state, IBMDSwitcher switcher)
         {
+#if !ATEM_v8_1
             var recordingSwitcher = switcher as IBMDSwitcherRecordAV;
             if (recordingSwitcher == null) return;
 
@@ -38,12 +39,14 @@ namespace LibAtem.MockTests.SdkState
                         // Status = diskStatus
                     }; 
                 });
+#endif
         }
     }
     public static class StreamingStateBuilder
     {
         public static void Build(AtemState state, IBMDSwitcher switcher)
         {
+#if !ATEM_v8_1
             var streamingSwitcher = switcher as IBMDSwitcherStreamRTMP;
             if (streamingSwitcher == null) return;
 
@@ -79,7 +82,7 @@ namespace LibAtem.MockTests.SdkState
             state.Streaming.Settings.LowBitrate = lowBitrate;
             state.Streaming.Settings.HighBitrate = highBitrate;
 
-
+#endif
         }
     }
 }

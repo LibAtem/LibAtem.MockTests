@@ -28,6 +28,8 @@ namespace LibAtem.MockTests
             _pool = pool;
         }
 
+#if !ATEM_v8_1
+
         [Fact]
         public void TestServiceName()
         {
@@ -213,5 +215,6 @@ namespace LibAtem.MockTests
                 }
             });
         }
+#endif
     }
 }

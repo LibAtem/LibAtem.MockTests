@@ -2,7 +2,6 @@
 using LibAtem.Common;
 using System;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.Linq;
 using LibAtem.Commands.Streaming;
 
@@ -36,7 +35,10 @@ namespace LibAtem.MockTests.SdkState
         public static readonly IReadOnlyDictionary<SDI3GOutputLevel, _BMDSwitcher3GSDIOutputLevel> SDI3GOutputLevelMap;
         public static readonly IReadOnlyDictionary<TalkbackChannel, _BMDSwitcherTalkbackId> TalkbackChannelMap;
         public static readonly IReadOnlyDictionary<MixMinusMode, _BMDSwitcherMixMinusOutputAudioMode> MixMinusModeMap;
+
+#if !ATEM_v8_1
         public static readonly IReadOnlyDictionary<StreamingStatus, _BMDSwitcherStreamRTMPState> StreamingStatusMap;
+#endif
 
         static AtemEnumMaps()
         {
@@ -210,8 +212,10 @@ namespace LibAtem.MockTests.SdkState
                 {InternalPortType.MediaPlayerKey, _BMDSwitcherPortType.bmdSwitcherPortTypeMediaPlayerCut},
                 {InternalPortType.MediaPlayerFill, _BMDSwitcherPortType.bmdSwitcherPortTypeMediaPlayerFill},
                 {InternalPortType.SuperSource, _BMDSwitcherPortType.bmdSwitcherPortTypeSuperSource},
+#if !ATEM_v8_1
                 {InternalPortType.MultiViewer, _BMDSwitcherPortType.bmdSwitcherPortTypeMultiview},
                 {InternalPortType.ExternalDirect, _BMDSwitcherPortType.bmdSwitcherPortTypeExternalDirect},
+#endif
             };
 
             ExternalPortTypeMap = new Dictionary<ExternalPortType, _BMDSwitcherExternalPortType>
@@ -323,6 +327,7 @@ namespace LibAtem.MockTests.SdkState
                 {MixMinusMode.MixMinus, _BMDSwitcherMixMinusOutputAudioMode.bmdSwitcherMixMinusOutputAudioModeMixMinus}
             };
 
+#if !ATEM_v8_1
             StreamingStatusMap = new Dictionary<StreamingStatus, _BMDSwitcherStreamRTMPState>
             {
                 {StreamingStatus.Idle, _BMDSwitcherStreamRTMPState.bmdSwitcherStreamRTMPStateIdle},
@@ -330,6 +335,7 @@ namespace LibAtem.MockTests.SdkState
                 {StreamingStatus.Streaming, _BMDSwitcherStreamRTMPState.bmdSwitcherStreamRTMPStateStreaming},
                 {StreamingStatus.Stopping, _BMDSwitcherStreamRTMPState.bmdSwitcherStreamRTMPStateStopping},
             };
+#endif
         }
 
         public static Tk FindByValue<Tk, Tv>(this IReadOnlyDictionary<Tk, Tv> dict, Tv value)
