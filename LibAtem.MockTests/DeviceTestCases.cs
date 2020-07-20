@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace LibAtem.MockTests
 {
@@ -28,6 +30,7 @@ namespace LibAtem.MockTests
 
         public static readonly string[] All = { MiniPro, Mini, Constellation, TwoME, TVSHD, TVS };
         public static readonly string[] DownConvertVideoMode = {TwoME4K, OneME4K};
+        public static readonly string[] AutoVideoMode = {Mini, MiniPro};
 
         public static readonly string[] ChromaKeyer = { TwoME };
         public static readonly string[] AdvancedChromaKeyer = { Mini, Constellation };
@@ -44,6 +47,8 @@ namespace LibAtem.MockTests
         public static readonly string[] MixMinusOutputs = {TVSHD};
 
         public static readonly string[] MediaPlayer = All;
+        public static readonly string[] MediaPlayerStillTransfer =
+            (new List<string> {Mini, TwoME, Constellation, TVS}).Where(t => t != "").Take(1).ToArray();
         public static readonly string[] MediaPlayerStillCapture = { Mini };
         public static readonly string[] MediaPlayerClips = { TwoME, Constellation, TwoME4K };
 

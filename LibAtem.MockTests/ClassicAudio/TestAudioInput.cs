@@ -36,7 +36,7 @@ namespace LibAtem.MockTests.ClassicAudio
             return input;
         }
 
-        private static Func<ImmutableList<ICommand>, ICommand, IEnumerable<ICommand>> CreateAutoCommandHandler(string name)
+        private static Func<Lazy<ImmutableList<ICommand>>, ICommand, IEnumerable<ICommand>> CreateAutoCommandHandler(string name)
         {
             return CommandGenerator.CreateAutoCommandHandler<AudioMixerInputSetCommand, AudioMixerInputGetV8Command>(name);
         }

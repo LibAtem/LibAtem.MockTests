@@ -365,7 +365,7 @@ namespace LibAtem.MockTests.MixEffects
             });
             Assert.True(tested);
         }
-        private static IEnumerable<ICommand> SampledColorHandler(ImmutableList<ICommand> previousCommands, ICommand cmd)
+        private static IEnumerable<ICommand> SampledColorHandler(Lazy<ImmutableList<ICommand>> previousCommands, ICommand cmd)
         {
             if (cmd is MixEffectKeyAdvancedChromaSampleSetCommand sampleCmd)
             {
@@ -375,7 +375,7 @@ namespace LibAtem.MockTests.MixEffects
                 Assert.Equal(expectedMask, sampleCmd.Mask);
 
                 var setKey = CommandQueueKey.ForGetter<MixEffectKeyAdvancedChromaSampleGetCommand>(sampleCmd);
-                var previousCmd = previousCommands.OfType<MixEffectKeyAdvancedChromaSampleGetCommand>()
+                var previousCmd = previousCommands.Value.OfType<MixEffectKeyAdvancedChromaSampleGetCommand>()
                     .Last(c => setKey.Equals(new CommandQueueKey(c)));
                 Assert.NotNull(previousCmd);
 

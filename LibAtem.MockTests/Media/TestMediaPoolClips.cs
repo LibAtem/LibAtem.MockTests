@@ -53,7 +53,7 @@ namespace LibAtem.MockTests.Media
         public void TestClipLengths()
         {
             uint maxFrames = 0;
-            Func<ImmutableList<ICommand>, ICommand, IEnumerable<ICommand>> handler2 = (previousCommands, cmd) =>
+            Func< Lazy<ImmutableList<ICommand>>, ICommand, IEnumerable<ICommand>> handler2 = (previousCommands, cmd) =>
             {
                 var cmd2 = (MediaPoolSettingsSetCommand) cmd;
                 long allUsed = cmd2.MaxFrames.Sum(d => d);
@@ -173,11 +173,11 @@ namespace LibAtem.MockTests.Media
                 }
             });
         }
-        private static IEnumerable<ICommand> ClearCommandHandler(ImmutableList<ICommand> previousCommands, ICommand cmd)
+        private static IEnumerable<ICommand> ClearCommandHandler(Lazy<ImmutableList<ICommand>> previousCommands, ICommand cmd)
         {
             if (cmd is MediaPoolClearClipCommand clearCmd)
             {
-                var previous = previousCommands.OfType<MediaPoolClipDescriptionCommand>().Last(a => a.Index == clearCmd.Index);
+                var previous = previousCommands.Value.OfType<MediaPoolClipDescriptionCommand>().Last(a => a.Index == clearCmd.Index);
                 Assert.NotNull(previous);
 
                 previous.IsUsed = false;
@@ -209,11 +209,11 @@ namespace LibAtem.MockTests.Media
                 }
             });
         }
-        private static IEnumerable<ICommand> NameCommandHandler(ImmutableList<ICommand> previousCommands, ICommand cmd)
+        private static IEnumerable<ICommand> NameCommandHandler(Lazy<ImmutableList<ICommand>> previousCommands, ICommand cmd)
         {
             if (cmd is MediaPoolSetClipCommand setNameCmd)
             {
-                var previous = previousCommands.OfType<MediaPoolClipDescriptionCommand>().Last(a => a.Index == setNameCmd.Index);
+                var previous = previousCommands.Value.OfType<MediaPoolClipDescriptionCommand>().Last(a => a.Index == setNameCmd.Index);
                 Assert.NotNull(previous);
 
                 previous.Name = setNameCmd.Name;
@@ -266,7 +266,7 @@ namespace LibAtem.MockTests.Media
                 }
             });
         }
-        private static IEnumerable<ICommand> LockCommandHandler(ImmutableList<ICommand> previousCommands, ICommand cmd)
+        private static IEnumerable<ICommand> LockCommandHandler(Lazy<ImmutableList<ICommand>> previousCommands, ICommand cmd)
         {
             if (cmd is LockStateSetCommand lockCmd)
             {

@@ -12,11 +12,11 @@ namespace LibAtem.MockTests.Util
 {
     public static class CommandGenerator
     {
-        public static Func<ImmutableList<ICommand>, ICommand, IEnumerable<ICommand>> CreateAutoCommandHandler<TSet, TGet>(string name, bool disableMask = false) where TGet : ICommand where TSet : ICommand
+        public static Func<Lazy<ImmutableList<ICommand>>, ICommand, IEnumerable<ICommand>> CreateAutoCommandHandler<TSet, TGet>(string name, bool disableMask = false) where TGet : ICommand where TSet : ICommand
         {
             return CreateAutoCommandHandler<TSet, TGet>(new[] { name }, disableMask);
         }
-        public static Func<ImmutableList<ICommand>, ICommand, IEnumerable<ICommand>> CreateAutoCommandHandler<TSet, TGet>(string[] names, bool disableMask = false) where TGet : ICommand where TSet : ICommand
+        public static Func<Lazy<ImmutableList<ICommand>>, ICommand, IEnumerable<ICommand>> CreateAutoCommandHandler<TSet, TGet>(string[] names, bool disableMask = false) where TGet : ICommand where TSet : ICommand
         {
             object expectedMask = null;
             if (!disableMask)
@@ -41,7 +41,7 @@ namespace LibAtem.MockTests.Util
 
                     // Find the command to base the result on
                     CommandQueueKey targetCommandKey = CommandQueueKey.ForGetter<TGet>(setCmd);
-                    TGet previousCmd = previousCommands.OfType<TGet>().LastOrDefault(c => targetCommandKey.Equals(new CommandQueueKey(c)));
+                    TGet previousCmd = previousCommands.Value.OfType<TGet>().LastOrDefault(c => targetCommandKey.Equals(new CommandQueueKey(c)));
                     Assert.NotNull(previousCmd);
 
                     // Now copy the value across
@@ -61,7 +61,7 @@ namespace LibAtem.MockTests.Util
             };
         }
 
-        public static Func<ImmutableList<ICommand>, ICommand, IEnumerable<ICommand>> MatchCommand<T>(T expectedCmd, params string[] ignoreProps) where T : AutoSerializeBase
+        public static Func<Lazy<ImmutableList<ICommand>>, ICommand, IEnumerable<ICommand>> MatchCommand<T>(T expectedCmd, params string[] ignoreProps) where T : AutoSerializeBase
         {
             return (previousCommands, cmd) =>
             {
@@ -75,7 +75,7 @@ namespace LibAtem.MockTests.Util
             };
         }
 
-        public static Func<ImmutableList<ICommand>, ICommand, IEnumerable<ICommand>> EchoCommand<T>(T expectedCmd, params string[] ignoreProps) where T : AutoSerializeBase
+        public static Func<Lazy<ImmutableList<ICommand>>, ICommand, IEnumerable<ICommand>> EchoCommand<T>(T expectedCmd, params string[] ignoreProps) where T : AutoSerializeBase
         {
             return (previousCommands, cmd) =>
             {

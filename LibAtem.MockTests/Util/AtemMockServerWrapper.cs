@@ -19,14 +19,14 @@ namespace LibAtem.MockTests.Util
     {
         private readonly ITestOutputHelper _output;
         private readonly AtemServerClientPool _pool;
-        private readonly Func<ImmutableList<ICommand>, ICommand, IEnumerable<ICommand>> _handler;
+        private readonly Func<Lazy<ImmutableList<ICommand>>, ICommand, IEnumerable<ICommand>> _handler;
         private readonly AtemMockServerPoolItem _case;
 
         public AtemMockServer Server => _case.Server;
         public AtemSdkClientWrapper SdkClient { get; }
         public AtemTestHelper Helper { get; }
 
-        public AtemMockServerWrapper(ITestOutputHelper output, AtemServerClientPool pool, Func<ImmutableList<ICommand>, ICommand, IEnumerable<ICommand>> handler, string caseId)
+        public AtemMockServerWrapper(ITestOutputHelper output, AtemServerClientPool pool, Func<Lazy<ImmutableList<ICommand>>, ICommand, IEnumerable<ICommand>> handler, string caseId)
         {
             _output = output;
             _pool = pool;
@@ -53,7 +53,7 @@ namespace LibAtem.MockTests.Util
                 Assert.Empty(Server.PendingPackets);
         }
 
-        public static void Each(ITestOutputHelper output, AtemServerClientPool pool, Func<ImmutableList<ICommand>, ICommand, IEnumerable<ICommand>> handler, string[] cases, Action<AtemMockServerWrapper> runner)
+        public static void Each(ITestOutputHelper output, AtemServerClientPool pool, Func<Lazy<ImmutableList<ICommand>>, ICommand, IEnumerable<ICommand>> handler, string[] cases, Action<AtemMockServerWrapper> runner)
         {
             cases = cases.Where(c => !string.IsNullOrEmpty(c)).ToArray();
             Assert.NotEmpty(cases);
@@ -104,6 +104,52 @@ namespace LibAtem.MockTests.Util
             }
         }
 
+        private void ServerHandle()
+        {
+            lock (Server.PendingPackets)
+            {
+                try
+                {
+                    foreach (var pkt in Server.PendingPackets)
+                    {
+                        var rawCommands = new Lazy<ImmutableList<ICommand>>(() => Server.GetParsedDataDump());
+                        foreach (ParsedCommand rawCmd in pkt.Commands)
+                        {
+                            ICommand cmd = CommandParser.Parse(Server.CurrentVersion, rawCmd);
+                            if (cmd == null)
+                                throw new Exception($"Unknown command \"{rawCmd.Name}\" in server");
+
+                            List<ICommand> response = _handler(rawCommands, cmd).ToList();
+                            if (response.Count == 0)
+                                throw new Exception($"Unhandled command \"{cmd.GetType().Name}\" in server");
+
+                            Server.SendCommands(ListExtensions.WhereNotNull(response).ToArray());
+                        }
+                    }
+                }
+                finally
+                {
+                    Server.PendingPackets.Clear();
+                }
+            }
+        }
+
+        public void HandleUntil(ManualResetEvent until, int timeout)
+        {
+            // var target = timeout;
+            var target = DateTime.Now.Add(TimeSpan.FromMilliseconds(timeout));
+            while (target > DateTime.Now)
+            {
+                // Handle commands
+                if (Server.HasPendingPackets.WaitOne(10))
+                    ServerHandle();
+
+                // Exit if timeout reached
+                if (until.WaitOne(0))
+                    break;
+            }
+        }
+
         public const int CommandWaitTime = 80;
         private void SendAndWaitForChangeInner(Action doSend, bool skipHandler = false)
         {
@@ -139,32 +185,7 @@ namespace LibAtem.MockTests.Util
                 Assert.True(Server.HasPendingPackets.WaitOne(1000));
                 // if (!ok) Helper.Output.WriteLine("SendAndWaitForMatching: Server did not receive packet");
 
-                lock (Server.PendingPackets)
-                {
-                    try
-                    {
-                        foreach (var pkt in Server.PendingPackets)
-                        {
-                            ImmutableList<ICommand> rawCommands = Server.GetParsedDataDump();
-                            foreach (ParsedCommand rawCmd in pkt.Commands)
-                            {
-                                ICommand cmd = CommandParser.Parse(Server.CurrentVersion, rawCmd);
-                                if (cmd == null)
-                                    throw new Exception($"Unknown command \"{rawCmd.Name}\" in server");
-
-                                List<ICommand> response = _handler(rawCommands, cmd).ToList();
-                                if (response.Count == 0)
-                                    throw new Exception($"Unhandled command \"{cmd.GetType().Name}\" in server");
-
-                                Server.SendCommands(ListExtensions.WhereNotNull(response).ToArray());
-                            }
-                        }
-                    }
-                    finally
-                    {
-                        Server.PendingPackets.Clear();
-                    }
-                }
+                ServerHandle();
             }
 
             var targetTime = DateTime.Now.AddMilliseconds(2000);

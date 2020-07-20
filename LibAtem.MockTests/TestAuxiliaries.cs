@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
 using BMDSwitcherAPI;
@@ -65,13 +66,13 @@ namespace LibAtem.MockTests
             });
         }
 
-        private static IEnumerable<ICommand> SourceCommandHandler(ImmutableList<ICommand> previousCommands, ICommand cmd)
+        private static IEnumerable<ICommand> SourceCommandHandler(Lazy<ImmutableList<ICommand>> previousCommands, ICommand cmd)
         {
             if (cmd is AuxSourceSetCommand auxCmd)
             {
                 Assert.Equal((uint) 1, auxCmd.Mask);
 
-                var previous = previousCommands.OfType<AuxSourceGetCommand>().Last(a => a.Id == auxCmd.Id);
+                var previous = previousCommands.Value.OfType<AuxSourceGetCommand>().Last(a => a.Id == auxCmd.Id);
                 Assert.NotNull(previous);
 
                 previous.Source = auxCmd.Source;

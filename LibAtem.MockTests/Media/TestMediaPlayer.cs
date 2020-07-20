@@ -245,7 +245,7 @@ namespace LibAtem.MockTests.Media
             });
         }
 
-        private static IEnumerable<ICommand> SourceCommandHandler(ImmutableList<ICommand> previousCommands, ICommand cmd)
+        private static IEnumerable<ICommand> SourceCommandHandler(Lazy<ImmutableList<ICommand>> previousCommands, ICommand cmd)
         {
             if (cmd is MediaPlayerSourceSetCommand setCmd)
             {
@@ -259,7 +259,7 @@ namespace LibAtem.MockTests.Media
 
                 Assert.Equal(mask, setCmd.Mask);
 
-                var previous = previousCommands.OfType<MediaPlayerSourceGetCommand>().Last(a => a.Index == setCmd.Index);
+                var previous = previousCommands.Value.OfType<MediaPlayerSourceGetCommand>().Last(a => a.Index == setCmd.Index);
                 Assert.NotNull(previous);
 
                 previous.SourceType = setCmd.SourceType;

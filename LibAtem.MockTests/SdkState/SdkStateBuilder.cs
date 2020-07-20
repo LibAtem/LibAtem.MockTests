@@ -129,6 +129,11 @@ namespace LibAtem.MockTests.SdkState
 
             switcher.DoesSupportAutoVideoMode(out int autoModeSupported);
             state.Info.SupportsAutoVideoMode = autoModeSupported != 0;
+            if (state.Info.SupportsAutoVideoMode)
+            {
+                switcher.GetAutoVideoMode(out int autoVideoMode);
+                state.Settings.AutoVideoMode = autoVideoMode != 0;
+            }
 
             SourceStateBuilder.Build(state, switcher);
             Hyperdecks(state, switcher);
