@@ -5,13 +5,10 @@
 
     <IsPackable>false</IsPackable>
     <NoWarn>NU1701</NoWarn>
-    <Platforms>v8.1;v8.1.1;v8.2</Platforms>
+    <Platforms>v8.1;v8.1.1</Platforms>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
 
-  <PropertyGroup Condition=" '$(Platform)'=='v8.2' OR '$(WORKFLOW_VERSION)'=='v8.2' ">
-    <DefineConstants>ATEM_v8_2</DefineConstants>
-  </PropertyGroup>
   <PropertyGroup Condition=" '$(Platform)'=='v8.1.1' OR '$(WORKFLOW_VERSION)'=='v8.1.1' ">
     <DefineConstants>ATEM_v8_1_1</DefineConstants>
   </PropertyGroup>
@@ -47,21 +44,14 @@
     <When Condition=" '$(Platform)'=='v8.1' OR '$(WORKFLOW_VERSION)'=='v8.1' ">
       <ItemGroup>
         <Reference Include="Interop.BMDSwitcherAPI">
-          <HintPath>..\AtemSDK\v8.1\Interop.BMDSwitcherAPI.dll</HintPath>
-        </Reference>
-      </ItemGroup>
-    </When>
-    <When Condition=" '$(Platform)'=='v8.2' OR '$(WORKFLOW_VERSION)'=='v8.2' ">
-      <ItemGroup>
-        <Reference Include="Interop.BMDSwitcherAPI">
-          <HintPath>..\AtemSDK\v8.2\Interop.BMDSwitcherAPI.dll</HintPath>
+          <HintPath>..\AtemSDK\v8.1.0\Interop.BMDSwitcherAPI.dll</HintPath>
         </Reference>
       </ItemGroup>
     </When>
     <When Condition=" '$(Platform)'=='v8.1.1' OR '$(WORKFLOW_VERSION)'=='v8.1.1' ">
       <ItemGroup>
         <Reference Include="Interop.BMDSwitcherAPI">
-          <HintPath>..\AtemSDK\v8.1.2\Interop.BMDSwitcherAPI.dll</HintPath>
+          <HintPath>..\AtemSDK\v8.3.0\Interop.BMDSwitcherAPI.dll</HintPath>
         </Reference>
       </ItemGroup>
     </When>

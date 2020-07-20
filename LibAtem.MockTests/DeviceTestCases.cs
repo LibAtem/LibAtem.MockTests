@@ -6,6 +6,7 @@ namespace LibAtem.MockTests
     {
 #if ATEM_v8_1
         public static readonly ProtocolVersion Version = ProtocolVersion.V8_0_1;
+        public static readonly string MiniPro = "";
         public static readonly string Mini = "mini-v8.1";
         public static readonly string Constellation = "constellation-v8.0.2";
         public static readonly string TwoME = "2me-v8.1";
@@ -14,18 +15,10 @@ namespace LibAtem.MockTests
         public static readonly string TVSHD = "tvshd-v8.1.0";
 #elif ATEM_v8_1_1
         public static readonly ProtocolVersion Version = ProtocolVersion.V8_1_1;
+        public static readonly string MiniPro = "mini-pro-v8.2";
         public static readonly string Mini = "mini-v8.1.1";
         public static readonly string Constellation = "";
         public static readonly string TwoME = "2me-v8.1.2";
-        public static readonly string TwoME4K = "";
-        public static readonly string OneME4K = "";
-        public static readonly string TVSHD = "";
-#elif ATEM_v8_2
-        public static readonly ProtocolVersion Version = ProtocolVersion.V8_1_1;
-        public static readonly string MiniPro = "mini-pro-v8.2";
-        public static readonly string Mini = "";
-        public static readonly string Constellation = "";
-        public static readonly string TwoME = "";
         public static readonly string TwoME4K = "";
         public static readonly string OneME4K = "";
         public static readonly string TVSHD = "";

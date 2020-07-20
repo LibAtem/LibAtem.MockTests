@@ -22,10 +22,10 @@ jobs:
     - name: Test
       run: |
         $Env:WORKFLOW_VERSION = 'v8.1'
-        regsvr32 $Env:GITHUB_WORKSPACE/AtemSDK/v8.1/BMDSwitcherAPI.dll /s
-        regsvr32 $Env:GITHUB_WORKSPACE/AtemSDK/v8.1/BMDSwitcherAPI64.dll /s
+        regsvr32 $Env:GITHUB_WORKSPACE/AtemSDK/v8.1.0/BMDSwitcherAPI.dll /s
+        regsvr32 $Env:GITHUB_WORKSPACE/AtemSDK/v8.1.0/BMDSwitcherAPI64.dll /s
         dotnet test LibAtem.MockTests -c Release
-  test_v8_1_1_-_v8_1_2:
+  test_v8_1_1_-_v8_3_0:
     runs-on: windows-latest
     steps:
     - uses: actions/checkout@v1
@@ -44,6 +44,6 @@ jobs:
     - name: Test
       run: |
         $Env:WORKFLOW_VERSION = 'v8.1.1'
-        regsvr32 $Env:GITHUB_WORKSPACE/AtemSDK/v8.1.2/BMDSwitcherAPI.dll /s
-        regsvr32 $Env:GITHUB_WORKSPACE/AtemSDK/v8.1.2/BMDSwitcherAPI64.dll /s
+        regsvr32 $Env:GITHUB_WORKSPACE/AtemSDK/v8.3.0/BMDSwitcherAPI.dll /s
+        regsvr32 $Env:GITHUB_WORKSPACE/AtemSDK/v8.3.0/BMDSwitcherAPI64.dll /s
         dotnet test LibAtem.MockTests -c Release
