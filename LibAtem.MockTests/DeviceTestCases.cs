@@ -13,6 +13,7 @@ namespace LibAtem.MockTests
         public static readonly string TwoME4K = "2me4k-v8.0.1";
         public static readonly string OneME4K = "";
         public static readonly string TVSHD = "tvshd-v8.1.0";
+        public static readonly string TVS = "tvs-v8.1.0";
 #elif ATEM_v8_1_1
         public static readonly ProtocolVersion Version = ProtocolVersion.V8_1_1;
         public static readonly string MiniPro = "mini-pro-v8.2";
@@ -22,9 +23,10 @@ namespace LibAtem.MockTests
         public static readonly string TwoME4K = "";
         public static readonly string OneME4K = "";
         public static readonly string TVSHD = "";
+        public static readonly string TVS = "tvs-v8.1.1";
 #endif
 
-        public static readonly string[] All = { MiniPro, Mini, Constellation, TwoME, TVSHD };
+        public static readonly string[] All = { MiniPro, Mini, Constellation, TwoME, TVSHD, TVS };
         public static readonly string[] DownConvertVideoMode = {TwoME4K, OneME4K};
 
         public static readonly string[] ChromaKeyer = { TwoME };
@@ -57,7 +59,7 @@ namespace LibAtem.MockTests
 #endif
         public static readonly string[] FairlightDelay = { Constellation };
 
-        public static readonly string[] ClassicAudioMain = { TwoME, TVSHD };
+        public static readonly string[] ClassicAudioMain = { TwoME, TVSHD, TVS };
         public static readonly string[] ClassicAudioHeadphones = { TVSHD };
         public static readonly string[] ClassicAudioMonitors = { TwoME4K };
         public static readonly string[] ClassicAudioXLRLevel = { TVSHD };
