@@ -56,7 +56,12 @@ namespace LibAtem.MockTests.Util
         }
         public static double[] ConvertDoubleArray(uint len, ref double vals)
         {
-            var res = new double[len];
+            return ConvertSdkArray<double>(len, ref vals);
+        }
+
+        public static T[] ConvertSdkArray<T>(uint len, ref T vals)
+        {
+            var res = new T[len];
             for (int i = 0; i < len; i++)
             {
                 res[i] = Unsafe.Add(ref vals, i);

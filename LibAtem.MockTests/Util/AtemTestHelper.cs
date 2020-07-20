@@ -111,6 +111,8 @@ namespace LibAtem.MockTests.Util
             });
 #endif
 
+            state.CameraControl = new Dictionary<long, CameraControlState>();
+
             return state;
         }
 

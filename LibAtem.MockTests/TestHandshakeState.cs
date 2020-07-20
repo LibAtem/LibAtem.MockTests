@@ -46,6 +46,9 @@ namespace LibAtem.MockTests
         [Fact]
         public void TestStateMockMiniPro() => RunTest(DeviceTestCases.MiniPro);
 
+        [Fact]
+        public void TestStateMockTVS() => RunTest(DeviceTestCases.TVS);
+
         /*
         [Fact]
         public void TestStateReal()

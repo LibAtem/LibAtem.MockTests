@@ -58,6 +58,11 @@ namespace LibAtem.MockTests.SdkState
             props.GetPortType(out _BMDSwitcherPortType internalType);
             state.Properties.InternalPortType = AtemEnumMaps.InternalPortTypeMap.FindByValue(internalType);
 
+            props.GetInputAvailability(out _BMDSwitcherInputAvailability rawAvailability);
+            var translatedAvailability = AtemEnumMaps.TranslateSourceAvailability(rawAvailability);
+            state.Properties.MeAvailability = translatedAvailability.Item2;
+            state.Properties.SourceAvailability = translatedAvailability.Item1;
+
             return state;
         }
 

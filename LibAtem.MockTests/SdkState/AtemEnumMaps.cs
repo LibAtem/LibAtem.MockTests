@@ -404,5 +404,49 @@ namespace LibAtem.MockTests.SdkState
                     return 50;
             }
         }
+
+        public static Tuple<SourceAvailability, MeAvailability> TranslateSourceAvailability(_BMDSwitcherInputAvailability sdkInput)
+        {
+            var source = SourceAvailability.None;
+            var me = MeAvailability.None;
+
+            foreach (_BMDSwitcherInputAvailability val in sdkInput.FindFlagComponents())
+            {
+                switch (val) {
+                    case _BMDSwitcherInputAvailability.bmdSwitcherInputAvailabilityMixEffectBlock0:
+                        me |= MeAvailability.Me1;
+                        break;
+                    case _BMDSwitcherInputAvailability.bmdSwitcherInputAvailabilityMixEffectBlock1:
+                        me |= MeAvailability.Me2;
+                        break;
+                    case _BMDSwitcherInputAvailability.bmdSwitcherInputAvailabilityMixEffectBlock2:
+                        me |= MeAvailability.Me3;
+                        break;
+                    case _BMDSwitcherInputAvailability.bmdSwitcherInputAvailabilityMixEffectBlock3:
+                        me |= MeAvailability.Me4;
+                        break;
+                    case _BMDSwitcherInputAvailability.bmdSwitcherInputAvailabilityAuxOutputs:
+                        source |= SourceAvailability.Auxiliary;
+                        break;
+                    case _BMDSwitcherInputAvailability.bmdSwitcherInputAvailabilityMultiView:
+                        source |= SourceAvailability.Multiviewer;
+                        break;
+                    case _BMDSwitcherInputAvailability.bmdSwitcherInputAvailabilitySuperSourceArt:
+                        source |= SourceAvailability.SuperSourceArt;
+                        break;
+                    case _BMDSwitcherInputAvailability.bmdSwitcherInputAvailabilitySuperSourceBox:
+                        source |= SourceAvailability.SuperSourceBox;
+                        break;
+                    case _BMDSwitcherInputAvailability.bmdSwitcherInputAvailabilityInputCut:
+                        source |= SourceAvailability.KeySource;
+                        break;
+                    default:
+                        throw new ArgumentOutOfRangeException();
+                }
+            }
+
+
+            return Tuple.Create(source, me);
+        }
     }
 }

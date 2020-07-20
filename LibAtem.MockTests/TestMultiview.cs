@@ -4,11 +4,11 @@ using System.Linq;
 using BMDSwitcherAPI;
 using LibAtem.Commands.Settings.Multiview;
 using LibAtem.Common;
+using LibAtem.MockTests.SdkState;
 using LibAtem.MockTests.Util;
 using LibAtem.State;
 using Xunit;
 using Xunit.Abstractions;
-using AtemSDKConverter = LibAtem.ComparisonTests.AtemSDKConverter;
 
 namespace LibAtem.MockTests
 {

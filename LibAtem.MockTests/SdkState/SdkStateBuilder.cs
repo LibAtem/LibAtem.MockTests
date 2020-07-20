@@ -151,6 +151,11 @@ namespace LibAtem.MockTests.SdkState
                 state.Audio = AudioStateBuilder.Build(audioMixer);
             }
 
+            if (switcher is IBMDSwitcherCameraControl camera)
+            {
+                // CameraControlBuilder.Build(state, camera);
+            }
+
             return state;
         }
 

@@ -20,12 +20,15 @@ namespace LibAtem.MockTests.SdkState
             stills.GetCount(out uint stillCount);
             state.Stills = Enumerable.Range(0, (int)stillCount).Select(i => BuildStill(stills, (uint)i)).ToList();
 
+
             // Clips
+            pool.GetFrameTotalForClips(out uint unassignedFrames);
             pool.GetClipCount(out uint clipCount);
             state.Clips = Enumerable.Range(0, (int)clipCount).Select(i =>
             {
                 pool.GetClip((uint)i, out IBMDSwitcherClip clip);
                 clip.GetMaxFrameCount(out uint maxFrameCount);
+                unassignedFrames -= maxFrameCount;
                 clip.IsValid(out int valid);
                 clip.GetName(out string name);
                 return new MediaPoolState.ClipState
@@ -35,6 +38,8 @@ namespace LibAtem.MockTests.SdkState
                     MaxFrames = maxFrameCount,
                 };
             }).ToList();
+
+            state.UnassignedFrames = unassignedFrames;
         }
 
         private static MediaPoolState.StillState BuildStill(IBMDSwitcherStills props, uint index)

@@ -213,7 +213,7 @@ namespace LibAtem.MockTests.SdkState
             state.Properties.MaskLeft = left;
             props.GetMaskRight(out double right);
             state.Properties.MaskRight = right;
-
+            
             if (props is IBMDSwitcherKeyLumaParameters luma)
                 state.Luma = BuildKeyerLuma(luma);
 
@@ -232,6 +232,17 @@ namespace LibAtem.MockTests.SdkState
             if (props is IBMDSwitcherKeyFlyParameters fly && state.DVE != null)
             {
                 BuildKeyerFly(state.DVE, fly);
+
+                state.FlyProperties = new MixEffectState.KeyerFlyProperties();
+
+                fly.IsKeyFrameStored(_BMDSwitcherFlyKeyFrame.bmdSwitcherFlyKeyFrameA, out int aStored);
+                state.FlyProperties.IsASet = aStored != 0;
+                fly.IsKeyFrameStored(_BMDSwitcherFlyKeyFrame.bmdSwitcherFlyKeyFrameB, out int bStored);
+                state.FlyProperties.IsBSet = bStored != 0;
+                fly.IsAtKeyFrames(out _BMDSwitcherFlyKeyFrame isAtFrame);
+                state.FlyProperties.IsAtKeyFrame = (uint) isAtFrame;
+                fly.IsRunning(out int isRunning, out var destination);
+                state.FlyProperties.ActiveKeyFrame = (uint)destination;
 
                 fly.GetKeyFrameParameters(_BMDSwitcherFlyKeyFrame.bmdSwitcherFlyKeyFrameA, out IBMDSwitcherKeyFlyKeyFrameParameters keyframeA);
                 fly.GetKeyFrameParameters(_BMDSwitcherFlyKeyFrame.bmdSwitcherFlyKeyFrameB, out IBMDSwitcherKeyFlyKeyFrameParameters keyframeB);

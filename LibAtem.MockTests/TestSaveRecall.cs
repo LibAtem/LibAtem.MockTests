@@ -1,17 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using BMDSwitcherAPI;
+﻿using BMDSwitcherAPI;
 using LibAtem.Commands;
-using LibAtem.Commands.Audio.Fairlight;
-using LibAtem.Commands.Settings;
-using LibAtem.Common;
 using LibAtem.MockTests.Util;
-using LibAtem.MockTests.SdkState;
 using LibAtem.State;
 using Xunit;
 using Xunit.Abstractions;
-using AtemSDKConverter = LibAtem.ComparisonTests.AtemSDKConverter;
 
 namespace LibAtem.MockTests
 {

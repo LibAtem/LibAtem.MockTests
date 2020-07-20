@@ -48,40 +48,60 @@ namespace LibAtem.MockTests.Media
             return clip;
         }
 
+
         [Fact]
         public void TestClipLengths()
         {
-            var handler = CommandGenerator.CreateAutoCommandHandler<MediaPoolSettingsSetCommand, MediaPoolSettingsGetCommand>("MaxFrames", true);
-            AtemMockServerWrapper.Each(_output, _pool, handler, DeviceTestCases.MediaPlayerClips, helper =>
+            uint maxFrames = 0;
+            Func<ImmutableList<ICommand>, ICommand, IEnumerable<ICommand>> handler2 = (previousCommands, cmd) =>
+            {
+                var cmd2 = (MediaPoolSettingsSetCommand) cmd;
+                long allUsed = cmd2.MaxFrames.Sum(d => d);
+                long remaining = Math.Max(maxFrames - allUsed, 0);
+                return new List<ICommand>
+                {
+                    new MediaPoolSettingsGetCommand
+                    {
+                        MaxFrames = cmd2.MaxFrames,
+                        UnassignedFrames = (uint) remaining
+                    }
+                };
+            };
+            AtemMockServerWrapper.Each(_output, _pool, handler2, DeviceTestCases.MediaPlayerClips, helper =>
             {
                 IBMDSwitcherMediaPool pool = GetMediaPool(helper);
 
                 AtemState preState = helper.Helper.BuildLibState();
                 int clipCount = preState.MediaPool.Clips.Count;
-                uint totalMaxFrames = (uint) preState.MediaPool.Clips.Sum(c => c.MaxFrames);
+                pool.GetFrameTotalForClips(out uint totalMaxFrames);
+                // uint totalMaxFrames = (uint) preState.MediaPool.Clips.Sum(c => c.MaxFrames);
                 Assert.NotEqual(0u, totalMaxFrames);
+                maxFrames = totalMaxFrames;
 
-                uint remainingFrames = totalMaxFrames;
                 for (int i = 0; i < 5; i++)
                 {
+                    uint remainingFrames = totalMaxFrames;
                     AtemState stateBefore = helper.Helper.BuildLibState();
 
                     IntPtr ptr = Marshal.AllocHGlobal(sizeof(uint) * clipCount);
                     for (int o = 0; o < clipCount; o++)
                     {
                         uint v = 0;
-                        if (o == clipCount - 1)
+                        if (o == clipCount - 1 && clipCount <= 2)
                         {
                             v = remainingFrames;
+                            remainingFrames = 0;
                         } else if (remainingFrames != 0)
                         {
-                            v = Randomiser.RangeInt(remainingFrames);
+                            v = Randomiser.RangeInt(remainingFrames / 2);
                             remainingFrames -= v;
                         }
 
                         stateBefore.MediaPool.Clips[o].MaxFrames = v;
                         Marshal.WriteInt32(ptr, o * sizeof(uint), (int) v);
                     }
+
+                    stateBefore.MediaPool.UnassignedFrames = remainingFrames;
 
                     helper.SendAndWaitForChange(stateBefore,
                         () =>
