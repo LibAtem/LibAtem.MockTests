@@ -7,7 +7,7 @@ using BMDSwitcherAPI;
 using LibAtem.Commands;
 using LibAtem.Common;
 using LibAtem.MockTests.DeviceMock;
-using LibAtem.SdkStateBuilder;
+using LibAtem.MockTests.SdkState;
 using LibAtem.State;
 using LibAtem.Util;
 using Xunit;

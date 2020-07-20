@@ -29,8 +29,6 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Logger", "Logger\Logger.csp
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LibAtem.MockTests", "LibAtem.MockTests\LibAtem.MockTests.csproj", "{7BE6B889-4BAA-4466-92F5-7506A79E79C5}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LibAtem.SdkStateBuilder", "LibAtem.SdkStateBuilder\LibAtem.SdkStateBuilder.csproj", "{D93DB430-4128-487D-AE30-B2D077638AF4}"
-EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|v8.1 = Debug|v8.1
@@ -197,18 +195,6 @@ Global
 		{7BE6B889-4BAA-4466-92F5-7506A79E79C5}.Release|v8.1.1.Build.0 = Release|v8.1.1
 		{7BE6B889-4BAA-4466-92F5-7506A79E79C5}.Release|v8.2.ActiveCfg = Release|v8.1.1
 		{7BE6B889-4BAA-4466-92F5-7506A79E79C5}.Release|v8.2.Build.0 = Release|v8.1.1
-		{D93DB430-4128-487D-AE30-B2D077638AF4}.Debug|v8.1.ActiveCfg = Debug|v8.1
-		{D93DB430-4128-487D-AE30-B2D077638AF4}.Debug|v8.1.Build.0 = Debug|v8.1
-		{D93DB430-4128-487D-AE30-B2D077638AF4}.Debug|v8.1.1.ActiveCfg = Debug|v8.1.1
-		{D93DB430-4128-487D-AE30-B2D077638AF4}.Debug|v8.1.1.Build.0 = Debug|v8.1.1
-		{D93DB430-4128-487D-AE30-B2D077638AF4}.Debug|v8.2.ActiveCfg = Debug|v8.2
-		{D93DB430-4128-487D-AE30-B2D077638AF4}.Debug|v8.2.Build.0 = Debug|v8.2
-		{D93DB430-4128-487D-AE30-B2D077638AF4}.Release|v8.1.ActiveCfg = Release|v8.1
-		{D93DB430-4128-487D-AE30-B2D077638AF4}.Release|v8.1.Build.0 = Release|v8.1
-		{D93DB430-4128-487D-AE30-B2D077638AF4}.Release|v8.1.1.ActiveCfg = Release|v8.1.1
-		{D93DB430-4128-487D-AE30-B2D077638AF4}.Release|v8.1.1.Build.0 = Release|v8.1.1
-		{D93DB430-4128-487D-AE30-B2D077638AF4}.Release|v8.2.ActiveCfg = Release|v8.1.1
-		{D93DB430-4128-487D-AE30-B2D077638AF4}.Release|v8.2.Build.0 = Release|v8.1.1
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

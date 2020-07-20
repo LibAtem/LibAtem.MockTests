@@ -8,7 +8,7 @@ using log4net.Config;
 using Xunit;
 using LibAtem.State;
 using LibAtem.State.Builder;
-using LibAtem.SdkStateBuilder;
+using LibAtem.MockTests.SdkState;
 
 namespace LibAtem.MockTests.Util
 {
@@ -56,7 +56,7 @@ namespace LibAtem.MockTests.Util
             _sdkState.OnStateChange += (s) => OnSdkStateChange?.Invoke(s);
         }
 
-        public AtemState BuildState() => SdkStateBuilder.SdkStateBuilder.Build(SdkSwitcher, _updateSettings);
+        public AtemState BuildState() => SdkStateBuilder.Build(SdkSwitcher, _updateSettings);
         
         public void Dispose()
         {

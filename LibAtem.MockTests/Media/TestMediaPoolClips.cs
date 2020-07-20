@@ -122,49 +122,48 @@ namespace LibAtem.MockTests.Media
                 }
             });
         }
-        /*
+        
         [Fact]
         public void TestSetInvalid()
         {
             AtemMockServerWrapper.Each(_output, _pool, ClearCommandHandler, DeviceTestCases.MediaPlayerClips, helper =>
             {
-                IBMDSwitcherClip stills = GetClip(helper);
-
                 ImmutableList<ICommand> previousCommands = helper.Server.GetParsedDataDump();
 
-                for (int i = 0; i < 5; i++)
+                int clipCount = helper.Helper.BuildLibState().MediaPool.Clips.Count;
+                for (int index = 0; index < clipCount; index++)
                 {
                     AtemState stateBefore = helper.Helper.BuildLibState();
 
-                    uint index = Randomiser.RangeInt((uint)stateBefore.MediaPool.Clip.Count);
-                    MediaPoolClipDescriptionCommand cmd = previousCommands.OfType<MediaPoolClipDescriptionCommand>().Single(c => c.Index == index && c.Bank == MediaPoolFileType.Still);
-                    cmd.IsUsed = true;
+                    IBMDSwitcherClip clip = GetClip(helper, (uint) index);
 
-                    // Set it to true first
-                    stateBefore.MediaPool.Clip[(int)index].IsUsed = true;
-                    helper.SendFromServerAndWaitForChange(stateBefore, cmd);
-
-                    // Now set invalid
-                    stateBefore.MediaPool.Clip[(int)index].IsUsed = false;
-                    helper.SendAndWaitForChange(stateBefore, () =>
+                    for (int i = 0; i < 5; i++)
                     {
-                        stills.SetInvalid(index);
-                    });
+                        MediaPoolClipDescriptionCommand cmd = previousCommands.OfType<MediaPoolClipDescriptionCommand>().Single(c => c.Index == index);
+                        cmd.IsUsed = true;
+
+                        // Set it to true first
+                        stateBefore.MediaPool.Clips[(int) index].IsUsed = true;
+                        helper.SendFromServerAndWaitForChange(stateBefore, cmd);
+
+                        // Now set invalid
+                        stateBefore.MediaPool.Clips[(int) index].IsUsed = false;
+                        helper.SendAndWaitForChange(stateBefore, () => { clip.SetInvalid(); });
+                    }
                 }
             });
         }
         private static IEnumerable<ICommand> ClearCommandHandler(ImmutableList<ICommand> previousCommands, ICommand cmd)
         {
-            if (cmd is MediaPoolClearStillCommand clearCmd)
+            if (cmd is MediaPoolClearClipCommand clearCmd)
             {
-                var previous = previousCommands.OfType<MediaPoolClipDescriptionCommand>().Last(a => a.Index == clearCmd.Index && a.Bank == MediaPoolFileType.Still);
+                var previous = previousCommands.OfType<MediaPoolClipDescriptionCommand>().Last(a => a.Index == clearCmd.Index);
                 Assert.NotNull(previous);
 
                 previous.IsUsed = false;
                 yield return previous;
             }
         }
-        */
 
         [Fact]
         public void TestName()
@@ -226,19 +225,19 @@ namespace LibAtem.MockTests.Media
                 int clipCount = helper.Helper.BuildLibState().MediaPool.Clips.Count;
                 for (int index = 0; index < clipCount; index++)
                 {
-                    IBMDSwitcherClip stills = GetClip(helper, (uint) index);
+                    IBMDSwitcherClip clip = GetClip(helper, (uint) index);
 
                     AtemState stateBefore = helper.Helper.BuildLibState();
 
                     var cb = new LockCallback();
-                    helper.SendAndWaitForChange(stateBefore, () => { stills.Lock(cb); });
+                    helper.SendAndWaitForChange(stateBefore, () => { clip.Lock(cb); });
                     Assert.True(cb.Wait.WaitOne(2000));
 
                     helper.Helper.CheckStateChanges(stateBefore);
 
                     uint timeBefore = helper.Server.CurrentTime;
 
-                    helper.SendAndWaitForChange(stateBefore, () => { stills.Unlock(cb); });
+                    helper.SendAndWaitForChange(stateBefore, () => { clip.Unlock(cb); });
 
                     // It should have sent a response, but we dont expect any comparable data
                     Assert.NotEqual(timeBefore, helper.Server.CurrentTime);
@@ -268,6 +267,7 @@ namespace LibAtem.MockTests.Media
                 };
             }
         }
+
 
     }
 }

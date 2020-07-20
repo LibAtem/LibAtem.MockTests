@@ -1,7 +1,7 @@
 ﻿using BMDSwitcherAPI;
 using LibAtem.State;
 
-namespace LibAtem.SdkStateBuilder
+namespace LibAtem.MockTests.SdkState
 {
     public static class FairlightAudioBuilderCommon
     {

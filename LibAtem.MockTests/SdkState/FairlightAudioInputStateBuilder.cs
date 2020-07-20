@@ -4,7 +4,7 @@ using LibAtem.State;
 using System;
 using System.Collections.Generic;
 
-namespace LibAtem.SdkStateBuilder
+namespace LibAtem.MockTests.SdkState
 {
     public static class FairlightAudioInputStateBuilder
     {

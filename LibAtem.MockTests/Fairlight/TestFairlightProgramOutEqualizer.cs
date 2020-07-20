@@ -2,7 +2,7 @@
 using LibAtem.Commands;
 using LibAtem.Commands.Audio.Fairlight;
 using LibAtem.MockTests.Util;
-using LibAtem.SdkStateBuilder;
+using LibAtem.MockTests.SdkState;
 using LibAtem.State;
 using System.Collections.Generic;
 using System.Collections.Immutable;

@@ -5,7 +5,7 @@ using BMDSwitcherAPI;
 using LibAtem.Commands.Audio.Fairlight;
 using LibAtem.Common;
 using LibAtem.MockTests.Util;
-using LibAtem.SdkStateBuilder;
+using LibAtem.MockTests.SdkState;
 using LibAtem.State;
 using Xunit;
 using Xunit.Abstractions;

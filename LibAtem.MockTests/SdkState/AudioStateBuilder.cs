@@ -3,7 +3,7 @@ using BMDSwitcherAPI;
 using LibAtem.Common;
 using LibAtem.State;
 
-namespace LibAtem.SdkStateBuilder
+namespace LibAtem.MockTests.SdkState
 {
     public static class AudioStateBuilder
     {

@@ -4,7 +4,7 @@ using LibAtem.State.Builder;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace LibAtem.SdkStateBuilder
+namespace LibAtem.MockTests.SdkState
 {
     public static class MediaPoolStateBuilder
     {

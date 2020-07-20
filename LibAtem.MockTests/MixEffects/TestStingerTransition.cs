@@ -2,7 +2,7 @@
 using LibAtem.Commands.MixEffects.Transition;
 using LibAtem.Common;
 using LibAtem.MockTests.Util;
-using LibAtem.SdkStateBuilder;
+using LibAtem.MockTests.SdkState;
 using System;
 using System.Collections.Generic;
 using System.Linq;

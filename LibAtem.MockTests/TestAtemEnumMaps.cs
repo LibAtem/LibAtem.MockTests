@@ -1,12 +1,10 @@
 ﻿using BMDSwitcherAPI;
 using LibAtem.Common;
-using LibAtem.SdkStateBuilder;
+using LibAtem.MockTests.SdkState;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Reflection;
 using LibAtem.Util;
-using NAudio.MediaFoundation;
 using Xunit;
 
 namespace LibAtem.MockTests

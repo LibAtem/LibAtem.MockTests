@@ -3,7 +3,7 @@ using LibAtem.Common;
 using LibAtem.State;
 using System;
 
-namespace LibAtem.SdkStateBuilder
+namespace LibAtem.MockTests.SdkState
 {
     public static class SuperSourceStateBuilder
     {

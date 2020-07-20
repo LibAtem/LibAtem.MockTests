@@ -2,7 +2,7 @@
 using LibAtem.State.Builder;
 using System;
 
-namespace LibAtem.SdkStateBuilder
+namespace LibAtem.MockTests.SdkState
 {
     public sealed class AtemSDKStateMonitor : IDisposable
     {

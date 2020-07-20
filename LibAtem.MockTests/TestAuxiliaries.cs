@@ -7,7 +7,7 @@ using LibAtem.Common;
 using LibAtem.ComparisonTests.Util;
 using LibAtem.DeviceProfile;
 using LibAtem.MockTests.Util;
-using LibAtem.SdkStateBuilder;
+using LibAtem.MockTests.SdkState;
 using LibAtem.State;
 using Xunit;
 using Xunit.Abstractions;

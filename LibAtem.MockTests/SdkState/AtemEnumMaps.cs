@@ -6,7 +6,7 @@ using System.Collections.ObjectModel;
 using System.Linq;
 using LibAtem.Commands.Streaming;
 
-namespace LibAtem.SdkStateBuilder
+namespace LibAtem.MockTests.SdkState
 {
     public static class AtemEnumMaps
     {
