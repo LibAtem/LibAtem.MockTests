@@ -39,9 +39,12 @@ namespace LibAtem.MockTests
 
         [Fact]
         public void TestStateMockMini() => RunTest(DeviceTestCases.Mini);
-
+        
         [Fact]
         public void TestStateMockTVSHD() => RunTest(DeviceTestCases.TVSHD);
+
+        [Fact]
+        public void TestStateMockMiniPro() => RunTest(DeviceTestCases.MiniPro);
 
         /*
         [Fact]

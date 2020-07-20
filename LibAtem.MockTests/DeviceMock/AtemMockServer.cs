@@ -49,6 +49,11 @@ namespace LibAtem.MockTests.DeviceMock
 
         public void SendCommands(params ICommand[] cmds)
         {
+            SendCommandBytes(cmds.Select(c => c.ToByteArray()).ToArray());
+        }
+
+        public void SendCommandBytes(params byte[][] cmds)
+        {
             var allCommands = cmds.ToList();
             allCommands.Add(CreateTimeCommand());
             _connections.SendCommands(allCommands);
@@ -88,14 +93,14 @@ namespace LibAtem.MockTests.DeviceMock
             return serverSocket;
         }
 
-        private TimeCodeCommand CreateTimeCommand(uint? rawTime = null)
+        private byte[] CreateTimeCommand(uint? rawTime = null)
         {
             uint time = rawTime ?? CurrentTime++;
 
             var cmd = new TimeCodeCommand();
             cmd.Second += time % 60;
             cmd.Minute = time / 60;
-            return cmd;
+            return cmd.ToByteArray();
         }
 
         private void StartReceive(string bindIp)
@@ -202,7 +207,7 @@ namespace LibAtem.MockTests.DeviceMock
         {
             var client = _connections.OrderedConnections[id];
             BuildDataDumps().ForEach(client.QueueMessage);
-            _connections.SendCommands(new List<ICommand> {CreateTimeCommand(90000)});
+            _connections.SendCommands(new List<byte[]> {CreateTimeCommand(90000)});
         }
 
         public void ReadyClient(int id)

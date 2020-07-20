@@ -63,6 +63,14 @@ namespace LibAtem.MockTests.Util
             }
             return res;
         }
+
+        public static string String(int length)
+        {
+            string r = Guid.NewGuid().ToString();
+            while (r.Length < length) r += Guid.NewGuid();
+
+            return r.Substring(0, length);
+        }
     }
 
 }

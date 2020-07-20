@@ -10,6 +10,7 @@ namespace LibAtem.MockTests
         public static readonly string Constellation = "constellation-v8.0.2";
         public static readonly string TwoME = "2me-v8.1";
         public static readonly string TwoME4K = "2me4k-v8.0.1";
+        public static readonly string OneME4K = "";
         public static readonly string TVSHD = "tvshd-v8.1.0";
 #elif ATEM_v8_1_1
         public static readonly ProtocolVersion Version = ProtocolVersion.V8_1_1;
@@ -17,10 +18,21 @@ namespace LibAtem.MockTests
         public static readonly string Constellation = "";
         public static readonly string TwoME = "2me-v8.1.2";
         public static readonly string TwoME4K = "";
+        public static readonly string OneME4K = "";
+        public static readonly string TVSHD = "";
+#elif ATEM_v8_2
+        public static readonly ProtocolVersion Version = ProtocolVersion.V8_1_1;
+        public static readonly string MiniPro = "mini-pro-v8.2";
+        public static readonly string Mini = "";
+        public static readonly string Constellation = "";
+        public static readonly string TwoME = "";
+        public static readonly string TwoME4K = "";
+        public static readonly string OneME4K = "";
         public static readonly string TVSHD = "";
 #endif
 
-        public static readonly string[] All = { Mini, Constellation, TwoME, TVSHD };
+        public static readonly string[] All = { MiniPro, Mini, Constellation, TwoME, TVSHD };
+        public static readonly string[] DownConvertVideoMode = {TwoME4K, OneME4K};
 
         public static readonly string[] ChromaKeyer = { TwoME };
         public static readonly string[] AdvancedChromaKeyer = { Mini, Constellation };
@@ -40,12 +52,14 @@ namespace LibAtem.MockTests
         public static readonly string[] MediaPlayerStillCapture = { Mini };
         public static readonly string[] MediaPlayerClips = { TwoME, Constellation, TwoME4K };
 
+        public static readonly string[] Streaming = {MiniPro};
+
         // Audio
         public static readonly string[] FairlightMain = { Mini, Constellation };
 #if ATEM_v8_1
         public static readonly string[] FairlightAnalog = { Mini };
         public static readonly string[] FairlightXLR = { Constellation };
-#elif ATEM_v8_1_1
+#else
         public static readonly string[] FairlightAnalog = { Mini, Constellation };
 #endif
         public static readonly string[] FairlightDelay = { Constellation };

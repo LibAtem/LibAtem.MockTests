@@ -73,6 +73,15 @@ namespace LibAtem.MockTests.Util
             }, timeout, mutateStates, true);
         }
 
+        public void SendBufferFromServerAndWaitForChange(AtemState expected, byte[] cmd, int timeout = -1,
+            Action<AtemState, AtemState> mutateStates = null)
+        {
+            SendAndWaitForChange(expected, () =>
+            {
+                Server.SendCommandBytes(cmd);
+            }, timeout, mutateStates, true);
+        }
+
         public void SendAndWaitForChange(AtemState expected, Action doSend, int timeout = -1, Action<AtemState, AtemState> mutateStates = null, bool skipHandler = false)
         {
             SendAndWaitForChangeInner(doSend, skipHandler);

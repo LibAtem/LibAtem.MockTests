@@ -137,5 +137,8 @@ namespace LibAtem.MockTests
 
         [Fact]
         public void EnsureMixMinusModeMap() => EnumMap.EnsureIsComplete(AtemEnumMaps.MixMinusModeMap);
+
+        [Fact]
+        public void EnsureStreamingStatusMap() => EnumMap.EnsureIsComplete(AtemEnumMaps.StreamingStatusMap);
     }
 }

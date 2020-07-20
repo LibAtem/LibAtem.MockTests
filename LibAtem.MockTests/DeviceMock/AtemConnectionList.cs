@@ -93,7 +93,7 @@ namespace LibAtem.MockTests.DeviceMock
             }
         }
 
-        public void SendCommands(IReadOnlyList<ICommand> commands)
+        public void SendCommands(IReadOnlyList<byte[]> bytes)
         {
             lock (connections)
             {
@@ -101,7 +101,7 @@ namespace LibAtem.MockTests.DeviceMock
                 {
                     if (!conn.Value.HasTimedOut)
                     {
-                        conn.Value.QueueCommands(commands);
+                        conn.Value.QueueCommands(bytes);
                     }
                 }
             }

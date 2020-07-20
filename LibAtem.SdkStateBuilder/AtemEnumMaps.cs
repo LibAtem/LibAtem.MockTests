@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
+using LibAtem.Commands.Streaming;
 
 namespace LibAtem.SdkStateBuilder
 {
@@ -35,6 +36,7 @@ namespace LibAtem.SdkStateBuilder
         public static readonly IReadOnlyDictionary<SDI3GOutputLevel, _BMDSwitcher3GSDIOutputLevel> SDI3GOutputLevelMap;
         public static readonly IReadOnlyDictionary<TalkbackChannel, _BMDSwitcherTalkbackId> TalkbackChannelMap;
         public static readonly IReadOnlyDictionary<MixMinusMode, _BMDSwitcherMixMinusOutputAudioMode> MixMinusModeMap;
+        public static readonly IReadOnlyDictionary<StreamingStatus, _BMDSwitcherStreamRTMPState> StreamingStatusMap;
 
         static AtemEnumMaps()
         {
@@ -208,6 +210,8 @@ namespace LibAtem.SdkStateBuilder
                 {InternalPortType.MediaPlayerKey, _BMDSwitcherPortType.bmdSwitcherPortTypeMediaPlayerCut},
                 {InternalPortType.MediaPlayerFill, _BMDSwitcherPortType.bmdSwitcherPortTypeMediaPlayerFill},
                 {InternalPortType.SuperSource, _BMDSwitcherPortType.bmdSwitcherPortTypeSuperSource},
+                {InternalPortType.MultiViewer, _BMDSwitcherPortType.bmdSwitcherPortTypeMultiview},
+                {InternalPortType.ExternalDirect, _BMDSwitcherPortType.bmdSwitcherPortTypeExternalDirect},
             };
 
             ExternalPortTypeMap = new Dictionary<ExternalPortType, _BMDSwitcherExternalPortType>
@@ -296,7 +300,7 @@ namespace LibAtem.SdkStateBuilder
             {
                 {FairlightAnalogInputLevel.Microphone, _BMDSwitcherFairlightAudioAnalogInputLevel.bmdSwitcherFairlightAudioAnalogInputLevelMicrophone},
                 {FairlightAnalogInputLevel.ConsumerLine, _BMDSwitcherFairlightAudioAnalogInputLevel.bmdSwitcherFairlightAudioAnalogInputLevelConsumerLine},
-#if  ATEM_v8_1_1
+#if !ATEM_v8_1
                 {FairlightAnalogInputLevel.ProLine, _BMDSwitcherFairlightAudioAnalogInputLevel.bmdSwitcherFairlightAudioAnalogInputLevelProLine },
 #endif
             };
@@ -318,6 +322,14 @@ namespace LibAtem.SdkStateBuilder
                 {MixMinusMode.ProgramOut, _BMDSwitcherMixMinusOutputAudioMode.bmdSwitcherMixMinusOutputAudioModeProgramOut},
                 {MixMinusMode.MixMinus, _BMDSwitcherMixMinusOutputAudioMode.bmdSwitcherMixMinusOutputAudioModeMixMinus}
             };
+
+            StreamingStatusMap = new Dictionary<StreamingStatus, _BMDSwitcherStreamRTMPState>
+            {
+                {StreamingStatus.Idle, _BMDSwitcherStreamRTMPState.bmdSwitcherStreamRTMPStateIdle},
+                {StreamingStatus.Connecting, _BMDSwitcherStreamRTMPState.bmdSwitcherStreamRTMPStateConnecting},
+                {StreamingStatus.Streaming, _BMDSwitcherStreamRTMPState.bmdSwitcherStreamRTMPStateStreaming},
+                {StreamingStatus.Stopping, _BMDSwitcherStreamRTMPState.bmdSwitcherStreamRTMPStateStopping},
+            };
         }
 
         public static Tk FindByValue<Tk, Tv>(this IReadOnlyDictionary<Tk, Tv> dict, Tv value)
@@ -325,13 +337,12 @@ namespace LibAtem.SdkStateBuilder
             return dict.First(v => Equals(v.Value, value)).Key;
         }
 
-        public static List<T> FindFlagComponents<T>(this T value)
+        public static List<T> FindFlagComponents<T>(this T value) where T : Enum
         {
-            dynamic val2 = value;
-            return Enum.GetValues(typeof(T)).OfType<T>().Where(v => val2.HasFlag(v)).ToList();
+            return Enum.GetValues(typeof(T)).OfType<T>().Where(v => value.HasFlag(v)).ToList();
         }
 
-        public static Tk FindFlagsByValue<Tk, Tv>(this IReadOnlyDictionary<Tk, Tv> dict, Tv value)
+        public static Tk FindFlagsByValue<Tk, Tv>(this IReadOnlyDictionary<Tk, Tv> dict, Tv value) where Tv : Enum
         {
             int res = value.FindFlagComponents().Select(v => Convert.ToInt32(dict.FindByValue(v))).Sum();
             return (Tk)Enum.ToObject(typeof(Tk), res);

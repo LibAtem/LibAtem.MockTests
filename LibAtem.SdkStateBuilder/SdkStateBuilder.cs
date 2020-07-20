@@ -59,6 +59,77 @@ namespace LibAtem.SdkStateBuilder
                 powerStatus.HasFlag(_BMDSwitcherPowerStatus.bmdSwitcherPowerStatusSupply2),
             };
 
+            bool supportsDownConvert = true;
+            bool supportsMultiviewer = true;
+
+            var modes = new List<VideoModeInfo>();
+            var allModes = Enum.GetValues(typeof(_BMDSwitcherVideoMode)).OfType<_BMDSwitcherVideoMode>().ToArray();
+            foreach (_BMDSwitcherVideoMode mode in allModes)
+            {
+                switcher.DoesSupportVideoMode(mode, out int supported);
+                if (supported == 0) continue;
+
+                switcher.DoesVideoModeChangeRequireReconfiguration(mode, out int requiresReconfig);
+
+                var multiviewModes = new List<VideoMode>();
+                if (supportsMultiviewer)
+                {
+                    try
+                    {
+                        foreach (_BMDSwitcherVideoMode mvMode in allModes)
+                        {
+                            switcher.DoesSupportMultiViewVideoMode(mode, mvMode, out int mvSupported);
+                            if (mvSupported != 0)
+                                multiviewModes.Add(AtemEnumMaps.VideoModesMap.FindByValue(mvMode));
+                        }
+                    }
+                    catch (NotImplementedException e)
+                    {
+                        supportsMultiviewer = false;
+                    }
+                }
+
+                var downConvertModes = new List<VideoMode>();
+                if (supportsDownConvert)
+                {
+                    try
+                    {
+                        foreach (_BMDSwitcherVideoMode dcMode in allModes)
+                        {
+                            switcher.DoesSupportDownConvertedHDVideoMode(mode, dcMode, out int convertSupported);
+                            if (convertSupported != 0)
+                                downConvertModes.Add(AtemEnumMaps.VideoModesMap.FindByValue(dcMode));
+                        }
+                    }
+                    catch (NotImplementedException e)
+                    {
+                        supportsDownConvert = false;
+                    }
+                }
+
+                modes.Add(new VideoModeInfo
+                {
+                    Mode = AtemEnumMaps.VideoModesMap.FindByValue(mode),
+                    RequiresReconfig = requiresReconfig != 0,
+                    MultiviewModes = multiviewModes.ToArray(),
+                    DownConvertModes = downConvertModes.ToArray(),
+                });
+            }
+            state.Info.SupportedVideoModes = modes.OrderBy(s => s.Mode).ToList();
+
+            try
+            {
+                switcher.GetMethodForDownConvertedSD(out _BMDSwitcherDownConversionMethod downConvertMethod);
+                state.Settings.DownConvertMode = AtemEnumMaps.SDDownconvertModesMap.FindByValue(downConvertMethod);
+            }
+            catch (Exception e)
+            {
+                // Not supported
+            }
+
+            switcher.DoesSupportAutoVideoMode(out int autoModeSupported);
+            state.Info.SupportsAutoVideoMode = autoModeSupported != 0;
+
             SourceStateBuilder.Build(state, switcher);
             Hyperdecks(state, switcher);
             SerialPorts(state, switcher);
@@ -66,6 +137,7 @@ namespace LibAtem.SdkStateBuilder
             MediaPoolStateBuilder.Build(state.MediaPool, switcher);
             //TalkbackStateBuilder.Build(state, switcher);
             MixMinusOutputs(state, switcher);
+            StreamingStateBuilder.Build(state, switcher);
 
             state.DownstreamKeyers = DownstreamKeyerStateBuilder.Build(switcher);
             state.MediaPlayers = MediaPlayerStateBuilder.Build(switcher, updateSettings, state.MediaPool.Clips.Count > 0);

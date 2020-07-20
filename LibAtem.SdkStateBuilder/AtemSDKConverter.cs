@@ -38,10 +38,10 @@ namespace LibAtem.SdkStateBuilder
             return res;
         }
 
-        public static List<Tuple<TS, TV>> GetFlagsValues<TS, TV>(GetFunction<TS> fcn, IReadOnlyDictionary<TV, TS> map)
+        public static List<Tuple<Ts, Tv>> GetFlagsValues<Ts, Tv>(GetFunction<Ts> fcn, IReadOnlyDictionary<Tv, Ts> map) where Ts : Enum
         {
-            fcn(out TS supportedValues);
-            List<TS> components = supportedValues.FindFlagComponents();
+            fcn(out Ts supportedValues);
+            List<Ts> components = supportedValues.FindFlagComponents();
             if (components.Count == 0)
                 throw new Exception("No Flag Values");
 

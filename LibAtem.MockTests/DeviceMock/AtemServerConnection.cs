@@ -11,14 +11,14 @@ namespace LibAtem.MockTests.DeviceMock
     public class AtemServerConnection : AtemConnection
     {
         private readonly ProtocolVersion _version;
-        private readonly List<ICommand> _commandQueue;
+        private readonly List<byte[]> _commandQueue;
 
         public override ProtocolVersion? ConnectionVersion => _version;
 
         public AtemServerConnection(EndPoint endpoint, int sessionId, ProtocolVersion version) : base(endpoint, sessionId)
         {
             _version = version;
-            _commandQueue = new List<ICommand>();
+            _commandQueue = new List<byte[]>();
         }
 
         private bool _sentDataDump;
@@ -37,14 +37,14 @@ namespace LibAtem.MockTests.DeviceMock
             }
         }
 
-        private static OutboundMessage CompileQueuedUpdateMessage(List<ICommand> queuedCommands)
+        private static OutboundMessage CompileQueuedUpdateMessage(List<byte[]> queuedCommands)
         {
             var builder = new OutboundMessageBuilder();
 
             int removeCount = 0;
-            foreach (ICommand cmd in queuedCommands)
+            foreach (byte[] cmd in queuedCommands)
             {
-                if (!builder.TryAddCommands(new List<ICommand> {cmd}))
+                if (!builder.TryAddData(new List<byte[]> {cmd}))
                     break;
 
                 removeCount++;
@@ -71,17 +71,18 @@ namespace LibAtem.MockTests.DeviceMock
 
         public override void QueueCommand(ICommand command)
         {
+            byte[] bytes = command.ToByteArray();
             lock (_commandQueue)
             {
-                _commandQueue.Add(command);
+                _commandQueue.Add(bytes);
             }
         }
 
-        public void QueueCommands(IReadOnlyList<ICommand> commands)
+        public void QueueCommands(IReadOnlyList<byte[]> bytes)
         {
             lock (_commandQueue)
             {
-                _commandQueue.AddRange(commands);
+                _commandQueue.AddRange(bytes);
             }
         }
     }

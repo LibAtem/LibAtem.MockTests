@@ -36,7 +36,6 @@ namespace LibAtem.MockTests.ClassicAudio
             return input;
         }
 
-#if ATEM_v8_1 || ATEM_v8_1_1
         private static Func<ImmutableList<ICommand>, ICommand, IEnumerable<ICommand>> CreateAutoCommandHandler(string name)
         {
             return CommandGenerator.CreateAutoCommandHandler<AudioMixerInputSetCommand, AudioMixerInputGetV8Command>(name);
@@ -46,7 +45,6 @@ namespace LibAtem.MockTests.ClassicAudio
         {
             return rawCommands.OfType<AudioMixerInputGetV8Command>().Single(c => c.Index == (AudioSource)id);
         }
-#endif
 
         [Fact]
         public void TestGain()
