@@ -41,7 +41,7 @@
     <When Condition=" '$(GITHUB_WORKFLOW)'!='' ">
       <ItemGroup>
         <Reference Include="Interop.BMDSwitcherAPI">
-          <HintPath>..\AtemSDK\v8.1\Interop.BMDSwitcherAPI.dll</HintPath>
+          <HintPath>..\AtemSDK\v8.1.0\Interop.BMDSwitcherAPI.dll</HintPath>
         </Reference>
       </ItemGroup>
     </When>

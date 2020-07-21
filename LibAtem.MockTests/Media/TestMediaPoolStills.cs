@@ -241,7 +241,6 @@ namespace LibAtem.MockTests.Media
         private void DoUpload(int iterations, int timeout, Func<uint, uint, byte[]> frameBytes)
         {
             UploadJobWorker worker = null;
-            var handler = CommandGenerator.MatchCommand(new MediaPoolCaptureStillCommand());
             AtemMockServerWrapper.Each(_output, _pool, (a, b) => worker?.HandleCommand(a, b), DeviceTestCases.MediaPlayerStillCapture, helper =>
             {
                 IBMDSwitcherMediaPool pool = GetMediaPool(helper);
@@ -307,7 +306,6 @@ namespace LibAtem.MockTests.Media
         public void TestAbortingStillUpload()
         {
             AbortedUploadJobWorker worker = null;
-            var handler = CommandGenerator.MatchCommand(new MediaPoolCaptureStillCommand());
             AtemMockServerWrapper.Each(_output, _pool, (a, b) => worker?.HandleCommand(a, b), DeviceTestCases.MediaPlayerStillTransfer, helper =>
             {
                 IBMDSwitcherMediaPool pool = GetMediaPool(helper);
@@ -376,7 +374,6 @@ namespace LibAtem.MockTests.Media
         private void DoDownload(int iterations, int timeout, Func<uint, uint, Tuple<byte[], byte[]>> rawBytesGen)
         {
             DownloadJobWorker worker = null;
-            var handler = CommandGenerator.MatchCommand(new MediaPoolCaptureStillCommand());
             AtemMockServerWrapper.Each(_output, _pool, (a, b) => worker?.HandleCommand(a, b), DeviceTestCases.MediaPlayerStillTransfer, helper =>
             {
                 IBMDSwitcherStills stills = GetStillsPool(helper);
@@ -414,8 +411,6 @@ namespace LibAtem.MockTests.Media
                     stills.Download(index);
 
                     helper.HandleUntil(downloadCb.Wait, timeout);
-                    stills.GetProgress(out double progress);
-                    _output.WriteLine($"Progress {progress}");
                     Assert.True(downloadCb.Wait.WaitOne(500));
                     Assert.Equal(_BMDSwitcherMediaPoolEventType.bmdSwitcherMediaPoolEventTypeTransferCompleted,
                         downloadCb.Result);
