@@ -252,13 +252,11 @@ namespace LibAtem.MockTests.SdkState
                     
                     long inputId = 0;
                     if (hasInputId != 0)
-                    {
-                        // TODO - is this good?
                         props.GetMinusAudioInputId(out inputId);
-                    }
 
                     return new SettingsState.MixMinusOutputState
                     {
+                        HasAudioInputId = hasInputId != 0,
                         AudioInputId = (AudioSource) inputId,
                         SupportedModes = AtemEnumMaps.MixMinusModeMap.FindFlagsByValue(availableModes),
                         Mode = AtemEnumMaps.MixMinusModeMap.FindByValue(mode),
