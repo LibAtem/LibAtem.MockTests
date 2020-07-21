@@ -4,13 +4,11 @@ using System.Collections.Immutable;
 using System.Linq;
 using LibAtem.Commands;
 using LibAtem.Commands.DataTransfer;
-using LibAtem.Common;
-using LibAtem.MockTests.Util;
 using LibAtem.State;
 using Xunit;
 using Xunit.Abstractions;
 
-namespace LibAtem.MockTests.Media
+namespace LibAtem.MockTests.Util
 {
     internal class DownloadJobWorker
     {
@@ -26,11 +24,13 @@ namespace LibAtem.MockTests.Media
         private uint _pendingAck;
         private bool _isComplete;
         private uint _offset = 0;
+        private uint _bank;
 
-        public DownloadJobWorker(ITestOutputHelper output, MediaPoolState.StillState stillInfo, uint index, byte[] bytes)
+        public DownloadJobWorker(ITestOutputHelper output, MediaPoolState.StillState stillInfo, uint bank, uint index, byte[] bytes)
         {
             _output = output;
             _stillInfo = stillInfo;
+            _bank = bank;
             _index = index;
             _bytes = bytes;
         }
@@ -54,10 +54,10 @@ namespace LibAtem.MockTests.Media
             var res = new List<ICommand>();
             if (cmd is DataTransferDownloadRequestCommand startCmd)
             {
-                Assert.True(_locked);
+                Assert.Equal(_bank != 0xffff, _locked);
                 Assert.False(_isComplete);
                 Assert.Equal(_index, startCmd.TransferIndex);
-                Assert.Equal((uint)MediaPoolFileType.Still, startCmd.TransferStoreId);
+                Assert.Equal(_bank, startCmd.TransferStoreId);
 
                 _transferId = startCmd.TransferId;
                 _pendingAck = 0;

@@ -31,6 +31,7 @@ namespace LibAtem.MockTests
         public static readonly string[] All = { MiniPro, Mini, Constellation, TwoME, TVSHD, TVS };
         public static readonly string[] DownConvertVideoMode = {TwoME4K, OneME4K};
         public static readonly string[] AutoVideoMode = {Mini, MiniPro};
+        public static readonly string[] MacroTransfer = All.Where(t => t != "").Take(1).ToArray();
 
         public static readonly string[] ChromaKeyer = { TwoME };
         public static readonly string[] AdvancedChromaKeyer = { Mini, Constellation };

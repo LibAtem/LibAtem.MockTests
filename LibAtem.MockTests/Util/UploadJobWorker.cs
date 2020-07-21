@@ -4,14 +4,14 @@ using System.Collections.Immutable;
 using System.Linq;
 using LibAtem.Commands;
 using LibAtem.Commands.DataTransfer;
+using LibAtem.Commands.Macro;
 using LibAtem.Commands.Media;
 using LibAtem.Common;
-using LibAtem.MockTests.Util;
 using LibAtem.Util.Media;
 using Xunit;
 using Xunit.Abstractions;
 
-namespace LibAtem.MockTests.Media
+namespace LibAtem.MockTests.Util
 {
     internal class UploadJobWorker
     {
@@ -19,7 +19,9 @@ namespace LibAtem.MockTests.Media
         private readonly uint _chunkCount = 20 + Randomiser.RangeInt(15);
         private readonly uint _targetBytes;
         private readonly ITestOutputHelper _output;
+        private readonly uint _bank;
         private readonly uint _index;
+        private readonly DataTransferUploadRequestCommand.TransferMode _expectedMode;
 
         private bool _locked;
         private uint _transferId;
@@ -29,11 +31,13 @@ namespace LibAtem.MockTests.Media
 
         public List<byte> Buffer { get; } = new List<byte>();
 
-        public UploadJobWorker(uint targetBytes, ITestOutputHelper output, uint index)
+        public UploadJobWorker(uint targetBytes, ITestOutputHelper output, uint bank, uint index, DataTransferUploadRequestCommand.TransferMode expectedMode)
         {
             _targetBytes = targetBytes;
             _output = output;
+            _bank = bank;
             _index = index;
+            _expectedMode = expectedMode;
         }
 
         public IEnumerable<ICommand> HandleCommand(Lazy<ImmutableList<ICommand>> previousCommands, ICommand cmd)
@@ -55,12 +59,12 @@ namespace LibAtem.MockTests.Media
             var res = new List<ICommand>();
             if (cmd is DataTransferUploadRequestCommand startCmd)
             {
-                Assert.True(_locked);
+                Assert.Equal(_bank != 0xffff, _locked);
                 Assert.False(_isComplete);
-                Assert.Equal(DataTransferUploadRequestCommand.TransferMode.Write, startCmd.Mode);
+                Assert.Equal(_expectedMode, startCmd.Mode);
                 Assert.Equal((int)_targetBytes, startCmd.Size);
                 Assert.Equal(_index, startCmd.TransferIndex);
-                Assert.Equal((uint)MediaPoolFileType.Still, startCmd.TransferStoreId);
+                Assert.Equal((uint)_bank, startCmd.TransferStoreId);
 
                 _transferId = startCmd.TransferId;
                 _pendingAck = 0;
@@ -141,14 +145,33 @@ namespace LibAtem.MockTests.Media
 
             Assert.NotNull(_description);
             yield return new DataTransferCompleteCommand { TransferId = _transferId };
-            yield return new MediaPoolFrameDescriptionCommand
+
+            if (_bank == (uint) MediaPoolFileType.Still)
             {
-                Bank = MediaPoolFileType.Still,
-                Index = _index,
-                IsUsed = true,
-                Filename = _description.Name,
-                Hash = _description.FileHash
-            };
+                yield return new MediaPoolFrameDescriptionCommand
+                {
+                    Bank = MediaPoolFileType.Still,
+                    Index = _index,
+                    IsUsed = true,
+                    Filename = _description.Name,
+                    Hash = _description.FileHash
+                };
+            }
+            else if (_bank == 0xffff)
+            {
+                yield return new MacroPropertiesGetCommand
+                {
+                    Description = _description.Description,
+                    HasUnsupportedOps = true,
+                    Index = _index,
+                    IsUsed = true,
+                    Name = _description.Name
+                };
+            }
+            else
+            {
+                throw new NotSupportedException();
+            }
         }
 
         public static IEnumerable<ICommand> LockCommandHandler(Lazy<ImmutableList<ICommand>> previousCommands, ICommand cmd)

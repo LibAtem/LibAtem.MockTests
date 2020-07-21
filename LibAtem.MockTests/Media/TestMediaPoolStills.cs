@@ -5,6 +5,7 @@ using System.Linq;
 using System.Threading;
 using BMDSwitcherAPI;
 using LibAtem.Commands;
+using LibAtem.Commands.DataTransfer;
 using LibAtem.Commands.Media;
 using LibAtem.Common;
 using LibAtem.MockTests.Util;
@@ -253,7 +254,8 @@ namespace LibAtem.MockTests.Media
 
                     uint index = Randomiser.RangeInt((uint)stateBefore.MediaPool.Stills.Count);
                     string name = Guid.NewGuid().ToString();
-                    worker = new UploadJobWorker(resolution.Item1 * resolution.Item2 * 4, _output, index);
+                    worker = new UploadJobWorker(resolution.Item1 * resolution.Item2 * 4, _output,
+                        (uint) MediaPoolFileType.Still, index, DataTransferUploadRequestCommand.TransferMode.Write);
 
                     var cb = new LockCallback();
                     helper.SendAndWaitForChange(stateBefore, () => { stills.Lock(cb); });
@@ -400,7 +402,8 @@ namespace LibAtem.MockTests.Media
 
                     Tuple<byte[], byte[]> rawBytes = rawBytesGen(resolution.Item1, resolution.Item2);
                     stillState = stateBefore.MediaPool.Stills[(int) index];
-                    worker = new DownloadJobWorker(_output, stillState, index, rawBytes.Item2);
+                    worker = new DownloadJobWorker(_output, stillState, (uint) MediaPoolFileType.Still, index,
+                        rawBytes.Item2);
 
                     var cb = new LockCallback();
                     helper.SendAndWaitForChange(stateBefore, () => { stills.Lock(cb); });
