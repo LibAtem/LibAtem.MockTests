@@ -135,6 +135,9 @@ namespace LibAtem.MockTests.SdkState
                 state.Settings.AutoVideoMode = autoVideoMode != 0;
             }
 
+            DveInfo(state, switcher);
+
+
             SourceStateBuilder.Build(state, switcher);
             Hyperdecks(state, switcher);
             SerialPorts(state, switcher);
@@ -164,6 +167,44 @@ namespace LibAtem.MockTests.SdkState
             return state;
         }
 
+        private static void DveInfo(AtemState state, IBMDSwitcher switcher)
+        {
+            var iterator = AtemSDKConverter.CastSdk<IBMDSwitcherMixEffectBlockIterator>(switcher.CreateIterator);
+            var me = AtemSDKConverter.ToList<IBMDSwitcherMixEffectBlock>(iterator.Next).FirstOrDefault();
+            if (me == null) return;
+
+            var keyers = AtemSDKConverter.CastSdk<IBMDSwitcherKeyIterator>(me.CreateIterator);
+            var keyer = AtemSDKConverter.ToList<IBMDSwitcherKey>(keyers.Next).FirstOrDefault();
+            if (keyer == null) return;
+
+            var flyKey = keyer as IBMDSwitcherKeyFlyParameters;
+            var dveTrans = me as IBMDSwitcherTransitionDVEParameters;
+
+            if (flyKey == null || dveTrans == null) return;
+            
+            flyKey.GetCanRotate(out int canRotate);
+            flyKey.GetCanScaleUp(out int canScaleUp);
+
+            var dveStyles = new List<DVEEffect>();
+            foreach (DVEEffect style in Enum.GetValues(typeof(DVEEffect)).OfType<DVEEffect>())
+            {
+                _BMDSwitcherDVETransitionStyle style2 = AtemEnumMaps.DVEStyleMap[style];
+                dveTrans.DoesSupportStyle(style2, out int supported);
+                if (supported != 0)
+                    dveStyles.Add(style);
+            }
+
+            dveTrans.GetNumSupportedStyles(out uint styleCount);
+            if (dveStyles.Count != styleCount)
+                throw new Exception("Mismatch in number of supported DVE transition styles");
+
+            state.Info.DVE = new InfoState.DveInfo
+            {
+                CanScaleUp = canScaleUp != 0,
+                CanRotate = canRotate != 0,
+                SupportedTransitions = dveStyles,
+            };
+    }
         private static void SerialPorts(AtemState state, IBMDSwitcher switcher)
         {
             var iterator = AtemSDKConverter.CastSdk<IBMDSwitcherSerialPortIterator>(switcher.CreateIterator);

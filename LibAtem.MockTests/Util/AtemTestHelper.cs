@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using BMDSwitcherAPI;
 using LibAtem.Commands;
-using LibAtem.ComparisonTests.State;
 using LibAtem.Net;
 using LibAtem.State;
 using LibAtem.State.Builder;

@@ -1,6 +1,5 @@
 ﻿using LibAtem.Commands.SuperSource;
 using LibAtem.Common;
-using LibAtem.ComparisonTests.Util;
 using LibAtem.DeviceProfile;
 using LibAtem.MockTests.Util;
 using System.Collections.Generic;

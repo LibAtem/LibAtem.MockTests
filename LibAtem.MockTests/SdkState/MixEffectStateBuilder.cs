@@ -316,7 +316,7 @@ namespace LibAtem.MockTests.SdkState
                 fly.GetKeyFrameParameters(_BMDSwitcherFlyKeyFrame.bmdSwitcherFlyKeyFrameA, out IBMDSwitcherKeyFlyKeyFrameParameters keyframeA);
                 fly.GetKeyFrameParameters(_BMDSwitcherFlyKeyFrame.bmdSwitcherFlyKeyFrameB, out IBMDSwitcherKeyFlyKeyFrameParameters keyframeB);
 
-                state.FlyFrames = new[]
+                state.FlyFrames = new List<MixEffectState.KeyerFlyFrameState>
                 {
                     BuildKeyerFlyFrame(keyframeA),
                     BuildKeyerFlyFrame(keyframeB)

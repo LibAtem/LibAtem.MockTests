@@ -1,14 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Collections.Immutable;
 using System.Linq;
 using BMDSwitcherAPI;
-using LibAtem.Commands;
-using LibAtem.Commands.DeviceProfile;
 using LibAtem.Commands.Settings;
 using LibAtem.Common;
-using LibAtem.ComparisonTests;
-using LibAtem.ComparisonTests.State;
+using LibAtem.MockTests.SdkState;
 using LibAtem.MockTests.Util;
 using LibAtem.State;
 using Xunit;

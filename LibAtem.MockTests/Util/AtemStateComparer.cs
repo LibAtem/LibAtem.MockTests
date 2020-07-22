@@ -7,7 +7,7 @@ using System.Reflection;
 using Xunit;
 using Xunit.Abstractions;
 
-namespace LibAtem.ComparisonTests.State
+namespace LibAtem.MockTests.Util
 {
     public static class AtemStateComparer
     {
@@ -79,7 +79,7 @@ namespace LibAtem.ComparisonTests.State
                         yield return "Value: " + name + prop.Name + " length mismatch Expected: " + oldDict?.Count + " Actual: " + newDict?.Count;
                         continue;
                     }
-                    
+
                     string newName = name + prop.Name + ".";
                     foreach (dynamic newInner in newDict)
                     {
@@ -100,19 +100,21 @@ namespace LibAtem.ComparisonTests.State
                 }
                 else if (isList)
                 {
-                    dynamic oldList= Convert.ChangeType(oldVal, prop.PropertyType);
-                    dynamic newList = Convert.ChangeType(newVal, prop.PropertyType);
+                    dynamic oldList = oldVal;
+                    dynamic newList = newVal;
 
                     if (newList?.Count != oldList?.Count)
                     {
-                        yield return "Value: " + name + prop.Name + " length mismatch Expected: " + oldList?.Count + " Actual: " + newList?.Count;
+                        yield return "Value: " + name + prop.Name + " length mismatch Expected: " + oldList?.Count +
+                                     " Actual: " + newList?.Count;
                         continue;
                     }
 
                     string newName = name + prop.Name + ".";
                     for (int i = 0; i < newList.Count; i++)
                     {
-                        IEnumerable<string> res = CompareObject($"{newName}{i}.", ignoreNodes, oldList[i], newList[i]);
+                        IEnumerable<string> res = CompareObject($"{newName}{i}.", ignoreNodes, oldList[i],
+                            newList[i]);
                         foreach (string r in res)
                             yield return r;
                     }
@@ -141,8 +143,8 @@ namespace LibAtem.ComparisonTests.State
                     ToleranceAttribute attr = prop.GetCustomAttribute<ToleranceAttribute>();
                     if (attr != null)
                     {
-                        var oldDbl = (double) oldVal;
-                        var newDbl = (double) newVal;
+                        var oldDbl = (double)oldVal;
+                        var newDbl = (double)newVal;
 
                         if (!attr.AreEqual(oldDbl, newDbl))
                         {
@@ -194,8 +196,8 @@ namespace LibAtem.ComparisonTests.State
                 }
                 else if (prop.PropertyType == typeof(byte[]))
                 {
-                    byte[] oldVal2 = (byte[]) oldVal;
-                    byte[] newVal2 = (byte[]) newVal;
+                    byte[] oldVal2 = (byte[])oldVal;
+                    byte[] newVal2 = (byte[])newVal;
                     if (oldVal2 == null || newVal2 == null || !oldVal2.SequenceEqual(newVal2))
                     {
                         yield return "Value: " + name + prop.Name + " Expected: " + oldVal + " Actual: " + newVal;

@@ -7,7 +7,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using LibAtem.Commands;
-using LibAtem.ComparisonTests.State;
 using LibAtem.MockTests.DeviceMock;
 using LibAtem.MockTests.Util;
 using LibAtem.Net;

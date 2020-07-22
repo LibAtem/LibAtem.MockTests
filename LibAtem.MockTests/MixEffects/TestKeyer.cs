@@ -1,7 +1,6 @@
 ﻿using BMDSwitcherAPI;
 using LibAtem.Commands.MixEffects.Key;
 using LibAtem.Common;
-using LibAtem.ComparisonTests.Util;
 using LibAtem.DeviceProfile;
 using LibAtem.MockTests.Util;
 using LibAtem.MockTests.SdkState;

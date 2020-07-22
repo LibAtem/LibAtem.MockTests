@@ -5,7 +5,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-namespace LibAtem.ComparisonTests.Util
+namespace LibAtem.MockTests.Util
 {
     public static class VideoSourceUtil
     {

@@ -4,6 +4,7 @@ using System.Collections.Immutable;
 using System.Linq;
 using BMDSwitcherAPI;
 using LibAtem.Commands;
+using LibAtem.Commands.DeviceProfile;
 using LibAtem.Commands.MixEffects.Key;
 using LibAtem.Common;
 using LibAtem.MockTests.Util;
@@ -528,7 +529,51 @@ namespace LibAtem.MockTests.MixEffects
             Assert.True(tested);
         }
 
+        [Fact]
+        public void TestCanRotate()
+        {
+            bool tested = false;
+            AtemMockServerWrapper.Each(Output, Pool, null, DeviceTestCases.All, helper =>
+            {
+                SelectionOfKeyers<IBMDSwitcherKeyFlyParameters>(helper, (stateBefore, keyerBefore, sdkKeyer, meId, keyId, i) =>
+                {
+                    if (stateBefore.Info.DVE != null)
+                    {
+                        tested = true;
 
+                        var cmd = helper.Server.GetParsedDataDump().OfType<DVEConfigCommand>().Single();
+
+                        bool target = !stateBefore.Info.DVE.CanRotate;
+                        stateBefore.Info.DVE.CanRotate = cmd.CanRotate = target;
+                        helper.SendFromServerAndWaitForChange(stateBefore, cmd);
+                    }
+                });
+            });
+            Assert.True(tested);
+        }
+
+        [Fact]
+        public void TestCanScaleUp()
+        {
+            bool tested = false;
+            AtemMockServerWrapper.Each(Output, Pool, null, DeviceTestCases.All, helper =>
+            {
+                SelectionOfKeyers<IBMDSwitcherKeyFlyParameters>(helper, (stateBefore, keyerBefore, sdkKeyer, meId, keyId, i) =>
+                {
+                    if (stateBefore.Info.DVE != null)
+                    {
+                        tested = true;
+
+                        var cmd = helper.Server.GetParsedDataDump().OfType<DVEConfigCommand>().Single();
+
+                        bool target = !stateBefore.Info.DVE.CanScaleUp;
+                        stateBefore.Info.DVE.CanScaleUp = cmd.CanScaleUp = target;
+                        helper.SendFromServerAndWaitForChange(stateBefore, cmd);
+                    }
+                });
+            });
+            Assert.True(tested);
+        }
 
     }
 }
