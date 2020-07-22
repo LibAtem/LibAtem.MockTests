@@ -4,6 +4,7 @@ using System.Linq;
 using BMDSwitcherAPI;
 using LibAtem.Commands.DeviceProfile;
 using LibAtem.Commands.Settings;
+using LibAtem.Commands.Settings.Multiview;
 using LibAtem.Common;
 using LibAtem.MockTests.Util;
 using LibAtem.MockTests.SdkState;
@@ -74,21 +75,15 @@ namespace LibAtem.MockTests
             });
         }
 
-        /*
         [Fact]
-        public void TestDownConvertMode()
+        public void TestDownConvertSDMode()
         {
             var handler = CommandGenerator.CreateAutoCommandHandler<DownConvertModeSetCommand, DownConvertModeGetCommand>("DownConvertMode", true);
-            AtemMockServerWrapper.Each(_output, _pool, handler, DeviceTestCases.DownConvertVideoMode, helper =>
+            AtemMockServerWrapper.Each(_output, _pool, handler, DeviceTestCases.DownConvertSDMode, helper =>
             {
                 AtemState stateBefore = helper.Helper.BuildLibState();
                 IBMDSwitcher switcher = helper.SdkClient.SdkSwitcher;
-
-                VideoModeInfo candidateMode = stateBefore.Info.SupportedVideoModes.FirstOrDefault(m => m.DownConvertModes.Any());
-                Assert.NotNull(candidateMode);
-                stateBefore.Settings.VideoMode = candidateMode.Mode;
-                helper.SendFromServerAndWaitForChange(stateBefore, new VideoModeGetCommand { VideoMode = candidateMode.Mode });
-
+                
                 for (int i = 0; i < 5; i++)
                 {
                     DownConvertMode val = Randomiser.EnumValue<DownConvertMode>();
@@ -105,28 +100,61 @@ namespace LibAtem.MockTests
         [Fact]
         public void TestDownConvertVideoMode()
         {
-            var handler = CommandGenerator.CreateAutoCommandHandler<DownConvertModeSetCommand, DownConvertModeGetCommand>("DownConvertMode", true);
-            AtemMockServerWrapper.Each(_output, _pool, handler, DeviceTestCases.DownConvertVideoMode, helper =>
+            bool tested = false;
+            var handler = CommandGenerator.CreateAutoCommandHandler<DownConvertModeSetCommand, DownConvertModeGetCommand>(new[] { "DownConvertMode", "CoreVideoMode" }, true);
+            AtemMockServerWrapper.Each(_output, _pool, handler, DeviceTestCases.DownConvertHDMode, helper =>
             {
                 AtemState stateBefore = helper.Helper.BuildLibState();
                 IBMDSwitcher switcher = helper.SdkClient.SdkSwitcher;
 
-                List<VideoModeInfo> candidateModes = stateBefore.Info.SupportedVideoModes.Where(m => m.DownConvertModes.Any()).ToList();
-                Assert.NotEmpty(candidateModes);
+                var possibleModes = Randomiser.SelectionOfGroup(stateBefore.Info.SupportedVideoModes
+                    .Where(m => m.DownConvertModes.Length > 1).ToList());
 
-                foreach (VideoModeInfo mode in candidateModes)
+                foreach (VideoModeInfo mode in possibleModes)
                 {
-                    stateBefore.Settings.VideoMode = mode.Mode;
-                    helper.SendFromServerAndWaitForChange(stateBefore, new VideoModeGetCommand {VideoMode = mode.Mode});
+                    tested = true;
+                    VideoMode dcMode = mode.DownConvertModes[(int)Randomiser.RangeInt((uint)mode.DownConvertModes.Length)];
+                    
+                    stateBefore.Settings.DownConvertVideoModes[mode.Mode] = dcMode;
 
-                    //
-                    foreach (VideoMode dcMode in mode.DownConvertModes)
+                    helper.SendAndWaitForChange(stateBefore, () =>
                     {
-                        //stateBefore.Settings.DownConvertVideoMode = dcMode;
-                    }
+                        switcher.SetDownConvertedHDVideoMode(AtemEnumMaps.VideoModesMap[mode.Mode],
+                            AtemEnumMaps.VideoModesMap[dcMode]);
+                    });
                 }
             });
+            Assert.True(tested);
         }
-        */
+
+        [Fact]
+        public void TestMultiviewVideoMode()
+        {
+            bool tested = false;
+            var handler = CommandGenerator.CreateAutoCommandHandler<MultiviewVideoModeSetCommand, MultiviewVideoModeGetCommand>(new []{ "MultiviewMode", "CoreVideoMode"}, true);
+            AtemMockServerWrapper.Each(_output, _pool, handler, DeviceTestCases.DownConvertHDMode, helper =>
+            {
+                AtemState stateBefore = helper.Helper.BuildLibState();
+                IBMDSwitcher switcher = helper.SdkClient.SdkSwitcher;
+
+                var possibleModes = Randomiser.SelectionOfGroup(stateBefore.Info.SupportedVideoModes
+                    .Where(m => m.MultiviewModes.Length > 1).ToList());
+
+                foreach (VideoModeInfo mode in possibleModes)
+                {
+                    tested = true;
+                    VideoMode dcMode = mode.MultiviewModes[(int)Randomiser.RangeInt((uint)mode.MultiviewModes.Length)];
+
+                    stateBefore.Settings.MultiviewVideoModes[mode.Mode] = dcMode;
+
+                    helper.SendAndWaitForChange(stateBefore, () =>
+                    {
+                        switcher.SetMultiViewVideoMode(AtemEnumMaps.VideoModesMap[mode.Mode],
+                            AtemEnumMaps.VideoModesMap[dcMode]);
+                    });
+                }
+            });
+            Assert.True(tested);
+        }
     }
 }

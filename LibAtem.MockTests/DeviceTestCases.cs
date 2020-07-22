@@ -13,7 +13,7 @@ namespace LibAtem.MockTests
         public static readonly string Constellation = "constellation-v8.0.2";
         public static readonly string TwoME = "2me-v8.1";
         public static readonly string TwoME4K = "2me4k-v8.0.1";
-        public static readonly string OneME4K = "";
+        public static readonly string FourME4K = "";
         public static readonly string TVSHD = "tvshd-v8.1.0";
         public static readonly string TVS = "tvs-v8.1.0";
 #elif ATEM_v8_1_1
@@ -23,13 +23,13 @@ namespace LibAtem.MockTests
         public static readonly string Constellation = "";
         public static readonly string TwoME = "2me-v8.1.2";
         public static readonly string TwoME4K = "";
-        public static readonly string OneME4K = "";
         public static readonly string TVSHD = "";
         public static readonly string TVS = "tvs-v8.1.1";
 #endif
 
-        public static readonly string[] All = { MiniPro, Mini, Constellation, TwoME, TVSHD, TVS };
-        public static readonly string[] DownConvertVideoMode = {TwoME4K, OneME4K};
+        public static readonly string[] All = {MiniPro, Mini, Constellation, TwoME, TVSHD, TVS, TwoME4K, FourME4K};
+        public static readonly string[] DownConvertSDMode = { TwoME };
+        public static readonly string[] DownConvertHDMode = { FourME4K };
         public static readonly string[] AutoVideoMode = {Mini, MiniPro};
         public static readonly string[] MacroTransfer = All.Where(t => t != "").Take(1).ToArray();
 

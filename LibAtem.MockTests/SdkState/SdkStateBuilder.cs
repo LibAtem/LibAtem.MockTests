@@ -117,6 +117,25 @@ namespace LibAtem.MockTests.SdkState
             }
             state.Info.SupportedVideoModes = modes.OrderBy(s => s.Mode).ToList();
 
+            if (supportsMultiviewer)
+            {
+                foreach (VideoModeInfo mode in state.Info.SupportedVideoModes)
+                {
+                    switcher.GetMultiViewVideoMode(AtemEnumMaps.VideoModesMap[mode.Mode],
+                        out _BMDSwitcherVideoMode mvMode);
+                    state.Settings.MultiviewVideoModes[mode.Mode] = AtemEnumMaps.VideoModesMap.FindByValue(mvMode);
+                }
+            }
+            if (supportsDownConvert)
+            {
+                foreach (VideoModeInfo mode in state.Info.SupportedVideoModes)
+                {
+                    switcher.GetDownConvertedHDVideoMode(AtemEnumMaps.VideoModesMap[mode.Mode],
+                        out _BMDSwitcherVideoMode dcMode);
+                    state.Settings.DownConvertVideoModes[mode.Mode] = AtemEnumMaps.VideoModesMap.FindByValue(dcMode);
+                }
+            }
+
             try
             {
                 switcher.GetMethodForDownConvertedSD(out _BMDSwitcherDownConversionMethod downConvertMethod);
@@ -136,7 +155,6 @@ namespace LibAtem.MockTests.SdkState
             }
 
             DveInfo(state, switcher);
-
 
             SourceStateBuilder.Build(state, switcher);
             Hyperdecks(state, switcher);
