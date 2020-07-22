@@ -52,6 +52,32 @@ namespace LibAtem.MockTests
         }
 
         [Fact]
+        public void TestAutoVideoModeDetected()
+        {
+            bool tested = false;
+            var handler = CommandGenerator.CreateAutoCommandHandler<AutoVideoModeCommand, AutoVideoModeCommand>("Detected", true);
+            AtemMockServerWrapper.Each(_output, _pool, handler, DeviceTestCases.AutoVideoMode, helper =>
+            {
+                IBMDSwitcher switcher = helper.SdkClient.SdkSwitcher;
+
+                AutoVideoModeCommand cmd = helper.Server.GetParsedDataDump().OfType<AutoVideoModeCommand>().Single();
+
+                switcher.DoesSupportAutoVideoMode(out int supported);
+                Assert.Equal(1, supported);
+                tested = true;
+
+                for (int i = 0; i < 5; i++)
+                {
+                    AtemState stateBefore = helper.Helper.BuildLibState();
+                    stateBefore.Settings.DetectedVideoMode = cmd.Detected = !stateBefore.Settings.DetectedVideoMode;
+
+                    helper.SendFromServerAndWaitForChange(stateBefore, cmd);
+                }
+            });
+            Assert.True(tested);
+        }
+
+        [Fact]
         public void TestSetVideoMode()
         {
             var handler = CommandGenerator.CreateAutoCommandHandler<VideoModeSetCommand, VideoModeGetCommand>("VideoMode", true);

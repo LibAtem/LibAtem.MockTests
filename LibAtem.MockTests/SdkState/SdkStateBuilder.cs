@@ -152,6 +152,8 @@ namespace LibAtem.MockTests.SdkState
             {
                 switcher.GetAutoVideoMode(out int autoVideoMode);
                 state.Settings.AutoVideoMode = autoVideoMode != 0;
+                switcher.GetAutoVideoModeDetected(out int detected);
+                state.Settings.DetectedVideoMode = detected != 0;
             }
 
             DveInfo(state, switcher);
