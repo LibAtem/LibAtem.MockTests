@@ -25,7 +25,7 @@ namespace LibAtem.MockTests.SdkState
                 fnc(val, i++);
             }
         }
-
+        
         public static List<Tv> IterateList<T, Tv>(GetFunction<T> next, Func<T, uint, Tv> fnc)
         {
             var res = new List<Tv>();
@@ -33,6 +33,17 @@ namespace LibAtem.MockTests.SdkState
             for (next(out var val); val != null; next(out val))
             {
                 res.Add(fnc(val, i++));
+            }
+
+            return res;
+        }
+
+        public static List<T> ToList<T>(GetFunction<T> next)
+        {
+            var res = new List<T>();
+            for (next(out var val); val != null; next(out val))
+            {
+                res.Add(val);
             }
 
             return res;

@@ -233,16 +233,85 @@ namespace LibAtem.MockTests.SdkState
             {
                 BuildKeyerFly(state.DVE, fly);
 
+                fly.GetFly(out int isFlyKey);
+                state.Properties.FlyEnabled = isFlyKey != 0;
+                fly.GetCanFly(out int canFly);
+                state.Properties.CanFlyKey = canFly != 0;
+
                 state.FlyProperties = new MixEffectState.KeyerFlyProperties();
 
                 fly.IsKeyFrameStored(_BMDSwitcherFlyKeyFrame.bmdSwitcherFlyKeyFrameA, out int aStored);
                 state.FlyProperties.IsASet = aStored != 0;
                 fly.IsKeyFrameStored(_BMDSwitcherFlyKeyFrame.bmdSwitcherFlyKeyFrameB, out int bStored);
                 state.FlyProperties.IsBSet = bStored != 0;
-                fly.IsAtKeyFrames(out _BMDSwitcherFlyKeyFrame isAtFrame);
-                state.FlyProperties.IsAtKeyFrame = (uint) isAtFrame;
-                fly.IsRunning(out int isRunning, out var destination);
-                state.FlyProperties.ActiveKeyFrame = (uint)destination;
+
+                // This is a pretty meaningless value, as it is really the LastRunKeyFrame
+                // fly.IsAtKeyFrames(out _BMDSwitcherFlyKeyFrame isAtFrame); 
+                // state.FlyProperties.IsAtKeyFrame = (uint) isAtFrame;
+
+                fly.IsRunning(out int isRunning, out _BMDSwitcherFlyKeyFrame destination);
+                state.FlyProperties.RunningToInfinite = 0;
+                if (isRunning == 0)
+                {
+                    state.FlyProperties.RunningToKeyFrame = FlyKeyKeyFrameType.None;
+                }
+                else
+                {
+                    switch (destination)
+                    {
+                        case _BMDSwitcherFlyKeyFrame.bmdSwitcherFlyKeyFrameFull:
+                            state.FlyProperties.RunningToKeyFrame = FlyKeyKeyFrameType.Full;
+                            break;
+                        case _BMDSwitcherFlyKeyFrame.bmdSwitcherFlyKeyFrameInfinityCentreOfKey:
+                            state.FlyProperties.RunningToKeyFrame = FlyKeyKeyFrameType.RunToInfinite;
+                            state.FlyProperties.RunningToInfinite = FlyKeyLocation.CentreOfKey;
+                            break;
+                        case _BMDSwitcherFlyKeyFrame.bmdSwitcherFlyKeyFrameInfinityTopLeft:
+                            state.FlyProperties.RunningToKeyFrame = FlyKeyKeyFrameType.RunToInfinite;
+                            state.FlyProperties.RunningToInfinite = FlyKeyLocation.TopLeft;
+                            break;
+                        case _BMDSwitcherFlyKeyFrame.bmdSwitcherFlyKeyFrameInfinityTop:
+                            state.FlyProperties.RunningToKeyFrame = FlyKeyKeyFrameType.RunToInfinite;
+                            state.FlyProperties.RunningToInfinite = FlyKeyLocation.TopCentre;
+                            break;
+                        case _BMDSwitcherFlyKeyFrame.bmdSwitcherFlyKeyFrameInfinityTopRight:
+                            state.FlyProperties.RunningToKeyFrame = FlyKeyKeyFrameType.RunToInfinite;
+                            state.FlyProperties.RunningToInfinite = FlyKeyLocation.TopRight;
+                            break;
+                        case _BMDSwitcherFlyKeyFrame.bmdSwitcherFlyKeyFrameInfinityLeft:
+                            state.FlyProperties.RunningToKeyFrame = FlyKeyKeyFrameType.RunToInfinite;
+                            state.FlyProperties.RunningToInfinite = FlyKeyLocation.MiddleLeft;
+                            break;
+                        case _BMDSwitcherFlyKeyFrame.bmdSwitcherFlyKeyFrameInfinityCentre:
+                            state.FlyProperties.RunningToKeyFrame = FlyKeyKeyFrameType.RunToInfinite;
+                            state.FlyProperties.RunningToInfinite = FlyKeyLocation.MiddleCentre;
+                            break;
+                        case _BMDSwitcherFlyKeyFrame.bmdSwitcherFlyKeyFrameInfinityRight:
+                            state.FlyProperties.RunningToKeyFrame = FlyKeyKeyFrameType.RunToInfinite;
+                            state.FlyProperties.RunningToInfinite = FlyKeyLocation.MiddleRight;
+                            break;
+                        case _BMDSwitcherFlyKeyFrame.bmdSwitcherFlyKeyFrameInfinityBottomLeft:
+                            state.FlyProperties.RunningToKeyFrame = FlyKeyKeyFrameType.RunToInfinite;
+                            state.FlyProperties.RunningToInfinite = FlyKeyLocation.BottomLeft;
+                            break;
+                        case _BMDSwitcherFlyKeyFrame.bmdSwitcherFlyKeyFrameInfinityBottom:
+                            state.FlyProperties.RunningToKeyFrame = FlyKeyKeyFrameType.RunToInfinite;
+                            state.FlyProperties.RunningToInfinite = FlyKeyLocation.BottomCentre;
+                            break;
+                        case _BMDSwitcherFlyKeyFrame.bmdSwitcherFlyKeyFrameInfinityBottomRight:
+                            state.FlyProperties.RunningToKeyFrame = FlyKeyKeyFrameType.RunToInfinite;
+                            state.FlyProperties.RunningToInfinite = FlyKeyLocation.BottomRight;
+                            break;
+                        case _BMDSwitcherFlyKeyFrame.bmdSwitcherFlyKeyFrameA:
+                            state.FlyProperties.RunningToKeyFrame = FlyKeyKeyFrameType.A;
+                            break;
+                        case _BMDSwitcherFlyKeyFrame.bmdSwitcherFlyKeyFrameB:
+                            state.FlyProperties.RunningToKeyFrame = FlyKeyKeyFrameType.B;
+                            break;
+                        default:
+                            throw new ArgumentOutOfRangeException();
+                    }
+                }
 
                 fly.GetKeyFrameParameters(_BMDSwitcherFlyKeyFrame.bmdSwitcherFlyKeyFrameA, out IBMDSwitcherKeyFlyKeyFrameParameters keyframeA);
                 fly.GetKeyFrameParameters(_BMDSwitcherFlyKeyFrame.bmdSwitcherFlyKeyFrameB, out IBMDSwitcherKeyFlyKeyFrameParameters keyframeB);
@@ -408,6 +477,11 @@ namespace LibAtem.MockTests.SdkState
 
         private static void BuildKeyerFly(MixEffectState.KeyerDVEState state, IBMDSwitcherKeyFlyParameters props)
         {
+            props.GetCanScaleUp(out int canScaleUp);
+            // state.CanScaleUp = canScaleUp != 0;
+            props.GetCanRotate(out int canRotate);
+            // state.CanRotate = canRotate != 0;
+
             props.GetRate(out uint rate);
             state.Rate = rate;
             props.GetSizeX(out double sizeX);

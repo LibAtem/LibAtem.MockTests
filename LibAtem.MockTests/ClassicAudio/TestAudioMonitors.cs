@@ -169,7 +169,7 @@ namespace LibAtem.MockTests.ClassicAudio
         public void TestResetPeakLevels()
         {
             var expected = new AudioMixerResetPeaksCommand { Mask = AudioMixerResetPeaksCommand.MaskFlags.Monitor };
-            var handler = CommandGenerator.MatchCommand(expected, "Input");
+            var handler = CommandGenerator.MatchCommand(expected, true);
             AtemMockServerWrapper.Each(_output, _pool, handler, DeviceTestCases.ClassicAudioMonitors, helper =>
             {
                     uint timeBefore = helper.Server.CurrentTime;

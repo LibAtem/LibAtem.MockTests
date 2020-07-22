@@ -143,7 +143,7 @@ namespace LibAtem.MockTests.Media
                     Mask = MediaPlayerClipStatusSetCommand.MaskFlags.AtBeginning,
                     AtBeginning = true
                 };
-                var handler = CommandGenerator.MatchCommand(expectedCommand, "Playing", "Loop", "ClipFrame");
+                var handler = CommandGenerator.MatchCommand(expectedCommand, true);
                 AtemMockServerWrapper.Each(_output, _pool, handler, DeviceTestCases.MediaPlayerClips, helper =>
                 {
                     var tested = false;

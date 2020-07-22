@@ -58,7 +58,7 @@ namespace LibAtem.MockTests.ClassicAudio
         public void TestResetProgramOutPeaks()
         {
             var expected = new AudioMixerResetPeaksCommand {Mask = AudioMixerResetPeaksCommand.MaskFlags.Master};
-            var handler = CommandGenerator.MatchCommand(expected, "Input");
+            var handler = CommandGenerator.MatchCommand(expected, true);
             AtemMockServerWrapper.Each(_output, _pool, handler, DeviceTestCases.ClassicAudioMain, helper =>
             {
                 IBMDSwitcherAudioMixer mixer = GetAudioMixer(helper);
@@ -77,7 +77,7 @@ namespace LibAtem.MockTests.ClassicAudio
         public void TestResetAllPeaks()
         {
             var expected = new AudioMixerResetPeaksCommand { Mask = AudioMixerResetPeaksCommand.MaskFlags.All };
-            var handler = CommandGenerator.MatchCommand(expected, "Input");
+            var handler = CommandGenerator.MatchCommand(expected, true);
             AtemMockServerWrapper.Each(_output, _pool, handler, DeviceTestCases.ClassicAudioMain, helper =>
             {
                 IBMDSwitcherAudioMixer mixer = GetAudioMixer(helper);

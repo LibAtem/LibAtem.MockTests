@@ -5,7 +5,9 @@ using System.Linq;
 using System.Reflection;
 using System.Text;
 using LibAtem.Commands;
+using LibAtem.MockTests.SdkState;
 using LibAtem.Serialization;
+using LibAtem.Util;
 using Xunit;
 
 namespace LibAtem.MockTests.Util
@@ -61,11 +63,11 @@ namespace LibAtem.MockTests.Util
             };
         }
 
-        public static Func<Lazy<ImmutableList<ICommand>>, ICommand, IEnumerable<ICommand>> MatchCommand<T>(T expectedCmd, params string[] ignoreProps) where T : AutoSerializeBase
+        public static Func<Lazy<ImmutableList<ICommand>>, ICommand, IEnumerable<ICommand>> MatchCommand<T>(T expectedCmd, bool followMask = false, params string[] ignoreProps) where T : AutoSerializeBase
         {
             return (previousCommands, cmd) =>
             {
-                if (ValidateCommandMatches(cmd, expectedCmd, ignoreProps))
+                if (ValidateCommandMatches(cmd, expectedCmd, followMask, ignoreProps))
                 {
                     // Accept it
                     return new ICommand[] { null };
@@ -79,7 +81,7 @@ namespace LibAtem.MockTests.Util
         {
             return (previousCommands, cmd) =>
             {
-                if (expectedCmd == null || ValidateCommandMatches(cmd, expectedCmd, ignoreProps))
+                if (expectedCmd == null || ValidateCommandMatches(cmd, expectedCmd, false, ignoreProps))
                 {
                     // Echo it
                     return new[] {cmd};
@@ -89,14 +91,26 @@ namespace LibAtem.MockTests.Util
             };
         }
 
-        private static bool ValidateCommandMatches<T>(ICommand cmd, T expectedCmd, params string[] ignoreProps) where T : AutoSerializeBase
+        public static bool ValidateCommandMatches<T>(ICommand cmd, T expectedCmd, bool followMask, params string[] ignoreProps) where T : AutoSerializeBase
         {
             if (cmd is T cmd2)
             {
                 AutoSerializeBase.CommandPropertySpec spec = AutoSerializeBase.GetPropertySpecForType(typeof(T));
 
+                AutoSerializeBase.PropertySpec maskProp = spec.Properties.FirstOrDefault(p => p.PropInfo.Name == "Mask");
+                var maskedNames = new HashSet<string> {"Mask"};
+                if (maskProp != null)
+                {
+                    Enum maskVal = maskProp.Getter.DynamicInvoke(cmd) as Enum;
+                    IEnumerable<string> components = Enum.GetValues(maskProp.PropInfo.PropertyType).OfType<Enum>()
+                        .Where(v => maskVal.HasFlag(v)).Select(c => c.ToString());
+                    maskedNames.AddRange(components);
+                }
+
                 foreach (var prop in spec.Properties)
                 {
+                    if (followMask && !maskedNames.Contains(prop.PropInfo.Name))
+                        continue;
                     if (ignoreProps.Contains(prop.PropInfo.Name))
                         continue;
 

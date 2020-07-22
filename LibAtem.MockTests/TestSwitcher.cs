@@ -75,7 +75,7 @@ namespace LibAtem.MockTests
         public void TestSetTimecode()
         {
             var expectedCmd = new TimeCodeCommand();
-            var handler = CommandGenerator.MatchCommand(expectedCmd, "IsDropFrame");
+            var handler = CommandGenerator.MatchCommand(expectedCmd, false, "IsDropFrame");
             AtemMockServerWrapper.Each(_output, _pool, handler, DeviceTestCases.SerialPort, helper =>
             {
                 IBMDSwitcher switcher = helper.SdkClient.SdkSwitcher;
