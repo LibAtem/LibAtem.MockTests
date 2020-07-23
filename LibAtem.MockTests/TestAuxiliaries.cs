@@ -46,11 +46,9 @@ namespace LibAtem.MockTests
 
                     AtemState stateBefore = helper.Helper.BuildLibState();
 
-                    List<VideoSource> deviceSources = stateBefore.Settings.Inputs.Keys.ToList();
-
-                    VideoSource[] validSources = deviceSources.Where(s =>
-                        s.IsAvailable(helper.Helper.Profile, InternalPortType.Mask) &&
-                        s.IsAvailable(SourceAvailability.Auxiliary)).ToArray();
+                    VideoSource[] validSources = stateBefore.Settings.Inputs.Where(
+                        i => i.Value.Properties.SourceAvailability.HasFlag(SourceAvailability.Auxiliary)
+                    ).Select(i => i.Key).ToArray();
                     var sampleSources = VideoSourceUtil.TakeSelection(validSources);
                     
                     foreach (VideoSource src in sampleSources)

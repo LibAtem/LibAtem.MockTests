@@ -229,10 +229,9 @@ namespace LibAtem.MockTests.MixEffects
             var handler = CommandGenerator.CreateAutoCommandHandler<TransitionDVESetCommand, TransitionDVEGetCommand>("FillSource");
             AtemMockServerWrapper.Each(Output, Pool, handler, DeviceTestCases.All, helper =>
             {
-                List<VideoSource> deviceSources = helper.Helper.BuildLibState().Settings.Inputs.Keys.ToList();
-                VideoSource[] validSources = deviceSources.Where(s =>
-                    s.IsAvailable(helper.Helper.Profile, InternalPortType.Mask | InternalPortType.Auxiliary | InternalPortType.MEOutput) &&
-                    s.IsAvailable(SourceAvailability.KeySource)).ToArray();
+                VideoSource[] validSources = helper.Helper.BuildLibState().Settings.Inputs.Where(
+                    i => i.Value.Properties.SourceAvailability.HasFlag(SourceAvailability.KeySource)
+                ).Select(i => i.Key).ToArray();
                 var sampleSources = VideoSourceUtil.TakeSelection(validSources);
 
                 EachMixEffect<IBMDSwitcherTransitionDVEParameters>(helper, (stateBefore, meBefore, sdk, meId, i) =>
@@ -258,10 +257,9 @@ namespace LibAtem.MockTests.MixEffects
             var handler = CommandGenerator.CreateAutoCommandHandler<TransitionDVESetCommand, TransitionDVEGetCommand>("KeySource");
             AtemMockServerWrapper.Each(Output, Pool, handler, DeviceTestCases.All, helper =>
             {
-                List<VideoSource> deviceSources = helper.Helper.BuildLibState().Settings.Inputs.Keys.ToList();
-                VideoSource[] validSources = deviceSources.Where(s =>
-                    s.IsAvailable(helper.Helper.Profile, InternalPortType.Mask | InternalPortType.Auxiliary | InternalPortType.MEOutput) &&
-                    s.IsAvailable(SourceAvailability.KeySource)).ToArray();
+                VideoSource[] validSources = helper.Helper.BuildLibState().Settings.Inputs.Where(
+                    i => i.Value.Properties.SourceAvailability.HasFlag(SourceAvailability.KeySource)
+                ).Select(i => i.Key).ToArray();
                 var sampleSources = VideoSourceUtil.TakeSelection(validSources);
 
                 EachMixEffect<IBMDSwitcherTransitionDVEParameters>(helper, (stateBefore, meBefore, sdk, meId, i) =>

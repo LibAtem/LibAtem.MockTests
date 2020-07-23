@@ -252,10 +252,9 @@ namespace LibAtem.MockTests
             var handler = CommandGenerator.CreateAutoCommandHandler<DownstreamKeyFillSourceSetCommand, DownstreamKeySourceGetCommand>("FillSource", true);
             AtemMockServerWrapper.Each(_output, _pool, handler, DeviceTestCases.All, helper =>
             {
-                List<VideoSource> deviceSources = helper.Helper.BuildLibState().Settings.Inputs.Keys.ToList();
-                VideoSource[] validSources = deviceSources.Where(s =>
-                    s.IsAvailable(helper.Helper.Profile, InternalPortType.Mask | InternalPortType.Auxiliary | InternalPortType.MEOutput | InternalPortType.SuperSource) &&
-                    s.IsAvailable(SourceAvailability.KeySource)).ToArray();
+                VideoSource[] validSources = helper.Helper.BuildLibState().Settings.Inputs.Where(
+                    i => i.Value.Properties.SourceAvailability.HasFlag(SourceAvailability.KeySource)
+                ).Select(i => i.Key).ToArray();
                 var sampleSources = VideoSourceUtil.TakeSelection(validSources);
 
                 EachKeyer(helper, (stateBefore, state, props, id, i) =>
@@ -275,10 +274,9 @@ namespace LibAtem.MockTests
             var handler = CommandGenerator.CreateAutoCommandHandler<DownstreamKeyCutSourceSetCommand, DownstreamKeySourceGetCommand>("CutSource", true);
             AtemMockServerWrapper.Each(_output, _pool, handler, DeviceTestCases.All, helper =>
             {
-                List<VideoSource> deviceSources = helper.Helper.BuildLibState().Settings.Inputs.Keys.ToList();
-                VideoSource[] validSources = deviceSources.Where(s =>
-                    s.IsAvailable(helper.Helper.Profile, InternalPortType.Mask | InternalPortType.Auxiliary | InternalPortType.MEOutput | InternalPortType.SuperSource) &&
-                    s.IsAvailable(SourceAvailability.KeySource)).ToArray();
+                VideoSource[] validSources = helper.Helper.BuildLibState().Settings.Inputs.Where(
+                    i => i.Value.Properties.SourceAvailability.HasFlag(SourceAvailability.KeySource)
+                ).Select(i => i.Key).ToArray();
                 var sampleSources = VideoSourceUtil.TakeSelection(validSources);
 
                 EachKeyer(helper, (stateBefore, state, props, id, i) =>

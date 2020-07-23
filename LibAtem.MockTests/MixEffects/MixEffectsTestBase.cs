@@ -99,10 +99,9 @@ namespace LibAtem.MockTests.MixEffects
 
         protected static VideoSource[] GetTransitionSourcesSelection(AtemMockServerWrapper helper)
         {
-            List<VideoSource> deviceSources = helper.Helper.BuildLibState().Settings.Inputs.Keys.ToList();
-            VideoSource[] validSources = deviceSources.Where(s =>
-                s.IsAvailable(helper.Helper.Profile, InternalPortType.Mask) &&
-                s.IsAvailable(SourceAvailability.KeySource)).ToArray();
+            VideoSource[] validSources = helper.Helper.BuildLibState().Settings.Inputs.Where(
+                i => i.Value.Properties.SourceAvailability.HasFlag(SourceAvailability.KeySource)
+            ).Select(i => i.Key).ToArray();
             return VideoSourceUtil.TakeSelection(validSources);
         }
     }

@@ -3,7 +3,6 @@ using LibAtem.Util;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 
 namespace LibAtem.MockTests.Util
 {
@@ -32,15 +31,11 @@ namespace LibAtem.MockTests.Util
         public static VideoSource[] TakeSelection(VideoSource[] possibleSources)
         {
             var inputs = possibleSources.Where(src =>
-            {
-                VideoSourceTypeAttribute props = src.GetAttribute<VideoSource, VideoSourceTypeAttribute>();
-                return (props != null && props.PortType == InternalPortType.External);
-            }).ToList();
+                    src.GetAttribute<VideoSource, VideoSourceTypeAttribute>()?.PortType == InternalPortType.External)
+                .ToList();
             var auxes = possibleSources.Where(src =>
-            {
-                VideoSourceTypeAttribute props = src.GetAttribute<VideoSource, VideoSourceTypeAttribute>();
-                return (props != null && props.PortType == InternalPortType.Auxiliary);
-            }).ToList();
+                    src.GetAttribute<VideoSource, VideoSourceTypeAttribute>()?.PortType == InternalPortType.Auxiliary)
+                .ToList();
 
             List<VideoSource> result = possibleSources.Except(inputs).Except(auxes).ToList();
 
@@ -53,11 +48,6 @@ namespace LibAtem.MockTests.Util
             return result.ToArray();
         }
 
-        public static VideoSource[] TakeBadSelection(VideoSource[] possibleSources)
-        {
-            var badSources = VideoSourceLists.All.Where(s => !possibleSources.Contains(s)).ToArray();
-            return TakeSelection(badSources);
-        }
 /*
         public static AudioSource[] TakeSelection(AudioSource[] possibleSources)
         {
