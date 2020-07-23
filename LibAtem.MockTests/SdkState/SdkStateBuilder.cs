@@ -170,7 +170,7 @@ namespace LibAtem.MockTests.SdkState
             state.DownstreamKeyers = DownstreamKeyerStateBuilder.Build(switcher);
             state.MediaPlayers = MediaPlayerStateBuilder.Build(switcher, updateSettings, state.MediaPool.Clips.Count > 0);
             state.MixEffects = MixEffectStateBuilder.Build(switcher);
-            state.Settings.MultiViewers = MultiViewerStateBuilder.Build(switcher);
+            MultiViewerStateBuilder.Build(switcher, state);
 
             if (switcher is IBMDSwitcherFairlightAudioMixer fairlight)
                 state.Fairlight = FairlightAudioMixerStateBuilder.Build(fairlight);
@@ -218,7 +218,7 @@ namespace LibAtem.MockTests.SdkState
             if (dveStyles.Count != styleCount)
                 throw new Exception("Mismatch in number of supported DVE transition styles");
 
-            state.Info.DVE = new InfoState.DveInfo
+            state.Info.DVE = new InfoState.DveInfoState
             {
                 CanScaleUp = canScaleUp != 0,
                 CanRotate = canRotate != 0,

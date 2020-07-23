@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
+using System.ComponentModel.Design;
 using System.Linq;
 using System.Threading;
 using BMDSwitcherAPI;
@@ -70,6 +71,15 @@ namespace LibAtem.MockTests.Util
             SendAndWaitForChange(expected, () =>
             {
                 Server.SendCommands(cmd);
+            }, timeout, mutateStates, true);
+        }
+
+        public void SendFromServerAndWaitForChange(AtemState expected, IEnumerable<ICommand> cmds, int timeout = -1,
+            Action<AtemState, AtemState> mutateStates = null)
+        {
+            SendAndWaitForChange(expected, () =>
+            {
+                Server.SendCommands(cmds.ToArray());
             }, timeout, mutateStates, true);
         }
 

@@ -38,7 +38,8 @@ namespace LibAtem.MockTests
         public static readonly string[] SuperSource = { Constellation, TwoME };
         public static readonly string[] SuperSourceCascade = { Constellation };
 
-        public static readonly string[] Multiview = { TwoME, Constellation };
+        public static readonly string[] Multiview = { TVS, TwoME, Constellation };
+        public static readonly string[] MultiviewRouteInputs = {TwoME, Constellation};
         public static readonly string[] MultiviewSwapProgramPreview = { TwoME4K };
         public static readonly string[] MultiviewToggleSafeArea = { TwoME4K, Constellation };
         public static readonly string[] MultiviewVuMeters = { TwoME4K, Constellation };

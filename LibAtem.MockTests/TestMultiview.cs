@@ -1,7 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Linq;
 using BMDSwitcherAPI;
+using LibAtem.Commands;
+using LibAtem.Commands.DeviceProfile;
+using LibAtem.Commands.MixEffects;
 using LibAtem.Commands.Settings.Multiview;
 using LibAtem.Common;
 using LibAtem.MockTests.SdkState;
@@ -72,7 +76,7 @@ namespace LibAtem.MockTests
             });
         }
 
-        [Fact(Skip = "No supporting model captures")]
+        [Fact]
         public void TestSwapProgramPreview()
         {
             var handler = CommandGenerator.CreateAutoCommandHandler<MultiviewPropertiesSetV8Command, MultiviewPropertiesGetV8Command>("ProgramPreviewSwapped");
@@ -84,11 +88,20 @@ namespace LibAtem.MockTests
                     Assert.Equal(1, supportsSwap);
 
                     AtemState stateBefore = helper.Helper.BuildLibState();
+                    MultiViewerState mvState = stateBefore.Settings.MultiViewers[(int) mv.Item1];
 
                     for (int i = 0; i < 5; i++)
                     {
                         bool newValue = i % 2 != 0;
-                        stateBefore.Settings.MultiViewers[(int)mv.Item1].Properties.ProgramPreviewSwapped = newValue;
+                        mvState.Properties.ProgramPreviewSwapped = newValue;
+
+                        /*
+                        bool tmp = mvState.Windows[0].SupportsVuMeter;
+                        mvState.Windows[0].SupportsVuMeter = mvState.Windows[1].SupportsVuMeter;
+                        mvState.Windows[1].SupportsVuMeter = tmp;
+                        */
+                        // mvState.Windows[0]
+
                         helper.SendAndWaitForChange(stateBefore, () =>
                         {
                             mv.Item2.SetProgramPreviewSwapped(newValue ? 1 : 0);
@@ -182,7 +195,7 @@ namespace LibAtem.MockTests
         public void TestVuMeterOpacity()
         {
             var handler = CommandGenerator.CreateAutoCommandHandler<MultiviewVuOpacityCommand, MultiviewVuOpacityCommand>("Opacity", true);
-            AtemMockServerWrapper.Each(_output, _pool, handler, DeviceTestCases.MultiviewToggleSafeArea, helper =>
+            AtemMockServerWrapper.Each(_output, _pool, handler, DeviceTestCases.MultiviewVuMeters, helper =>
             {
                 foreach (Tuple<uint, IBMDSwitcherMultiView> mv in GetMultiviewers(helper))
                 {
@@ -206,7 +219,7 @@ namespace LibAtem.MockTests
         public void TestVuMeterEnabled()
         {
             var handler = CommandGenerator.CreateAutoCommandHandler<MultiviewWindowVuMeterSetCommand, MultiviewWindowVuMeterGetCommand>("VuEnabled", true);
-            AtemMockServerWrapper.Each(_output, _pool, handler, DeviceTestCases.MultiviewToggleSafeArea, helper =>
+            AtemMockServerWrapper.Each(_output, _pool, handler, DeviceTestCases.MultiviewVuMeters, helper =>
             {
                 foreach (Tuple<uint, IBMDSwitcherMultiView> mv in GetMultiviewers(helper))
                 {
@@ -223,7 +236,7 @@ namespace LibAtem.MockTests
                         for (int i = 0; i < 5; i++)
                         {
                             bool newValue = i % 2 == 0;
-                            stateBefore.Settings.MultiViewers[(int)mv.Item1].Windows[window].VuMeter = newValue;
+                            stateBefore.Settings.MultiViewers[(int)mv.Item1].Windows[window].VuMeterEnabled = newValue;
 
                             helper.SendAndWaitForChange(stateBefore,
                                 () => { mv.Item2.SetVuMeterEnabled((uint)window, newValue ? 1 : 0); });
@@ -233,49 +246,140 @@ namespace LibAtem.MockTests
             });
         }
 
-        /*
         [Fact]
-        public void TestSource()
+        public void TestWindowSupportsVuMeterEnabled()
         {
-            AtemMockServerWrapper.Each(_output, _pool, SourceCommandHandler, DeviceTestCases.All, helper =>
+            AtemMockServerWrapper.Each(_output, _pool, null, DeviceTestCases.MultiviewVuMeters, helper =>
             {
-                List<Tuple<uint, IBMDSwitcherMultiView>> multiviewers = GetMultiviewers(helper);
-
-                foreach (va auxSource in chosenIds)
+                var cmds = helper.Server.GetParsedDataDump().OfType<MultiviewWindowInputGetCommand>().ToList();
+                foreach (Tuple<uint, IBMDSwitcherMultiView> mv in GetMultiviewers(helper))
                 {
-                    AuxiliaryId auxId = AtemEnumMaps.GetAuxId(auxSource);
-                    IBMDSwitcherInputAux aux = allAuxes[auxSource];
+                    mv.Item2.SupportsVuMeters(out int supportsVu);
+                    Assert.Equal(1, supportsVu);
 
-                    // GetInputAvailabilityMask is used when checking if another input can be used for this output.
-                    // We track this another way
-                    aux.GetInputAvailabilityMask(out _BMDSwitcherInputAvailability availabilityMask);
-                    Assert.Equal(availabilityMask, (_BMDSwitcherInputAvailability)((int)SourceAvailability.Auxiliary << 2));
+                    mv.Item2.SupportsQuadrantLayout(out int supportsQuadrant);
+                    int[] windows = Randomiser
+                        .SelectionOfGroup(Enumerable.Range(0, supportsQuadrant == 0 ? 10 : 16).ToList()).ToArray();
 
-                    AtemState stateBefore = helper.Helper.BuildLibState();
-
-                    List<VideoSource> deviceSources = stateBefore.Settings.Inputs.Keys.ToList();
-
-                    VideoSource[] validSources = deviceSources.Where(s =>
-                        s.IsAvailable(helper.Helper.Profile, InternalPortType.Mask) &&
-                        s.IsAvailable(SourceAvailability.Auxiliary)).ToArray();
-                    var sampleSources = VideoSourceUtil.TakeSelection(validSources);
-
-                    foreach (VideoSource src in sampleSources)
+                    foreach (int window in windows)
                     {
-                        stateBefore.Auxiliaries[(int)auxId].Source = src;
-                        helper.SendAndWaitForChange(stateBefore, () =>
+                        AtemState stateBefore = helper.Helper.BuildLibState();
+                        MultiViewerState.WindowState windowState = stateBefore.Settings.MultiViewers[(int) mv.Item1].Windows[window];
+
+                        MultiviewWindowInputGetCommand cmd = cmds.Single(c => c.WindowIndex == window && c.MultiviewIndex == mv.Item1);
+
+                        for (int i = 0; i < 5; i++)
                         {
-                            aux.SetInputSource((long)src);
-                        });
+                            windowState.SupportsVuMeter = cmd.SupportVuMeter = !windowState.SupportsVuMeter;
+
+                            helper.SendFromServerAndWaitForChange(stateBefore, cmd);
+                        }
                     }
                 }
             });
         }
-        private static IEnumerable<ICommand> SourceCommandHandler(ImmutableList<ICommand> previousCommands, ICommand cmd)
+
+        [Fact]
+        public void TestWindowSupportsSafeAreaEnabled()
+        {
+            AtemMockServerWrapper.Each(_output, _pool, null, DeviceTestCases.MultiviewToggleSafeArea, helper =>
+            {
+                var cmds = helper.Server.GetParsedDataDump().OfType<MultiviewWindowInputGetCommand>().ToList();
+                foreach (Tuple<uint, IBMDSwitcherMultiView> mv in GetMultiviewers(helper))
+                {
+                    mv.Item2.CanToggleSafeAreaEnabled(out int supported);
+                    Assert.Equal(1, supported);
+
+                    mv.Item2.SupportsQuadrantLayout(out int supportsQuadrant);
+                    int[] windows = Randomiser
+                        .SelectionOfGroup(Enumerable.Range(0, supportsQuadrant == 0 ? 10 : 16).ToList()).ToArray();
+
+                    foreach (int window in windows)
+                    {
+                        AtemState stateBefore = helper.Helper.BuildLibState();
+                        MultiViewerState.WindowState windowState = stateBefore.Settings.MultiViewers[(int)mv.Item1].Windows[window];
+
+                        MultiviewWindowInputGetCommand cmd = cmds.Single(c => c.WindowIndex == window && c.MultiviewIndex == mv.Item1);
+
+                        for (int i = 0; i < 5; i++)
+                        {
+                            windowState.SupportsSafeArea = cmd.SupportsSafeArea = !windowState.SupportsSafeArea;
+
+                            helper.SendFromServerAndWaitForChange(stateBefore, cmd);
+                        }
+                    }
+                }
+            });
+        }
+
+        /*
+         This doesnt appear to like updating, even with a full data dump
+        [Fact]
+        public void TestSupportVuMeters()
+        {
+            AtemMockServerWrapper.Each(_output, _pool, null, DeviceTestCases.MultiviewVuMeters, helper =>
+            {
+                ImmutableList<ICommand> parsedDump = helper.Server.GetParsedDataDump();
+                MultiviewerConfigV8Command cmd = parsedDump.OfType<MultiviewerConfigV8Command>().Single();
+                
+                for (int i = 0; i < 4; i++)
+                {
+                    AtemState stateBefore = helper.Helper.BuildLibState();
+                    InfoState.MultiViewInfoState mvState = stateBefore.Info.MultiViewers;
+                    mvState.SupportsVuMeters = cmd.SupportsVuMeters = !mvState.SupportsVuMeters;
+
+                    // Dummy to trigger a state change
+                    helper.SendFromServerAndWaitForChange(stateBefore, new MixEffectCutCommand());
+
+                    helper.SendFromServerAndWaitForChange(stateBefore, parsedDump, 5000);
+                }
+            });
+        }
+        */
+
+        [Fact]
+        public void TestSource()
+        {
+            AtemMockServerWrapper.Each(_output, _pool, SourceCommandHandler, DeviceTestCases.MultiviewRouteInputs, helper =>
+            {
+                VideoSource[] validSources = helper.Helper.BuildLibState().Settings.Inputs
+                    .Where(i => i.Value.Properties.SourceAvailability.HasFlag(SourceAvailability.Multiviewer))
+                    .Select(i => i.Key).ToArray();
+
+                foreach (Tuple<uint, IBMDSwitcherMultiView> mv in GetMultiviewers(helper))
+                {
+                    mv.Item2.CanRouteInputs(out int supported);
+                    Assert.Equal(1, supported);
+
+                    mv.Item2.SupportsQuadrantLayout(out int supportsQuadrant);
+                    int[] windows = Randomiser
+                        .SelectionOfGroup(Enumerable.Range(supportsQuadrant == 0 ? 2 : 0, supportsQuadrant == 0 ? 8 : 16).ToList()).ToArray();
+
+                    foreach (int window in windows)
+                    {
+                        AtemState stateBefore = helper.Helper.BuildLibState();
+                        MultiViewerState.WindowState windowState = stateBefore.Settings.MultiViewers[(int)mv.Item1].Windows[window];
+
+                        //var sampleSources = VideoSourceUtil.TakeSelection(validSources);
+                        var sampleSources = Randomiser.SelectionOfGroup(validSources.ToList(), 5);
+                        foreach (VideoSource src in sampleSources)
+                        {
+                            windowState.Source = src;
+
+                            helper.SendAndWaitForChange(stateBefore, () =>
+                            {
+                                mv.Item2.SetWindowInput((uint) window, (long) src);
+                            });
+                        }
+                    }
+                }
+            });
+        }
+        private static IEnumerable<ICommand> SourceCommandHandler(Lazy<ImmutableList<ICommand>> previousCommands, ICommand cmd)
         {
             if (cmd is MultiviewWindowInputSetCommand inpCmd)
             {
-                var previous = previousCommands.OfType<MultiviewWindowInputGetCommand>().Last(a =>
+                var previous = previousCommands.Value.OfType<MultiviewWindowInputGetCommand>().Last(a =>
                     a.MultiviewIndex == inpCmd.MultiviewIndex && a.WindowIndex == inpCmd.WindowIndex);
                 Assert.NotNull(previous);
 
@@ -283,7 +387,6 @@ namespace LibAtem.MockTests
                 yield return previous;
             }
         }
-        */
 
     }
 }
