@@ -43,19 +43,6 @@ namespace LibAtem.ComparisonTests
             return ctrl;
         }
 
-        private void CreateDummyMacro(uint index)
-        {
-            var me = GetMixEffect<IBMDSwitcherMixEffectBlock>();
-            Assert.NotNull(me);
-
-            IBMDSwitcherMacroControl ctrl = GetMacroControl();
-            using (new StopMacroRecord(ctrl)) // Hopefully this will stop recording if it exceptions
-            {
-                ctrl.Record(index, "dummy", "");
-                me.SetProgramInput((long)VideoSource.Input1);
-            }
-        }
-
         private sealed class StopMacroRecord : IDisposable
         {
             private readonly IBMDSwitcherMacroControl _ctrl;
@@ -112,68 +99,6 @@ namespace LibAtem.ComparisonTests
             byte[] resBytes = new byte[macro.GetSize()];
             Marshal.Copy(buffer, resBytes, 0, resBytes.Length);
             return resBytes;
-        }
-
-        private static string GetHash(byte[] data)
-        {
-            using (MD5 md5Hash = MD5.Create())
-                return BitConverter.ToString(md5Hash.ComputeHash(data));
-        }
-
-        [Fact]
-        public void TestDownload()
-        {
-            using (var helper = new AtemComparisonHelper(Client, Output))
-            {
-                CreateDummyMacro(1);
-                helper.Sleep();
-
-                string sdkHash = GetHash(DownloadMacro(1));
-                helper.Sleep();
-
-                string libHash = null;
-
-                var evt = new AutoResetEvent(false);
-                Client.Client.DataTransfer.QueueJob(new DownloadMacroBytesJob(1, (res) =>
-                {
-                    libHash = GetHash(res.SelectMany(b => b).ToArray());
-                    evt.Set();
-                }, TimeSpan.FromSeconds(2)));
-
-                Assert.True(evt.WaitOne(3000), "Download Failed");
-
-                Assert.Equal(sdkHash, libHash);
-            }
-        }
-
-        private void CreateSleepingMacro(uint index)
-        {
-            var me = GetMixEffect<IBMDSwitcherMixEffectBlock>();
-            Assert.NotNull(me);
-
-            IBMDSwitcherMacroControl ctrl = GetMacroControl();
-            using (new StopMacroRecord(ctrl)) // Hopefully this will stop recording if it exceptions
-            {
-                ctrl.Record(index, "dummy-sleep", "");
-                ctrl.RecordPause(50); // 2s
-                ctrl.RecordUserWait();
-                ctrl.RecordPause(25); // 1s
-            }
-        }
-
-        private sealed class StopMacroRun : IDisposable
-        {
-            private readonly IBMDSwitcherMacroControl _ctrl;
-
-            public StopMacroRun(IBMDSwitcherMacroControl ctrl)
-            {
-                _ctrl = ctrl;
-            }
-
-            public void Dispose()
-            {
-                _ctrl.StopRunning();
-            }
         }
 
         [Fact]
