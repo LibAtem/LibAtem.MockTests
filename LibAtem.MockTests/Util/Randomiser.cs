@@ -19,6 +19,16 @@ namespace LibAtem.MockTests.Util
             return (uint) _random.Next((int) max);
         }
 
+        public static List<T> FlagComponents<T>(params T[] omit)
+        {
+            var rand = new Random();
+            var vals = Enum.GetValues(typeof(T)).OfType<T>().Except(omit).ToList();
+            if (vals.Count == 0) throw new ArgumentOutOfRangeException("No enum values");
+
+            int count = rand.Next((int) vals.Count - 1) + 1;
+            return SelectionOfGroup(vals, count).ToList();
+        }
+
         public static T EnumValue<T>(params T[] omit)
         {
             var rand = new Random();
@@ -27,7 +37,7 @@ namespace LibAtem.MockTests.Util
             var ind = rand.Next(0, vals.Length - 1);
             return vals[ind];
         }
-
+        
         public static double Range(double min = -100, double max = 6, double rounding = 100)
         {
             double scale = max - min;

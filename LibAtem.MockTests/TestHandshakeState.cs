@@ -117,8 +117,9 @@ namespace LibAtem.MockTests
             using var helper = new AtemSdkClientWrapper("127.0.0.1", stateSettings, 1);
 
             var libAtemState = AtemTestHelper.SanitiseStateIncompabalities(GetLibAtemState(stateSettings, "127.0.0.1"));
+            var sdkState = helper.BuildState();
 
-            List<string> before = AtemStateComparer.AreEqual(helper.BuildState(), libAtemState);
+            List<string> before = AtemStateComparer.AreEqual(sdkState, libAtemState);
             if (before.Count != 0 && _output != null)
             {
                 _output.WriteLine("state mismatch:");

@@ -5,6 +5,7 @@ using LibAtem.DeviceProfile;
 using LibAtem.MockTests.Util;
 using System.Collections.Generic;
 using System.Linq;
+using LibAtem.MockTests.SdkState;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -15,6 +16,35 @@ namespace LibAtem.MockTests.MixEffects
     {
         public TestDVETransition(ITestOutputHelper output, AtemServerClientPool pool) : base(output, pool)
         {
+        }
+
+        [Fact]
+        public void TestStyle()
+        {
+            bool tested = false;
+            var handler = CommandGenerator.CreateAutoCommandHandler<TransitionDVESetCommand, TransitionDVEGetCommand>("Style");
+            AtemMockServerWrapper.Each(Output, Pool, handler, DeviceTestCases.All, helper =>
+            {
+                EachMixEffect<IBMDSwitcherTransitionDVEParameters>(helper, (stateBefore, meBefore, sdk, meId, i) =>
+                {
+                    if (stateBefore.Info.DVE != null && stateBefore.Info.DVE.SupportedTransitions.Count > 0)
+                    {
+                        var selection = Randomiser
+                            .SelectionOfGroup(stateBefore.Info.DVE.SupportedTransitions.ToList(), 3).ToList();
+
+                        tested = true;
+                        Assert.NotNull(meBefore.Transition.DVE);
+
+                        foreach (DVEEffect style in selection)
+                        {
+                            meBefore.Transition.DVE.Style = style;
+                            helper.SendAndWaitForChange(stateBefore,
+                                () => { sdk.SetStyle(AtemEnumMaps.DVEStyleMap[style]); });
+                        }
+                    }
+                });
+            });
+            Assert.True(tested);
         }
 
         [Fact]

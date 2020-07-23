@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using LibAtem.Commands.Streaming;
+using LibAtem.Util;
 
 namespace LibAtem.MockTests.SdkState
 {
@@ -21,6 +22,7 @@ namespace LibAtem.MockTests.SdkState
         public static readonly IReadOnlyDictionary<MultiViewLayoutV8, _BMDSwitcherMultiViewLayout> MultiViewLayoutMap;
         public static readonly IReadOnlyDictionary<InternalPortType, _BMDSwitcherPortType> InternalPortTypeMap;
         public static readonly IReadOnlyDictionary<ExternalPortType, _BMDSwitcherExternalPortType> ExternalPortTypeMap;
+        public static readonly IReadOnlyDictionary<ExternalPortTypeFlags2, _BMDSwitcherExternalPortType> ExternalPortTypeFlags2Map;
         public static readonly IReadOnlyDictionary<SuperSourceArtOption, _BMDSwitcherSuperSourceArtOption> SuperSourceArtOptionMap;
         public static readonly IReadOnlyDictionary<MediaPlayerSource, _BMDSwitcherMediaPlayerSourceType> MediaPlayerSourceMap;
         public static readonly IReadOnlyDictionary<AudioMixOption, _BMDSwitcherAudioMixOption> AudioMixOptionMap;
@@ -234,6 +236,15 @@ namespace LibAtem.MockTests.SdkState
                 {ExternalPortType.MADI, _BMDSwitcherExternalPortType.bmdSwitcherExternalPortTypeMADI},
                 {ExternalPortType.TRS, _BMDSwitcherExternalPortType.bmdSwitcherExternalPortTypeTRS},
             };
+            ExternalPortTypeFlags2Map = new Dictionary<ExternalPortTypeFlags2, _BMDSwitcherExternalPortType>
+            {
+                {ExternalPortTypeFlags2.Internal, _BMDSwitcherExternalPortType.bmdSwitcherExternalPortTypeInternal},
+                {ExternalPortTypeFlags2.SDI, _BMDSwitcherExternalPortType.bmdSwitcherExternalPortTypeSDI},
+                {ExternalPortTypeFlags2.HDMI, _BMDSwitcherExternalPortType.bmdSwitcherExternalPortTypeHDMI},
+                {ExternalPortTypeFlags2.Composite, _BMDSwitcherExternalPortType.bmdSwitcherExternalPortTypeComposite},
+                {ExternalPortTypeFlags2.Component, _BMDSwitcherExternalPortType.bmdSwitcherExternalPortTypeComponent},
+                {ExternalPortTypeFlags2.SVideo, _BMDSwitcherExternalPortType.bmdSwitcherExternalPortTypeSVideo},
+            };
 
             SuperSourceArtOptionMap = new Dictionary<SuperSourceArtOption, _BMDSwitcherSuperSourceArtOption>
             {
@@ -345,7 +356,12 @@ namespace LibAtem.MockTests.SdkState
 
         public static List<T> FindFlagComponents<T>(this T value) where T : Enum
         {
-            return Enum.GetValues(typeof(T)).OfType<T>().Where(v => value.HasFlag(v)).ToList();
+            return EnumExtensions.FindFlagComponents(value);
+        }
+
+        public static List<Tk> FindFlagsComponentsByValue<Tk, Tv>(this IReadOnlyDictionary<Tk, Tv> dict, Tv value) where Tv : Enum
+        {
+            return value.FindFlagComponents().Select(dict.FindByValue).ToList();
         }
 
         public static Tk FindFlagsByValue<Tk, Tv>(this IReadOnlyDictionary<Tk, Tv> dict, Tv value) where Tv : Enum
