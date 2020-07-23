@@ -155,12 +155,11 @@ namespace LibAtem.MockTests.Util
                     ServerHandle();
 
                 // Exit if timeout reached
-                if (until.WaitOne(0))
+                if (until != null && until.WaitOne(0))
                     break;
             }
         }
 
-        public const int CommandWaitTime = 80;
         private void SendAndWaitForChangeInner(Action doSend, bool skipHandler = false)
         {
             var libWait = new ManualResetEvent(false);

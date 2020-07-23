@@ -1,8 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Linq;
+using System.Threading;
 using BMDSwitcherAPI;
 using LibAtem.Commands;
+using LibAtem.Commands.DataTransfer;
 using LibAtem.Commands.Settings;
 using LibAtem.Common;
 using LibAtem.MockTests.SdkState;
@@ -137,11 +140,42 @@ namespace LibAtem.MockTests
             });
         }
 
-        [Fact] // TODO - this also initiates a data upload (for the mv image)
+        class LongNameHandler : UploadJobWorker
+        {
+            private readonly bool _hasMultiview;
+            private readonly Func<Lazy<ImmutableList<ICommand>>, ICommand, IEnumerable<ICommand>> _propHandler;
+
+            public ManualResetEvent Wait { get; } = new ManualResetEvent(false);
+
+            public LongNameHandler(uint targetBytes, ITestOutputHelper output, VideoSource index, bool hasMultiview) 
+                : base(targetBytes, output, 0xffff, (uint) index, DataTransferUploadRequestCommand.TransferMode.Clear2 | DataTransferUploadRequestCommand.TransferMode.Write)
+            {
+                _hasMultiview = hasMultiview;
+                _propHandler = CommandGenerator.CreateAutoCommandHandler<InputPropertiesSetCommand, InputPropertiesGetCommand>("LongName");
+            }
+
+            public override IEnumerable<ICommand> HandleCommand(Lazy<ImmutableList<ICommand>> previousCommands, ICommand cmd)
+            {
+                List<ICommand> propRes = _propHandler(previousCommands, cmd).ToList();
+                if (propRes.Count > 0)
+                    return propRes;
+
+                return _hasMultiview ? base.HandleCommand(previousCommands, cmd) : new List<ICommand>();
+            }
+
+            protected override IEnumerable<ICommand> CompleteGetCommands()
+            {
+                Wait.Set();
+
+                yield break;
+            }
+        }
+
+        [Fact]
         public void TestLongName()
         {
-            var handler = CommandGenerator.CreateAutoCommandHandler<InputPropertiesSetCommand, InputPropertiesGetCommand>("LongName");
-            AtemMockServerWrapper.Each(_output, _pool, handler, DeviceTestCases.All, helper =>
+            LongNameHandler worker = null;
+            AtemMockServerWrapper.Each(_output, _pool, (a, b) => worker?.HandleCommand(a, b), DeviceTestCases.MultiviewLabelSample, helper =>
             {
                 List<VideoSource> inputIds = helper.Helper.BuildLibState().Settings.Inputs.Keys.ToList();
                 foreach (VideoSource id in Randomiser.SelectionOfGroup(inputIds))
@@ -150,13 +184,29 @@ namespace LibAtem.MockTests
 
                     IBMDSwitcherInput input = GetInput(helper, id);
 
-                    for (int i = 0; i < 5; i++)
-                    {
-                        string newName = Guid.NewGuid().ToString().Substring(0, 20);
-                        stateBefore.Settings.Inputs[id].Properties.LongName = newName;
+                    bool hasMultiviewers = stateBefore.Info.MultiViewers != null;
 
-                        helper.SendAndWaitForChange(stateBefore, () => { input.SetLongName(newName); });
+                    // TODO - this should really use a real byte count
+                    worker = new LongNameHandler(0, _output, id, hasMultiviewers);
+
+                    string newName = Guid.NewGuid().ToString().Substring(0, 20);
+                    stateBefore.Settings.Inputs[id].Properties.LongName = newName;
+
+                    // Send the change
+                    input.SetLongName(newName);
+
+                    if (hasMultiviewers)
+                    {
+                        // Process the upload
+                        helper.HandleUntil(worker.Wait, 5000);
+                        Assert.True(worker.Wait.WaitOne(500));
                     }
+
+                    // TODO remove this, but we need to ensure we let the work queue drain sufficiently
+                    helper.HandleUntil(null, 1000);
+
+                    // The name property should be updated
+                    helper.Helper.CheckStateChanges(stateBefore);
                 }
             });
         }

@@ -43,7 +43,7 @@ namespace LibAtem.MockTests.DeviceMock
                     return val;
                 }
                 
-                val = new AtemServerConnection(ep, 0x8008, version);// TODO - make dynamic
+                val = new AtemServerConnection(ep, 0x8008, version);
                 connections[ep] = val;
                 OrderedConnections.Add(val);
                 val.OnDisconnect += RemoveTimedOut;

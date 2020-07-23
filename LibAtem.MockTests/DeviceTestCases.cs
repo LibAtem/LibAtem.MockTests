@@ -43,6 +43,7 @@ namespace LibAtem.MockTests
         public static readonly string[] MultiviewSwapProgramPreview = { TwoME4K };
         public static readonly string[] MultiviewToggleSafeArea = { TwoME4K, Constellation };
         public static readonly string[] MultiviewVuMeters = { TwoME4K, Constellation };
+        public static readonly string[] MultiviewLabelSample = {TwoME4K, TwoME, Constellation, MiniPro, Mini};
 
         public static readonly string[] SerialPort = { TwoME, Constellation };
         public static readonly string[] SDI3G = {Constellation, TwoME4K};

@@ -17,7 +17,6 @@ namespace LibAtem.MockTests.Util
     {
         private readonly uint _chunkSize = 1396; // 1100 + Randomiser.RangeInt(290);
         private readonly uint _chunkCount = 20 + Randomiser.RangeInt(15);
-        private readonly uint _targetBytes;
         private readonly ITestOutputHelper _output;
         private readonly uint _bank;
         private readonly uint _index;
@@ -26,6 +25,7 @@ namespace LibAtem.MockTests.Util
         private bool _locked;
         private uint _transferId;
         private DataTransferFileDescriptionCommand _description;
+        private uint _targetBytes;
         private uint _pendingAck;
         private bool _isComplete;
 
@@ -40,7 +40,7 @@ namespace LibAtem.MockTests.Util
             _expectedMode = expectedMode;
         }
 
-        public IEnumerable<ICommand> HandleCommand(Lazy<ImmutableList<ICommand>> previousCommands, ICommand cmd)
+        public virtual IEnumerable<ICommand> HandleCommand(Lazy<ImmutableList<ICommand>> previousCommands, ICommand cmd)
         {
             var lockRes = LockCommandHandler(previousCommands, cmd).ToList();
             if (lockRes.Any())
@@ -62,12 +62,13 @@ namespace LibAtem.MockTests.Util
                 Assert.Equal(_bank != 0xffff, _locked);
                 Assert.False(_isComplete);
                 Assert.Equal(_expectedMode, startCmd.Mode);
-                Assert.Equal((int)_targetBytes, startCmd.Size);
+                if (_targetBytes > 0) Assert.Equal((int)_targetBytes, startCmd.Size);
                 Assert.Equal(_index, startCmd.TransferIndex);
                 Assert.Equal((uint)_bank, startCmd.TransferStoreId);
 
                 _transferId = startCmd.TransferId;
                 _pendingAck = 0;
+                _targetBytes = (uint) startCmd.Size;
 
                 res.Add(new DataTransferUploadContinueCommand
                 {
@@ -120,7 +121,7 @@ namespace LibAtem.MockTests.Util
                     _pendingAck = 0;
                 }
 
-                // _output.WriteLine($"Now have {_buffer.Count} bytes of {_targetBytes}");
+                // _output.WriteLine($"Now have {Buffer.Count} bytes of {_targetBytes}");
 
                 if (Buffer.Count >= _targetBytes && _description != null)
                 {
@@ -146,7 +147,13 @@ namespace LibAtem.MockTests.Util
             Assert.NotNull(_description);
             yield return new DataTransferCompleteCommand { TransferId = _transferId };
 
-            if (_bank == (uint) MediaPoolFileType.Still)
+            foreach (ICommand cmd in CompleteGetCommands())
+                yield return cmd;
+        }
+
+        protected virtual IEnumerable<ICommand> CompleteGetCommands()
+        {
+            if (_bank == (uint)MediaPoolFileType.Still)
             {
                 yield return new MediaPoolFrameDescriptionCommand
                 {
