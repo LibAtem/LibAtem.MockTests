@@ -3,11 +3,26 @@ using LibAtem.Common;
 using LibAtem.State;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace LibAtem.MockTests.SdkState
 {
     public static class MixEffectStateBuilder
     {
+        public static bool SupportsAdvancedChromaKeyers(IBMDSwitcher switcher)
+        {
+            var iterator = AtemSDKConverter.CastSdk<IBMDSwitcherMixEffectBlockIterator>(switcher.CreateIterator);
+            var me = AtemSDKConverter.ToList<IBMDSwitcherMixEffectBlock>(iterator.Next).FirstOrDefault();
+            if (me == null) return false;
+
+            var iterator2 = AtemSDKConverter.CastSdk<IBMDSwitcherKeyIterator>(me.CreateIterator);
+            var key = AtemSDKConverter.ToList<IBMDSwitcherKey>(iterator2.Next).FirstOrDefault();
+            if (key == null) return false;
+
+            key.DoesSupportAdvancedChroma(out int supported);
+            return supported != 0;
+        }
+
         public static IReadOnlyList<MixEffectState> Build(IBMDSwitcher switcher)
         {
             var iterator = AtemSDKConverter.CastSdk<IBMDSwitcherMixEffectBlockIterator>(switcher.CreateIterator);

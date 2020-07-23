@@ -31,6 +31,11 @@ namespace LibAtem.MockTests.SdkState
                 DropFrame = dropFrame != 0
             };
 
+            switcher.GetAreOutputsConfigurable(out int configurable);
+            state.Info.OnlyConfigurableOutputs = configurable != 0;
+            state.Info.HasCameraControl = switcher is IBMDSwitcherCameraControl;
+            state.Info.AdvancedChromaKeyers = MixEffectStateBuilder.SupportsAdvancedChromaKeyers(switcher);
+
             try
             {
                 switcher.Get3GSDIOutputLevel(out _BMDSwitcher3GSDIOutputLevel outputLevel);
