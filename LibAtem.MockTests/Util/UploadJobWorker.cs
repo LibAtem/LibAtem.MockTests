@@ -21,6 +21,7 @@ namespace LibAtem.MockTests.Util
         private readonly uint _bank;
         private readonly uint _index;
         private readonly DataTransferUploadRequestCommand.TransferMode _expectedMode;
+        private readonly bool _decodeRle;
 
         private bool _locked;
         private uint _transferId;
@@ -31,13 +32,14 @@ namespace LibAtem.MockTests.Util
 
         public List<byte> Buffer { get; } = new List<byte>();
 
-        public UploadJobWorker(uint targetBytes, ITestOutputHelper output, uint bank, uint index, DataTransferUploadRequestCommand.TransferMode expectedMode)
+        public UploadJobWorker(uint targetBytes, ITestOutputHelper output, uint bank, uint index, DataTransferUploadRequestCommand.TransferMode expectedMode, bool decodeRLE = true)
         {
             _targetBytes = targetBytes;
             _output = output;
             _bank = bank;
             _index = index;
             _expectedMode = expectedMode;
+            _decodeRle = decodeRLE;
         }
 
         public virtual IEnumerable<ICommand> HandleCommand(Lazy<ImmutableList<ICommand>> previousCommands, ICommand cmd)
@@ -105,7 +107,9 @@ namespace LibAtem.MockTests.Util
 
                 Assert.Equal(_transferId, dataCmd.TransferId);
                 Assert.True(dataCmd.Body.Length <= _chunkSize);
-                Tuple<int, byte[]> decoded = FrameEncodingUtil.DecodeRLESegment(_targetBytes, dataCmd.Body);
+                Tuple<int, byte[]> decoded = _decodeRle
+                    ? FrameEncodingUtil.DecodeRLESegment(_targetBytes, dataCmd.Body)
+                    : Tuple.Create(dataCmd.Body.Length, dataCmd.Body);
                 Buffer.AddRange(decoded.Item2.Take(decoded.Item1));
 
                 _pendingAck++;
@@ -163,6 +167,30 @@ namespace LibAtem.MockTests.Util
                     Filename = _description.Name,
                     Hash = _description.FileHash
                 };
+            }
+            else if (_bank == (uint)MediaPoolFileType.Clip1 || _bank == (uint)MediaPoolFileType.Clip2 || _bank == (uint)MediaPoolFileType.Clip3 || _bank == (uint)MediaPoolFileType.Clip4)
+            {
+                if (_expectedMode == DataTransferUploadRequestCommand.TransferMode.Write)
+                {
+                    yield return new MediaPoolFrameDescriptionCommand
+                    {
+                        Bank = (MediaPoolFileType) _bank,
+                        Index = _index,
+                        IsUsed = true,
+                        Filename = _description.Name,
+                        Hash = _description.FileHash
+                    };
+                }
+                else
+                {
+                    yield return new MediaPoolAudioDescriptionCommand
+                    {
+                        Index = _bank,
+                        IsUsed = true,
+                        Name = _description.Name,
+                        Hash = _description.FileHash
+                    };
+                }
             }
             else if (_bank == 0xffff)
             {

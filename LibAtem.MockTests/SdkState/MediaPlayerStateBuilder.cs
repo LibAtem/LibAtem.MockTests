@@ -31,11 +31,38 @@ namespace LibAtem.MockTests.SdkState
                 unassignedFrames -= maxFrameCount;
                 clip.IsValid(out int valid);
                 clip.GetName(out string name);
+
+                clip.GetFrameCount(out uint frameCount);
+                var frames = Enumerable.Range(0, (int)maxFrameCount).Select(i =>
+                {
+                    clip.GetFrameHash((uint) i, out BMDSwitcherHash hash);
+                    clip.IsFrameValid((uint) i, out int valid);
+                    return new MediaPoolState.FrameState
+                    {
+                        IsUsed = valid != 0,
+                        Hash = hash.data
+                    };
+                }).ToList();
+
+                clip.GetAudioName(out string audioName);
+                clip.IsAudioValid(out int isAudioValid);
+                clip.GetAudioHash(out BMDSwitcherHash audioHash);
                 return new MediaPoolState.ClipState
                 {
                     IsUsed = valid != 0,
                     Name = name,
+                    FrameCount = frameCount,
+
                     MaxFrames = maxFrameCount,
+
+                    Frames = frames,
+
+                    Audio =
+                    {
+                        IsUsed = isAudioValid != 0,
+                        Name = audioName,
+                        Hash = audioHash.data,
+                    }
                 };
             }).ToList();
 

@@ -46,6 +46,26 @@ namespace LibAtem.MockTests.Media
         }
 
         [Fact]
+        public void TestClearPool()
+        {
+            var expectedCmd = new MediaPoolClearAllCommand();
+            AtemMockServerWrapper.Each(_output, _pool, CommandGenerator.MatchCommand(expectedCmd), DeviceTestCases.MediaPlayer, helper =>
+            {
+                IBMDSwitcherMediaPool pool = GetMediaPool(helper);
+
+                for (int i = 0; i < 3; i++)
+                {
+                    AtemState stateBefore = helper.Helper.BuildLibState();
+
+                    helper.SendAndWaitForChange(stateBefore, () =>
+                    {
+                        pool.Clear();
+                    });
+                }
+            });
+        }
+
+        [Fact]
         public void TestIsUsed()
         {
             AtemMockServerWrapper.Each(_output, _pool, null, DeviceTestCases.MediaPlayer, helper =>
@@ -242,7 +262,7 @@ namespace LibAtem.MockTests.Media
         private void DoUpload(int iterations, int timeout, Func<uint, uint, byte[]> frameBytes)
         {
             UploadJobWorker worker = null;
-            AtemMockServerWrapper.Each(_output, _pool, (a, b) => worker?.HandleCommand(a, b), DeviceTestCases.MediaPlayerStillCapture, helper =>
+            AtemMockServerWrapper.Each(_output, _pool, (a, b) => worker?.HandleCommand(a, b), DeviceTestCases.MediaPlayer, helper =>
             {
                 IBMDSwitcherMediaPool pool = GetMediaPool(helper);
                 IBMDSwitcherStills stills = GetStillsPool(helper);
@@ -387,22 +407,23 @@ namespace LibAtem.MockTests.Media
 
                     uint index = Randomiser.RangeInt((uint)stateBefore.MediaPool.Stills.Count);
 
-                    var stillState = stateBefore.MediaPool.Stills[(int)index];
-                    stillState.Filename = "Some file";
-                    stillState.IsUsed = true;
-                    stillState.Hash = new byte[16];
-                    helper.SendFromServerAndWaitForChange(stateBefore, new MediaPoolFrameDescriptionCommand
                     {
-                        Bank = MediaPoolFileType.Still,
-                        Filename = "Some file",
-                        Index = index,
-                        IsUsed = true
-                    });
+                        var stillState = stateBefore.MediaPool.Stills[(int) index];
+                        stillState.Filename = "Some file";
+                        stillState.IsUsed = true;
+                        stillState.Hash = new byte[16];
+                        helper.SendFromServerAndWaitForChange(stateBefore, new MediaPoolFrameDescriptionCommand
+                        {
+                            Bank = MediaPoolFileType.Still,
+                            Filename = "Some file",
+                            Index = index,
+                            IsUsed = true
+                        });
+                    }
                     stateBefore = helper.Helper.BuildLibState();
 
                     Tuple<byte[], byte[]> rawBytes = rawBytesGen(resolution.Item1, resolution.Item2);
-                    stillState = stateBefore.MediaPool.Stills[(int) index];
-                    worker = new DownloadJobWorker(_output, stillState, (uint) MediaPoolFileType.Still, index,
+                    worker = new DownloadJobWorker(_output, (uint) MediaPoolFileType.Still, index,
                         rawBytes.Item2);
 
                     var cb = new LockCallback();

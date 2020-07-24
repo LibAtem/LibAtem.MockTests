@@ -15,7 +15,7 @@ namespace LibAtem.MockTests.Util
         private readonly uint _chunkSize = 1396; // 1100 + Randomiser.RangeInt(290);
         private readonly uint _chunkCount = 20 + Randomiser.RangeInt(15);
         private readonly ITestOutputHelper _output;
-        private readonly MediaPoolState.StillState _stillInfo;
+        private readonly uint _bank;
         private readonly uint _index;
         private readonly byte[] _bytes;
 
@@ -24,12 +24,10 @@ namespace LibAtem.MockTests.Util
         private uint _pendingAck;
         private bool _isComplete;
         private uint _offset = 0;
-        private uint _bank;
 
-        public DownloadJobWorker(ITestOutputHelper output, MediaPoolState.StillState stillInfo, uint bank, uint index, byte[] bytes)
+        public DownloadJobWorker(ITestOutputHelper output, uint bank, uint index, byte[] bytes)
         {
             _output = output;
-            _stillInfo = stillInfo;
             _bank = bank;
             _index = index;
             _bytes = bytes;

@@ -34,11 +34,37 @@ namespace LibAtem.MockTests.Media
             Marshal.Copy(bytes, 0, buffer, bytes.Length);
         }
 
+        public static void FillSdkAudio(IBMDSwitcherAudio frame, byte[] bytes)
+        {
+            frame.GetBytes(out IntPtr buffer);
+            Marshal.Copy(bytes, 0, buffer, bytes.Length);
+        }
+
         public static byte[] GetSdkFrameBytes(IBMDSwitcherFrame frame)
         {
             byte[] res = new byte[frame.GetWidth() * frame.GetHeight() * 4];
             frame.GetBytes(out IntPtr buffer);
             Marshal.Copy(buffer, res, 0, res.Length);
+            return res;
+        }
+
+        public static byte[] GetSdkAudioBytes(IBMDSwitcherAudio frame)
+        {
+            byte[] res = new byte[frame.GetSize()];
+            frame.GetBytes(out IntPtr buffer);
+            Marshal.Copy(buffer, res, 0, res.Length);
+            return res;
+        }
+        public static byte[] FlipAudio(byte[] data)
+        {
+            var res = new byte[data.Length];
+            for (int i = 0; i < data.Length; i += 4)
+            {
+                res[i] = data[i + 3];
+                res[i + 1] = data[i + 2];
+                res[i + 2] = data[i + 1];
+                res[i + 3] = data[i];
+            }
             return res;
         }
     }

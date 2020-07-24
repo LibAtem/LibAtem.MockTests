@@ -175,7 +175,7 @@ namespace LibAtem.MockTests.Macro
                     byte[] op = new CutTransitionMacroOp { Index = MixEffectBlockId.One }.ToByteArray();
                     byte[] fakeOp = { 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 };
                     byte[] combined = op.Concat(fakeOp).ToArray();
-                    worker = new DownloadJobWorker(_output, null, 0xffff, index, combined);
+                    worker = new DownloadJobWorker(_output, 0xffff, index, combined);
 
                     // var cb = new TestMediaPoolStills.LockCallback();
                     // helper.SendAndWaitForChange(stateBefore, () => { .Lock(cb); });
