@@ -71,7 +71,7 @@ namespace LibAtem.MockTests.MixEffects
                 {
                     tested = true;
 
-                    uint target = Randomiser.RangeInt(250);
+                    uint target = Randomiser.RangeInt(249) + 1;
                     keyerBefore.DVE.Rate = target;
                     helper.SendAndWaitForChange(stateBefore, () => { sdkKeyer.SetRate(target); });
                 });

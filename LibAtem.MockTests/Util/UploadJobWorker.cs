@@ -27,15 +27,17 @@ namespace LibAtem.MockTests.Util
         private uint _transferId;
         private DataTransferFileDescriptionCommand _description;
         private uint _targetBytes;
+        private bool _knownTargetBytes;
         private uint _usedBytes;
         private uint _pendingAck;
         private bool _isComplete;
 
-        public byte[] Buffer { get; }
+        public byte[] Buffer { get; private set; }
 
         public UploadJobWorker(uint targetBytes, ITestOutputHelper output, uint bank, uint index, DataTransferUploadRequestCommand.TransferMode expectedMode, bool decodeRLE = true)
         {
             _targetBytes = targetBytes;
+            _knownTargetBytes = _targetBytes != 0;
             _output = output;
             _bank = bank;
             _index = index;
@@ -114,8 +116,16 @@ namespace LibAtem.MockTests.Util
                 Tuple<int, byte[]> decoded = _decodeRle
                     ? FrameEncodingUtil.DecodeRLESegment(_targetBytes, dataCmd.Body)
                     : Tuple.Create(dataCmd.Body.Length, dataCmd.Body);
+
+                if (!_knownTargetBytes)
+                {
+                    byte[] newBuffer = new byte[Buffer.Length + decoded.Item1];
+                    Array.Copy(Buffer, 0, newBuffer, 0, Buffer.Length);
+                    Buffer = newBuffer;
+                }
+                //long copyLength = Math.Min(decoded.Item1, _targetBytes - _usedBytes);
                 Array.Copy(decoded.Item2, 0, Buffer, _usedBytes, decoded.Item1);
-                _usedBytes += (uint)decoded.Item1;
+                _usedBytes += (uint) decoded.Item1;
 
                 _pendingAck++;
                 if (_pendingAck >= _chunkCount)

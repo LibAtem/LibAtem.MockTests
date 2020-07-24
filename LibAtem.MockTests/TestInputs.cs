@@ -177,6 +177,8 @@ namespace LibAtem.MockTests
             LongNameHandler worker = null;
             AtemMockServerWrapper.Each(_output, _pool, (a, b) => worker?.HandleCommand(a, b), DeviceTestCases.MultiviewLabelSample, helper =>
             {
+                helper.DisposeSdkClient = true;
+
                 List<VideoSource> inputIds = helper.Helper.BuildLibState().Settings.Inputs.Keys.ToList();
                 foreach (VideoSource id in Randomiser.SelectionOfGroup(inputIds))
                 {
