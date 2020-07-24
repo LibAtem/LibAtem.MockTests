@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using BMDSwitcherAPI;
 using LibAtem.Commands;
-using LibAtem.Net;
+using LibAtem.MockTests.DeviceMock;
 using LibAtem.State;
 using LibAtem.State.Builder;
 using LibAtem.Util;
@@ -13,7 +13,10 @@ namespace LibAtem.MockTests.Util
 {
     public sealed class AtemTestHelper : IDisposable
     {
-        private readonly AtemClient _libAtemClient;
+        private readonly AtemMockServer _mockServer;
+        private readonly object _libAtemStateLock = new object();
+
+        // private readonly AtemClient _libAtemClient;
         private AtemState _libAtemState;
 
         public AtemSdkClientWrapper SdkClient { get; }
@@ -27,36 +30,44 @@ namespace LibAtem.MockTests.Util
         public delegate void CommandKeyHandler(object sender, string path);
         public event CommandKeyHandler OnLibAtemStateChange;
 
-        public AtemTestHelper(AtemSdkClientWrapper client, ITestOutputHelper output, AtemClient libAtemClient, /*DeviceProfile.DeviceProfile profile,*/ AtemStateBuilderSettings stateSettings)
+        public AtemTestHelper(AtemSdkClientWrapper client, ITestOutputHelper output, AtemMockServer mockServer, AtemStateBuilderSettings stateSettings)
         {
-            _libAtemClient = libAtemClient;
+            _mockServer = mockServer;
             SdkClient = client;
             Output = output;
-            // Profile = profile;
             StateSettings = stateSettings;
 
             SyncStates();
-            _libAtemClient.OnReceive += LibAtemReceive;
+            _mockServer.LibReceive += LibAtemReceive;
 
             AssertStatesMatch();
         }
 
         public void SyncStates()
         {
-            lock (_libAtemClient)
+            lock (_libAtemStateLock)
             {
                 _libAtemState = SdkClient.BuildState();
             }
         }
 
-        private void LibAtemReceive(object sender, IReadOnlyList<ICommand> commands)
+        private void LibAtemReceive(object sender, IReadOnlyList<byte[]> commands)
         {
-            lock (_libAtemClient)
+            lock (_libAtemStateLock)
             {
-                foreach (ICommand cmd in commands)
+                foreach (byte[] cmdBytes in commands)
                 {
+                    // It should be safe to assume exactly one per 
+                    ParsedCommand.ReadNextCommand(cmdBytes, 0, out ParsedCommandSpec? cmd);
+                    if (cmd == null)
+                        throw new Exception("Failed to parse command");
+
+                    ICommand cmd2 = CommandParser.Parse(_mockServer.CurrentVersion, cmd.Value);
+                    if (cmd2 == null)
+                        throw new Exception("Failed to parse command2");
+
                     // TODO - handle result?
-                    IUpdateResult result = AtemStateBuilder.Update(_libAtemState, cmd, StateSettings);
+                    IUpdateResult result = AtemStateBuilder.Update(_libAtemState, cmd2, StateSettings);
                     foreach (string change in result.ChangedPaths)
                     {
                         OnLibAtemStateChange?.Invoke(this, change);
@@ -67,7 +78,7 @@ namespace LibAtem.MockTests.Util
 
         public void Dispose()
         {
-            _libAtemClient.OnReceive -= LibAtemReceive;
+            _mockServer.LibReceive -= LibAtemReceive;
             Assert.True(TestResult);
         }
 
@@ -88,8 +99,8 @@ namespace LibAtem.MockTests.Util
 
         public AtemState BuildLibState()
         {
-            AtemState libState = null;
-            lock (_libAtemClient)
+            AtemState libState;
+            lock (_libAtemStateLock)
             {
                 libState = _libAtemState.Clone();
             }

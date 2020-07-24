@@ -30,10 +30,10 @@ namespace LibAtem.MockTests.Util
         // public DeviceProfile.DeviceProfile DeviceProfile { get; }
         // public AtemState DefaultState { get; }
         public AtemMockServer Server { get; }
-        public AtemClient LibAtemClient { get; }
+        // public AtemClient LibAtemClient { get; }
 
-        private bool _isDisposing;
-        private bool _libAtemConnected;
+        // private bool _isDisposing;
+        // private bool _libAtemConnected;
 
         public AtemMockServerPoolItem(string caseId, AtemStateBuilderSettings builderSettings, string bindIp)
         {
@@ -41,7 +41,7 @@ namespace LibAtem.MockTests.Util
             _bindIp = bindIp;
             _sdkClients = new Queue<AtemSdkClientWrapper>();
             _updatingClients = new List<AtemSdkClientWrapper>();
-            _nextSdkId = 1;
+            _nextSdkId = 0;
 
             List<byte[]> payloads = DumpParser.BuildCommands(DeviceTestCases.Version, caseId);
             // IReadOnlyList<ICommand> commands = DumpParser.ParseToCommands(DeviceTestCases.Version, payloads);
@@ -58,6 +58,7 @@ namespace LibAtem.MockTests.Util
 
             Server = new AtemMockServer(bindIp, payloads, DeviceTestCases.Version);
 
+            /*
             var connectionEvent = new AutoResetEvent(false);
             LibAtemClient = new AtemClient(bindIp, false);
             LibAtemClient.OnDisconnect += o => { Assert.True(_isDisposing, "LibAtem: Disconnect before disposing"); };
@@ -72,6 +73,7 @@ namespace LibAtem.MockTests.Util
             //SdkClient = new AtemSdkClientWrapper(bindIp", StateSettings);
 
             Assert.True(connectionEvent.WaitOne(TimeSpan.FromSeconds(3)), "LibAtem: Connection attempt timed out");
+            */
         }
 
         public AtemSdkClientWrapper SelectSdkClient()
@@ -115,9 +117,8 @@ namespace LibAtem.MockTests.Util
 
         public void Dispose()
         {
-            _isDisposing = true;
-            LibAtemClient.Dispose();
-            //SdkClient.Dispose();
+            // _isDisposing = true;
+            // LibAtemClient.Dispose();
             Server.Dispose();
 
             lock (_updatingClients)

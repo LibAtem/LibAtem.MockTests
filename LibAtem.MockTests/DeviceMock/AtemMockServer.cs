@@ -38,6 +38,10 @@ namespace LibAtem.MockTests.DeviceMock
 
         public int ActiveConnectionId { get; set; } = -1;
 
+
+        public delegate void CommandHandler(object sender, IReadOnlyList<byte[]> commands);
+        public event CommandHandler LibReceive;
+
         public AtemMockServer(string bindIp, IReadOnlyList<byte[]> handshake, ProtocolVersion version)
         {
             _handshake = handshake;
@@ -59,6 +63,7 @@ namespace LibAtem.MockTests.DeviceMock
             var allCommands = cmds.ToList();
             allCommands.Add(CreateTimeCommand());
             _connections.SendCommands(allCommands);
+            LibReceive?.Invoke(this, allCommands);
         }
 
         public void Dispose()

@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
-using System.ComponentModel.Design;
 using System.Linq;
 using System.Threading;
 using BMDSwitcherAPI;
@@ -46,7 +45,7 @@ namespace LibAtem.MockTests.Util
             resetEvent.WaitOne(2000); // TODO - monitor result
             SdkClient.OnSdkStateChange -= TmpHandler;
 
-            Helper = new AtemTestHelper(SdkClient, _output, _case.LibAtemClient, /*_case.DeviceProfile,*/ _pool.StateSettings);
+            Helper = new AtemTestHelper(SdkClient, _output, _case.Server, _pool.StateSettings);
         }
 
         public void Dispose()
