@@ -227,7 +227,7 @@ namespace LibAtem.MockTests
 
                     for (int i = 0; i < 5; i++)
                     {
-                        var portTypes = Randomiser.FlagComponents<ExternalPortTypeFlags2>(ExternalPortTypeFlags2.None);
+                        var portTypes = Randomiser.FlagComponents<VideoPortType>(VideoPortType.None);
                         stateBefore.Settings.Inputs[id].Properties.AvailableExternalPortTypes = portTypes;
                         inputCmd.AvailableExternalPorts = portTypes.CombineFlagComponents();
 
@@ -255,14 +255,14 @@ namespace LibAtem.MockTests
 
                     IBMDSwitcherInput input = GetInput(helper, id);
 
-                    List<ExternalPortTypeFlags2> targets = Randomiser.SelectionOfGroup(inputState.Properties.AvailableExternalPortTypes.ToList())
+                    List<VideoPortType> targets = Randomiser.SelectionOfGroup(inputState.Properties.AvailableExternalPortTypes.ToList())
                         .ToList();
 
                     tested = true;
 
-                    foreach (ExternalPortTypeFlags2 value in targets)
+                    foreach (VideoPortType value in targets)
                     {
-                        _BMDSwitcherExternalPortType value2 = AtemEnumMaps.ExternalPortTypeFlags2Map[value];
+                        _BMDSwitcherExternalPortType value2 = AtemEnumMaps.ExternalPortTypeMap[value];
                         inputState.Properties.CurrentExternalPortType = value;
 
                         helper.SendAndWaitForChange(stateBefore, () =>

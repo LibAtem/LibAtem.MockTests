@@ -21,8 +21,7 @@ namespace LibAtem.MockTests.SdkState
         public static readonly IReadOnlyDictionary<SerialMode, _BMDSwitcherSerialPortFunction> SerialModeMap;
         public static readonly IReadOnlyDictionary<MultiViewLayoutV8, _BMDSwitcherMultiViewLayout> MultiViewLayoutMap;
         public static readonly IReadOnlyDictionary<InternalPortType, _BMDSwitcherPortType> InternalPortTypeMap;
-        public static readonly IReadOnlyDictionary<ExternalPortType, _BMDSwitcherExternalPortType> ExternalPortTypeMap;
-        public static readonly IReadOnlyDictionary<ExternalPortTypeFlags2, _BMDSwitcherExternalPortType> ExternalPortTypeFlags2Map;
+        public static readonly IReadOnlyDictionary<VideoPortType, _BMDSwitcherExternalPortType> ExternalPortTypeMap;
         public static readonly IReadOnlyDictionary<AudioPortType, _BMDSwitcherExternalPortType> AudioPortTypeFlagsMap;
         public static readonly IReadOnlyDictionary<SuperSourceArtOption, _BMDSwitcherSuperSourceArtOption> SuperSourceArtOptionMap;
         public static readonly IReadOnlyDictionary<MediaPlayerSource, _BMDSwitcherMediaPlayerSourceType> MediaPlayerSourceMap;
@@ -221,31 +220,15 @@ namespace LibAtem.MockTests.SdkState
 #endif
             };
 
-            ExternalPortTypeMap = new Dictionary<ExternalPortType, _BMDSwitcherExternalPortType>
-            {
-                {ExternalPortType.Internal, _BMDSwitcherExternalPortType.bmdSwitcherExternalPortTypeInternal},
-                {ExternalPortType.SDI, _BMDSwitcherExternalPortType.bmdSwitcherExternalPortTypeSDI},
-                {ExternalPortType.HDMI, _BMDSwitcherExternalPortType.bmdSwitcherExternalPortTypeHDMI},
-                {ExternalPortType.Composite, _BMDSwitcherExternalPortType.bmdSwitcherExternalPortTypeComposite},
-                {ExternalPortType.Component, _BMDSwitcherExternalPortType.bmdSwitcherExternalPortTypeComponent},
-                {ExternalPortType.SVideo, _BMDSwitcherExternalPortType.bmdSwitcherExternalPortTypeSVideo},
-
-                {ExternalPortType.XLR, _BMDSwitcherExternalPortType.bmdSwitcherExternalPortTypeXLR},
-                {ExternalPortType.AESEBU, _BMDSwitcherExternalPortType.bmdSwitcherExternalPortTypeAESEBU},
-                {ExternalPortType.RCA, _BMDSwitcherExternalPortType.bmdSwitcherExternalPortTypeRCA},
-                {ExternalPortType.TSJack, _BMDSwitcherExternalPortType.bmdSwitcherExternalPortTypeTSJack},
-                {ExternalPortType.MADI, _BMDSwitcherExternalPortType.bmdSwitcherExternalPortTypeMADI},
-                {ExternalPortType.TRS, _BMDSwitcherExternalPortType.bmdSwitcherExternalPortTypeTRS},
-            };
-            ExternalPortTypeFlags2Map = new Dictionary<ExternalPortTypeFlags2, _BMDSwitcherExternalPortType>
+            ExternalPortTypeMap = new Dictionary<VideoPortType, _BMDSwitcherExternalPortType>
             {
                 // TODO - limited test
-                {ExternalPortTypeFlags2.Internal, _BMDSwitcherExternalPortType.bmdSwitcherExternalPortTypeInternal},
-                {ExternalPortTypeFlags2.SDI, _BMDSwitcherExternalPortType.bmdSwitcherExternalPortTypeSDI},
-                {ExternalPortTypeFlags2.HDMI, _BMDSwitcherExternalPortType.bmdSwitcherExternalPortTypeHDMI},
-                {ExternalPortTypeFlags2.Composite, _BMDSwitcherExternalPortType.bmdSwitcherExternalPortTypeComposite},
-                {ExternalPortTypeFlags2.Component, _BMDSwitcherExternalPortType.bmdSwitcherExternalPortTypeComponent},
-                {ExternalPortTypeFlags2.SVideo, _BMDSwitcherExternalPortType.bmdSwitcherExternalPortTypeSVideo},
+                {VideoPortType.Internal, _BMDSwitcherExternalPortType.bmdSwitcherExternalPortTypeInternal},
+                {VideoPortType.SDI, _BMDSwitcherExternalPortType.bmdSwitcherExternalPortTypeSDI},
+                {VideoPortType.HDMI, _BMDSwitcherExternalPortType.bmdSwitcherExternalPortTypeHDMI},
+                {VideoPortType.Composite, _BMDSwitcherExternalPortType.bmdSwitcherExternalPortTypeComposite},
+                {VideoPortType.Component, _BMDSwitcherExternalPortType.bmdSwitcherExternalPortTypeComponent},
+                {VideoPortType.SVideo, _BMDSwitcherExternalPortType.bmdSwitcherExternalPortTypeSVideo},
             };
             AudioPortTypeFlagsMap = new Dictionary<AudioPortType, _BMDSwitcherExternalPortType>
             {

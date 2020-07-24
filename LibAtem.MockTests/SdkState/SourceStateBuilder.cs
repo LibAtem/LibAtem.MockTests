@@ -52,9 +52,9 @@ namespace LibAtem.MockTests.SdkState
             props.IsPreviewTallied(out int prevTally);
             state.Tally.PreviewTally = prevTally != 0;
             props.GetAvailableExternalPortTypes(out _BMDSwitcherExternalPortType types);
-            state.Properties.AvailableExternalPortTypes = AtemEnumMaps.ExternalPortTypeFlags2Map.FindFlagsComponentsByValue(types);
+            state.Properties.AvailableExternalPortTypes = AtemEnumMaps.ExternalPortTypeMap.FindFlagsComponentsByValue(types);
             props.GetCurrentExternalPortType(out _BMDSwitcherExternalPortType value);
-            state.Properties.CurrentExternalPortType = AtemEnumMaps.ExternalPortTypeFlags2Map.FindByValue(value);
+            state.Properties.CurrentExternalPortType = AtemEnumMaps.ExternalPortTypeMap.FindByValue(value);
             props.GetPortType(out _BMDSwitcherPortType internalType);
             state.Properties.InternalPortType = AtemEnumMaps.InternalPortTypeMap.FindByValue(internalType);
 
