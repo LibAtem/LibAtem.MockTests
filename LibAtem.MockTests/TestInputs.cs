@@ -262,7 +262,7 @@ namespace LibAtem.MockTests
 
                     foreach (VideoPortType value in targets)
                     {
-                        _BMDSwitcherExternalPortType value2 = AtemEnumMaps.ExternalPortTypeMap[value];
+                        _BMDSwitcherExternalPortType value2 = AtemEnumMaps.VideoPortTypeMap[value];
                         inputState.Properties.CurrentExternalPortType = value;
 
                         helper.SendAndWaitForChange(stateBefore, () =>
