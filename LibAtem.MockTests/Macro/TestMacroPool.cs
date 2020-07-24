@@ -107,7 +107,7 @@ namespace LibAtem.MockTests.Macro
                     Assert.True(uploadCb.Wait.WaitOne(500));
                     Assert.Equal(_BMDSwitcherMacroPoolEventType.bmdSwitcherMacroPoolEventTypeTransferCompleted,
                         uploadCb.Result);
-                    Assert.Equal(BitConverter.ToString(combined), BitConverter.ToString(worker.Buffer.ToArray()));
+                    Assert.Equal(BitConverter.ToString(combined), BitConverter.ToString(worker.Buffer));
 
                     helper.Helper.CheckStateChanges(stateBefore);
                 }

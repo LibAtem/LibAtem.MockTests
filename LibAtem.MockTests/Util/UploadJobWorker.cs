@@ -27,10 +27,11 @@ namespace LibAtem.MockTests.Util
         private uint _transferId;
         private DataTransferFileDescriptionCommand _description;
         private uint _targetBytes;
+        private uint _usedBytes;
         private uint _pendingAck;
         private bool _isComplete;
 
-        public List<byte> Buffer { get; } = new List<byte>();
+        public byte[] Buffer { get; }
 
         public UploadJobWorker(uint targetBytes, ITestOutputHelper output, uint bank, uint index, DataTransferUploadRequestCommand.TransferMode expectedMode, bool decodeRLE = true)
         {
@@ -40,6 +41,9 @@ namespace LibAtem.MockTests.Util
             _index = index;
             _expectedMode = expectedMode;
             _decodeRle = decodeRLE;
+
+            Buffer = new byte[(int) _targetBytes];
+            _usedBytes = 0;
         }
 
         public virtual IEnumerable<ICommand> HandleCommand(Lazy<ImmutableList<ICommand>> previousCommands, ICommand cmd)
@@ -88,7 +92,7 @@ namespace LibAtem.MockTests.Util
                 Assert.Equal(_transferId, descCmd.TransferId);
                 _description = descCmd;
 
-                if (Buffer.Count >= _targetBytes)
+                if (_usedBytes >= _targetBytes)
                 {
                     _isComplete = true;
 
@@ -110,7 +114,8 @@ namespace LibAtem.MockTests.Util
                 Tuple<int, byte[]> decoded = _decodeRle
                     ? FrameEncodingUtil.DecodeRLESegment(_targetBytes, dataCmd.Body)
                     : Tuple.Create(dataCmd.Body.Length, dataCmd.Body);
-                Buffer.AddRange(decoded.Item2.Take(decoded.Item1));
+                Array.Copy(decoded.Item2, 0, Buffer, _usedBytes, decoded.Item1);
+                _usedBytes += (uint)decoded.Item1;
 
                 _pendingAck++;
                 if (_pendingAck >= _chunkCount)
@@ -125,9 +130,9 @@ namespace LibAtem.MockTests.Util
                     _pendingAck = 0;
                 }
 
-                // _output.WriteLine($"Now have {Buffer.Count} bytes of {_targetBytes}");
+                // _output.WriteLine($"Now have {_usedBytes} bytes of {_targetBytes}");
 
-                if (Buffer.Count >= _targetBytes && _description != null)
+                if (_usedBytes >= _targetBytes && _description != null)
                 {
                     _isComplete = true;
                     res.AddRange(Complete());

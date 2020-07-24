@@ -36,6 +36,8 @@ namespace LibAtem.MockTests.DeviceMock
         public List<ReceivedPacket> PendingPackets { get; } = new List<ReceivedPacket>();
         public AutoResetEvent HasPendingPackets { get; } = new AutoResetEvent(false);
 
+        public int ActiveConnectionId { get; set; } = -1;
+
         public AtemMockServer(string bindIp, IReadOnlyList<byte[]> handshake, ProtocolVersion version)
         {
             _handshake = handshake;
@@ -160,11 +162,14 @@ namespace LibAtem.MockTests.DeviceMock
                         {
                             conn.OnReceivePacket += (sender, pkt) =>
                             {
-                                lock (PendingPackets)
+                                if (ActiveConnectionId == conn.Id)
                                 {
-                                    // Queue the packets for parsing and processing in the main thread
-                                    PendingPackets.Add(pkt);
-                                    HasPendingPackets.Set();
+                                    lock (PendingPackets)
+                                    {
+                                        // Queue the packets for parsing and processing in the main thread
+                                        PendingPackets.Add(pkt);
+                                        HasPendingPackets.Set();
+                                    }
                                 }
                             };
                             var recvThread = new Thread(o =>

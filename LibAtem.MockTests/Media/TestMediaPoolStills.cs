@@ -72,7 +72,7 @@ namespace LibAtem.MockTests.Media
             {
                 ImmutableList<ICommand> previousCommands = helper.Server.GetParsedDataDump();
 
-                for (int i = 0; i < 10; i++)
+                for (int i = 0; i < 5; i++)
                 {
                     AtemState stateBefore = helper.Helper.BuildLibState();
 
@@ -138,7 +138,7 @@ namespace LibAtem.MockTests.Media
             {
                 ImmutableList<ICommand> previousCommands = helper.Server.GetParsedDataDump();
 
-                for (int i = 0; i < 10; i++)
+                for (int i = 0; i < 5; i++)
                 {
                     AtemState stateBefore = helper.Helper.BuildLibState();
 
@@ -160,7 +160,7 @@ namespace LibAtem.MockTests.Media
             {
                 IBMDSwitcherStills stills = GetStillsPool(helper);
 
-                for (int i = 0; i < 10; i++)
+                for (int i = 0; i < 5; i++)
                 {
                     AtemState stateBefore = helper.Helper.BuildLibState();
 
@@ -264,6 +264,8 @@ namespace LibAtem.MockTests.Media
             UploadJobWorker worker = null;
             AtemMockServerWrapper.Each(_output, _pool, (a, b) => worker?.HandleCommand(a, b), DeviceTestCases.MediaPlayer, helper =>
             {
+                helper.DisposeSdkClient = true;
+
                 IBMDSwitcherMediaPool pool = GetMediaPool(helper);
                 IBMDSwitcherStills stills = GetStillsPool(helper);
 
@@ -299,7 +301,7 @@ namespace LibAtem.MockTests.Media
                     Assert.True(uploadCb.Wait.WaitOne(500));
                     Assert.Equal(_BMDSwitcherMediaPoolEventType.bmdSwitcherMediaPoolEventTypeTransferCompleted,
                         uploadCb.Result);
-                    Assert.Equal(BitConverter.ToString(bytes), BitConverter.ToString(worker.Buffer.ToArray()));
+                    Assert.Equal(BitConverter.ToString(bytes), BitConverter.ToString(worker.Buffer));
 
                     helper.SendAndWaitForChange(stateBefore, () =>
                     {
@@ -330,6 +332,8 @@ namespace LibAtem.MockTests.Media
             AbortedUploadJobWorker worker = null;
             AtemMockServerWrapper.Each(_output, _pool, (a, b) => worker?.HandleCommand(a, b), DeviceTestCases.MediaPlayerStillTransfer, helper =>
             {
+                helper.DisposeSdkClient = true;
+
                 IBMDSwitcherMediaPool pool = GetMediaPool(helper);
                 IBMDSwitcherStills stills = GetStillsPool(helper);
 
@@ -398,6 +402,8 @@ namespace LibAtem.MockTests.Media
             DownloadJobWorker worker = null;
             AtemMockServerWrapper.Each(_output, _pool, (a, b) => worker?.HandleCommand(a, b), DeviceTestCases.MediaPlayerStillTransfer, helper =>
             {
+                helper.DisposeSdkClient = true;
+
                 IBMDSwitcherStills stills = GetStillsPool(helper);
 
                 for (int i = 0; i < iterations; i++)

@@ -37,6 +37,7 @@ namespace LibAtem.MockTests.Util
 
             _case = _pool.GetCase(caseId);
             SdkClient = _case.SelectSdkClient();
+            Server.ActiveConnectionId = SdkClient.Id;
 
             var resetEvent = new ManualResetEvent(false);
             void TmpHandler(object o) => resetEvent.Set();
@@ -53,7 +54,18 @@ namespace LibAtem.MockTests.Util
             Helper.Dispose();
             _case.ResetSdkClient(SdkClient, DisposeSdkClient);
             lock (Server.PendingPackets)
-                Assert.Empty(Server.PendingPackets);
+            {
+                if (DisposeSdkClient)
+                {
+                    Server.PendingPackets.Clear();
+                }
+                else
+                {
+                    Assert.Empty(Server.PendingPackets);
+                }
+            }
+
+            Server.ActiveConnectionId = -1;
         }
 
         public static void Each(ITestOutputHelper output, AtemServerClientPool pool, Func<Lazy<ImmutableList<ICommand>>, ICommand, IEnumerable<ICommand>> handler, string[] cases, Action<AtemMockServerWrapper> runner)

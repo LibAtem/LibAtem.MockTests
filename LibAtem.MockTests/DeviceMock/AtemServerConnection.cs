@@ -10,13 +10,16 @@ namespace LibAtem.MockTests.DeviceMock
 {
     public class AtemServerConnection : AtemConnection
     {
+        public int Id { get; }
+
         private readonly ProtocolVersion _version;
         private readonly List<byte[]> _commandQueue;
 
         public override ProtocolVersion? ConnectionVersion => _version;
 
-        public AtemServerConnection(EndPoint endpoint, int sessionId, ProtocolVersion version) : base(endpoint, sessionId)
+        public AtemServerConnection(EndPoint endpoint, int sessionId, ProtocolVersion version, int id) : base(endpoint, sessionId)
         {
+            Id = id;
             _version = version;
             _commandQueue = new List<byte[]>();
         }

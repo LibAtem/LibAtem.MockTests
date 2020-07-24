@@ -355,7 +355,7 @@ namespace LibAtem.MockTests.Media
                     byte[] flippedBytes = pidCmd.Model >= ModelId.PS4K
                         ? MediaPoolUtil.FlipAudio(bytes)
                         : bytes;
-                    Assert.Equal(BitConverter.ToString(flippedBytes), BitConverter.ToString(worker.Buffer.ToArray()));
+                    Assert.Equal(BitConverter.ToString(flippedBytes), BitConverter.ToString(worker.Buffer));
 
                     helper.SendAndWaitForChange(stateBefore, () =>
                     {
@@ -562,7 +562,7 @@ namespace LibAtem.MockTests.Media
                     Assert.True(uploadCb.Wait.WaitOne(500));
                     Assert.Equal(_BMDSwitcherMediaPoolEventType.bmdSwitcherMediaPoolEventTypeTransferCompleted,
                         uploadCb.Result);
-                    Assert.Equal(BitConverter.ToString(bytes), BitConverter.ToString(worker.Buffer.ToArray()));
+                    Assert.Equal(BitConverter.ToString(bytes), BitConverter.ToString(worker.Buffer));
 
                     helper.SendAndWaitForChange(stateBefore, () =>
                     {

@@ -15,7 +15,7 @@ namespace LibAtem.MockTests.DeviceMock
         private readonly Dictionary<EndPoint, AtemServerConnection> connections;
 
         public List<AtemServerConnection> OrderedConnections { get; }
-
+        
         public AtemConnectionList()
         {
             connections = new Dictionary<EndPoint, AtemServerConnection>();
@@ -43,7 +43,7 @@ namespace LibAtem.MockTests.DeviceMock
                     return val;
                 }
                 
-                val = new AtemServerConnection(ep, 0x8008, version);
+                val = new AtemServerConnection(ep, 0x8008, version, OrderedConnections.Count);
                 connections[ep] = val;
                 OrderedConnections.Add(val);
                 val.OnDisconnect += RemoveTimedOut;
