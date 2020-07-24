@@ -27,6 +27,8 @@ namespace LibAtem.MockTests.Util
         public AtemSdkClientWrapper SdkClient { get; }
         public AtemTestHelper Helper { get; }
 
+        public bool DisposeSdkClient { get; set; }
+
         public AtemMockServerWrapper(ITestOutputHelper output, AtemServerClientPool pool, Func<Lazy<ImmutableList<ICommand>>, ICommand, IEnumerable<ICommand>> handler, string caseId)
         {
             _output = output;
@@ -43,13 +45,13 @@ namespace LibAtem.MockTests.Util
             resetEvent.WaitOne(2000); // TODO - monitor result
             SdkClient.OnSdkStateChange -= TmpHandler;
 
-            Helper = new AtemTestHelper(SdkClient, _output, _case.LibAtemClient, _case.DeviceProfile, _pool.StateSettings);
+            Helper = new AtemTestHelper(SdkClient, _output, _case.LibAtemClient, /*_case.DeviceProfile,*/ _pool.StateSettings);
         }
 
         public void Dispose()
         {
             Helper.Dispose();
-            _case.ResetSdkClient(SdkClient);
+            _case.ResetSdkClient(SdkClient, DisposeSdkClient);
             lock (Server.PendingPackets)
                 Assert.Empty(Server.PendingPackets);
         }

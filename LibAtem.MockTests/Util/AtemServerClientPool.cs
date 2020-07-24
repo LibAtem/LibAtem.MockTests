@@ -27,8 +27,8 @@ namespace LibAtem.MockTests.Util
         private readonly List<AtemSdkClientWrapper> _updatingClients;
         private int _nextSdkId;
 
-        public DeviceProfile.DeviceProfile DeviceProfile { get; }
-        public AtemState DefaultState { get; }
+        // public DeviceProfile.DeviceProfile DeviceProfile { get; }
+        // public AtemState DefaultState { get; }
         public AtemMockServer Server { get; }
         public AtemClient LibAtemClient { get; }
 
@@ -44,17 +44,17 @@ namespace LibAtem.MockTests.Util
             _nextSdkId = 1;
 
             List<byte[]> payloads = DumpParser.BuildCommands(DeviceTestCases.Version, caseId);
-            IReadOnlyList<ICommand> commands = DumpParser.ParseToCommands(DeviceTestCases.Version, payloads);
+            // IReadOnlyList<ICommand> commands = DumpParser.ParseToCommands(DeviceTestCases.Version, payloads);
 
             // Build the device profile
-            var deviceProfileBuilder = new DeviceProfile.DeviceProfileHandler();
-            deviceProfileBuilder.HandleCommands(null, commands);
-            DeviceProfile = deviceProfileBuilder.Profile;
+            // var deviceProfileBuilder = new DeviceProfile.DeviceProfileHandler();
+            // deviceProfileBuilder.HandleCommands(null, commands);
+            // DeviceProfile = deviceProfileBuilder.Profile;
 
             // Build a default state
-            var state = new AtemState();
-            commands.ForEach(cmd => AtemStateBuilder.Update(state, cmd, builderSettings));
-            DefaultState = state;
+            // var state = new AtemState();
+            // commands.ForEach(cmd => AtemStateBuilder.Update(state, cmd, builderSettings));
+            // DefaultState = state;
 
             Server = new AtemMockServer(bindIp, payloads, DeviceTestCases.Version);
 
@@ -85,24 +85,32 @@ namespace LibAtem.MockTests.Util
             return new AtemSdkClientWrapper(_bindIp, _builderSettings, _nextSdkId++);
         }
 
-        public void ResetSdkClient(AtemSdkClientWrapper client)
+        public void ResetSdkClient(AtemSdkClientWrapper client, bool dispose)
         {
-            lock (_updatingClients)
-                _updatingClients.Add(client);
-
-            void TmpHandler(object o)
+            if (!dispose)
             {
-                client.OnSdkStateChange -= TmpHandler;
                 lock (_updatingClients)
-                    _updatingClients.Remove(client);
+                    _updatingClients.Add(client);
 
-                lock (_sdkClients)
-                    _sdkClients.Enqueue(client);
+                void TmpHandler(object o)
+                {
+                    client.OnSdkStateChange -= TmpHandler;
+                    lock (_updatingClients)
+                        _updatingClients.Remove(client);
 
+                    lock (_sdkClients)
+                        _sdkClients.Enqueue(client);
+
+                }
+
+                client.OnSdkStateChange += TmpHandler;
+
+                Server.ResetClient(client.Id);
             }
-            client.OnSdkStateChange += TmpHandler;
-
-            Server.ResetClient(client.Id);
+            else
+            {
+                client.Dispose();
+            }
         }
 
         public void Dispose()

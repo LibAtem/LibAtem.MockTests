@@ -22,17 +22,17 @@ namespace LibAtem.MockTests.Util
 
         public bool TestResult { get; set; } = true;
 
-        public DeviceProfile.DeviceProfile Profile { get; }
+        // public DeviceProfile.DeviceProfile Profile { get; }
 
         public delegate void CommandKeyHandler(object sender, string path);
         public event CommandKeyHandler OnLibAtemStateChange;
 
-        public AtemTestHelper(AtemSdkClientWrapper client, ITestOutputHelper output, AtemClient libAtemClient, DeviceProfile.DeviceProfile profile, AtemStateBuilderSettings stateSettings)
+        public AtemTestHelper(AtemSdkClientWrapper client, ITestOutputHelper output, AtemClient libAtemClient, /*DeviceProfile.DeviceProfile profile,*/ AtemStateBuilderSettings stateSettings)
         {
             _libAtemClient = libAtemClient;
             SdkClient = client;
             Output = output;
-            Profile = profile;
+            // Profile = profile;
             StateSettings = stateSettings;
 
             SyncStates();

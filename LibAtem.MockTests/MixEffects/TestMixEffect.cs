@@ -21,13 +21,18 @@ namespace LibAtem.MockTests.MixEffects
         [Fact]
         public void TestProgramInput()
         {
+            var ignorePortTypes = new HashSet<InternalPortType>
+            {
+                InternalPortType.Mask, InternalPortType.Auxiliary, InternalPortType.MEOutput
+            };
             bool tested = false;
             var handler = CommandGenerator.CreateAutoCommandHandler<ProgramInputSetCommand, ProgramInputGetCommand>("Source", true);
             AtemMockServerWrapper.Each(Output, Pool, handler, DeviceTestCases.All, helper =>
             {
-                List<VideoSource> deviceSources = helper.Helper.BuildLibState().Settings.Inputs.Keys.ToList();
-                List<VideoSource> validSources = deviceSources.Where(s =>
-                    s.IsAvailable(helper.Helper.Profile, InternalPortType.Mask | InternalPortType.Auxiliary | InternalPortType.MEOutput)).ToList();
+                // TODO - this could be better and use the availabilitymask
+                List<VideoSource> validSources = helper.Helper.BuildLibState().Settings.Inputs
+                    .Where(s => !ignorePortTypes.Contains(s.Value.Properties.InternalPortType)).Select(s => s.Key)
+                    .ToList();
                 VideoSource[] sampleSources = Randomiser.SelectionOfGroup(validSources).ToArray();
 
                 EachMixEffect<IBMDSwitcherMixEffectBlock>(helper, (stateBefore, meBefore, sdk, meId, i) =>
@@ -47,13 +52,18 @@ namespace LibAtem.MockTests.MixEffects
         [Fact]
         public void TestPreviewInput()
         {
+            var ignorePortTypes = new HashSet<InternalPortType>
+            {
+                InternalPortType.Mask, InternalPortType.Auxiliary, InternalPortType.MEOutput
+            };
             bool tested = false;
             var handler = CommandGenerator.CreateAutoCommandHandler<PreviewInputSetCommand, PreviewInputGetCommand>("Source", true);
             AtemMockServerWrapper.Each(Output, Pool, handler, DeviceTestCases.All, helper =>
             {
-                List<VideoSource> deviceSources = helper.Helper.BuildLibState().Settings.Inputs.Keys.ToList();
-                List<VideoSource> validSources = deviceSources.Where(s =>
-                    s.IsAvailable(helper.Helper.Profile, InternalPortType.Mask | InternalPortType.Auxiliary | InternalPortType.MEOutput)).ToList();
+                // TODO - this could be better and use the availabilitymask
+                List<VideoSource> validSources = helper.Helper.BuildLibState().Settings.Inputs
+                    .Where(s => !ignorePortTypes.Contains(s.Value.Properties.InternalPortType)).Select(s => s.Key)
+                    .ToList();
                 VideoSource[] sampleSources = Randomiser.SelectionOfGroup(validSources).ToArray();
 
                 EachMixEffect<IBMDSwitcherMixEffectBlock>(helper, (stateBefore, meBefore, sdk, meId, i) =>
