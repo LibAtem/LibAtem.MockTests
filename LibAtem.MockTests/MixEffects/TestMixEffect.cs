@@ -79,7 +79,7 @@ namespace LibAtem.MockTests.MixEffects
                 {
                     tested = true;
 
-                    meBefore.Transition.Properties.Preview = i % 2 != 0;
+                    meBefore.Transition.Properties.PreviewTransition = i % 2 != 0;
                     helper.SendAndWaitForChange(stateBefore, () => { sdk.SetPreviewTransition(i % 2); });
                 });
             });

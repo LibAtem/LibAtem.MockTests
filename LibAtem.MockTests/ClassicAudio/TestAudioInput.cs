@@ -320,40 +320,6 @@ namespace LibAtem.MockTests.ClassicAudio
             Assert.True(tested);
         }
 
-        /*
-         TODO - this doesnt work somehow
-        [Fact]
-        public void TestSupportsRcaToXlr()
-        {
-            bool tested = false;
-            AtemMockServerWrapper.Each(_output, _pool, null, DeviceTestCases.ClassicAudioMain, helper =>
-            {
-                ImmutableList<ICommand> previousCommands = helper.Server.GetParsedDataDump();
-                IEnumerable<long> useIds = helper.Helper.BuildLibState().Audio.Inputs.Keys.ToList();
-                foreach (long id in useIds)
-                {
-                    tested = true;
-
-                    AtemState stateBefore = helper.Helper.BuildLibState();
-                    AudioState.InputState inputState = stateBefore.Audio.Inputs[id];
-
-                    var inputCmd = previousCommands.OfType<AudioMixerInputGetV8Command>()
-                        .Single(c => c.Index == (AudioSource) id);
-
-                    for (int i = 0; i < 5; i++)
-                    {
-                        bool newValue = i % 2 == 0;
-                        inputCmd.SupportsRcaToXlrEnabled = newValue;
-                        //inputState.Analog = newValue ? new AudioState.InputState.AnalogState() : null;
-
-                        helper.SendAndWaitForChange(null, () => { helper.Server.SendCommands(inputCmd); });
-                    }
-                }
-            });
-            Assert.True(tested);
-        }
-        */
-
         [Fact]
         public void TestRcaToXlr()
         {

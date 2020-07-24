@@ -87,6 +87,27 @@ namespace LibAtem.MockTests.ClassicAudio
             });
         }
 
+        [Fact]
+        public void TestAudioFollowVideoCrossfadeTransition()
+        {
+            var handler =
+                CommandGenerator.CreateAutoCommandHandler<AudioMixerPropertiesSetCommand, AudioMixerPropertiesGetCommand>(
+                    "AudioFollowVideo");
+            AtemMockServerWrapper.Each(_output, _pool, handler, DeviceTestCases.ClassicAudioMain, helper =>
+            {
+                IBMDSwitcherAudioMixer mixer = GetAudioMixer(helper);
+                AtemState stateBefore = helper.Helper.BuildLibState();
+
+                for (int i = 0; i < 5; i++)
+                {
+                    int target = i % 2;
+                    stateBefore.Audio.ProgramOut.AudioFollowVideoCrossfadeTransitionEnabled = target != 0;
+                    helper.SendAndWaitForChange(stateBefore,
+                        () => { mixer.SetAudioFollowVideoCrossfadeTransition(target); });
+                }
+            });
+        }
+
         // TODO GetAudioFollowVideoCrossfadeTransition
 
 

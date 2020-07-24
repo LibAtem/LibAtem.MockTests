@@ -17,6 +17,8 @@ namespace LibAtem.MockTests.SdkState
             state.ProgramOut.Balance = balance * 50;
             props.GetProgramOutFollowFadeToBlack(out int follow);
             state.ProgramOut.FollowFadeToBlack = follow != 0;
+            props.GetAudioFollowVideoCrossfadeTransition(out int followTransition);
+            state.ProgramOut.AudioFollowVideoCrossfadeTransitionEnabled = followTransition != 0;
 
             state.Tally = new Dictionary<AudioSource, bool>();
 

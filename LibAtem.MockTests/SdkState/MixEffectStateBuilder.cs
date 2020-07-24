@@ -51,9 +51,9 @@ namespace LibAtem.MockTests.SdkState
                 BuildTransition(state.Transition, trans);
 
                 props.GetPreviewTransition(out int previewTrans);
-                state.Transition.Properties.Preview = previewTrans != 0;
-                props.GetPreviewLive(out int previewLive);
-                state.Transition.Properties.IsInPreview = previewLive != 0;
+                state.Transition.Properties.PreviewTransition = previewTrans != 0;
+                // props.GetPreviewLive(out int previewLive);
+                // state.Transition.Properties.IsPreviewInProgram = previewLive != 0;
 
                 props.GetTransitionPosition(out double position);
                 state.Transition.Position.HandlePosition = position;

@@ -65,6 +65,21 @@ namespace LibAtem.MockTests.MixEffects
             return result;
         }
 
+        protected static void EachKeyers<T>(AtemMockServerWrapper helper, Action<AtemState, MixEffectState.KeyerState, T, MixEffectBlockId, UpstreamKeyId, int> fcn, int iterations = 5) where T : class
+        {
+            var keyers = GetKeyers<T>(helper);
+            foreach (Tuple<MixEffectBlockId, UpstreamKeyId, T> keyer in keyers)
+            {
+                AtemState stateBefore = helper.Helper.BuildLibState();
+                MixEffectState.KeyerState keyerBefore = stateBefore.MixEffects[(int)keyer.Item1].Keyers[(int)keyer.Item2];
+
+                for (int i = 0; i < iterations; i++)
+                {
+                    fcn(stateBefore, keyerBefore, keyer.Item3, keyer.Item1, keyer.Item2, i);
+                }
+            }
+        }
+
         protected static void SelectionOfKeyers<T>(AtemMockServerWrapper helper, Action<AtemState, MixEffectState.KeyerState, T, MixEffectBlockId, UpstreamKeyId, int> fcn, int iterations = 5) where T : class
         {
             var keyers = GetKeyers<T>(helper);

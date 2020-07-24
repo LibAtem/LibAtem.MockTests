@@ -18,9 +18,25 @@ namespace LibAtem.MockTests.MixEffects
         {
         }
 
-        // TODO DoesSupportAdvancedChroma
         // TODO CanBeDVEKey
-        // TODO GetTransitionSelectionMask
+
+        [Fact]
+        public void TestGetTransitionSelectionMask()
+        {
+            bool tested = false;
+            var handler = CommandGenerator.CreateAutoCommandHandler<MixEffectKeyTypeSetCommand, MixEffectKeyPropertiesGetCommand>("KeyType");
+            AtemMockServerWrapper.Each(Output, Pool, handler, DeviceTestCases.All, helper =>
+            {
+                EachKeyers<IBMDSwitcherKey>(helper, (stateBefore, keyerBefore, sdkKeyer, meId, keyId, i) =>
+                {
+                    tested = true;
+
+                    sdkKeyer.GetTransitionSelectionMask(out _BMDSwitcherTransitionSelection mask);
+                    Assert.Equal(1 << ((int) keyId + 1), (int) mask);
+                });
+            });
+            Assert.True(tested);
+        }
 
         [Fact]
         public void TestKeyType()
