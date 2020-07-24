@@ -259,13 +259,7 @@ namespace LibAtem.MockTests.MixEffects
 
                         expectedCmd.MixEffectIndex = meId;
                         expectedCmd.KeyerIndex = keyId;
-
-                        keyerBefore.DVE.SizeX = expectedCmd.SizeX;
-                        keyerBefore.DVE.SizeY = expectedCmd.SizeY;
-                        keyerBefore.DVE.PositionX = expectedCmd.PositionX;
-                        keyerBefore.DVE.PositionY = expectedCmd.PositionY;
-                        keyerBefore.DVE.Rotation = expectedCmd.Rotation;
-
+                        
                         helper.SendAndWaitForChange(stateBefore, () => { sdkKeyer.ResetDVE(); });
                     }
                 });
@@ -300,13 +294,7 @@ namespace LibAtem.MockTests.MixEffects
 
                         expectedCmd.MixEffectIndex = meId;
                         expectedCmd.KeyerIndex = keyId;
-
-                        keyerBefore.DVE.SizeX = expectedCmd.SizeX;
-                        keyerBefore.DVE.SizeY = expectedCmd.SizeY;
-                        keyerBefore.DVE.PositionX = expectedCmd.PositionX;
-                        keyerBefore.DVE.PositionY = expectedCmd.PositionY;
-                        keyerBefore.DVE.Rotation = expectedCmd.Rotation;
-
+                        
                         helper.SendAndWaitForChange(stateBefore, () => { sdkKeyer.ResetDVEFull(); });
                     }
                 });

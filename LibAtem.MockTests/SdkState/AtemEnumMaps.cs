@@ -21,8 +21,8 @@ namespace LibAtem.MockTests.SdkState
         public static readonly IReadOnlyDictionary<SerialMode, _BMDSwitcherSerialPortFunction> SerialModeMap;
         public static readonly IReadOnlyDictionary<MultiViewLayoutV8, _BMDSwitcherMultiViewLayout> MultiViewLayoutMap;
         public static readonly IReadOnlyDictionary<InternalPortType, _BMDSwitcherPortType> InternalPortTypeMap;
-        public static readonly IReadOnlyDictionary<VideoPortType, _BMDSwitcherExternalPortType> ExternalPortTypeMap;
-        public static readonly IReadOnlyDictionary<AudioPortType, _BMDSwitcherExternalPortType> AudioPortTypeFlagsMap;
+        public static readonly IReadOnlyDictionary<VideoPortType, _BMDSwitcherExternalPortType> VideoPortTypeMap;
+        public static readonly IReadOnlyDictionary<AudioPortType, _BMDSwitcherExternalPortType> AudioPortTypeMap;
         public static readonly IReadOnlyDictionary<SuperSourceArtOption, _BMDSwitcherSuperSourceArtOption> SuperSourceArtOptionMap;
         public static readonly IReadOnlyDictionary<MediaPlayerSource, _BMDSwitcherMediaPlayerSourceType> MediaPlayerSourceMap;
         public static readonly IReadOnlyDictionary<AudioMixOption, _BMDSwitcherAudioMixOption> AudioMixOptionMap;
@@ -220,7 +220,7 @@ namespace LibAtem.MockTests.SdkState
 #endif
             };
 
-            ExternalPortTypeMap = new Dictionary<VideoPortType, _BMDSwitcherExternalPortType>
+            VideoPortTypeMap = new Dictionary<VideoPortType, _BMDSwitcherExternalPortType>
             {
                 // TODO - limited test
                 {VideoPortType.Internal, _BMDSwitcherExternalPortType.bmdSwitcherExternalPortTypeInternal},
@@ -230,7 +230,7 @@ namespace LibAtem.MockTests.SdkState
                 {VideoPortType.Component, _BMDSwitcherExternalPortType.bmdSwitcherExternalPortTypeComponent},
                 {VideoPortType.SVideo, _BMDSwitcherExternalPortType.bmdSwitcherExternalPortTypeSVideo},
             };
-            AudioPortTypeFlagsMap = new Dictionary<AudioPortType, _BMDSwitcherExternalPortType>
+            AudioPortTypeMap = new Dictionary<AudioPortType, _BMDSwitcherExternalPortType>
             {
                 // TODO - limited test
                 {AudioPortType.SDI, _BMDSwitcherExternalPortType.bmdSwitcherExternalPortTypeSDI},

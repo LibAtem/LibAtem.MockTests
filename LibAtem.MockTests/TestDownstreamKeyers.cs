@@ -294,7 +294,7 @@ namespace LibAtem.MockTests
         public void TestAuto()
         {
             var expected = new DownstreamKeyAutoV8Command();
-            var handler = CommandGenerator.MatchCommand(expected);
+            var handler = CommandGenerator.MatchCommand(expected, true);
             AtemMockServerWrapper.Each(_output, _pool, handler, DeviceTestCases.All, helper =>
             {
                 EachKeyer(helper, (stateBefore, state, props, id, i) =>

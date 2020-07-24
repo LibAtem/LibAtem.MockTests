@@ -91,8 +91,14 @@ namespace LibAtem.MockTests
         [Fact]
         public void EnsureInternalPortMapIsComplete() => EnumMap.EnsureIsComplete(AtemEnumMaps.InternalPortTypeMap);
 
+        /*
         [Fact]
-        public void EnsureExternalPortMapIsComplete() => EnumMap.EnsureIsComplete(AtemEnumMaps.ExternalPortTypeMap);
+        public void EnsureVideoAndAudioPortTypeMapsAreComplete()
+        {
+
+            EnumMap.EnsureIsComplete(AtemEnumMaps.VideoPortTypeMap);
+        }
+        */
 
         [Fact]
         public void EnsureSuperSourceArtOptionMapIsComplete() => EnumMap.EnsureIsComplete(AtemEnumMaps.SuperSourceArtOptionMap);

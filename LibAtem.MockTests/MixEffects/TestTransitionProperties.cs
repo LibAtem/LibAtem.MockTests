@@ -1,4 +1,5 @@
-﻿using BMDSwitcherAPI;
+﻿using System.Collections.Generic;
+using BMDSwitcherAPI;
 using LibAtem.Commands.MixEffects.Transition;
 using LibAtem.Common;
 using LibAtem.MockTests.Util;
@@ -26,7 +27,13 @@ namespace LibAtem.MockTests.MixEffects
                 {
                     tested = true;
 
-                    TransitionStyle target = Randomiser.EnumValue<TransitionStyle>();
+                    var omitStyles = new List<TransitionStyle>();
+                    if (stateBefore.Info.DVE == null)
+                        omitStyles.Add(TransitionStyle.DVE);
+                    if (stateBefore.MediaPool.Clips.Count == 0)
+                        omitStyles.Add(TransitionStyle.Stinger);
+
+                    TransitionStyle target = Randomiser.EnumValue(omitStyles.ToArray());
                     _BMDSwitcherTransitionStyle target2 = AtemEnumMaps.TransitionStyleMap[target];
                     meBefore.Transition.Properties.NextStyle = target;
                     helper.SendAndWaitForChange(stateBefore, () => { sdk.SetNextTransitionStyle(target2); });
