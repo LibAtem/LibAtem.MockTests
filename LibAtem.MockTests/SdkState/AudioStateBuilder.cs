@@ -55,7 +55,7 @@ namespace LibAtem.MockTests.SdkState
             state.Properties.SourceType = AtemEnumMaps.AudioSourceTypeMap.FindByValue(type);
 
             props.GetCurrentExternalPortType(out _BMDSwitcherExternalPortType externalType);
-            state.Properties.PortType = ((ExternalPortTypeFlags)externalType).ToAudioPortType();
+            state.Properties.PortType = AtemEnumMaps.AudioPortTypeFlagsMap.FindByValue(externalType);
             props.GetMixOption(out _BMDSwitcherAudioMixOption mixOption);
             state.Properties.MixOption = AtemEnumMaps.AudioMixOptionMap.FindByValue(mixOption);
             props.GetGain(out double gain);

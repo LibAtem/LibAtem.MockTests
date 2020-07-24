@@ -14,7 +14,7 @@ namespace LibAtem.MockTests.SdkState
 
             // Input basics
             props.GetCurrentExternalPortType(out _BMDSwitcherExternalPortType portType);
-            state.ExternalPortType = AtemEnumMaps.ExternalPortTypeMap.FindByValue(portType);
+            state.ExternalPortType = AtemEnumMaps.AudioPortTypeFlagsMap.FindByValue(portType);
             props.GetConfiguration(out _BMDSwitcherFairlightAudioInputConfiguration configuration);
             state.ActiveConfiguration = AtemEnumMaps.FairlightInputConfigurationMap.FindByValue(configuration);
             props.GetSupportedConfigurations(out _BMDSwitcherFairlightAudioInputConfiguration supportedConfigurations);

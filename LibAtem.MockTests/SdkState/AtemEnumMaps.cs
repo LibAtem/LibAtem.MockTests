@@ -23,6 +23,7 @@ namespace LibAtem.MockTests.SdkState
         public static readonly IReadOnlyDictionary<InternalPortType, _BMDSwitcherPortType> InternalPortTypeMap;
         public static readonly IReadOnlyDictionary<ExternalPortType, _BMDSwitcherExternalPortType> ExternalPortTypeMap;
         public static readonly IReadOnlyDictionary<ExternalPortTypeFlags2, _BMDSwitcherExternalPortType> ExternalPortTypeFlags2Map;
+        public static readonly IReadOnlyDictionary<AudioPortType, _BMDSwitcherExternalPortType> AudioPortTypeFlagsMap;
         public static readonly IReadOnlyDictionary<SuperSourceArtOption, _BMDSwitcherSuperSourceArtOption> SuperSourceArtOptionMap;
         public static readonly IReadOnlyDictionary<MediaPlayerSource, _BMDSwitcherMediaPlayerSourceType> MediaPlayerSourceMap;
         public static readonly IReadOnlyDictionary<AudioMixOption, _BMDSwitcherAudioMixOption> AudioMixOptionMap;
@@ -238,12 +239,26 @@ namespace LibAtem.MockTests.SdkState
             };
             ExternalPortTypeFlags2Map = new Dictionary<ExternalPortTypeFlags2, _BMDSwitcherExternalPortType>
             {
+                // TODO - limited test
                 {ExternalPortTypeFlags2.Internal, _BMDSwitcherExternalPortType.bmdSwitcherExternalPortTypeInternal},
                 {ExternalPortTypeFlags2.SDI, _BMDSwitcherExternalPortType.bmdSwitcherExternalPortTypeSDI},
                 {ExternalPortTypeFlags2.HDMI, _BMDSwitcherExternalPortType.bmdSwitcherExternalPortTypeHDMI},
                 {ExternalPortTypeFlags2.Composite, _BMDSwitcherExternalPortType.bmdSwitcherExternalPortTypeComposite},
                 {ExternalPortTypeFlags2.Component, _BMDSwitcherExternalPortType.bmdSwitcherExternalPortTypeComponent},
                 {ExternalPortTypeFlags2.SVideo, _BMDSwitcherExternalPortType.bmdSwitcherExternalPortTypeSVideo},
+            };
+            AudioPortTypeFlagsMap = new Dictionary<AudioPortType, _BMDSwitcherExternalPortType>
+            {
+                // TODO - limited test
+                {AudioPortType.SDI, _BMDSwitcherExternalPortType.bmdSwitcherExternalPortTypeSDI},
+                {AudioPortType.HDMI, _BMDSwitcherExternalPortType.bmdSwitcherExternalPortTypeHDMI},
+                {AudioPortType.XLR, _BMDSwitcherExternalPortType.bmdSwitcherExternalPortTypeXLR},
+                {AudioPortType.AESEBU, _BMDSwitcherExternalPortType.bmdSwitcherExternalPortTypeAESEBU},
+                {AudioPortType.RCA, _BMDSwitcherExternalPortType.bmdSwitcherExternalPortTypeRCA},
+                {AudioPortType.Internal, _BMDSwitcherExternalPortType.bmdSwitcherExternalPortTypeInternal},
+                {AudioPortType.TSJack, _BMDSwitcherExternalPortType.bmdSwitcherExternalPortTypeTSJack},
+                {AudioPortType.MADI, _BMDSwitcherExternalPortType.bmdSwitcherExternalPortTypeMADI},
+                {AudioPortType.TRSJack, _BMDSwitcherExternalPortType.bmdSwitcherExternalPortTypeTRS},
             };
 
             SuperSourceArtOptionMap = new Dictionary<SuperSourceArtOption, _BMDSwitcherSuperSourceArtOption>
