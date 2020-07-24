@@ -88,13 +88,19 @@ namespace LibAtem.MockTests.Util
         {
             for (int i = 0; i < 5; i++)
             {
-                yield return new DataTransferDataCommand
+                long size = Math.Min(_chunkSize, _bytes.Length - _offset);
+                if (size > 0)
                 {
-                    TransferId = _transferId,
-                    Body = _bytes.Skip((int) _offset).Take((int) _chunkSize).ToArray()
-                };
-                _offset += _chunkSize;
-                _pendingAck += 1;
+                    byte[] body = new byte[size];
+                    Array.Copy(_bytes, (int) _offset, body, 0, (int) size);
+                    yield return new DataTransferDataCommand
+                    {
+                        TransferId = _transferId,
+                        Body = body
+                    };
+                    _offset += _chunkSize;
+                    _pendingAck += 1;
+                }
             }
         }
     }

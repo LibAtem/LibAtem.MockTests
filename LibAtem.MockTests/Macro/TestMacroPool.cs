@@ -68,6 +68,8 @@ namespace LibAtem.MockTests.Macro
             UploadJobWorker worker = null;
             AtemMockServerWrapper.Each(_output, _pool, (a, b) => worker?.HandleCommand(a, b), DeviceTestCases.MacroTransfer, helper =>
             {
+                helper.DisposeSdkClient = true;
+
                 var pool = helper.SdkClient.SdkSwitcher as IBMDSwitcherMacroPool;
                 Assert.NotNull(pool);
 
@@ -120,6 +122,8 @@ namespace LibAtem.MockTests.Macro
             AbortedUploadJobWorker worker = null;
             AtemMockServerWrapper.Each(_output, _pool, (a, b) => worker?.HandleCommand(a, b), DeviceTestCases.MacroTransfer, helper =>
             {
+                helper.DisposeSdkClient = true;
+
                 var pool = helper.SdkClient.SdkSwitcher as IBMDSwitcherMacroPool;
                 Assert.NotNull(pool);
 
@@ -162,6 +166,8 @@ namespace LibAtem.MockTests.Macro
             DownloadJobWorker worker = null;
             AtemMockServerWrapper.Each(_output, _pool, (a, b) => worker?.HandleCommand(a, b), DeviceTestCases.MacroTransfer, helper =>
             {
+                helper.DisposeSdkClient = true;
+
                 var pool = helper.SdkClient.SdkSwitcher as IBMDSwitcherMacroPool;
                 Assert.NotNull(pool);
 

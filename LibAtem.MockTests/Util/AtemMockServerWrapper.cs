@@ -137,7 +137,7 @@ namespace LibAtem.MockTests.Util
                     foreach (var pkt in Server.PendingPackets)
                     {
                         var rawCommands = new Lazy<ImmutableList<ICommand>>(() => Server.GetParsedDataDump());
-                        foreach (ParsedCommand rawCmd in pkt.Commands)
+                        foreach (ParsedCommandSpec rawCmd in pkt.Commands)
                         {
                             ICommand cmd = CommandParser.Parse(Server.CurrentVersion, rawCmd);
                             if (cmd == null)

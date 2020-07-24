@@ -98,6 +98,8 @@ namespace LibAtem.MockTests.Media
                         }
 
                         stateBefore.MediaPool.Clips[o].MaxFrames = v;
+                        stateBefore.MediaPool.Clips[o].Frames = Enumerable.Range(0, (int) v)
+                            .Select(i => new MediaPoolState.FrameState()).ToList();
                         Marshal.WriteInt32(ptr, o * sizeof(uint), (int) v);
                     }
 
@@ -242,6 +244,8 @@ namespace LibAtem.MockTests.Media
         {
             AtemMockServerWrapper.Each(_output, _pool, UploadJobWorker.LockCommandHandler, DeviceTestCases.MediaPlayerClips, helper =>
             {
+                helper.DisposeSdkClient = true;
+
                 int clipCount = helper.Helper.BuildLibState().MediaPool.Clips.Count;
                 for (int index = 0; index < clipCount; index++)
                 {
@@ -314,6 +318,8 @@ namespace LibAtem.MockTests.Media
             UploadJobWorker worker = null;
             AtemMockServerWrapper.Each(_output, _pool, (a, b) => worker?.HandleCommand(a, b), DeviceTestCases.MediaPlayerClips, helper =>
             {
+                helper.DisposeSdkClient = true;
+
                 var pidCmd = helper.Server.GetParsedDataDump().OfType<ProductIdentifierCommand>().Single();
 
                 IBMDSwitcherMediaPool pool = GetMediaPool(helper);
@@ -371,6 +377,8 @@ namespace LibAtem.MockTests.Media
             AbortedUploadJobWorker worker = null;
             AtemMockServerWrapper.Each(_output, _pool, (a, b) => worker?.HandleCommand(a, b), DeviceTestCases.MediaPlayerClips, helper =>
             {
+                helper.DisposeSdkClient = true;
+
                 IBMDSwitcherMediaPool pool = GetMediaPool(helper);
 
                 for (int i = 0; i < 3; i++)
@@ -419,6 +427,8 @@ namespace LibAtem.MockTests.Media
             DownloadJobWorker worker = null;
             AtemMockServerWrapper.Each(_output, _pool, (a, b) => worker?.HandleCommand(a, b), DeviceTestCases.MediaPlayerClips, helper =>
             {
+                helper.DisposeSdkClient = true;
+
                 var pidCmd = helper.Server.GetParsedDataDump().OfType<ProductIdentifierCommand>().Single();
 
                 for (int i = 0; i < 3; i++)
@@ -528,6 +538,8 @@ namespace LibAtem.MockTests.Media
             UploadJobWorker worker = null;
             AtemMockServerWrapper.Each(_output, _pool, (a, b) => worker?.HandleCommand(a, b), DeviceTestCases.MediaPlayerClips, helper =>
             {
+                helper.DisposeSdkClient = true;
+
                 IBMDSwitcherMediaPool pool = GetMediaPool(helper);
 
                 for (int i = 0; i < 3; i++)
@@ -636,6 +648,8 @@ namespace LibAtem.MockTests.Media
             DownloadJobWorker worker = null;
             AtemMockServerWrapper.Each(_output, _pool, (a, b) => worker?.HandleCommand(a, b), DeviceTestCases.MediaPlayerClips, helper =>
             {
+                helper.DisposeSdkClient = true;
+
                 IBMDSwitcherMediaPool pool = GetMediaPool(helper);
 
                 for (int i = 0; i < 3; i++)

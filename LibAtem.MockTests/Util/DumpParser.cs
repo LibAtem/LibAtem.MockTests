@@ -15,7 +15,7 @@ namespace LibAtem.MockTests.Util
             var result = new List<ICommand>();
             foreach (byte[] payload in payloads)
             {
-                foreach (ParsedCommand rawCmd in ReceivedPacket.ParseCommands(payload))
+                foreach (ParsedCommandSpec rawCmd in ReceivedPacket.ParseCommands(payload))
                 {
                     result.AddIfNotNull(CommandParser.Parse(version, rawCmd));
                 }
@@ -23,7 +23,7 @@ namespace LibAtem.MockTests.Util
             return result;
         }
 
-        public static List<byte[]> BuildCommands(ProtocolVersion version, string filename, Action<ParsedCommand, CommandBuilder> mutateCommand = null)
+        public static List<byte[]> BuildCommands(ProtocolVersion version, string filename, Action<ParsedCommandSpec, CommandBuilder> mutateCommand = null)
         {
             var commands = ParseCommands(version, $"TestFiles/Handshake/{filename}.data");
 
@@ -41,9 +41,9 @@ namespace LibAtem.MockTests.Util
             }).ToList();
         }
         
-        private static List<List<ParsedCommand>> ParseCommands(ProtocolVersion version, string filename)
+        private static List<List<ParsedCommandSpec>> ParseCommands(ProtocolVersion version, string filename)
         {
-            var res = new List<List<ParsedCommand>>();
+            var res = new List<List<ParsedCommandSpec>>();
 
             using (var reader = new StreamReader(filename))
             {
