@@ -105,23 +105,22 @@ namespace LibAtem.MockTests.Util
                 libState = _libAtemState.Clone();
             }
 
-            return SanitiseStateIncompabalities(libState);
+            return SanitiseStateIncompabalities(_mockServer.CurrentVersion, libState);
         }
 
-        public static AtemState SanitiseStateIncompabalities(AtemState state)
+        public static AtemState SanitiseStateIncompabalities(ProtocolVersion version, AtemState state)
         {
-#if ATEM_v8_1
-            // Before 8.1.2, the sdk was broken when trying to access the equalizer bands, so we need to discard this data to match
-            state.Fairlight?.Inputs.ForEach(input =>
+            if (version < ProtocolVersion.V8_1_1)
             {
-                input.Value.Sources.ForEach(source =>
+                // Before 8.1.2, the sdk was broken when trying to access the equalizer bands, so we need to discard this data to match
+                state.Fairlight?.Inputs.ForEach(input =>
                 {
-                    source.Equalizer.Bands = new List<FairlightAudioState.EqualizerBandState>();
+                    input.Value.Sources.ForEach(source =>
+                    {
+                        source.Equalizer.Bands = new List<FairlightAudioState.EqualizerBandState>();
+                    });
                 });
-            });
-#endif
-
-            state.CameraControl = new Dictionary<long, CameraControlState>();
+            }
 
             return state;
         }

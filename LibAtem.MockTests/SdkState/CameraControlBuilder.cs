@@ -92,7 +92,7 @@ namespace LibAtem.MockTests.SdkState
                             case LensFeature.Focus:
                             {
                                 double[] values = GetFloats(camera, device, category, parameter, 1);
-                                cState.Lens.Focus = (int) values[0]; // TODO
+                                cState.Lens.Focus = values[0];
                                 break;
                             }
                             case LensFeature.AutoFocus:
@@ -101,7 +101,7 @@ namespace LibAtem.MockTests.SdkState
                             case LensFeature.Iris:
                             {
                                 double[] values = GetFloats(camera, device, category, parameter, 1);
-                                cState.Lens.Iris = (uint) values[0]; // TODO
+                                cState.Lens.Iris = values[0];
                                 break;
                             }
                             case LensFeature.Zoom:
@@ -141,7 +141,7 @@ namespace LibAtem.MockTests.SdkState
                             case CameraFeature.Gain:
                             {
                                 sbyte[] values = GetSInt8(camera, device, category, parameter, 1);
-                                cState.Camera.Gain = (int)values[0];
+                                cState.Camera.Gain = values[0];
                                 break;
                             }
                             default:
@@ -166,56 +166,55 @@ namespace LibAtem.MockTests.SdkState
                             case ChipFeature.Lift:
                             {
                                 double[] values = GetFloats(camera, device, category, parameter, 4);
-                                cState.Chip.Lift.R = (int)values[0];
-                                cState.Chip.Lift.G = (int)values[1];
-                                cState.Chip.Lift.B = (int)values[2];
-                                cState.Chip.Lift.Y = (int)values[3];
+                                cState.Chip.Lift.R = values[0];
+                                cState.Chip.Lift.G = values[1];
+                                cState.Chip.Lift.B = values[2];
+                                cState.Chip.Lift.Y = values[3];
                                 break;
                             }
                             case ChipFeature.Gamma:
                             {
                                 double[] values = GetFloats(camera, device, category, parameter, 4);
-                                cState.Chip.Gamma.R = (int)values[0];
-                                cState.Chip.Gamma.G = (int)values[1];
-                                cState.Chip.Gamma.B = (int)values[2];
-                                cState.Chip.Gamma.Y = (int)values[3];
+                                cState.Chip.Gamma.R = values[0];
+                                cState.Chip.Gamma.G = values[1];
+                                cState.Chip.Gamma.B = values[2];
+                                cState.Chip.Gamma.Y = values[3];
                                 break;
                             }
                             case ChipFeature.Aperture:
                             {
                                 double[] values = GetFloats(camera, device, category, parameter, 4);
-                                cState.Chip.Aperture = (uint) values[0]; // TODO
+                                cState.Chip.Aperture =  values[0]; // TODO
                                 break;
                             }
                             case ChipFeature.Gain:
                             {
                                 double[] values = GetFloats(camera, device, category, parameter, 4);
-                                cState.Chip.Gain.R = (int)values[0];
-                                cState.Chip.Gain.G = (int)values[1];
-                                cState.Chip.Gain.B = (int)values[2];
-                                cState.Chip.Gain.Y = (int)values[3];
+                                cState.Chip.Gain.R = values[0];
+                                cState.Chip.Gain.G = values[1];
+                                cState.Chip.Gain.B = values[2];
+                                cState.Chip.Gain.Y = values[3];
                                 break;
                             }
                             case ChipFeature.Contrast:
                             {
                                 double[] values = GetFloats(camera, device, category, parameter, 2);
-                                cState.Chip.Contrast = (uint)values[0]; // TODO
+                                cState.Chip.Contrast = values[1]; // TODO
                                 break;
                             }
                             case ChipFeature.Lum:
                             {
                                 double[] values = GetFloats(camera, device, category, parameter, 1);
-                                cState.Chip.LumMix = (uint)values[0];
+                                cState.Chip.LumMix = values[0];
                                 break;
                             }
                             case ChipFeature.HueSaturation:
                             {
                                 double[] values = GetFloats(camera, device, category, parameter, 2);
-                                cState.Chip.Hue = (int)values[0];
-                                cState.Chip.Saturation = (uint)values[1];
+                                cState.Chip.Hue = values[0];
+                                cState.Chip.Saturation = values[1];
                                 break;
                             }
-                                break;
                             default:
                                 throw new ArgumentOutOfRangeException();
                         }
