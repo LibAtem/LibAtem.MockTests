@@ -2,6 +2,8 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
+using LibAtem.State;
 
 namespace LibAtem.MockTests.Util
 {
@@ -12,6 +14,11 @@ namespace LibAtem.MockTests.Util
         static Randomiser()
         {
             _random = new Random();
+        }
+
+        public static int RangeInt(int min, int max)
+        {
+            return _random.Next(min, max);
         }
 
         public static uint RangeInt(uint max)
@@ -25,7 +32,7 @@ namespace LibAtem.MockTests.Util
             var vals = Enum.GetValues(typeof(T)).OfType<T>().Except(omit).ToList();
             if (vals.Count == 0) throw new ArgumentOutOfRangeException("No enum values");
 
-            int count = rand.Next((int) vals.Count - 1) + 1;
+            int count = rand.Next(1, vals.Count);
             return SelectionOfGroup(vals, count).ToList();
         }
 
@@ -34,7 +41,7 @@ namespace LibAtem.MockTests.Util
             var rand = new Random();
             var vals = Enum.GetValues(typeof(T)).OfType<T>().Except(omit).ToArray();
             if (vals.Length == 0) throw new ArgumentOutOfRangeException("No enum values");
-            var ind = rand.Next(0, vals.Length - 1);
+            var ind = rand.Next(0, vals.Length);
             return vals[ind];
         }
         
@@ -77,6 +84,29 @@ namespace LibAtem.MockTests.Util
                 res[i] = Unsafe.Add(ref vals, i);
             }
             return res;
+        }
+
+        public static IntPtr BuildSdkArray(int valueSize, int[] vals)
+        {
+            IntPtr ptr = Marshal.AllocHGlobal(valueSize * vals.Length);
+            for (int o = 0; o < vals.Length; o++)
+            {
+                Marshal.WriteInt32(ptr, o * valueSize, vals[o]);
+            }
+            return ptr;
+        }
+
+        public static IntPtr BuildSdkArray(double[] vals)
+        {
+            IntPtr ptr = Marshal.AllocHGlobal(sizeof(double) * vals.Length);
+            for (int o = 0; o < vals.Length; o++)
+            {
+                byte[] v = BitConverter.GetBytes(vals[o]);
+                int offset = o * sizeof(double);
+                for (int p = 0; p < v.Length; p++)
+                    Marshal.WriteByte(ptr, offset + p, v[p]);
+            }
+            return ptr;
         }
 
         public static string String(int length)

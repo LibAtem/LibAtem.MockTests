@@ -30,6 +30,9 @@ namespace LibAtem.MockTests.Util
         public delegate void CommandKeyHandler(object sender, string path);
         public event CommandKeyHandler OnLibAtemStateChange;
 
+        public delegate void CommandHandler(object sender, ICommand command);
+        public event CommandHandler OnLibAtemCommand;
+
         public AtemTestHelper(AtemSdkClientWrapper client, ITestOutputHelper output, AtemMockServer mockServer, AtemStateBuilderSettings stateSettings)
         {
             _mockServer = mockServer;
@@ -65,6 +68,8 @@ namespace LibAtem.MockTests.Util
                     ICommand cmd2 = CommandParser.Parse(_mockServer.CurrentVersion, cmd.Value);
                     if (cmd2 == null)
                         throw new Exception("Failed to parse command2");
+
+                    OnLibAtemCommand?.Invoke(this, cmd2);
 
                     // TODO - handle result?
                     IUpdateResult result = AtemStateBuilder.Update(_libAtemState, cmd2, StateSettings);

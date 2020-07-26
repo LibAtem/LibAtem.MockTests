@@ -186,7 +186,7 @@ namespace LibAtem.MockTests.SdkState
 
             if (switcher is IBMDSwitcherCameraControl camera)
             {
-                CameraControlBuilder.Build(state, camera);
+                CameraControlBuilder.Build(state, camera, updateSettings);
             }
 
             return state;
