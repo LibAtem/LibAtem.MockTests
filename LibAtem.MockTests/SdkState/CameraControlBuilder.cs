@@ -21,8 +21,9 @@ namespace LibAtem.MockTests.SdkState
             CameraControlDataType newType;
             switch (type)
             {
-                // case _BMDSwitcherCameraControlParameterType.bmdSwitcherCameraControlParameterTypeVoidBool:
-                //     break;
+                case _BMDSwitcherCameraControlParameterType.bmdSwitcherCameraControlParameterTypeVoidBool:
+                    newType = CameraControlDataType.Bool;
+                    break;
                 case _BMDSwitcherCameraControlParameterType.bmdSwitcherCameraControlParameterTypeSigned8Bit:
                     newType = CameraControlDataType.SInt8;
                     break;
@@ -32,10 +33,12 @@ namespace LibAtem.MockTests.SdkState
                 case _BMDSwitcherCameraControlParameterType.bmdSwitcherCameraControlParameterTypeSigned32Bit:
                     newType = CameraControlDataType.SInt32;
                     break;
-                // case _BMDSwitcherCameraControlParameterType.bmdSwitcherCameraControlParameterTypeSigned64Bit:
-                //     break;
-                // case _BMDSwitcherCameraControlParameterType.bmdSwitcherCameraControlParameterTypeUTF8:
-                //     break;
+                case _BMDSwitcherCameraControlParameterType.bmdSwitcherCameraControlParameterTypeSigned64Bit:
+                    newType = CameraControlDataType.SInt64;
+                    break;
+                case _BMDSwitcherCameraControlParameterType.bmdSwitcherCameraControlParameterTypeUTF8:
+                    newType = CameraControlDataType.String;
+                    break;
                 case _BMDSwitcherCameraControlParameterType.bmdSwitcherCameraControlParameterTypeFixedPoint16Bit:
                     newType = CameraControlDataType.Float;
                     break;
@@ -53,6 +56,16 @@ namespace LibAtem.MockTests.SdkState
 
             switch (cmd.Type)
             {
+                case CameraControlDataType.Bool:
+                    {
+                        uint count2 = count;
+                        camera.GetFlags(device, category, parameter, ref count2, out int values);
+                        int[] intVals = Randomiser.ConvertSdkArray(count2, ref values);
+                        var sbyteVals = new sbyte[count2];
+                        Buffer.BlockCopy(intVals, 0, sbyteVals, 0, (int) count2);
+                        cmd.BoolData = sbyteVals.Select(v => v != 0).ToArray();
+                        break;
+                    }
                 case CameraControlDataType.SInt8:
                     {
                         uint count2 = count;
@@ -72,6 +85,19 @@ namespace LibAtem.MockTests.SdkState
                         uint count2 = count;
                         camera.GetInt32s(device, category, parameter, ref count2, out int values);
                         cmd.IntData = Randomiser.ConvertSdkArray(count2, ref values);
+                        break;
+                    }
+                case CameraControlDataType.SInt64:
+                    {
+                        uint count2 = count;
+                        camera.GetInt64s(device, category, parameter, ref count2, out long values);
+                        cmd.LongData = Randomiser.ConvertSdkArray(count2, ref values);
+                        break;
+                    }
+                case CameraControlDataType.String:
+                    {
+                        camera.GetString(device, category, parameter, out string value);
+                        cmd.StringData = value;
                         break;
                     }
                 case CameraControlDataType.Float:

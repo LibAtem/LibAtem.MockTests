@@ -26,17 +26,22 @@ namespace LibAtem.MockTests
             _pool = pool;
         }
 
-        private static void FillRandomData(CameraControlGetCommand cmd)
+        private static void FillRandomData(CameraControlGetCommand cmd, params CameraControlDataType[] omitTypes)
         {
             cmd.Input = (VideoSource) (Randomiser.RangeInt(20) + 50);
             cmd.Category = Randomiser.RangeInt(10) + 20;
             cmd.Parameter = Randomiser.RangeInt(10) + 15;
 
-            cmd.Type = Randomiser.EnumValue<CameraControlDataType>();
+            cmd.Type = Randomiser.EnumValue<CameraControlDataType>(omitTypes);
             switch (cmd.Type)
             {
+                case CameraControlDataType.Bool:
+                    cmd.BoolData = Enumerable.Range(0, Randomiser.RangeInt(8, 8)) // TODO - higher has issues
+                        .Select(i => Randomiser.Range(0, 10) >= 5)
+                        .ToArray();
+                    break;
                 case CameraControlDataType.SInt8:
-                    cmd.IntData = Enumerable.Range(0, Randomiser.RangeInt(1, 6))
+                    cmd.IntData = Enumerable.Range(0, Randomiser.RangeInt(1, 8)) // TODO - higher has issues
                         .Select(i => Randomiser.RangeInt(sbyte.MinValue, sbyte.MaxValue))
                         .ToArray();
                     break;
@@ -50,6 +55,14 @@ namespace LibAtem.MockTests
                         .Select(i => Randomiser.RangeInt(-500000, 500000))
                         .ToArray();
                     break;
+                case CameraControlDataType.SInt64:
+                    cmd.LongData = Enumerable.Range(0, 1)
+                        .Select(i => (long) Randomiser.RangeInt(-5000000, 5000000))
+                        .ToArray();
+                    break;
+                case CameraControlDataType.String:
+                    cmd.StringData = Randomiser.String(32);
+                    break;
                 case CameraControlDataType.Float:
                     cmd.FloatData = Enumerable.Range(0, Randomiser.RangeInt(1, 4))
                         .Select(i => Randomiser.Range(0, 1))
@@ -60,7 +73,7 @@ namespace LibAtem.MockTests
             }
         }
 
-        public static void AreEqual(CameraControlGetCommand a, CameraControlGetCommand b)
+        private static void AreEqual(CameraControlGetCommand a, CameraControlGetCommand b)
         {
             Assert.Equal(a.Input, b.Input);
             Assert.Equal(a.Category, b.Category);
@@ -68,16 +81,29 @@ namespace LibAtem.MockTests
             Assert.Equal(a.Type, b.Type);
 
             Assert.Equal(a.IntData != null, b.IntData != null);
+            Assert.Equal(a.LongData != null, b.LongData != null);
             Assert.Equal(a.FloatData != null, b.FloatData != null);
+            Assert.Equal(a.StringData, b.StringData);
+            Assert.Equal(a.BoolData != null, b.BoolData != null);
             if (a.IntData != null)
             {
                 for (int i = 0; i < a.IntData.Length; i++)
                     Assert.Equal(a.IntData[i], b.IntData[i]);
             }
+            if (a.LongData != null)
+            {
+                for (int i = 0; i < a.LongData.Length; i++)
+                    Assert.Equal(a.LongData[i], b.LongData[i]);
+            }
             if (a.FloatData != null)
             {
                 for (int i = 0; i < a.FloatData.Length; i++)
                     Assert.True(Math.Abs(a.FloatData[i] - b.FloatData[i]) < 0.01);
+            }
+            if (a.BoolData != null)
+            {
+                for (int i = 0; i < a.BoolData.Length; i++)
+                    Assert.Equal(a.BoolData[i], b.BoolData[i]);
             }
         }
         
@@ -85,6 +111,11 @@ namespace LibAtem.MockTests
         {
             switch (cmd.Type)
             {
+                case CameraControlDataType.Bool:
+                    cmd.BoolData = cmd.BoolData
+                        .Select(i => Randomiser.Range(0, 10) >= 5)
+                        .ToArray();
+                    break;
                 case CameraControlDataType.SInt8:
                     cmd.IntData = cmd.IntData
                         .Select(i => Randomiser.RangeInt(sbyte.MinValue - i, sbyte.MaxValue - i))
@@ -98,6 +129,11 @@ namespace LibAtem.MockTests
                 case CameraControlDataType.SInt32:
                     cmd.IntData = cmd.IntData
                         .Select(i => Randomiser.RangeInt(-50000, 50000))
+                        .ToArray();
+                    break;
+                case CameraControlDataType.SInt64:
+                    cmd.LongData = cmd.LongData
+                        .Select(i => (long) Randomiser.RangeInt(-50000, 50000))
                         .ToArray();
                     break;
                 case CameraControlDataType.Float:
@@ -139,8 +175,7 @@ namespace LibAtem.MockTests
         [Fact]
         public void TestSdkDecoding()
         {
-            var handler = CommandGenerator.MatchCommand(new StartupStateSaveCommand());
-            AtemMockServerWrapper.Each(_output, _pool, handler, DeviceTestCases.CameraControl, helper =>
+            AtemMockServerWrapper.Each(_output, _pool, null, DeviceTestCases.CameraControl, helper =>
             {
                 helper.Helper.StateSettings.IgnoreUnknownCameraControlProperties = true;
                 IBMDSwitcherCameraControl camera = helper.SdkClient.SdkSwitcher as IBMDSwitcherCameraControl;
@@ -176,7 +211,7 @@ namespace LibAtem.MockTests
 
         private static void ApplyOffsets(CameraControlGetCommand getCmd, CameraControlGetCommand deltaCmd)
         {
-            Assert.False(deltaCmd.IntData == null && deltaCmd.FloatData == null);
+            Assert.False(deltaCmd.IntData == null && deltaCmd.FloatData == null && deltaCmd.LongData == null && deltaCmd.BoolData == null);
             if (deltaCmd.IntData != null)
             {
                 Assert.NotNull(getCmd.IntData);
@@ -187,6 +222,16 @@ namespace LibAtem.MockTests
                     newVals[i] = getCmd.IntData[i] + deltaCmd.IntData[i];
                 getCmd.IntData = newVals;
             }
+            if (deltaCmd.LongData != null)
+            {
+                Assert.NotNull(getCmd.LongData);
+                Assert.Equal(getCmd.LongData.Length, deltaCmd.LongData.Length);
+
+                var newVals = new long[getCmd.LongData.Length];
+                for (int i = 0; i < newVals.Length; i++)
+                    newVals[i] = getCmd.LongData[i] + deltaCmd.LongData[i];
+                getCmd.LongData = newVals;
+            }
             if (deltaCmd.FloatData != null)
             {
                 Assert.NotNull(getCmd.FloatData);
@@ -196,6 +241,17 @@ namespace LibAtem.MockTests
                 for (int i = 0; i < getCmd.FloatData.Length; i++)
                     newVals[i] = getCmd.FloatData[i] + deltaCmd.FloatData[i];
                 getCmd.FloatData = newVals;
+            }
+
+            if (deltaCmd.BoolData != null)
+            {
+                Assert.NotNull(getCmd.BoolData);
+                Assert.Equal(getCmd.BoolData.Length, deltaCmd.BoolData.Length);
+
+                var newVals = new bool[getCmd.BoolData.Length];
+                for (int i = 0; i < getCmd.BoolData.Length; i++)
+                    newVals[i] = deltaCmd.BoolData[i] ? !getCmd.BoolData[i] : getCmd.BoolData[i];
+                getCmd.BoolData = newVals;
             }
         }
 
@@ -208,7 +264,10 @@ namespace LibAtem.MockTests
                 Parameter = cmd.Parameter,
                 Type = cmd.Type,
                 IntData = cmd.IntData,
-                FloatData = cmd.FloatData
+                LongData = cmd.LongData,
+                FloatData = cmd.FloatData,
+                StringData = cmd.StringData,
+                BoolData = cmd.BoolData,
             };
         }
 
@@ -228,7 +287,10 @@ namespace LibAtem.MockTests
                     Assert.Equal(setCmd.Type, _prevCmd.Type);
 
                     getCmd.IntData = _prevCmd.IntData;
+                    getCmd.LongData = _prevCmd.LongData;
                     getCmd.FloatData = _prevCmd.FloatData;
+                    getCmd.StringData = _prevCmd.StringData;
+                    getCmd.BoolData = _prevCmd.BoolData;
 
                     ApplyOffsets(getCmd, setCmd);
                 }
@@ -264,6 +326,18 @@ namespace LibAtem.MockTests
                     {
                         switch (cmd.Type)
                         {
+                            case CameraControlDataType.Bool:
+                            {
+                                data = Randomiser.BuildSdkArray(sizeof(sbyte),
+                                    cmd.BoolData.Select(v => v ? 1 : 0).ToArray());
+                                unsafe
+                                {
+                                    var ptr = (int*)data.ToPointer();
+                                    camera.SetFlags((uint)cmd.Input, cmd.Category, cmd.Parameter,
+                                        (uint)cmd.BoolData.Length, ref *ptr);
+                                }
+                                break;
+                            }
                             case CameraControlDataType.SInt8:
                             {
                                 data = Randomiser.BuildSdkArray(sizeof(sbyte), cmd.IntData);
@@ -295,6 +369,22 @@ namespace LibAtem.MockTests
                                     camera.SetInt32s((uint)cmd.Input, cmd.Category, cmd.Parameter,
                                         (uint)cmd.IntData.Length, ref *ptr);
                                 }
+                                break;
+                            }
+                            case CameraControlDataType.SInt64:
+                            {
+                                data = Randomiser.BuildSdkArray(cmd.LongData);
+                                unsafe
+                                {
+                                    var ptr = (long*)data.ToPointer();
+                                    camera.SetInt64s((uint)cmd.Input, cmd.Category, cmd.Parameter,
+                                        (uint)cmd.LongData.Length, ref *ptr);
+                                }
+                                break;
+                            }
+                            case CameraControlDataType.String:
+                            {
+                                camera.SetString((uint)cmd.Input, cmd.Category, cmd.Parameter, cmd.StringData);
                                 break;
                             }
                             case CameraControlDataType.Float:
@@ -344,7 +434,7 @@ namespace LibAtem.MockTests
 
                     // Generate and send some data
                     CameraControlGetCommand refCmd = new CameraControlGetCommand();
-                    FillRandomData(refCmd);
+                    FillRandomData(refCmd, CameraControlDataType.String);
 
                     if (!stateBefore.CameraControl.ContainsKey((long)refCmd.Input))
                         stateBefore.CameraControl[(long)refCmd.Input] = new CameraControlState();
@@ -368,6 +458,18 @@ namespace LibAtem.MockTests
                     {
                         switch (cmd.Type)
                         {
+                            case CameraControlDataType.Bool:
+                            {
+                                IntPtr data = Randomiser.BuildSdkArray(sizeof(sbyte),
+                                    cmd.BoolData.Select(v => v ? 1 : 0).ToArray());
+                                unsafe
+                                {
+                                    var ptr = (int*)data.ToPointer();
+                                    camera.ToggleFlags((uint)cmd.Input, cmd.Category, cmd.Parameter,
+                                        (uint)cmd.BoolData.Length, ref *ptr);
+                                }
+                                break;
+                            }
                             case CameraControlDataType.SInt8:
                             {
                                 IntPtr data = Randomiser.BuildSdkArray(sizeof(sbyte), cmd.IntData);
@@ -398,6 +500,17 @@ namespace LibAtem.MockTests
                                     var ptr = (int*)data.ToPointer();
                                     camera.OffsetInt32s((uint)cmd.Input, cmd.Category, cmd.Parameter,
                                         (uint)cmd.IntData.Length, ref *ptr);
+                                }
+                                break;
+                            }
+                            case CameraControlDataType.SInt64:
+                            {
+                                IntPtr data = Randomiser.BuildSdkArray(cmd.LongData);
+                                unsafe
+                                {
+                                    var ptr = (long*)data.ToPointer();
+                                    camera.OffsetInt64s((uint)cmd.Input, cmd.Category, cmd.Parameter,
+                                        (uint)cmd.LongData.Length, ref *ptr);
                                 }
                                 break;
                             }

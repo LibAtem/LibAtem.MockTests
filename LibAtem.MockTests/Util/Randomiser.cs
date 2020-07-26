@@ -91,7 +91,28 @@ namespace LibAtem.MockTests.Util
             IntPtr ptr = Marshal.AllocHGlobal(valueSize * vals.Length);
             for (int o = 0; o < vals.Length; o++)
             {
-                Marshal.WriteInt32(ptr, o * valueSize, vals[o]);
+                switch (valueSize)
+                {
+                    case 1:
+                        Marshal.WriteByte(ptr, o * valueSize, (byte)((sbyte)vals[o]));
+                        break;
+                    case 2:
+                        Marshal.WriteInt16(ptr, o * valueSize, (short)vals[o]);
+                        break;
+                    default:
+                        Marshal.WriteInt32(ptr, o * valueSize, vals[o]);
+                        break;
+                }
+            }
+            return ptr;
+        }
+
+        public static IntPtr BuildSdkArray(long[] vals)
+        {
+            IntPtr ptr = Marshal.AllocHGlobal(sizeof(long) * vals.Length);
+            for (int o = 0; o < vals.Length; o++)
+            {
+                Marshal.WriteInt64(ptr, o * sizeof(long), vals[o]);
             }
             return ptr;
         }
