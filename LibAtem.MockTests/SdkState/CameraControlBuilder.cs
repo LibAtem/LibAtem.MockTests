@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
 using BMDSwitcherAPI;
 using LibAtem.Commands.CameraControl;
@@ -46,12 +45,15 @@ namespace LibAtem.MockTests.SdkState
                     throw new ArgumentOutOfRangeException();
             }
 
+            camera.GetParameterPeriodicFlushEnabled(device, category, parameter, out int flushEnabled);
+
             var cmd = new CameraControlGetCommand
             {
-                Input = (VideoSource)device,
+                Input = (VideoSource) device,
                 Category = category,
                 Parameter = parameter,
                 Type = newType,
+                PeriodicFlushEnabled = flushEnabled != 0,
             };
 
             switch (cmd.Type)
@@ -116,7 +118,8 @@ namespace LibAtem.MockTests.SdkState
 
         public static void Build(AtemState state, IBMDSwitcherCameraControl camera, AtemStateBuilderSettings updateSettings)
         {
-            state.CameraControl = new Dictionary<long, CameraControlState>();
+            camera.GetPeriodicFlushInterval(out uint interval);
+            state.CameraControl.PeriodicFlushInterval = interval;
 
             IBMDSwitcherCameraControlParameterIterator iterator =
                 AtemSDKConverter.CastSdk<IBMDSwitcherCameraControlParameterIterator>(camera.CreateIterator);
@@ -134,9 +137,9 @@ namespace LibAtem.MockTests.SdkState
                 lastCategory = category;
                 lastParameter = parameter;
 
-                if (!state.CameraControl.TryGetValue(device, out CameraControlState cState))
+                if (!state.CameraControl.Cameras.TryGetValue(device, out CameraControlState.CameraState cState))
                 {
-                    cState = state.CameraControl[device] = new CameraControlState();
+                    cState = state.CameraControl.Cameras[device] = new CameraControlState.CameraState();
                 }
 
                 CameraControlGetCommand cmd = BuildCommand(camera, device, category, parameter);

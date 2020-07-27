@@ -191,8 +191,8 @@ namespace LibAtem.MockTests
                     CameraControlGetCommand cmd = new CameraControlGetCommand();
                     FillRandomData(cmd);
 
-                    if (!stateBefore.CameraControl.ContainsKey((long) cmd.Input))
-                        stateBefore.CameraControl[(long) cmd.Input] = new CameraControlState();
+                    if (!stateBefore.CameraControl.Cameras.ContainsKey((long) cmd.Input))
+                        stateBefore.CameraControl.Cameras[(long) cmd.Input] = new CameraControlState.CameraState();
                     helper.SendFromServerAndWaitForChange(stateBefore, cmd);
 
                     // Check libatem encoding
@@ -209,7 +209,7 @@ namespace LibAtem.MockTests
             });
         }
 
-        private static void ApplyOffsets(CameraControlGetCommand getCmd, CameraControlGetCommand deltaCmd)
+        private static void ApplyOffsets(CameraControlGetCommand getCmd, CameraControlCommandBase deltaCmd)
         {
             Assert.False(deltaCmd.IntData == null && deltaCmd.FloatData == null && deltaCmd.LongData == null && deltaCmd.BoolData == null);
             if (deltaCmd.IntData != null)
@@ -255,7 +255,7 @@ namespace LibAtem.MockTests
             }
         }
 
-        private static CameraControlGetCommand CopyCommand(CameraControlGetCommand cmd)
+        private static CameraControlGetCommand CopyCommand(CameraControlCommandBase cmd)
         {
             return new CameraControlGetCommand
             {
@@ -297,6 +297,24 @@ namespace LibAtem.MockTests
 
                 yield return getCmd;
             }
+            else if (cmd is CameraControlDeviceOptionsSetCommand optCmd)
+            {
+                Assert.Equal(CameraControlDeviceOptionsSetCommand.MaskFlags.PeriodicFlushEnabled, optCmd.Mask);
+
+                CameraControlGetCommand getCmd = CopyCommand(_optRefCmd);
+                getCmd.PeriodicFlushEnabled = optCmd.PeriodicFlushEnabled;
+                /*new CameraControlGetCommand
+                {
+                    Input = optCmd.Input,
+                    Category = optCmd.Category,
+                    Parameter = optCmd.Parameter,
+                    Type = CameraControlDataType.String,
+                    StringData = "abc",
+                    PeriodicFlushEnabled = optCmd.PeriodicFlushEnabled,
+                };*/
+
+                yield return getCmd;
+            }
         }
 
         [Fact]
@@ -318,8 +336,8 @@ namespace LibAtem.MockTests
                     CameraControlGetCommand cmd = new CameraControlGetCommand();
                     FillRandomData(cmd);
 
-                    if (!stateBefore.CameraControl.ContainsKey((long)cmd.Input))
-                        stateBefore.CameraControl[(long)cmd.Input] = new CameraControlState();
+                    if (!stateBefore.CameraControl.Cameras.ContainsKey((long)cmd.Input))
+                        stateBefore.CameraControl.Cameras[(long)cmd.Input] = new CameraControlState.CameraState();
 
                     IntPtr data;
                     helper.SendAndWaitForChange(stateBefore, () =>
@@ -436,8 +454,8 @@ namespace LibAtem.MockTests
                     CameraControlGetCommand refCmd = new CameraControlGetCommand();
                     FillRandomData(refCmd, CameraControlDataType.String);
 
-                    if (!stateBefore.CameraControl.ContainsKey((long)refCmd.Input))
-                        stateBefore.CameraControl[(long)refCmd.Input] = new CameraControlState();
+                    if (!stateBefore.CameraControl.Cameras.ContainsKey((long)refCmd.Input))
+                        stateBefore.CameraControl.Cameras[(long)refCmd.Input] = new CameraControlState.CameraState();
 
                     helper.SendFromServerAndWaitForChange(stateBefore, refCmd);
                     _prevCmd = refCmd;
@@ -549,6 +567,75 @@ namespace LibAtem.MockTests
             });
         }
 
+        [Fact]
+        public void TestPeriodicFlushInterval()
+        {
+            var handler =
+                CommandGenerator.CreateAutoCommandHandler<CameraControlSettingsSetCommand, CameraControlSettingsGetCommand>("Interval", true);
+            AtemMockServerWrapper.Each(_output, _pool, handler, DeviceTestCases.CameraControl, helper =>
+            {
+                helper.Helper.StateSettings.IgnoreUnknownCameraControlProperties = true;
+                IBMDSwitcherCameraControl camera = helper.SdkClient.SdkSwitcher as IBMDSwitcherCameraControl;
+                Assert.NotNull(camera);
+
+                for (int i = 0; i < 5; i++)
+                {
+                    AtemState stateBefore = helper.Helper.BuildLibState();
+
+                    uint interval = Randomiser.RangeInt(int.MaxValue);
+                    stateBefore.CameraControl.PeriodicFlushInterval = interval;
+
+                    helper.SendAndWaitForChange(stateBefore, () =>
+                    {
+                        camera.SetPeriodicFlushInterval(interval);
+                    });
+                }
+            });
+        }
+
+        private CameraControlGetCommand _optRefCmd;
+        [Fact]
+        public void TestPeriodicFlushEnabled()
+        {
+            AtemMockServerWrapper.Each(_output, _pool, CameraCommandHandler, DeviceTestCases.CameraControl, helper =>
+            {
+                helper.Helper.StateSettings.IgnoreUnknownCameraControlProperties = true;
+                IBMDSwitcherCameraControl camera = helper.SdkClient.SdkSwitcher as IBMDSwitcherCameraControl;
+                Assert.NotNull(camera);
+
+                using var watcher = new CameraControlReceiver(helper);
+
+                for (int i = 0; i < 10; i++)
+                {
+                    AtemState stateBefore = helper.Helper.BuildLibState();
+
+                    // Generate and send some data
+                    CameraControlGetCommand cmd = new CameraControlGetCommand();
+                    FillRandomData(cmd);
+                    _optRefCmd = cmd;
+                    bool targetEnabled = Randomiser.Range(0, 10) >= 5;
+
+                    if (!stateBefore.CameraControl.Cameras.ContainsKey((long)cmd.Input))
+                        stateBefore.CameraControl.Cameras[(long)cmd.Input] = new CameraControlState.CameraState();
+
+                    helper.SendAndWaitForChange(stateBefore, () =>
+                    {
+                        camera.SetParameterPeriodicFlushEnabled((uint) cmd.Input, cmd.Category, cmd.Parameter,
+                            targetEnabled ? 1 : 0);
+                    });
+
+                    // Check libatem encoding
+                    CameraControlGetCommand libCmd = watcher.LastCommand;
+                    Assert.NotNull(libCmd);
+                    AreEqual(cmd, libCmd);
+
+                    // Pull the value out of the sdk, and ensure it is the same
+                    camera.GetParameterPeriodicFlushEnabled((uint) cmd.Input, cmd.Category, cmd.Parameter,
+                        out int resultEnabled);
+                    Assert.Equal(targetEnabled, resultEnabled != 0);
+                }
+            });
+        }
 
 
     }
