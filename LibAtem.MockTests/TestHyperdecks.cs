@@ -1,12 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
-using System.Data;
 using System.Linq;
-using System.Threading;
 using BMDSwitcherAPI;
 using LibAtem.Commands;
-using LibAtem.Commands.Settings;
 using LibAtem.Commands.Settings.HyperDeck;
 using LibAtem.Common;
 using LibAtem.MockTests.SdkState;
@@ -44,9 +41,7 @@ namespace LibAtem.MockTests
             return result;
         }
 
-        // TODO NetworkAddress
-
-        private byte[] RandomIP()
+        private static byte[] RandomIP()
         {
             return new[]
             {
@@ -171,7 +166,7 @@ namespace LibAtem.MockTests
         public void TestLoopedPlayback()
         {
             var handler =
-                CommandGenerator.CreateAutoCommandHandler<HyperDeckCXCPCommand, HyperDeckRXCPCommand>(
+                CommandGenerator.CreateAutoCommandHandler<HyperDeckPlayerSetCommand, HyperDeckPlayerGetCommand>(
                     "Loop");
             AtemMockServerWrapper.Each(_output, _pool, handler, DeviceTestCases.HyperDecks, helper =>
             {
@@ -199,7 +194,7 @@ namespace LibAtem.MockTests
         public void TestSingleClipPlayback()
         {
             var handler =
-                CommandGenerator.CreateAutoCommandHandler<HyperDeckCXCPCommand, HyperDeckRXCPCommand>(
+                CommandGenerator.CreateAutoCommandHandler<HyperDeckPlayerSetCommand, HyperDeckPlayerGetCommand>(
                     "SingleClip");
             AtemMockServerWrapper.Each(_output, _pool, handler, DeviceTestCases.HyperDecks, helper =>
             {
@@ -226,7 +221,7 @@ namespace LibAtem.MockTests
         [Fact]
         public void TestConnection()
         {
-            var handler = CommandGenerator.CreateAutoCommandHandler<HyperDeckCXCPCommand, HyperDeckRXCPCommand>(
+            var handler = CommandGenerator.CreateAutoCommandHandler<HyperDeckPlayerSetCommand, HyperDeckPlayerGetCommand>(
                 new[] { "State" });
 
             AtemMockServerWrapper.Each(_output, _pool, handler, DeviceTestCases.HyperDecks, helper =>
@@ -258,12 +253,12 @@ namespace LibAtem.MockTests
             {
                 ImmutableList<ICommand> allCommands = helper.Server.GetParsedDataDump();
                 List<HyperDeckSettingsGetCommand> settingsCommands = allCommands.OfType<HyperDeckSettingsGetCommand>().ToList();
-                List<HyperDeckRXCPCommand> previousStates = allCommands.OfType<HyperDeckRXCPCommand>().ToList();
+                List<HyperDeckPlayerGetCommand> previousStates = allCommands.OfType<HyperDeckPlayerGetCommand>().ToList();
 
                 foreach (IBMDSwitcherHyperDeck deck in GetHyperDecks(helper))
                 {
                     deck.GetId(out long id);
-                    HyperDeckRXCPCommand cmd = previousStates.Single(c => c.Id == id);
+                    HyperDeckPlayerGetCommand cmd = previousStates.Single(c => c.Id == id);
 
                     // Force it to be connected
                     AtemState stateBefore = helper.Helper.BuildLibState();
@@ -289,9 +284,9 @@ namespace LibAtem.MockTests
         [Fact]
         public void TestStop()
         {
-            var expectedCmd = new HyperDeckCXCPCommand
+            var expectedCmd = new HyperDeckPlayerSetCommand
             {
-                Mask = HyperDeckCXCPCommand.MaskFlags.State,
+                Mask = HyperDeckPlayerSetCommand.MaskFlags.State,
                 State = HyperDeckPlayerState.Idle,
             };
             var handler = CommandGenerator.MatchCommand(expectedCmd, true);
@@ -314,9 +309,9 @@ namespace LibAtem.MockTests
         [Fact]
         public void TestPlay()
         {
-            var expectedCmd = new HyperDeckCXCPCommand
+            var expectedCmd = new HyperDeckPlayerSetCommand
             {
-                Mask = HyperDeckCXCPCommand.MaskFlags.State | HyperDeckCXCPCommand.MaskFlags.PlaybackSpeed,
+                Mask = HyperDeckPlayerSetCommand.MaskFlags.State | HyperDeckPlayerSetCommand.MaskFlags.PlaybackSpeed,
                 State = HyperDeckPlayerState.Playing,
                 PlaybackSpeed = 100,
             };
@@ -340,9 +335,9 @@ namespace LibAtem.MockTests
         [Fact]
         public void TestRecord()
         {
-            var expectedCmd = new HyperDeckCXCPCommand
+            var expectedCmd = new HyperDeckPlayerSetCommand
             {
-                Mask = HyperDeckCXCPCommand.MaskFlags.State,
+                Mask = HyperDeckPlayerSetCommand.MaskFlags.State,
                 State = HyperDeckPlayerState.Recording,
             };
             var handler = CommandGenerator.MatchCommand(expectedCmd, true);
@@ -365,9 +360,9 @@ namespace LibAtem.MockTests
         [Fact]
         public void TestShuttle()
         {
-            var expectedCmd = new HyperDeckCXCPCommand
+            var expectedCmd = new HyperDeckPlayerSetCommand
             {
-                Mask = HyperDeckCXCPCommand.MaskFlags.State | HyperDeckCXCPCommand.MaskFlags.PlaybackSpeed,
+                Mask = HyperDeckPlayerSetCommand.MaskFlags.State | HyperDeckPlayerSetCommand.MaskFlags.PlaybackSpeed,
                 State = HyperDeckPlayerState.Playing,
             };
             var handler = CommandGenerator.MatchCommand(expectedCmd, true);
@@ -392,13 +387,13 @@ namespace LibAtem.MockTests
                 }
             });
         }
-
+        
         [Fact]
-        public void TestJog() // TODO fix
+        public void TestJog()
         {
-            var expectedCmd = new HyperDeckCXCPCommand
+            var expectedCmd = new HyperDeckPlayerSetCommand
             {
-                Mask = HyperDeckCXCPCommand.MaskFlags.Jog,
+                Mask = HyperDeckPlayerSetCommand.MaskFlags.Jog,
             };
             var handler = CommandGenerator.MatchCommand(expectedCmd, true);
             AtemMockServerWrapper.Each(_output, _pool, handler, DeviceTestCases.HyperDecks, helper =>
@@ -524,7 +519,7 @@ namespace LibAtem.MockTests
         public void TestActiveStorageMedia()
         {
             var handler =
-                CommandGenerator.CreateAutoCommandHandler<HyperDeckCXSSCommand, HyperDeckRXSSCommand>(
+                CommandGenerator.CreateAutoCommandHandler<HyperDeckSourceSetCommand, HyperDeckSourceGetCommand>(
                     "ActiveStorageMedia");
             AtemMockServerWrapper.Each(_output, _pool, handler, DeviceTestCases.HyperDecks, helper =>
             {
@@ -551,7 +546,8 @@ namespace LibAtem.MockTests
         {
             AtemMockServerWrapper.Each(_output, _pool, null, DeviceTestCases.HyperDecks, helper =>
             {
-                List<HyperDeckSettingsGetCommand> settingsCommands = helper.Server.GetParsedDataDump().OfType<HyperDeckSettingsGetCommand>().ToList();
+                ImmutableList<ICommand> allCommands = helper.Server.GetParsedDataDump();
+                List<HyperDeckSettingsGetCommand> settingsCommands = allCommands.OfType<HyperDeckSettingsGetCommand>().ToList();
 
                 foreach (IBMDSwitcherHyperDeck deck in GetHyperDecks(helper))
                 {
@@ -594,35 +590,338 @@ namespace LibAtem.MockTests
                             ClipId = 1,
                             Name = Randomiser.String(64),
 
-                            StartHour = (uint) Randomiser.RangeInt(2, 8),
-                            StartMinute = (uint)Randomiser.RangeInt(2, 50),
-                            StartSecond = (uint)Randomiser.RangeInt(2, 50),
-                            StartFrame = (uint)Randomiser.RangeInt(2, 50),
+                            TimelineStart = new HyperDeckTime
+                            {
+                                Hour = (uint) Randomiser.RangeInt(2, 8),
+                                Minute = (uint) Randomiser.RangeInt(2, 50),
+                                Second = (uint) Randomiser.RangeInt(2, 50),
+                                Frame = (uint) Randomiser.RangeInt(2, 50),
+                            },
 
-                            EndHour = (uint)Randomiser.RangeInt(4, 18),
-                            EndMinute = (uint)Randomiser.RangeInt(2, 50),
-                            EndSecond = (uint)Randomiser.RangeInt(2, 50),
-                            EndFrame = (uint)Randomiser.RangeInt(2, 50),
+                            TimelineEnd = new HyperDeckTime
+                            {
+                                Hour = (uint) Randomiser.RangeInt(4, 18),
+                                Minute = (uint) Randomiser.RangeInt(2, 50),
+                                Second = (uint) Randomiser.RangeInt(2, 50),
+                                Frame = (uint) Randomiser.RangeInt(2, 50),
+                            },
 
-                            DurationHour = (uint)Randomiser.RangeInt(10, 20),
-                            DurationMinute = (uint)Randomiser.RangeInt(2, 50),
-                            DurationSecond = (uint)Randomiser.RangeInt(2, 50),
-                            DurationFrame = (uint)Randomiser.RangeInt(2, 50),
+                            Duration = new HyperDeckTime
+                            {
+                                Hour = (uint) Randomiser.RangeInt(10, 20),
+                                Minute = (uint) Randomiser.RangeInt(2, 50),
+                                Second = (uint) Randomiser.RangeInt(2, 50),
+                                Frame = (uint) Randomiser.RangeInt(2, 50),
+                            },
                         };
                         hyperdeckState.Clips[(int) infoCmd.ClipId].Name = infoCmd.Name;
-                        hyperdeckState.Clips[(int) infoCmd.ClipId].Duration = new HyperdeckState.Time(
-                            infoCmd.DurationHour, infoCmd.DurationMinute, infoCmd.DurationSecond,
-                            infoCmd.DurationFrame);
-                        hyperdeckState.Clips[(int) infoCmd.ClipId].TimelineStart =
-                            new HyperdeckState.Time(infoCmd.StartHour, infoCmd.StartMinute, infoCmd.StartSecond,
-                                infoCmd.StartFrame);
-                        hyperdeckState.Clips[(int) infoCmd.ClipId].TimelineEnd = new HyperdeckState.Time(
-                            infoCmd.EndHour, infoCmd.EndMinute, infoCmd.EndSecond, infoCmd.EndFrame);
+                        hyperdeckState.Clips[(int) infoCmd.ClipId].Duration = infoCmd.Duration;
+                        hyperdeckState.Clips[(int) infoCmd.ClipId].TimelineStart = infoCmd.TimelineStart;
+                        hyperdeckState.Clips[(int) infoCmd.ClipId].TimelineEnd = infoCmd.TimelineEnd;
 
                         helper.SendFromServerAndWaitForChange(stateBefore, infoCmd);
                     }
                 }
             });
         }
+
+        [Fact]
+        public void TestCurrentClipId()
+        {
+            var handler =
+                CommandGenerator.CreateAutoCommandHandler<HyperDeckSourceSetCommand, HyperDeckSourceGetCommand>(
+                    "CurrentClipId");
+            AtemMockServerWrapper.Each(_output, _pool, handler, DeviceTestCases.HyperDecks, helper =>
+            {
+                foreach (IBMDSwitcherHyperDeck deck in GetHyperDecks(helper))
+                {
+                    deck.GetId(out long id);
+
+                    AtemState stateBefore = helper.Helper.BuildLibState();
+                    HyperdeckState deckState = stateBefore.Hyperdecks[(int)id];
+
+                    for (int i = 0; i < 5; i++)
+                    {
+                        deckState.Player.CurrentClipId = Randomiser.RangeInt(-1, 3);
+
+                        helper.SendAndWaitForChange(stateBefore,
+                            () => { deck.SetCurrentClip(deckState.Player.CurrentClipId); });
+                    }
+                }
+            });
+        }
+
+        [Fact]
+        public void TestFramerate()
+        {
+            AtemMockServerWrapper.Each(_output, _pool, null, DeviceTestCases.HyperDecks, helper =>
+            {
+                ImmutableList<ICommand> allCommands = helper.Server.GetParsedDataDump();
+                List<HyperDeckSettingsGetCommand> settingsCommands = allCommands.OfType<HyperDeckSettingsGetCommand>().ToList();
+
+                foreach (IBMDSwitcherHyperDeck deck in GetHyperDecks(helper))
+                {
+                    deck.GetId(out long id);
+                    HyperDeckSettingsGetCommand connCmd = settingsCommands.Single(c => c.Id == id);
+
+                    // Force it to be connected
+                    AtemState stateBefore = helper.Helper.BuildLibState();
+                    connCmd.Status = HyperDeckConnectionStatus.Connected;
+                    stateBefore.Hyperdecks[(int)id].Settings.Status = HyperDeckConnectionStatus.Connected;
+                    stateBefore.Hyperdecks[(int)id].Player.State = HyperDeckPlayerState.Idle;
+                    helper.SendFromServerAndWaitForChange(stateBefore, connCmd);
+
+                    stateBefore = helper.Helper.BuildLibState();
+                    HyperdeckState hyperdeckState = stateBefore.Hyperdecks[(int)id];
+
+
+                    for (int i = 0; i < 5; i++)
+                    {
+                        hyperdeckState.Settings.FrameRate = (uint) Randomiser.RangeInt(1000, 500000);
+                        hyperdeckState.Settings.TimeScale = (uint) Randomiser.RangeInt(1000, 500000);
+
+                        helper.SendFromServerAndWaitForChange(stateBefore, new HyperDeckSourceGetCommand
+                        {
+                            Id = (uint)id,
+                            ActiveStorageMedia = -1,
+                            CurrentClipId = -1,
+                            FrameRate = hyperdeckState.Settings.FrameRate,
+                            TimeScale = hyperdeckState.Settings.TimeScale,
+                        });
+                    }
+                }
+            });
+        }
+
+        [Fact]
+        public void TestIsInterlacedVideo()
+        {
+            AtemMockServerWrapper.Each(_output, _pool, null, DeviceTestCases.HyperDecks, helper =>
+            {
+                ImmutableList<ICommand> allCommands = helper.Server.GetParsedDataDump();
+                List<HyperDeckSettingsGetCommand> settingsCommands = allCommands.OfType<HyperDeckSettingsGetCommand>().ToList();
+                List<HyperDeckSourceGetCommand> sourceCommands = allCommands.OfType<HyperDeckSourceGetCommand>().ToList();
+
+                foreach (IBMDSwitcherHyperDeck deck in GetHyperDecks(helper))
+                {
+                    deck.GetId(out long id);
+                    HyperDeckSettingsGetCommand cmd = settingsCommands.Single(c => c.Id == id);
+                    HyperDeckSourceGetCommand srcCmd = sourceCommands.Single(c => c.Id == id);
+
+                    // Force it to be connected
+                    AtemState stateBefore = helper.Helper.BuildLibState();
+                    cmd.Status = HyperDeckConnectionStatus.Connected;
+                    stateBefore.Hyperdecks[(int)id].Settings.Status = HyperDeckConnectionStatus.Connected;
+                    stateBefore.Hyperdecks[(int)id].Player.State = HyperDeckPlayerState.Idle;
+                    helper.SendFromServerAndWaitForChange(stateBefore, cmd);
+
+                    stateBefore = helper.Helper.BuildLibState();
+                    HyperdeckState hyperdeckState = stateBefore.Hyperdecks[(int)id];
+
+                    for (int i = 0; i < 5; i++)
+                    {
+                        hyperdeckState.Settings.IsInterlaced =
+                            srcCmd.IsInterlaced = !hyperdeckState.Settings.IsInterlaced;
+
+                        helper.SendFromServerAndWaitForChange(stateBefore, srcCmd);
+                    }
+                }
+            });
+        }
+
+        [Fact]
+        public void TestIsDropFrameTimecode()
+        {
+            AtemMockServerWrapper.Each(_output, _pool, null, DeviceTestCases.HyperDecks, helper =>
+            {
+                ImmutableList<ICommand> allCommands = helper.Server.GetParsedDataDump();
+                List<HyperDeckSettingsGetCommand> settingsCommands = allCommands.OfType<HyperDeckSettingsGetCommand>().ToList();
+                List<HyperDeckSourceGetCommand> sourceCommands = allCommands.OfType<HyperDeckSourceGetCommand>().ToList();
+
+                foreach (IBMDSwitcherHyperDeck deck in GetHyperDecks(helper))
+                {
+                    deck.GetId(out long id);
+                    HyperDeckSettingsGetCommand cmd = settingsCommands.Single(c => c.Id == id);
+                    HyperDeckSourceGetCommand srcCmd = sourceCommands.Single(c => c.Id == id);
+
+                    // Force it to be connected
+                    AtemState stateBefore = helper.Helper.BuildLibState();
+                    cmd.Status = HyperDeckConnectionStatus.Connected;
+                    stateBefore.Hyperdecks[(int)id].Settings.Status = HyperDeckConnectionStatus.Connected;
+                    stateBefore.Hyperdecks[(int)id].Player.State = HyperDeckPlayerState.Idle;
+                    helper.SendFromServerAndWaitForChange(stateBefore, cmd);
+
+                    stateBefore = helper.Helper.BuildLibState();
+                    HyperdeckState hyperdeckState = stateBefore.Hyperdecks[(int)id];
+
+                    for (int i = 0; i < 5; i++)
+                    {
+                        hyperdeckState.Settings.IsDropFrameTimecode =
+                            srcCmd.IsDropFrameTimecode = !hyperdeckState.Settings.IsDropFrameTimecode;
+
+                        helper.SendFromServerAndWaitForChange(stateBefore, srcCmd);
+                    }
+                }
+            });
+        }
+
+        [Fact]
+        public void TestCurrentClipTime()
+        {
+            var handler =
+                CommandGenerator.CreateAutoCommandHandler<HyperDeckPlayerSetCommand, HyperDeckPlayerGetCommand>(
+                    "ClipTime");
+            AtemMockServerWrapper.Each(_output, _pool, handler, DeviceTestCases.HyperDecks, helper =>
+            {
+                ImmutableList<ICommand> allCommands = helper.Server.GetParsedDataDump();
+                List<HyperDeckSettingsGetCommand> settingsCommands = allCommands.OfType<HyperDeckSettingsGetCommand>().ToList();
+
+                foreach (IBMDSwitcherHyperDeck deck in GetHyperDecks(helper))
+                {
+                    deck.GetId(out long id);
+
+                    HyperDeckSettingsGetCommand cmd = settingsCommands.Single(c => c.Id == id);
+
+                    // Force it to be connected
+                    AtemState stateBefore = helper.Helper.BuildLibState();
+                    cmd.Status = HyperDeckConnectionStatus.Connected;
+                    stateBefore.Hyperdecks[(int)id].Settings.Status = HyperDeckConnectionStatus.Connected;
+                    stateBefore.Hyperdecks[(int)id].Player.State = HyperDeckPlayerState.Idle;
+                    helper.SendFromServerAndWaitForChange(stateBefore, cmd);
+
+                    // Define a clip
+                    stateBefore.Hyperdecks[(int) id].Clips =
+                        UpdaterUtil.CreateList(1, i => new HyperdeckState.ClipState());
+                    helper.SendFromServerAndWaitForChange(stateBefore, new HyperDeckClipCountCommand
+                    {
+                        Id = (uint) id,
+                        ClipCount = 1,
+                    });
+                    var clipCmd = new HyperDeckClipInfoCommand
+                    {
+                        HyperdeckId = (uint) id,
+                        ClipId = 0,
+                        Name = "something 123",
+                        Duration = new HyperDeckTime {Hour = 24},
+                        TimelineStart = new HyperDeckTime(),
+                        TimelineEnd = new HyperDeckTime {Hour = 24},
+                    };
+                    AtemStateBuilder.Update(stateBefore, clipCmd);
+                    helper.SendFromServerAndWaitForChange(stateBefore, clipCmd);
+                    stateBefore = helper.Helper.BuildLibState();
+
+                    // Set the clip to be playing
+                    HyperDeckSourceGetCommand playCmd = new HyperDeckSourceGetCommand
+                    {
+                        Id = (uint) id,
+                        ActiveStorageMedia = 0,
+                        CurrentClipId = 0,
+                        FrameRate = 50000,
+                        TimeScale = 1000,
+                    };
+                    AtemStateBuilder.Update(stateBefore, playCmd);
+                    helper.SendFromServerAndWaitForChange(stateBefore, playCmd);
+                    stateBefore = helper.Helper.BuildLibState();
+
+                    HyperdeckState deckState = stateBefore.Hyperdecks[(int)id];
+
+                    // Now try the stuff
+                    for (int i = 0; i < 5; i++)
+                    {
+                        uint hours = (uint) Randomiser.RangeInt(1, 20);
+                        uint minutes = (uint) Randomiser.RangeInt(1, 59);
+                        uint seconds = (uint) Randomiser.RangeInt(1, 59);
+                        uint frames = (uint) Randomiser.RangeInt(1, 20);
+                        deckState.Player.TimelineTime = new HyperDeckTime();
+                        deckState.Player.ClipTime = new HyperDeckTime
+                            {Hour = hours, Minute = minutes, Second = seconds, Frame = frames};
+
+                        helper.SendAndWaitForChange(stateBefore,
+                            () =>
+                            {
+                                deck.SetCurrentClipTime((ushort) hours, (byte) minutes, (byte) seconds, (byte) frames);
+                            });
+                    }
+                }
+            });
+        }
+
+        [Fact]
+        public void TestCurrentTimelineTime()
+        {
+            AtemMockServerWrapper.Each(_output, _pool, null, DeviceTestCases.HyperDecks, helper =>
+            {
+                ImmutableList<ICommand> allCommands = helper.Server.GetParsedDataDump();
+                List<HyperDeckSettingsGetCommand> settingsCommands = allCommands.OfType<HyperDeckSettingsGetCommand>().ToList();
+                List<HyperDeckPlayerGetCommand> playerCommands = allCommands.OfType<HyperDeckPlayerGetCommand>().ToList();
+
+                foreach (IBMDSwitcherHyperDeck deck in GetHyperDecks(helper))
+                {
+                    deck.GetId(out long id);
+
+                    HyperDeckSettingsGetCommand cmd = settingsCommands.Single(c => c.Id == id);
+                    HyperDeckPlayerGetCommand playCmd = playerCommands.Single(c => c.Id == id);
+
+                    // Force it to be connected
+                    AtemState stateBefore = helper.Helper.BuildLibState();
+                    cmd.Status = HyperDeckConnectionStatus.Connected;
+                    stateBefore.Hyperdecks[(int)id].Settings.Status = HyperDeckConnectionStatus.Connected;
+                    stateBefore.Hyperdecks[(int)id].Player.State = HyperDeckPlayerState.Idle;
+                    helper.SendFromServerAndWaitForChange(stateBefore, cmd);
+
+                    // Define a clip
+                    stateBefore.Hyperdecks[(int)id].Clips =
+                        UpdaterUtil.CreateList(1, i => new HyperdeckState.ClipState());
+                    helper.SendFromServerAndWaitForChange(stateBefore, new HyperDeckClipCountCommand
+                    {
+                        Id = (uint)id,
+                        ClipCount = 1,
+                    });
+                    var clipCmd = new HyperDeckClipInfoCommand
+                    {
+                        HyperdeckId = (uint)id,
+                        ClipId = 0,
+                        Name = "something 123",
+                        Duration = new HyperDeckTime { Hour = 24 },
+                        TimelineStart = new HyperDeckTime(),
+                        TimelineEnd = new HyperDeckTime { Hour = 24 },
+                    };
+                    AtemStateBuilder.Update(stateBefore, clipCmd);
+                    helper.SendFromServerAndWaitForChange(stateBefore, clipCmd);
+                    stateBefore = helper.Helper.BuildLibState();
+
+                    // Set the clip to be playing
+                    HyperDeckSourceGetCommand srcCmd = new HyperDeckSourceGetCommand
+                    {
+                        Id = (uint)id,
+                        ActiveStorageMedia = 0,
+                        CurrentClipId = 0,
+                        FrameRate = 50000,
+                        TimeScale = 1000,
+                    };
+                    AtemStateBuilder.Update(stateBefore, srcCmd);
+                    helper.SendFromServerAndWaitForChange(stateBefore, srcCmd);
+                    stateBefore = helper.Helper.BuildLibState();
+
+                    HyperdeckState deckState = stateBefore.Hyperdecks[(int)id];
+
+                    // Now try the stuff
+                    for (int i = 0; i < 5; i++)
+                    {
+                        uint hours = (uint)Randomiser.RangeInt(1, 20);
+                        uint minutes = (uint)Randomiser.RangeInt(1, 59);
+                        uint seconds = (uint)Randomiser.RangeInt(1, 59);
+                        uint frames = (uint)Randomiser.RangeInt(1, 20);
+                        deckState.Player.ClipTime = new HyperDeckTime();
+                        playCmd.TimelineTime = deckState.Player.TimelineTime = new HyperDeckTime
+                            {Hour = hours, Minute = minutes, Second = seconds, Frame = frames};
+
+                        helper.SendFromServerAndWaitForChange(stateBefore, playCmd);
+                    }
+                }
+            });
+        }
+
+
     }
 }

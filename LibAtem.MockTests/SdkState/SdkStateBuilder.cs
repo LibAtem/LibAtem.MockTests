@@ -314,7 +314,25 @@ namespace LibAtem.MockTests.SdkState
                     ? HyperDeckPlayerState.Idle
                     : AtemEnumMaps.HyperDeckPlayerStateMap.FindByValue(playState);
                 props.GetShuttleSpeed(out int speed);
-                st.Player.PlaybackSpeed = (uint) speed;
+                st.Player.PlaybackSpeed = speed;
+
+                props.GetCurrentClip(out long clipId);
+                st.Player.CurrentClipId = (int) clipId;
+
+                props.GetCurrentClipTime(out ushort clipHours, out byte clipMinutes, out byte clipSeconds, out byte clipFrames);
+                st.Player.ClipTime = new HyperDeckTime
+                    {Hour = clipHours, Minute = clipMinutes, Second = clipSeconds, Frame = clipFrames};
+                props.GetCurrentTimelineTime(out ushort tlHours, out byte tlMinutes, out byte tlSeconds, out byte tlFrames);
+                st.Player.TimelineTime = new HyperDeckTime
+                    {Hour = tlHours, Minute = tlMinutes, Second = tlSeconds, Frame = tlFrames};
+
+                props.GetFrameRate(out uint frameRate, out uint timeScale);
+                st.Settings.FrameRate = frameRate;
+                st.Settings.TimeScale = timeScale;
+                props.IsInterlacedVideo(out int isInterlaced);
+                st.Settings.IsInterlaced = isInterlaced != 0;
+                props.IsDropFrameTimeCode(out int isDropFrame);
+                st.Settings.IsDropFrameTimecode = isDropFrame != 0;
 
                 props.GetConnectionStatus(out _BMDSwitcherHyperDeckConnectionStatus status);
                 st.Settings.Status = AtemEnumMaps.HyperDeckConnectionStatusMap.FindByValue(status);
@@ -330,7 +348,7 @@ namespace LibAtem.MockTests.SdkState
                 }).ToList();
                 props.GetActiveStorageMedia(out int activeMedia);
                 st.Settings.ActiveStorageMedia = activeMedia;
-
+                
                 var clipIterator = AtemSDKConverter.CastSdk<IBMDSwitcherHyperDeckClipIterator>(props.CreateIterator);
                 st.Clips = AtemSDKConverter.IterateList<IBMDSwitcherHyperDeckClip, HyperdeckState.ClipState>(clipIterator.Next, (clip, i) =>
                 {
@@ -351,9 +369,17 @@ namespace LibAtem.MockTests.SdkState
                     return new HyperdeckState.ClipState
                     {
                         Name = name,
-                        Duration = infoAvailable != 0 ? new HyperdeckState.Time(hours, minutes, seconds, frames) : null,
-                        TimelineStart = infoAvailable != 0 ? new HyperdeckState.Time(startHours, startMinutes, startSeconds, startFrames) : null,
-                        TimelineEnd = infoAvailable != 0 ? new HyperdeckState.Time(endHours, endMinutes, endSeconds, endFrames) : null,
+                        Duration = infoAvailable != 0
+                            ? new HyperDeckTime {Hour = hours, Minute = minutes, Second = seconds, Frame = frames}
+                            : null,
+                        TimelineStart = infoAvailable != 0
+                            ? new HyperDeckTime
+                                {Hour = startHours, Minute = startMinutes, Second = startSeconds, Frame = startFrames}
+                            : null,
+                        TimelineEnd = infoAvailable != 0
+                            ? new HyperDeckTime
+                                {Hour = endHours, Minute = endMinutes, Second = endSeconds, Frame = endFrames}
+                            : null,
                     };
                 });
 
