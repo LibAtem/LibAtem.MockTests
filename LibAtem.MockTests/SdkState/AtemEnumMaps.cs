@@ -3,6 +3,7 @@ using LibAtem.Common;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using LibAtem.Commands.Settings.HyperDeck;
 using LibAtem.Commands.Streaming;
 using LibAtem.Util;
 
@@ -37,6 +38,9 @@ namespace LibAtem.MockTests.SdkState
         public static readonly IReadOnlyDictionary<SDI3GOutputLevel, _BMDSwitcher3GSDIOutputLevel> SDI3GOutputLevelMap;
         public static readonly IReadOnlyDictionary<TalkbackChannel, _BMDSwitcherTalkbackId> TalkbackChannelMap;
         public static readonly IReadOnlyDictionary<MixMinusMode, _BMDSwitcherMixMinusOutputAudioMode> MixMinusModeMap;
+        public static readonly IReadOnlyDictionary<HyperDeckPlayerState, _BMDSwitcherHyperDeckPlayerState> HyperDeckPlayerStateMap;
+        public static readonly IReadOnlyDictionary<HyperDeckConnectionStatus, _BMDSwitcherHyperDeckConnectionStatus> HyperDeckConnectionStatusMap;
+        public static readonly IReadOnlyDictionary<HyperDeckStorageStatus, _BMDSwitcherHyperDeckStorageMediaState> HyperDeckStorageStatusMap;
 
 #if !ATEM_v8_1
         public static readonly IReadOnlyDictionary<StreamingStatus, _BMDSwitcherStreamRTMPState> StreamingStatusMap;
@@ -334,6 +338,27 @@ namespace LibAtem.MockTests.SdkState
             {
                 {MixMinusMode.ProgramOut, _BMDSwitcherMixMinusOutputAudioMode.bmdSwitcherMixMinusOutputAudioModeProgramOut},
                 {MixMinusMode.MixMinus, _BMDSwitcherMixMinusOutputAudioMode.bmdSwitcherMixMinusOutputAudioModeMixMinus}
+            };
+
+            HyperDeckPlayerStateMap = new Dictionary<HyperDeckPlayerState, _BMDSwitcherHyperDeckPlayerState>
+            {
+                {HyperDeckPlayerState.Idle, _BMDSwitcherHyperDeckPlayerState.bmdSwitcherHyperDeckStateIdle},
+                {HyperDeckPlayerState.Playing, _BMDSwitcherHyperDeckPlayerState.bmdSwitcherHyperDeckStatePlay},
+                {HyperDeckPlayerState.Recording, _BMDSwitcherHyperDeckPlayerState.bmdSwitcherHyperDeckStateRecord},
+                {HyperDeckPlayerState.Shuttle, _BMDSwitcherHyperDeckPlayerState.bmdSwitcherHyperDeckStateShuttle},
+                // {HyperDeckPlayerState.UUUU, _BMDSwitcherHyperDeckPlayerState.bmdSwitcherHyperDeckStateUnknown},
+            };
+            HyperDeckConnectionStatusMap = new Dictionary<HyperDeckConnectionStatus, _BMDSwitcherHyperDeckConnectionStatus>
+            {
+                {HyperDeckConnectionStatus.Connected, _BMDSwitcherHyperDeckConnectionStatus.bmdSwitcherHyperDeckConnectionStatusConnected},
+                {HyperDeckConnectionStatus.Connecting, _BMDSwitcherHyperDeckConnectionStatus.bmdSwitcherHyperDeckConnectionStatusConnecting},
+                {HyperDeckConnectionStatus.NotConnected, _BMDSwitcherHyperDeckConnectionStatus.bmdSwitcherHyperDeckConnectionStatusNotConnected},
+                {HyperDeckConnectionStatus.Incompatible, _BMDSwitcherHyperDeckConnectionStatus.bmdSwitcherHyperDeckConnectionStatusIncompatible},
+            };
+            HyperDeckStorageStatusMap = new Dictionary<HyperDeckStorageStatus, _BMDSwitcherHyperDeckStorageMediaState>
+            {
+                {HyperDeckStorageStatus.Ready, _BMDSwitcherHyperDeckStorageMediaState.bmdSwitcherHyperDeckStorageMediaStateReady},
+                {HyperDeckStorageStatus.Unavailable, _BMDSwitcherHyperDeckStorageMediaState.bmdSwitcherHyperDeckStorageMediaStateUnavailable},
             };
 
 #if !ATEM_v8_1

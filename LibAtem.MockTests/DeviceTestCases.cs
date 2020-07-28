@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using LibAtem.MockTests.Util;
 
 namespace LibAtem.MockTests
 {
@@ -56,6 +57,8 @@ namespace LibAtem.MockTests
             (new List<string> {Mini, TwoME, Constellation, TVS}).Where(t => t != "").Take(1).ToArray();
         public static readonly string[] MediaPlayerStillCapture = { Mini };
         public static readonly string[] MediaPlayerClips = { TwoME, Constellation, TwoME4K };
+
+        public static readonly string[] HyperDecks = Randomiser.SelectionOfGroup(All.ToList()).ToArray();
 
         public static readonly string[] Streaming = {MiniPro};
 

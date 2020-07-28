@@ -11,10 +11,12 @@ namespace LibAtem.MockTests
 {
     internal static class EnumMap
     {
-        public static void EnsureIsComplete<T1, T2>(IReadOnlyDictionary<T1, T2> map, bool? unmatchedZero = null)
+        public static void EnsureIsComplete<T1, T2>(IReadOnlyDictionary<T1, T2> map, bool? unmatchedZero = null, params T2[] skip)
         where T1 : System.IConvertible
         {
             ProtocolVersion currentVersion = DeviceTestCases.Version;
+
+            // TODO - implement skip
 
             List<T1> vals = Enum.GetValues(typeof(T1)).OfType<T1>().ToList();
             if (unmatchedZero.GetValueOrDefault(false))
@@ -141,6 +143,17 @@ namespace LibAtem.MockTests
 
         [Fact]
         public void EnsureMixMinusModeMap() => EnumMap.EnsureIsComplete(AtemEnumMaps.MixMinusModeMap);
+
+        [Fact]
+        public void EnsureHyperDeckPlayerStateMap() => EnumMap.EnsureIsComplete(AtemEnumMaps.HyperDeckPlayerStateMap,
+            null,
+            _BMDSwitcherHyperDeckPlayerState.bmdSwitcherHyperDeckStateUnknown);
+
+        [Fact]
+        public void EnsureHyperDeckConnectionStatusMap() => EnumMap.EnsureIsComplete(AtemEnumMaps.HyperDeckConnectionStatusMap);
+
+        [Fact]
+        public void EnsureHyperDeckStorageStatusMap() => EnumMap.EnsureIsComplete(AtemEnumMaps.HyperDeckStorageStatusMap);
 
 #if !ATEM_v8_1
         [Fact]

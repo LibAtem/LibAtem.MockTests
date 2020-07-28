@@ -6,6 +6,8 @@ using LibAtem.Util;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using LibAtem.Commands.Settings.HyperDeck;
+using Xunit;
 
 namespace LibAtem.MockTests.SdkState
 {
@@ -289,19 +291,75 @@ namespace LibAtem.MockTests.SdkState
         private static void Hyperdecks(AtemState state, IBMDSwitcher switcher)
         {
             var iterator = AtemSDKConverter.CastSdk<IBMDSwitcherHyperDeckIterator>(switcher.CreateIterator);
-            state.Settings.Hyperdecks = AtemSDKConverter.IterateList<IBMDSwitcherHyperDeck, SettingsState.HyperdeckState>(iterator.Next, (props, id) =>
+            state.Hyperdecks = AtemSDKConverter.IterateList<IBMDSwitcherHyperDeck, HyperdeckState>(iterator.Next, (props, id) =>
             {
-                var st = new SettingsState.HyperdeckState();
+                var st = new HyperdeckState();
 
                 props.GetSwitcherInput(out long inputId);
-                st.Input = (VideoSource)inputId;
+                st.Settings.Input = (VideoSource)inputId;
                 props.GetAutoRollOnTake(out int autoRoll);
-                st.AutoRoll = autoRoll != 0;
+                st.Settings.AutoRoll = autoRoll != 0;
                 props.GetAutoRollOnTakeFrameDelay(out ushort frameDelay);
-                st.AutoRollFrameDelay = frameDelay;
+                st.Settings.AutoRollFrameDelay = frameDelay;
                 props.GetNetworkAddress(out uint address);
-                st.NetworkAddress = address == 0 ? null : IPUtil.IPToString(BitConverter.GetBytes(address).Reverse().ToArray());
+                st.Settings.NetworkAddress = IPUtil.IPToString(BitConverter.GetBytes(address).Reverse().ToArray());
 
+                props.GetLoopedPlayback(out int loop);
+                st.Player.Loop = loop != 0;
+                props.GetSingleClipPlayback(out int single);
+                st.Player.SingleClip = single != 0;
+
+                props.GetPlayerState(out _BMDSwitcherHyperDeckPlayerState playState);
+                st.Player.State = playState == _BMDSwitcherHyperDeckPlayerState.bmdSwitcherHyperDeckStateUnknown
+                    ? HyperDeckPlayerState.Idle
+                    : AtemEnumMaps.HyperDeckPlayerStateMap.FindByValue(playState);
+                props.GetShuttleSpeed(out int speed);
+                st.Player.PlaybackSpeed = (uint) speed;
+
+                props.GetConnectionStatus(out _BMDSwitcherHyperDeckConnectionStatus status);
+                st.Settings.Status = AtemEnumMaps.HyperDeckConnectionStatusMap.FindByValue(status);
+
+                props.IsRemoteAccessEnabled(out int remoteEnabled);
+                st.Settings.IsRemoteEnabled = remoteEnabled != 0;
+
+                props.GetStorageMediaCount(out uint storageCount);
+                st.Settings.StorageMedia = Enumerable.Range(0, (int) storageCount).Select(i =>
+                {
+                    props.GetStorageMediaState((uint) i, out _BMDSwitcherHyperDeckStorageMediaState storageState);
+                    return AtemEnumMaps.HyperDeckStorageStatusMap.FindByValue(storageState);
+                }).ToList();
+                props.GetActiveStorageMedia(out int activeMedia);
+                st.Settings.ActiveStorageMedia = activeMedia;
+
+                var clipIterator = AtemSDKConverter.CastSdk<IBMDSwitcherHyperDeckClipIterator>(props.CreateIterator);
+                st.Clips = AtemSDKConverter.IterateList<IBMDSwitcherHyperDeckClip, HyperdeckState.ClipState>(clipIterator.Next, (clip, i) =>
+                {
+                    clip.GetId(out long clipId);
+                    clip.GetDuration(out ushort hours, out byte minutes, out byte seconds, out byte frames);
+                    clip.GetName(out string name);
+                    clip.GetTimelineStart(out ushort startHours, out byte startMinutes, out byte startSeconds,
+                        out byte startFrames);
+                    clip.GetTimelineEnd(out ushort endHours, out byte endMinutes, out byte endSeconds,
+                        out byte endFrames);
+
+                    clip.IsInfoAvailable(out int infoAvailable); // TODO
+                    clip.IsValid(out int valid); // TODO
+
+                    Assert.Equal(1, valid);
+                    // Assert.Equal(1, infoAvailable);
+
+                    return new HyperdeckState.ClipState
+                    {
+                        Name = name,
+                        Duration = infoAvailable != 0 ? new HyperdeckState.Time(hours, minutes, seconds, frames) : null,
+                        TimelineStart = infoAvailable != 0 ? new HyperdeckState.Time(startHours, startMinutes, startSeconds, startFrames) : null,
+                        TimelineEnd = infoAvailable != 0 ? new HyperdeckState.Time(endHours, endMinutes, endSeconds, endFrames) : null,
+                    };
+                });
+
+                props.GetClipCount(out uint count);
+                Assert.Equal((int) count, st.Clips.Count);
+                
                 return st;
             });
         }
