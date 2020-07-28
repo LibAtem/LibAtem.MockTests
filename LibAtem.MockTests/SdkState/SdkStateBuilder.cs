@@ -316,9 +316,6 @@ namespace LibAtem.MockTests.SdkState
                 props.GetShuttleSpeed(out int speed);
                 st.Player.PlaybackSpeed = speed;
 
-                props.GetCurrentClip(out long clipId);
-                st.Player.CurrentClipId = (int) clipId;
-
                 props.GetCurrentClipTime(out ushort clipHours, out byte clipMinutes, out byte clipSeconds, out byte clipFrames);
                 st.Player.ClipTime = new HyperDeckTime
                     {Hour = clipHours, Minute = clipMinutes, Second = clipSeconds, Frame = clipFrames};
@@ -326,13 +323,21 @@ namespace LibAtem.MockTests.SdkState
                 st.Player.TimelineTime = new HyperDeckTime
                     {Hour = tlHours, Minute = tlMinutes, Second = tlSeconds, Frame = tlFrames};
 
+                props.GetCurrentClip(out long clipId);
+                st.Storage.CurrentClipId = (int)clipId;
+
                 props.GetFrameRate(out uint frameRate, out uint timeScale);
-                st.Settings.FrameRate = frameRate;
-                st.Settings.TimeScale = timeScale;
+                st.Storage.FrameRate = frameRate;
+                st.Storage.TimeScale = timeScale;
                 props.IsInterlacedVideo(out int isInterlaced);
-                st.Settings.IsInterlaced = isInterlaced != 0;
+                st.Storage.IsInterlaced = isInterlaced != 0;
                 props.IsDropFrameTimeCode(out int isDropFrame);
-                st.Settings.IsDropFrameTimecode = isDropFrame != 0;
+                st.Storage.IsDropFrameTimecode = isDropFrame != 0;
+
+                props.GetEstimatedRecordTimeRemaining(out ushort recordHours, out byte recordMinutes,
+                    out byte recordSeconds, out byte recordFrames);
+                st.Storage.RemainingRecordTime = new HyperDeckTime
+                    {Hour = recordHours, Minute = recordMinutes, Second = recordSeconds, Frame = recordFrames};
 
                 props.GetConnectionStatus(out _BMDSwitcherHyperDeckConnectionStatus status);
                 st.Settings.Status = AtemEnumMaps.HyperDeckConnectionStatusMap.FindByValue(status);
@@ -347,7 +352,7 @@ namespace LibAtem.MockTests.SdkState
                     return AtemEnumMaps.HyperDeckStorageStatusMap.FindByValue(storageState);
                 }).ToList();
                 props.GetActiveStorageMedia(out int activeMedia);
-                st.Settings.ActiveStorageMedia = activeMedia;
+                st.Storage.ActiveStorageMedia = activeMedia;
                 
                 var clipIterator = AtemSDKConverter.CastSdk<IBMDSwitcherHyperDeckClipIterator>(props.CreateIterator);
                 st.Clips = AtemSDKConverter.IterateList<IBMDSwitcherHyperDeckClip, HyperdeckState.ClipState>(clipIterator.Next, (clip, i) =>
