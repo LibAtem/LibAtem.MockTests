@@ -471,9 +471,8 @@ namespace LibAtem.MockTests
 
                     for (int i = 0; i < 5; i++)
                     {
-                        cmd.StorageMediaCount = (uint) Randomiser.RangeInt(1, 5);
-                        hyperdeckState.Settings.StorageMedia = Enumerable.Range(0, (int) cmd.StorageMediaCount)
-                            .Select(o => HyperDeckStorageStatus.Unavailable).ToList();
+                        hyperdeckState.Settings.StorageMediaCount =
+                            cmd.StorageMediaCount = (uint) Randomiser.RangeInt(1, 5);
 
                         helper.SendFromServerAndWaitForChange(stateBefore, cmd);
                     }
@@ -502,14 +501,23 @@ namespace LibAtem.MockTests
 
                     stateBefore = helper.Helper.BuildLibState();
                     HyperdeckState hyperdeckState = stateBefore.Hyperdecks[(int)id];
+                    hyperdeckState.Storage.ActiveStorageMedia = 0;
+
+                    var storageCmd = new HyperDeckStorageGetCommand
+                    {
+                        Id = (uint) id,
+                        ActiveStorageMedia = hyperdeckState.Storage.ActiveStorageMedia,
+                        CurrentClipId = hyperdeckState.Storage.CurrentClipId,
+                        FrameRate = hyperdeckState.Storage.FrameRate,
+                        TimeScale = hyperdeckState.Storage.TimeScale,
+                    };
 
                     for (int i = 0; i < 5; i++)
                     {
-                        cmd.StorageMediaCount = (uint)Randomiser.RangeInt(1, 5);
-                        hyperdeckState.Settings.StorageMedia = Enumerable.Range(0, (int)cmd.StorageMediaCount)
-                            .Select(o => HyperDeckStorageStatus.Unavailable).ToList();
+                        hyperdeckState.Storage.ActiveStorageStatus = storageCmd.ActiveStorageStatus =
+                            Randomiser.EnumValue<HyperDeckStorageStatus>();
 
-                        helper.SendFromServerAndWaitForChange(stateBefore, cmd);
+                        helper.SendFromServerAndWaitForChange(stateBefore, storageCmd);
                     }
                 }
             });

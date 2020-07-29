@@ -346,14 +346,15 @@ namespace LibAtem.MockTests.SdkState
                 st.Settings.IsRemoteEnabled = remoteEnabled != 0;
 
                 props.GetStorageMediaCount(out uint storageCount);
-                st.Settings.StorageMedia = Enumerable.Range(0, (int) storageCount).Select(i =>
-                {
-                    props.GetStorageMediaState((uint) i, out _BMDSwitcherHyperDeckStorageMediaState storageState);
-                    return AtemEnumMaps.HyperDeckStorageStatusMap.FindByValue(storageState);
-                }).ToList();
+                st.Settings.StorageMediaCount = storageCount;
                 props.GetActiveStorageMedia(out int activeMedia);
                 st.Storage.ActiveStorageMedia = activeMedia;
-                
+                if (activeMedia >= 0)
+                {
+                    props.GetStorageMediaState((uint) activeMedia, out _BMDSwitcherHyperDeckStorageMediaState storageState);
+                    st.Storage.ActiveStorageStatus = AtemEnumMaps.HyperDeckStorageStatusMap.FindByValue(storageState);
+                }
+
                 var clipIterator = AtemSDKConverter.CastSdk<IBMDSwitcherHyperDeckClipIterator>(props.CreateIterator);
                 st.Clips = AtemSDKConverter.IterateList<IBMDSwitcherHyperDeckClip, HyperdeckState.ClipState>(clipIterator.Next, (clip, i) =>
                 {
@@ -365,8 +366,8 @@ namespace LibAtem.MockTests.SdkState
                     clip.GetTimelineEnd(out ushort endHours, out byte endMinutes, out byte endSeconds,
                         out byte endFrames);
 
-                    clip.IsInfoAvailable(out int infoAvailable); // TODO
-                    clip.IsValid(out int valid); // TODO
+                    clip.IsInfoAvailable(out int infoAvailable);
+                    clip.IsValid(out int valid);
 
                     Assert.Equal(1, valid);
                     // Assert.Equal(1, infoAvailable);
