@@ -234,7 +234,9 @@ namespace LibAtem.MockTests.Media
 
                     for (int i = 0; i < 5; i++)
                     {
-                        MediaPlayerSource type = playerState.Source.SourceType = Randomiser.EnumValue<MediaPlayerSource>();
+                        MediaPlayerSource type = playerState.Source.SourceType = stateBefore.MediaPool.Clips.Count > 0
+                            ? Randomiser.EnumValue<MediaPlayerSource>()
+                            : MediaPlayerSource.Still;
                         uint index = playerState.Source.SourceIndex = Randomiser.RangeInt(20) + 1;
 
                         helper.SendAndWaitForChange(stateBefore,

@@ -33,7 +33,10 @@ namespace LibAtem.MockTests
         [Fact]
         public void TestStateMock2ME4K() => RunTest(DeviceTestCases.TwoME4K);
 
-        [Fact] //(Skip = "Doesn't work at the moment")]
+        [Fact]
+        public void TestStateMock4ME4K() => RunTest(DeviceTestCases.FourME4K);
+
+        [Fact]
         public void TestStateMockConstellation() => RunTest(DeviceTestCases.Constellation);
 
         [Fact]

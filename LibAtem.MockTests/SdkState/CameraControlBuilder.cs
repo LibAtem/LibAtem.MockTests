@@ -127,7 +127,7 @@ namespace LibAtem.MockTests.SdkState
             uint lastCategory = 0u;
             uint lastParameter = 0u;
             for (iterator.Next(out var device, out var category, out var parameter);
-                device != 0;
+                ;
                 iterator.Next(out device, out category, out parameter))
             {
                 if (device == lastDevice && category == lastCategory && parameter == lastParameter)
@@ -136,6 +136,8 @@ namespace LibAtem.MockTests.SdkState
                 lastDevice = device;
                 lastCategory = category;
                 lastParameter = parameter;
+
+                if (device == 0) continue;
 
                 if (!state.CameraControl.Cameras.TryGetValue(device, out CameraControlState.CameraState cState))
                 {

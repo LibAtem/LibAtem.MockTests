@@ -16,32 +16,32 @@ namespace LibAtem.MockTests
         {
             ProtocolVersion currentVersion = DeviceTestCases.Version;
 
-            // TODO - implement skip
-
-            List<T1> vals = Enum.GetValues(typeof(T1)).OfType<T1>().ToList();
+            List<T1> keys = Enum.GetValues(typeof(T1)).OfType<T1>().ToList();
             if (unmatchedZero.GetValueOrDefault(false))
-                vals = vals.Where(v => Convert.ToInt32(v) != 0).ToList();
+                keys = keys.Where(v => Convert.ToInt32(v) != 0).ToList();
             
-            List<T1> validVals = vals.Where(v =>
+            List<T1> validKeys = keys.Where(v =>
             {
                 SinceAttribute attr = v.GetPossibleAttribute<T1, SinceAttribute>();
                 return attr == null ||  currentVersion >= attr.Version;
             }).ToList();
 
             // Check that no values are defined which should not
-            List<T1> badVals = vals.Except(validVals).ToList();
-            List<T1> definedBadVals = badVals.Where(map.ContainsKey).ToList();
-            Assert.Empty(definedBadVals);
+            List<T1> badKeys = keys.Except(validKeys).ToList();
+            List<T1> definedBadKeys = badKeys.Where(map.ContainsKey).ToList();
+            Assert.Empty(definedBadKeys);
 
-            List<T1> missing = validVals.Where(v => !map.ContainsKey(v)).ToList();
+            List<T1> missing = validKeys.Where(v => !map.ContainsKey(v)).ToList();
             Assert.Empty(missing);
 
+            List<T2> validVals = Enum.GetValues(typeof(T2)).OfType<T2>().Except(skip).OrderBy(v => v).ToList();
+
             // Expect map and values to have the same number
-            Assert.Equal(validVals.Count, map.Count);
-            Assert.Equal(Enum.GetValues(typeof(T2)).Length, map.Count);
+            Assert.Equal(validKeys.Count, map.Count);
+            Assert.True(validVals.SequenceEqual(map.Values.OrderBy(v => v).ToList()));
 
             // Expect all the map values to be unique
-            Assert.Equal(validVals.Count, map.Select(v => v.Value).Distinct().Count());
+            Assert.Equal(validKeys.Count, map.Values.Distinct().Count());
         }
 
         public static void EnsureIsMatching<T1, T2>()

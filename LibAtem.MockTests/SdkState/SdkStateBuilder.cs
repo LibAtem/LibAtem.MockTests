@@ -6,7 +6,6 @@ using LibAtem.Util;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using LibAtem.Commands.Settings.HyperDeck;
 using Xunit;
 
 namespace LibAtem.MockTests.SdkState
@@ -43,7 +42,7 @@ namespace LibAtem.MockTests.SdkState
                 switcher.Get3GSDIOutputLevel(out _BMDSwitcher3GSDIOutputLevel outputLevel);
                 state.Settings.SDI3GLevel = AtemEnumMaps.SDI3GOutputLevelMap.FindByValue(outputLevel);
             }
-            catch (Exception e)
+            catch (Exception)
             {
                 // This call fails on models which dont do 3g sdi
                 state.Settings.SDI3GLevel = 0;
@@ -53,7 +52,7 @@ namespace LibAtem.MockTests.SdkState
                 switcher.GetSuperSourceCascade(out int cascade);
                 state.Settings.SuperSourceCascade = cascade != 0;
             }
-            catch (Exception e)
+            catch (Exception)
             {
                 // This call fails on models which dont have multiple ssrc
                 state.Settings.SuperSourceCascade = false;
@@ -90,7 +89,7 @@ namespace LibAtem.MockTests.SdkState
                                 multiviewModes.Add(AtemEnumMaps.VideoModesMap.FindByValue(mvMode));
                         }
                     }
-                    catch (NotImplementedException e)
+                    catch (NotImplementedException)
                     {
                         supportsMultiviewer = false;
                     }
@@ -108,7 +107,7 @@ namespace LibAtem.MockTests.SdkState
                                 downConvertModes.Add(AtemEnumMaps.VideoModesMap.FindByValue(dcMode));
                         }
                     }
-                    catch (NotImplementedException e)
+                    catch (NotImplementedException)
                     {
                         supportsDownConvert = false;
                     }
@@ -148,7 +147,7 @@ namespace LibAtem.MockTests.SdkState
                 switcher.GetMethodForDownConvertedSD(out _BMDSwitcherDownConversionMethod downConvertMethod);
                 state.Settings.DownConvertMode = AtemEnumMaps.SDDownconvertModesMap.FindByValue(downConvertMethod);
             }
-            catch (Exception e)
+            catch (Exception)
             {
                 // Not supported
             }

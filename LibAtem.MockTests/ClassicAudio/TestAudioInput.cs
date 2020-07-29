@@ -107,7 +107,9 @@ namespace LibAtem.MockTests.ClassicAudio
             bool tested = false;
             AtemMockServerWrapper.Each(_output, _pool, handler, DeviceTestCases.ClassicAudioMain, helper =>
             {
-                IEnumerable<long> useIds = helper.Helper.BuildLibState().Audio.Inputs.Keys.ToList();
+                IEnumerable<long> useIds = helper.Helper.BuildLibState().Audio.Inputs.Where(i =>
+                    i.Value.Properties.PortType == AudioPortType.SDI ||
+                    i.Value.Properties.PortType == AudioPortType.HDMI).Select(i => i.Key).ToList();
                 foreach (long id in useIds)
                 {
                     AtemState stateBefore = helper.Helper.BuildLibState();

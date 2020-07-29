@@ -127,7 +127,7 @@ namespace LibAtem.MockTests
         public void TestDownConvertVideoMode()
         {
             bool tested = false;
-            var handler = CommandGenerator.CreateAutoCommandHandler<DownConvertModeSetCommand, DownConvertModeGetCommand>(new[] { "DownConvertMode", "CoreVideoMode" }, true);
+            var handler = CommandGenerator.CreateAutoCommandHandler<DownConvertVideoModeSetCommand, DownConvertVideoModeGetCommand>(new[] { "DownConvertedMode", "CoreVideoMode" }, true);
             AtemMockServerWrapper.Each(_output, _pool, handler, DeviceTestCases.DownConvertHDMode, helper =>
             {
                 AtemState stateBefore = helper.Helper.BuildLibState();

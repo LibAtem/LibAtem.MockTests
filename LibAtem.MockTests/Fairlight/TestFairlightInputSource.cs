@@ -59,7 +59,7 @@ namespace LibAtem.MockTests.Fairlight
             return eq;
         }
 
-        public static void EachRandomSource(AtemMockServerWrapper helper, Action<AtemState, FairlightAudioState.InputSourceState, long, IBMDSwitcherFairlightAudioSource, int> fcn, int maxIterations = 5, bool useAll = false)
+        internal static void EachRandomSource(AtemMockServerWrapper helper, Action<AtemState, FairlightAudioState.InputSourceState, long, IBMDSwitcherFairlightAudioSource, int> fcn, int maxIterations = 5, bool useAll = false)
         {
             List<long> useIds = helper.Helper.BuildLibState().Fairlight.Inputs.Keys.ToList();
             if (!useAll) useIds = Randomiser.SelectionOfGroup(useIds, 2).ToList();
