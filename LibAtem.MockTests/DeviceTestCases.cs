@@ -20,7 +20,7 @@ namespace LibAtem.MockTests
 #elif ATEM_v8_1_1
         public static readonly ProtocolVersion Version = ProtocolVersion.V8_1_1;
         public static readonly string MiniPro = ""; // "mini-pro-v8.2";
-        public static readonly string Mini = "mini-v8.1.1";
+        public static readonly string Mini = "mini-v8.3";
         public static readonly string Constellation = "constellation-v8.2.3";
         public static readonly string TwoME = "2me-v8.3";
         public static readonly string TwoME4K = "";

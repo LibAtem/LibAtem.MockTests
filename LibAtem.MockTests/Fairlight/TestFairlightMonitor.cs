@@ -94,7 +94,7 @@ namespace LibAtem.MockTests.Fairlight
 
                 for (int i = 0; i < 5; i++)
                 {
-                    var target = Randomiser.Range(-60, 6);
+                    var target = Randomiser.Range(-60, 0);
                     monState.InputTalkbackGain = target;
                     helper.SendAndWaitForChange(stateBefore, () => { monitor.SetInputTalkbackGain(target); });
                 }

@@ -112,6 +112,8 @@ namespace LibAtem.MockTests.Media
 
                     // Now set invalid
                     stateBefore.MediaPool.Stills[(int)index].IsUsed = false;
+                    stateBefore.MediaPool.Stills[(int)index].Filename = "";
+                    stateBefore.MediaPool.Stills[(int)index].Hash = new byte[16];
                     helper.SendAndWaitForChange(stateBefore, () =>
                     {
                         stills.SetInvalid(index);
@@ -123,11 +125,13 @@ namespace LibAtem.MockTests.Media
         {
             if (cmd is MediaPoolClearStillCommand clearCmd)
             {
-                var previous = previousCommands.Value.OfType<MediaPoolFrameDescriptionCommand>().Last(a => a.Index == clearCmd.Index && a.Bank == MediaPoolFileType.Still);
-                Assert.NotNull(previous);
-
-                previous.IsUsed = false;
-                yield return previous;
+                yield return new MediaPoolFrameDescriptionCommand
+                {
+                    Index = clearCmd.Index,
+                    IsUsed = false,
+                    Filename = "",
+                    Hash = new byte[16],
+                };
             }
         }
 

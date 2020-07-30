@@ -105,10 +105,10 @@
     <None Update="TestFiles\Handshake\mini-pro-v8.2.data">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
-    <None Update="TestFiles\Handshake\mini-v8.1.1.data">
+    <None Update="TestFiles\Handshake\mini-v8.1.data">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
-    <None Update="TestFiles\Handshake\mini-v8.1.data">
+    <None Update="TestFiles\Handshake\mini-v8.3.data">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
     <None Update="TestFiles\Handshake\tvs-v8.1.0.data">

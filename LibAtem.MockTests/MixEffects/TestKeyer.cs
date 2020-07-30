@@ -47,12 +47,23 @@ namespace LibAtem.MockTests.MixEffects
             {
                 SelectionOfKeyers<IBMDSwitcherKey>(helper, (stateBefore, keyerBefore, sdkKeyer, meId, keyId, i) =>
                 {
-                    tested = true;
+                    try
+                    {
+                        tested = true;
 
-                    MixEffectKeyType target = Randomiser.EnumValue<MixEffectKeyType>();
-                    _BMDSwitcherKeyType target2 = AtemEnumMaps.MixEffectKeyTypeMap[target];
-                    keyerBefore.Properties.KeyType = target;
-                    helper.SendAndWaitForChange(stateBefore, () => { sdkKeyer.SetType(target2); });
+                        MixEffectKeyType target = Randomiser.EnumValue<MixEffectKeyType>();
+                        _BMDSwitcherKeyType target2 = AtemEnumMaps.MixEffectKeyTypeMap[target];
+                        keyerBefore.Properties.KeyType = target;
+                        helper.SendAndWaitForChange(stateBefore, () => { sdkKeyer.SetType(target2); });
+                    }
+                    finally
+                    {
+                        // Reset it back afterwards, so that the dve is available for use elsewhere
+                        helper.SendAndWaitForChange(null, () =>
+                        {
+                            sdkKeyer.SetType(_BMDSwitcherKeyType.bmdSwitcherKeyTypeLuma);
+                        });
+                    }
                 });
             });
             Assert.True(tested);
