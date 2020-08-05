@@ -36,7 +36,7 @@ namespace LibAtem.MockTests
 
                 foreach (VideoSource auxSource in chosenIds)
                 {
-                    AuxiliaryId auxId = AtemEnumMaps.GetAuxId(auxSource);
+                    uint auxId = AtemEnumMaps.GetAuxId(auxSource);
                     IBMDSwitcherInputAux aux = allAuxes[auxSource];
 
                     // GetInputAvailabilityMask is used when checking if another input can be used for this output.

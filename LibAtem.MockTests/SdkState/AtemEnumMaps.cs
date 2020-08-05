@@ -393,10 +393,10 @@ namespace LibAtem.MockTests.SdkState
             return (Tk)Enum.ToObject(typeof(Tk), res);
         }
 
-        public static AuxiliaryId GetAuxId(VideoSource id)
+        public static uint GetAuxId(VideoSource id)
         {
             if (id >= VideoSource.Auxilary1 && id <= VideoSource.Auxilary24)
-                return (AuxiliaryId)(id - VideoSource.Auxilary1);
+                return (uint)(id - VideoSource.Auxilary1);
 
             throw new Exception("Not an Aux");
         }
