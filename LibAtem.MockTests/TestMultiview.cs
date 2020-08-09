@@ -4,8 +4,6 @@ using System.Collections.Immutable;
 using System.Linq;
 using BMDSwitcherAPI;
 using LibAtem.Commands;
-using LibAtem.Commands.DeviceProfile;
-using LibAtem.Commands.MixEffects;
 using LibAtem.Commands.Settings.Multiview;
 using LibAtem.Common;
 using LibAtem.MockTests.SdkState;
@@ -143,6 +141,8 @@ namespace LibAtem.MockTests
                 }
             });
         }
+
+        // TODO - try again at tests for the various Can* methods
 
         /*
         SDK doesnt appear to acknowldge changes in this property, so it is not possible to test like this.

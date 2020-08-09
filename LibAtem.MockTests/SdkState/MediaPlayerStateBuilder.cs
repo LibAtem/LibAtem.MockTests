@@ -12,14 +12,12 @@ namespace LibAtem.MockTests.SdkState
         {
             var pool = switcher as IBMDSwitcherMediaPool;
 
-            // General
-            // TODO
+            // TODO DoesVideoModeChangeClearMediaPool I don't see anything obvious for this in the protocol
 
             // Stills
             pool.GetStills(out IBMDSwitcherStills stills);
             stills.GetCount(out uint stillCount);
             state.Stills = Enumerable.Range(0, (int)stillCount).Select(i => BuildStill(stills, (uint)i)).ToList();
-
 
             // Clips
             pool.GetFrameTotalForClips(out uint unassignedFrames);

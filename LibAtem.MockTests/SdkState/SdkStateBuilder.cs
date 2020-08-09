@@ -186,7 +186,9 @@ namespace LibAtem.MockTests.SdkState
                 state.Audio = AudioStateBuilder.Build(audioMixer);
             }
 
+#if !ATEM_v8_1
             TalkbackStateBuilder.Build(state, switcher);
+#endif
 
             if (switcher is IBMDSwitcherCameraControl camera)
             {

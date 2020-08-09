@@ -39,7 +39,13 @@ namespace LibAtem.MockTests.SdkState
             info.SupportsToggleSafeArea = supportsToggleSafeArea != 0;
             props.CanRouteInputs(out int canRoute);
             info.CanRouteInputs = canRoute != 0;
-            
+#if !ATEM_v8_1
+            props.CanChangeLayout(out int canChangeLayout);
+            info.CanChangeLayout = canChangeLayout != 0;
+            props.CanAdjustVuMeterOpacity(out int canChangeVuOpacity);
+            info.CanChangeVuMeterOpacity = canChangeVuOpacity != 0;
+#endif
+
             props.GetLayout(out _BMDSwitcherMultiViewLayout layout);
             state.Properties.Layout = (MultiViewLayoutV8)layout;
             props.GetProgramPreviewSwapped(out int swapped);
