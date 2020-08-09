@@ -5,7 +5,6 @@ using System.Linq;
 using BMDSwitcherAPI;
 using LibAtem.Commands;
 using LibAtem.Common;
-using LibAtem.DeviceProfile;
 using LibAtem.MockTests.Util;
 using LibAtem.MockTests.SdkState;
 using LibAtem.State;

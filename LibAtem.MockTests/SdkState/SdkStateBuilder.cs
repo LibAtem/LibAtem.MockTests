@@ -169,7 +169,6 @@ namespace LibAtem.MockTests.SdkState
             SerialPorts(state, switcher);
             Macros(state.Macros, switcher);
             MediaPoolStateBuilder.Build(state.MediaPool, switcher);
-            //TalkbackStateBuilder.Build(state, switcher);
             MixMinusOutputs(state, switcher);
             StreamingStateBuilder.Build(state, switcher);
 
@@ -184,6 +183,8 @@ namespace LibAtem.MockTests.SdkState
             {
                 state.Audio = AudioStateBuilder.Build(audioMixer);
             }
+
+            TalkbackStateBuilder.Build(state, switcher);
 
             if (switcher is IBMDSwitcherCameraControl camera)
             {

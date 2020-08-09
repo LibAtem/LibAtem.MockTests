@@ -51,6 +51,7 @@ namespace LibAtem.MockTests
         public static readonly string[] SerialPort = { TwoME, Constellation };
         public static readonly string[] SDI3G = {Constellation, TwoME4K};
         public static readonly string[] MixMinusOutputs = {TVSHD};
+        public static readonly string[] Talkback = {Constellation}; // TODO - more
 
         public static readonly string[] MediaPlayer = All;
         public static readonly string[] MediaPlayerStillTransfer =
