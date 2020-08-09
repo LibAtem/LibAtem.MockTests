@@ -1,11 +1,8 @@
 ﻿using BMDSwitcherAPI;
-using LibAtem.Commands;
 using LibAtem.Commands.Audio.Fairlight;
 using LibAtem.MockTests.Util;
 using LibAtem.MockTests.SdkState;
 using LibAtem.State;
-using System.Collections.Generic;
-using System.Collections.Immutable;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -69,8 +66,9 @@ namespace LibAtem.MockTests.Fairlight
         [Fact]
         public void TestReset()
         {
-            var target = new FairlightMixerMasterEqualizerResetCommand { Equalizer = true };
-            var handler = CommandGenerator.MatchCommand(target);
+            var target = new FairlightMixerMasterEqualizerResetCommand
+                {Mask = FairlightMixerMasterEqualizerResetCommand.MaskFlags.Equalizer};
+            var handler = CommandGenerator.MatchCommand(target, true);
             AtemMockServerWrapper.Each(_output, _pool, handler, DeviceTestCases.FairlightMain, helper =>
             {
                 IBMDSwitcherFairlightAudioEqualizer eq = GetEqualizer(helper);

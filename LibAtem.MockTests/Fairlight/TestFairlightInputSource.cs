@@ -222,8 +222,8 @@ namespace LibAtem.MockTests.Fairlight
         [Fact]
         public void TestEqualizerReset()
         {
-            var target = new FairlightMixerSourceEqualizerResetCommand { Equalizer = true };
-            var handler = CommandGenerator.MatchCommand(target);
+            var target = new FairlightMixerSourceEqualizerResetCommand { Mask = FairlightMixerSourceEqualizerResetCommand.MaskFlags.Equalizer};
+            var handler = CommandGenerator.MatchCommand(target, true);
             AtemMockServerWrapper.Each(_output, _pool, handler, DeviceTestCases.FairlightMain, helper =>
             {
                 EachRandomSource(helper, (stateBefore, srcState, inputId, src, i) =>

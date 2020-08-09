@@ -34,11 +34,7 @@ namespace LibAtem.MockTests.SdkState
 
             // Equalizer
             var equalizer = AtemSDKConverter.CastSdk<IBMDSwitcherFairlightAudioEqualizer>(props.GetMasterOutEffect);
-            equalizer.GetEnabled(out int eqEnabled);
-            state.ProgramOut.Equalizer.Enabled = eqEnabled != 0;
-            equalizer.GetGain(out double eqGain);
-            state.ProgramOut.Equalizer.Gain = eqGain;
-            // TODO - bands
+            FairlightAudioBuilderCommon.ApplyEqualizer(equalizer, state.ProgramOut.Equalizer);
 
             // Inputs
             state.Tally = new Dictionary<Tuple<AudioSource, long>, bool>();
