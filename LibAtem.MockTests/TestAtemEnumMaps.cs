@@ -157,7 +157,18 @@ namespace LibAtem.MockTests
 
 #if !ATEM_v8_1
         [Fact]
+        public void EnsureTimeCodeModeMap() => EnumMap.EnsureIsComplete(AtemEnumMaps.TimeCodeModeMap);
+
+        [Fact]
         public void EnsureStreamingStatusMap() => EnumMap.EnsureIsComplete(AtemEnumMaps.StreamingStatusMap);
+        [Fact]
+        public void EnsureStreamingErrorMap() => EnumMap.EnsureIsComplete(AtemEnumMaps.StreamingErrorMap);
+        [Fact]
+        public void EnsureRecordingStateMap() => EnumMap.EnsureIsComplete(AtemEnumMaps.RecordingStateMap);
+        [Fact]
+        public void EnsureRecordingDiskStatusMap() => EnumMap.EnsureIsComplete(AtemEnumMaps.RecordingDiskStatusMap);
+        [Fact]
+        public void EnsureRecordingErrorMap() => EnumMap.EnsureIsComplete(AtemEnumMaps.RecordingErrorMap);
 #endif
     }
 }

@@ -3,8 +3,6 @@ using LibAtem.Common;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using LibAtem.Commands.Settings.HyperDeck;
-using LibAtem.Commands.Streaming;
 using LibAtem.Util;
 
 namespace LibAtem.MockTests.SdkState
@@ -43,7 +41,13 @@ namespace LibAtem.MockTests.SdkState
         public static readonly IReadOnlyDictionary<HyperDeckStorageStatus, _BMDSwitcherHyperDeckStorageMediaState> HyperDeckStorageStatusMap;
 
 #if !ATEM_v8_1
+        public static readonly IReadOnlyDictionary<TimeCodeMode, _BMDSwitcherTimeCodeMode> TimeCodeModeMap;
+
         public static readonly IReadOnlyDictionary<StreamingStatus, _BMDSwitcherStreamRTMPState> StreamingStatusMap;
+        public static readonly IReadOnlyDictionary<StreamingError, _BMDSwitcherStreamRTMPError> StreamingErrorMap;
+        public static readonly IReadOnlyDictionary<RecordingDiskStatus, _BMDSwitcherRecordDiskStatus> RecordingDiskStatusMap;
+        public static readonly IReadOnlyDictionary<RecordingState, _BMDSwitcherRecordAVState> RecordingStateMap;
+        public static readonly IReadOnlyDictionary<RecordingError, _BMDSwitcherRecordAVError> RecordingErrorMap;
 #endif
 
         static AtemEnumMaps()
@@ -362,12 +366,47 @@ namespace LibAtem.MockTests.SdkState
             };
 
 #if !ATEM_v8_1
+            TimeCodeModeMap = new Dictionary<TimeCodeMode, _BMDSwitcherTimeCodeMode>
+            {
+                {TimeCodeMode.FreeRun, _BMDSwitcherTimeCodeMode.bmdSwitcherTimeCodeModeFreeRun},
+                {TimeCodeMode.TimeOfDay, _BMDSwitcherTimeCodeMode.bmdSwitcherTimeCodeModeTimeOfDay},
+            };
+
             StreamingStatusMap = new Dictionary<StreamingStatus, _BMDSwitcherStreamRTMPState>
             {
                 {StreamingStatus.Idle, _BMDSwitcherStreamRTMPState.bmdSwitcherStreamRTMPStateIdle},
                 {StreamingStatus.Connecting, _BMDSwitcherStreamRTMPState.bmdSwitcherStreamRTMPStateConnecting},
                 {StreamingStatus.Streaming, _BMDSwitcherStreamRTMPState.bmdSwitcherStreamRTMPStateStreaming},
                 {StreamingStatus.Stopping, _BMDSwitcherStreamRTMPState.bmdSwitcherStreamRTMPStateStopping},
+            };
+            StreamingErrorMap = new Dictionary<StreamingError, _BMDSwitcherStreamRTMPError>
+            {
+                {StreamingError.None, _BMDSwitcherStreamRTMPError.bmdSwitcherStreamRTMPErrorNone},
+                {StreamingError.InvalidState, _BMDSwitcherStreamRTMPError.bmdSwitcherStreamRTMPErrorInvalidState},
+                {StreamingError.Unknown, _BMDSwitcherStreamRTMPError.bmdSwitcherStreamRTMPErrorUnknown},
+            };
+            RecordingStateMap = new Dictionary<RecordingState, _BMDSwitcherRecordAVState>
+            {
+                {RecordingState.Idle, _BMDSwitcherRecordAVState.bmdSwitcherRecordAVStateIdle},
+                {RecordingState.Recording, _BMDSwitcherRecordAVState.bmdSwitcherRecordAVStateRecording},
+                {RecordingState.Stopping, _BMDSwitcherRecordAVState.bmdSwitcherRecordAVStateStopping},
+            };
+            RecordingErrorMap = new Dictionary<RecordingError, _BMDSwitcherRecordAVError>
+            {
+                {RecordingError.None, _BMDSwitcherRecordAVError.bmdSwitcherRecordAVErrorNone},
+                {RecordingError.NoMedia, _BMDSwitcherRecordAVError.bmdSwitcherRecordAVErrorNoMedia},
+                {RecordingError.MediaFull, _BMDSwitcherRecordAVError.bmdSwitcherRecordAVErrorMediaFull},
+                {RecordingError.MediaError, _BMDSwitcherRecordAVError.bmdSwitcherRecordAVErrorMediaError},
+                {RecordingError.MediaUnformatted, _BMDSwitcherRecordAVError.bmdSwitcherRecordAVErrorMediaUnformatted},
+                {RecordingError.DroppingFrames, _BMDSwitcherRecordAVError.bmdSwitcherRecordAVErrorDroppingFrames},
+                {RecordingError.Unknown, _BMDSwitcherRecordAVError.bmdSwitcherRecordAVErrorUnknown},
+            };
+            RecordingDiskStatusMap = new Dictionary<RecordingDiskStatus, _BMDSwitcherRecordDiskStatus>
+            {
+                {RecordingDiskStatus.Idle, _BMDSwitcherRecordDiskStatus.bmdSwitcherRecordDiskIdle},
+                {RecordingDiskStatus.Unformatted, _BMDSwitcherRecordDiskStatus.bmdSwitcherRecordDiskUnformatted},
+                {RecordingDiskStatus.Active, _BMDSwitcherRecordDiskStatus.bmdSwitcherRecordDiskActive},
+                {RecordingDiskStatus.Recording, _BMDSwitcherRecordDiskStatus.bmdSwitcherRecordDiskRecording},
             };
 #endif
         }

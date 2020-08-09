@@ -54,7 +54,7 @@ namespace LibAtem.MockTests
         public void TestRequestTimecode()
         {
             var handler = CommandGenerator.MatchCommand(new TimeCodeRequestCommand());
-            AtemMockServerWrapper.Each(_output, _pool, handler, DeviceTestCases.SerialPort, helper =>
+            AtemMockServerWrapper.Each(_output, _pool, handler, DeviceTestCases.All, helper =>
             {
                 IBMDSwitcher switcher = helper.SdkClient.SdkSwitcher;
 
@@ -76,7 +76,7 @@ namespace LibAtem.MockTests
         {
             var expectedCmd = new TimeCodeCommand();
             var handler = CommandGenerator.MatchCommand(expectedCmd, false, "IsDropFrame");
-            AtemMockServerWrapper.Each(_output, _pool, handler, DeviceTestCases.SerialPort, helper =>
+            AtemMockServerWrapper.Each(_output, _pool, handler, DeviceTestCases.All, helper =>
             {
                 IBMDSwitcher switcher = helper.SdkClient.SdkSwitcher;
 
@@ -97,9 +97,33 @@ namespace LibAtem.MockTests
         }
 
         [Fact]
+        public void TestTimeCodeMode()
+        {
+            var handler = CommandGenerator.CreateAutoCommandHandler<TimeCodeConfigSetCommand, TimeCodeConfigGetCommand>("Mode", true);
+            AtemMockServerWrapper.Each(_output, _pool, handler, DeviceTestCases.TimeCodeMode, helper =>
+            {
+                IBMDSwitcher switcher = helper.SdkClient.SdkSwitcher;
+
+                AtemState stateBefore = helper.Helper.BuildLibState();
+
+                for (int i = 0; i < 5; i++)
+                {
+                    var target = Randomiser.EnumValue<TimeCodeMode>();
+                    stateBefore.Settings.TimeCodeMode = target;
+
+                    helper.SendAndWaitForChange(stateBefore,
+                        () =>
+                        {
+                            switcher.SetTimeCodeMode(AtemEnumMaps.TimeCodeModeMap[target]);
+                        });
+                }
+            });
+        }
+
+        [Fact]
         public void TestTimecodeLocked()
         {
-            AtemMockServerWrapper.Each(_output, _pool, null, DeviceTestCases.SerialPort, helper =>
+            AtemMockServerWrapper.Each(_output, _pool, null, DeviceTestCases.All, helper =>
             {
                 AtemState stateBefore = helper.Helper.BuildLibState();
 
@@ -109,7 +133,7 @@ namespace LibAtem.MockTests
                     stateBefore.Info.TimecodeLocked = newValue;
 
                     helper.SendAndWaitForChange(stateBefore,
-                        () => { helper.Server.SendCommands(new TimecodeLockedCommand {Locked = newValue}); });
+                        () => { helper.Server.SendCommands(new TimeCodeLockedCommand {Locked = newValue}); });
 
                 }
             });
