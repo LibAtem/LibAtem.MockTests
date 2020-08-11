@@ -52,19 +52,21 @@ namespace LibAtem.MockTests.SdkState
 
             state.Streaming = new StreamingState();
 
-            streamingSwitcher.IsStreaming(out int isStreaming);
+            //streamingSwitcher.IsStreaming(out int isStreaming);
             streamingSwitcher.GetStatus(out _BMDSwitcherStreamRTMPState status, out _BMDSwitcherStreamRTMPError error);
             streamingSwitcher.GetServiceName(out string serviceName);
             streamingSwitcher.GetUrl(out string url);
             streamingSwitcher.GetKey(out string key);
-            streamingSwitcher.GetBitrates(out uint lowBitrate, out uint highBitrate);
+            streamingSwitcher.GetVideoBitrates(out uint lowVideoBitrate, out uint highVideoBitrate);
+            streamingSwitcher.GetAudioBitrates(out uint lowAudioBitrate, out uint highAudioBitrate);
             streamingSwitcher.GetDuration(out byte hours, out byte minutes, out byte seconds, out byte frames, out int isDropFrame);
             streamingSwitcher.GetEncodingBitrate(out uint encodingBitrate);
             streamingSwitcher.GetCacheUsed(out double cacheUsed);
+            streamingSwitcher.GetAuthentication(out string username, out string password);
 
-            state.Streaming.Status.IsStreaming = isStreaming != 0;
-            state.Streaming.Status.CacheUsed = cacheUsed;
-            state.Streaming.Status.EncodingBitrate = encodingBitrate;
+            //state.Streaming.Status.IsStreaming = isStreaming != 0;
+            state.Streaming.Stats.CacheUsed = (uint) (cacheUsed * 100);
+            state.Streaming.Stats.EncodingBitrate = encodingBitrate;
             state.Streaming.Status.Duration = new Timecode
             {
                 Hour = hours,
@@ -74,13 +76,18 @@ namespace LibAtem.MockTests.SdkState
                 DropFrame = isDropFrame != 0
             };
             state.Streaming.Status.State = AtemEnumMaps.StreamingStatusMap.FindByValue(status);
-            state.Streaming.Status.Error = (int)error;
+            state.Streaming.Status.Error = AtemEnumMaps.StreamingErrorMap.FindByValue(error);
 
             state.Streaming.Settings.ServiceName = serviceName;
             state.Streaming.Settings.Url = url;
             state.Streaming.Settings.Key = key;
-            state.Streaming.Settings.LowBitrate = lowBitrate;
-            state.Streaming.Settings.HighBitrate = highBitrate;
+            state.Streaming.Settings.LowVideoBitrate = lowVideoBitrate;
+            state.Streaming.Settings.HighVideoBitrate = highVideoBitrate;
+            state.Streaming.Settings.LowAudioBitrate = lowAudioBitrate;
+            state.Streaming.Settings.HighAudioBitrate = highAudioBitrate;
+
+            state.Streaming.Authentication.Username = username;
+            state.Streaming.Authentication.Password = password;
 
 #endif
         }

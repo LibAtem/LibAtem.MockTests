@@ -1,14 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Collections.Immutable;
-using System.Linq;
-using BMDSwitcherAPI;
+﻿using BMDSwitcherAPI;
 using LibAtem.Commands;
 using LibAtem.Commands.Streaming;
 using LibAtem.Common;
-using LibAtem.DeviceProfile;
 using LibAtem.MockTests.Util;
-using LibAtem.MockTests.SdkState;
 using LibAtem.State;
 using Xunit;
 using Xunit.Abstractions;
@@ -92,10 +86,8 @@ namespace LibAtem.MockTests
             });
         }
 
-        /*
-         TODO - this uses rounded/fixed values?
         [Fact]
-        public void TestBitrates()
+        public void TestVideoBitrates()
         {
             var handler = CommandGenerator.CreateAutoCommandHandler<StreamingServiceSetCommand, StreamingServiceGetCommand>("Bitrates");
             AtemMockServerWrapper.Each(_output, _pool, handler, DeviceTestCases.Streaming, helper =>
@@ -109,19 +101,19 @@ namespace LibAtem.MockTests
                 {
                     uint targetLow = Randomiser.RangeInt(1u << 30);
                     uint targetHigh = Randomiser.RangeInt(1u << 30);
-                    stateBefore.Streaming.Settings.LowBitrate = targetLow;
-                    stateBefore.Streaming.Settings.HighBitrate = targetHigh;
+                    stateBefore.Streaming.Settings.LowVideoBitrate = targetLow;
+                    stateBefore.Streaming.Settings.HighVideoBitrate = targetHigh;
 
-                    helper.SendAndWaitForChange(stateBefore, () => { switcher.SetBitrates(targetLow, targetHigh); });
+                    helper.SendAndWaitForChange(stateBefore, () => { switcher.SetVideoBitrates(targetLow, targetHigh); });
                 }
             });
         }
-        */
-        /*
+
+
         [Fact]
-        public void TestStartStopStreaming()
+        public void TestAudioBitrates()
         {
-            var handler = CommandGenerator.CreateAutoCommandHandler<StreamingActiveSetCommand, StreamingStateCommand>("IsStreaming", true);
+            var handler = CommandGenerator.CreateAutoCommandHandler<StreamingAudioBitratesCommand, StreamingAudioBitratesCommand>("Bitrates", true);
             AtemMockServerWrapper.Each(_output, _pool, handler, DeviceTestCases.Streaming, helper =>
             {
                 var switcher = helper.SdkClient.SdkSwitcher as IBMDSwitcherStreamRTMP;
@@ -129,30 +121,67 @@ namespace LibAtem.MockTests
 
                 AtemState stateBefore = helper.Helper.BuildLibState();
 
-
-                for (int i = 0; i < 250; i++)
+                for (int i = 0; i < 5; i++)
                 {
-                    var startCommand = new CommandBuilder("SRSS");
-                    startCommand.AddByte((byte) Randomiser.RangeInt(255), (byte) Randomiser.RangeInt(255),
-                        (byte) Randomiser.RangeInt(255), (byte) Randomiser.RangeInt(255),
-                        (byte) Randomiser.RangeInt(255), (byte) Randomiser.RangeInt(255),
-                        (byte) Randomiser.RangeInt(255), (byte) Randomiser.RangeInt(255));
-                        
-                    //startCommand.AddUInt32((uint)_BMDSwitcherStreamRTMPState.bmdSwitcherStreamRTMPStateConnecting);
-                    //startCommand.Pad(2);
-                    //stateBefore.Streaming.Status.IsStreaming = true;
+                    uint targetLow = Randomiser.RangeInt(1u << 30);
+                    uint targetHigh = Randomiser.RangeInt(1u << 30);
+                    stateBefore.Streaming.Settings.LowAudioBitrate = targetLow;
+                    stateBefore.Streaming.Settings.HighAudioBitrate = targetHigh;
 
-                    helper.SendBufferFromServerAndWaitForChange(stateBefore, startCommand.ToByteArray());
-
-                    //helper.SendAndWaitForChange(stateBefore, () => { switcher.StartStreaming(); });
-
-                    //stateBefore.Streaming.Status.IsStreaming = false;
-
-                    //helper.SendAndWaitForChange(stateBefore, () => { switcher.StopStreaming(); });
-                    Assert.True(helper.Helper.TestResult);
+                    helper.SendAndWaitForChange(stateBefore, () => { switcher.SetAudioBitrates(targetLow, targetHigh); });
                 }
             });
-        }*/
+        }
+
+        [Fact]
+        public void TestStartStreaming()
+        {
+            var handler = CommandGenerator.MatchCommand(new StreamingActiveSetCommand {IsStreaming = true});
+            AtemMockServerWrapper.Each(_output, _pool, handler, DeviceTestCases.Streaming, helper =>
+            {
+                var switcher = helper.SdkClient.SdkSwitcher as IBMDSwitcherStreamRTMP;
+                Assert.NotNull(switcher);
+
+                for (int i = 0; i < 5; i++)
+                {
+                    uint timeBefore = helper.Server.CurrentTime;
+
+                    helper.SendAndWaitForChange(null, () => { switcher.StartStreaming(); });
+
+                    // It should have sent a response, but we dont expect any comparable data
+                    Assert.NotEqual(timeBefore, helper.Server.CurrentTime);
+                }
+            });
+        }
+
+        [Fact]
+        public void TestStopStreaming()
+        {
+            var handler = CommandGenerator.MatchCommand(new StreamingActiveSetCommand { IsStreaming = false });
+            AtemMockServerWrapper.Each(_output, _pool, handler, DeviceTestCases.Streaming, helper =>
+            {
+                var switcher = helper.SdkClient.SdkSwitcher as IBMDSwitcherStreamRTMP;
+                Assert.NotNull(switcher);
+
+                // Set streaming
+                var stateBefore = helper.Helper.BuildLibState();
+                var streamCmd = new StreamingStateCommand
+                    { StreamingStatus = StreamingStatusExt.EncodeStreamingStatus(StreamingStatus.Streaming, StreamingError.None) };
+                stateBefore.Streaming.Status.State = StreamingStatus.Streaming;
+                helper.SendFromServerAndWaitForChange(stateBefore, streamCmd);
+
+
+                for (int i = 0; i < 5; i++)
+                {
+                    uint timeBefore = helper.Server.CurrentTime;
+
+                    helper.SendAndWaitForChange(null, () => { switcher.StopStreaming(); });
+
+                    // It should have sent a response, but we dont expect any comparable data
+                    Assert.NotEqual(timeBefore, helper.Server.CurrentTime);
+                }
+            });
+        }
 
         [Fact]
         public void TestDuration()
@@ -191,6 +220,27 @@ namespace LibAtem.MockTests
         }
 
         [Fact]
+        public void TestRequestDuration()
+        {
+            var handler = CommandGenerator.MatchCommand(new StreamingRequestDurationCommand());
+            AtemMockServerWrapper.Each(_output, _pool, handler, DeviceTestCases.Streaming, helper =>
+            {
+                var switcher = helper.SdkClient.SdkSwitcher as IBMDSwitcherStreamRTMP;
+                Assert.NotNull(switcher);
+
+                for (int i = 0; i < 5; i++)
+                {
+                    uint timeBefore = helper.Server.CurrentTime;
+
+                    helper.SendAndWaitForChange(null, () => { switcher.RequestDuration(); });
+
+                    // It should have sent a response, but we dont expect any comparable data
+                    Assert.NotEqual(timeBefore, helper.Server.CurrentTime);
+                }
+            });
+        }
+
+        [Fact]
         public void TestStreamingState()
         {
             var handler = CommandGenerator.CreateAutoCommandHandler<StreamingActiveSetCommand, StreamingStateCommand>("IsStreaming", true);
@@ -201,14 +251,100 @@ namespace LibAtem.MockTests
 
                 AtemState stateBefore = helper.Helper.BuildLibState();
 
-                for (int i = 0; i < 5; i++)
+                for (int i = 0; i < 10; i++)
                 {
+                    stateBefore.Streaming.Status.State = Randomiser.EnumValue<StreamingStatus>();
+                    stateBefore.Streaming.Status.Error = Randomiser.EnumValue<StreamingError>();
                     var cmd = new StreamingStateCommand
                     {
-                        StreamingStatus = Randomiser.EnumValue<StreamingStatus>()
+                        StreamingStatus =
+                            StreamingStatusExt.EncodeStreamingStatus(stateBefore.Streaming.Status.State,
+                                stateBefore.Streaming.Status.Error)
                     };
 
-                    stateBefore.Streaming.Status.State = cmd.StreamingStatus;
+                    helper.SendFromServerAndWaitForChange(stateBefore, cmd);
+                }
+            });
+        }
+
+        [Fact]
+        public void TestAuthentication()
+        {
+            var handler =
+                CommandGenerator
+                    .CreateAutoCommandHandler<StreamingAuthenticationCommand, StreamingAuthenticationCommand>(
+                        new[] {"Username", "Password"}, true);
+            AtemMockServerWrapper.Each(_output, _pool, handler, DeviceTestCases.Streaming, helper =>
+            {
+                var switcher = helper.SdkClient.SdkSwitcher as IBMDSwitcherStreamRTMP;
+                Assert.NotNull(switcher);
+
+                AtemState stateBefore = helper.Helper.BuildLibState();
+
+                for (int i = 0; i < 5; i++)
+                {
+                    string target1 = Randomiser.String(64);
+                    string target2 = Randomiser.String(64);
+                    stateBefore.Streaming.Authentication.Username = target1;
+                    stateBefore.Streaming.Authentication.Password = target2;
+
+                    helper.SendAndWaitForChange(stateBefore, () => { switcher.SetAuthentication(target1, target2); });
+                }
+            });
+        }
+
+        [Fact]
+        public void TestEncodingBitrate()
+        {
+            AtemMockServerWrapper.Each(_output, _pool, null, DeviceTestCases.Streaming, helper =>
+            {
+                var switcher = helper.SdkClient.SdkSwitcher as IBMDSwitcherStreamRTMP;
+                Assert.NotNull(switcher);
+
+                AtemState stateBefore = helper.Helper.BuildLibState();
+
+                // Set streaming
+                var streamCmd = new StreamingStateCommand
+                    {StreamingStatus = StreamingStatusExt.EncodeStreamingStatus(StreamingStatus.Streaming, StreamingError.None)};
+                stateBefore.Streaming.Status.State = StreamingStatus.Streaming;
+                helper.SendFromServerAndWaitForChange(stateBefore, streamCmd);
+
+                for (int i = 0; i < 5; i++)
+                {
+                    var cmd = new StreamingStatsCommand
+                    {
+                        EncodingBitrate = Randomiser.RangeInt(int.MaxValue)
+                    };
+                    stateBefore.Streaming.Stats.EncodingBitrate = cmd.EncodingBitrate;
+
+                    helper.SendFromServerAndWaitForChange(stateBefore, cmd);
+                }
+            });
+        }
+
+        [Fact]
+        public void TestCacheUsed()
+        {
+            AtemMockServerWrapper.Each(_output, _pool, null, DeviceTestCases.Streaming, helper =>
+            {
+                var switcher = helper.SdkClient.SdkSwitcher as IBMDSwitcherStreamRTMP;
+                Assert.NotNull(switcher);
+
+                AtemState stateBefore = helper.Helper.BuildLibState();
+
+                // Set streaming
+                var streamCmd = new StreamingStateCommand
+                    { StreamingStatus = StreamingStatusExt.EncodeStreamingStatus(StreamingStatus.Streaming, StreamingError.None) };
+                stateBefore.Streaming.Status.State = StreamingStatus.Streaming;
+                helper.SendFromServerAndWaitForChange(stateBefore, streamCmd);
+
+                for (int i = 0; i < 5; i++)
+                {
+                    var cmd = new StreamingStatsCommand
+                    {
+                        CacheUsed = (uint)Randomiser.RangeInt(0, 100)
+                    };
+                    stateBefore.Streaming.Stats.CacheUsed = cmd.CacheUsed;
 
                     helper.SendFromServerAndWaitForChange(stateBefore, cmd);
                 }

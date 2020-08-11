@@ -50,7 +50,7 @@
     <When Condition=" '$(Platform)'=='v8.1.1' OR '$(WORKFLOW_VERSION)'=='v8.1.1' ">
       <ItemGroup>
         <Reference Include="Interop.BMDSwitcherAPI">
-          <HintPath>..\AtemSDK\v8.3.0\Interop.BMDSwitcherAPI.dll</HintPath>
+          <HintPath>..\AtemSDK\v8.4.0\Interop.BMDSwitcherAPI.dll</HintPath>
         </Reference>
       </ItemGroup>
     </When>
@@ -100,6 +100,9 @@
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
     <None Update="TestFiles\Handshake\constellation-v8.2.3.data">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="TestFiles\Handshake\mini-pro-iso-v8.4.data">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
     <None Update="TestFiles\Handshake\mini-pro-v8.2.data">
