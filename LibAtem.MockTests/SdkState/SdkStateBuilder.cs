@@ -20,8 +20,10 @@ namespace LibAtem.MockTests.SdkState
             state.Info.ProductName = productName;
             switcher.GetVideoMode(out _BMDSwitcherVideoMode videoMode);
             state.Settings.VideoMode = AtemEnumMaps.VideoModesMap.FindByValue(videoMode);
+#if !ATEM_v8_1
             switcher.GetTimeCodeMode(out _BMDSwitcherTimeCodeMode timeCodeMode);
             if (timeCodeMode != 0) state.Settings.TimeCodeMode = AtemEnumMaps.TimeCodeModeMap.FindByValue(timeCodeMode);
+#endif
             switcher.GetTimeCodeLocked(out int locked);
             state.Info.TimecodeLocked = locked != 0;
             switcher.GetTimeCode(out byte hours, out byte minutes, out byte seconds, out byte frames, out int dropFrame);

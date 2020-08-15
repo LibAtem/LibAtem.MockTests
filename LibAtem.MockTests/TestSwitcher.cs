@@ -96,6 +96,7 @@ namespace LibAtem.MockTests
             });
         }
 
+#if !ATEM_v8_1
         [Fact]
         public void TestTimeCodeMode()
         {
@@ -119,6 +120,7 @@ namespace LibAtem.MockTests
                 }
             });
         }
+#endif
 
         [Fact]
         public void TestTimecodeLocked()
