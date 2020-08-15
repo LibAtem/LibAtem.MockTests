@@ -65,6 +65,7 @@ namespace LibAtem.MockTests
         public static readonly string[] HyperDecks = Randomiser.SelectionOfGroup(All.ToList()).ToArray();
 
         public static readonly string[] Streaming = { MiniProIso };
+        public static readonly string[] Recording = { MiniProIso };
 
         // Audio
         public static readonly string[] FairlightMain = { Mini, Constellation };

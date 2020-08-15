@@ -186,8 +186,7 @@ namespace LibAtem.MockTests
         [Fact]
         public void TestDuration()
         {
-            var handler = CommandGenerator.CreateAutoCommandHandler<StreamingActiveSetCommand, StreamingStateCommand>("IsStreaming", true);
-            AtemMockServerWrapper.Each(_output, _pool, handler, DeviceTestCases.Streaming, helper =>
+            AtemMockServerWrapper.Each(_output, _pool, null, DeviceTestCases.Streaming, helper =>
             {
                 var switcher = helper.SdkClient.SdkSwitcher as IBMDSwitcherStreamRTMP;
                 Assert.NotNull(switcher);

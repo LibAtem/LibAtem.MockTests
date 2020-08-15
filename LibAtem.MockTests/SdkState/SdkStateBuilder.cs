@@ -173,6 +173,7 @@ namespace LibAtem.MockTests.SdkState
             MediaPoolStateBuilder.Build(state.MediaPool, switcher);
             MixMinusOutputs(state, switcher);
             StreamingStateBuilder.Build(state, switcher);
+            RecordingStateBuilder.Build(state, switcher);
 
             state.DownstreamKeyers = DownstreamKeyerStateBuilder.Build(switcher);
             state.MediaPlayers = MediaPlayerStateBuilder.Build(switcher, updateSettings, state.MediaPool.Clips.Count > 0);

@@ -46,7 +46,7 @@ namespace LibAtem.MockTests.SdkState
         public static readonly IReadOnlyDictionary<StreamingStatus, _BMDSwitcherStreamRTMPState> StreamingStatusMap;
         public static readonly IReadOnlyDictionary<StreamingError, _BMDSwitcherStreamRTMPError> StreamingErrorMap;
         public static readonly IReadOnlyDictionary<RecordingDiskStatus, _BMDSwitcherRecordDiskStatus> RecordingDiskStatusMap;
-        public static readonly IReadOnlyDictionary<RecordingState, _BMDSwitcherRecordAVState> RecordingStateMap;
+        public static readonly IReadOnlyDictionary<RecordingStatus, _BMDSwitcherRecordAVState> RecordingStateMap;
         public static readonly IReadOnlyDictionary<RecordingError, _BMDSwitcherRecordAVError> RecordingErrorMap;
 #endif
 
@@ -385,11 +385,11 @@ namespace LibAtem.MockTests.SdkState
                 {StreamingError.InvalidState, _BMDSwitcherStreamRTMPError.bmdSwitcherStreamRTMPErrorInvalidState},
                 {StreamingError.Unknown, _BMDSwitcherStreamRTMPError.bmdSwitcherStreamRTMPErrorUnknown},
             };
-            RecordingStateMap = new Dictionary<RecordingState, _BMDSwitcherRecordAVState>
+            RecordingStateMap = new Dictionary<RecordingStatus, _BMDSwitcherRecordAVState>
             {
-                {RecordingState.Idle, _BMDSwitcherRecordAVState.bmdSwitcherRecordAVStateIdle},
-                {RecordingState.Recording, _BMDSwitcherRecordAVState.bmdSwitcherRecordAVStateRecording},
-                {RecordingState.Stopping, _BMDSwitcherRecordAVState.bmdSwitcherRecordAVStateStopping},
+                {RecordingStatus.Idle, _BMDSwitcherRecordAVState.bmdSwitcherRecordAVStateIdle},
+                {RecordingStatus.Recording, _BMDSwitcherRecordAVState.bmdSwitcherRecordAVStateRecording},
+                {RecordingStatus.Stopping, _BMDSwitcherRecordAVState.bmdSwitcherRecordAVStateStopping},
             };
             RecordingErrorMap = new Dictionary<RecordingError, _BMDSwitcherRecordAVError>
             {

@@ -1,47 +1,8 @@
-﻿using System.Collections.Generic;
-using BMDSwitcherAPI;
+﻿using BMDSwitcherAPI;
 using LibAtem.State;
 
 namespace LibAtem.MockTests.SdkState
 {
-    public static class RecordingStateBuilder
-    {
-        public static void Build(AtemState state, IBMDSwitcher switcher)
-        {
-#if !ATEM_v8_1
-            var recordingSwitcher = switcher as IBMDSwitcherRecordAV;
-            if (recordingSwitcher == null) return;
-
-            state.Recording = new RecordingState();
-
-            recordingSwitcher.IsRecording(out int recording);
-            recordingSwitcher.GetStatus(out _BMDSwitcherRecordAVState avState, out _BMDSwitcherRecordAVError error);
-            recordingSwitcher.GetFilename(out string filename);
-            recordingSwitcher.GetRecordInAllCameras(out int recordInAllCameras);
-            recordingSwitcher.GetWorkingSetLimit(out uint workingSetLimit);
-            recordingSwitcher.GetActiveDiskIndex(out uint activeDiskIndex);
-            recordingSwitcher.GetDuration(out byte hours, out byte minutes, out byte seconds, out byte frames, out int dropFrame);
-
-            var diskIterator = AtemSDKConverter.CastSdk<IBMDSwitcherRecordDiskIterator>(recordingSwitcher.CreateIterator);
-            state.Recording.Disks = AtemSDKConverter.IterateList<IBMDSwitcherRecordDisk, RecordingDiskState>(diskIterator.Next,
-                (sdk, id) =>
-                {
-                    sdk.GetId(out uint diskId);
-                    sdk.GetVolumeName(out string volumeName);
-                    sdk.GetRecordingTimeAvailable(out uint recordingTimeAvailable);
-                    sdk.GetStatus(out _BMDSwitcherRecordDiskStatus diskStatus);
-
-                    return new RecordingDiskState
-                    {
-                        DiskId = diskId,
-                        VolumeName = volumeName,
-                        RecordingTimeAvailable = recordingTimeAvailable,
-                        // Status = diskStatus
-                    }; 
-                });
-#endif
-        }
-    }
     public static class StreamingStateBuilder
     {
         public static void Build(AtemState state, IBMDSwitcher switcher)
