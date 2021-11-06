@@ -25,7 +25,7 @@ jobs:
         regsvr32 $Env:GITHUB_WORKSPACE/AtemSDK/v8.1.0/BMDSwitcherAPI.dll /s
         regsvr32 $Env:GITHUB_WORKSPACE/AtemSDK/v8.1.0/BMDSwitcherAPI64.dll /s
         dotnet test LibAtem.MockTests -c Release
-  test_v8_1_1_-_v8_3_0:
+  test_v8_1_1_-_v8_6_4:
     runs-on: windows-latest
     steps:
     - uses: actions/checkout@v1

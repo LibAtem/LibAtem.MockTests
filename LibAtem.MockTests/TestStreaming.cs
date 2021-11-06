@@ -136,7 +136,7 @@ namespace LibAtem.MockTests
         [Fact]
         public void TestStartStreaming()
         {
-            var handler = CommandGenerator.MatchCommand(new StreamingActiveSetCommand {IsStreaming = true});
+            var handler = CommandGenerator.MatchCommand(new StreamingStatusSetCommand {IsStreaming = true});
             AtemMockServerWrapper.Each(_output, _pool, handler, DeviceTestCases.Streaming, helper =>
             {
                 var switcher = helper.SdkClient.SdkSwitcher as IBMDSwitcherStreamRTMP;
@@ -157,7 +157,7 @@ namespace LibAtem.MockTests
         [Fact]
         public void TestStopStreaming()
         {
-            var handler = CommandGenerator.MatchCommand(new StreamingActiveSetCommand { IsStreaming = false });
+            var handler = CommandGenerator.MatchCommand(new StreamingStatusSetCommand { IsStreaming = false });
             AtemMockServerWrapper.Each(_output, _pool, handler, DeviceTestCases.Streaming, helper =>
             {
                 var switcher = helper.SdkClient.SdkSwitcher as IBMDSwitcherStreamRTMP;
@@ -165,8 +165,7 @@ namespace LibAtem.MockTests
 
                 // Set streaming
                 var stateBefore = helper.Helper.BuildLibState();
-                var streamCmd = new StreamingStateCommand
-                    { StreamingStatus = StreamingStatusExt.EncodeStreamingStatus(StreamingStatus.Streaming, StreamingError.None) };
+                var streamCmd = new StreamingStatusGetCommand { Status = StreamingStatus.Streaming, Error = StreamingError.None };
                 stateBefore.Streaming.Status.State = StreamingStatus.Streaming;
                 helper.SendFromServerAndWaitForChange(stateBefore, streamCmd);
 
@@ -195,7 +194,7 @@ namespace LibAtem.MockTests
                 
                 for (int i = 0; i < 5; i++)
                 {
-                    var durationCommand = new StreamingTimecodeCommand
+                    var durationCommand = new StreamingDurationCommand
                     {
                         Hour = Randomiser.RangeInt(23),
                         Minute = Randomiser.RangeInt(59),
@@ -242,7 +241,7 @@ namespace LibAtem.MockTests
         [Fact]
         public void TestStreamingState()
         {
-            var handler = CommandGenerator.CreateAutoCommandHandler<StreamingActiveSetCommand, StreamingStateCommand>("IsStreaming", true);
+            var handler = CommandGenerator.CreateAutoCommandHandler<StreamingStatusSetCommand, StreamingStatusGetCommand>("IsStreaming", true);
             AtemMockServerWrapper.Each(_output, _pool, handler, DeviceTestCases.Streaming, helper =>
             {
                 var switcher = helper.SdkClient.SdkSwitcher as IBMDSwitcherStreamRTMP;
@@ -254,11 +253,10 @@ namespace LibAtem.MockTests
                 {
                     stateBefore.Streaming.Status.State = Randomiser.EnumValue<StreamingStatus>();
                     stateBefore.Streaming.Status.Error = Randomiser.EnumValue<StreamingError>();
-                    var cmd = new StreamingStateCommand
+                    var cmd = new StreamingStatusGetCommand
                     {
-                        StreamingStatus =
-                            StreamingStatusExt.EncodeStreamingStatus(stateBefore.Streaming.Status.State,
-                                stateBefore.Streaming.Status.Error)
+                        Status = stateBefore.Streaming.Status.State,
+                        Error = stateBefore.Streaming.Status.Error,
                     };
 
                     helper.SendFromServerAndWaitForChange(stateBefore, cmd);
@@ -303,8 +301,7 @@ namespace LibAtem.MockTests
                 AtemState stateBefore = helper.Helper.BuildLibState();
 
                 // Set streaming
-                var streamCmd = new StreamingStateCommand
-                    {StreamingStatus = StreamingStatusExt.EncodeStreamingStatus(StreamingStatus.Streaming, StreamingError.None)};
+                var streamCmd = new StreamingStatusGetCommand { Status = StreamingStatus.Streaming, Error = StreamingError.None };
                 stateBefore.Streaming.Status.State = StreamingStatus.Streaming;
                 helper.SendFromServerAndWaitForChange(stateBefore, streamCmd);
 
@@ -332,8 +329,7 @@ namespace LibAtem.MockTests
                 AtemState stateBefore = helper.Helper.BuildLibState();
 
                 // Set streaming
-                var streamCmd = new StreamingStateCommand
-                    { StreamingStatus = StreamingStatusExt.EncodeStreamingStatus(StreamingStatus.Streaming, StreamingError.None) };
+                var streamCmd = new StreamingStatusGetCommand { Status = StreamingStatus.Streaming, Error = StreamingError.None };
                 stateBefore.Streaming.Status.State = StreamingStatus.Streaming;
                 helper.SendFromServerAndWaitForChange(stateBefore, streamCmd);
 

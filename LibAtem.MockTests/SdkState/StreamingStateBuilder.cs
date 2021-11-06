@@ -20,7 +20,7 @@ namespace LibAtem.MockTests.SdkState
             streamingSwitcher.GetKey(out string key);
             streamingSwitcher.GetVideoBitrates(out uint lowVideoBitrate, out uint highVideoBitrate);
             streamingSwitcher.GetAudioBitrates(out uint lowAudioBitrate, out uint highAudioBitrate);
-            streamingSwitcher.GetDuration(out byte hours, out byte minutes, out byte seconds, out byte frames, out int isDropFrame);
+            streamingSwitcher.GetTimeCode(out byte hours, out byte minutes, out byte seconds, out byte frames, out int isDropFrame);
             streamingSwitcher.GetEncodingBitrate(out uint encodingBitrate);
             streamingSwitcher.GetCacheUsed(out double cacheUsed);
             streamingSwitcher.GetAuthentication(out string username, out string password);

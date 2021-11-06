@@ -97,7 +97,7 @@ namespace LibAtem.MockTests
         [Fact]
         public void TestStartRecording()
         {
-            var handler = CommandGenerator.MatchCommand(new RecordingActiveSetCommand {IsRecording = true});
+            var handler = CommandGenerator.MatchCommand(new RecordingStatusSetCommand {IsRecording = true});
             AtemMockServerWrapper.Each(_output, _pool, handler, DeviceTestCases.Streaming, helper =>
             {
                 var switcher = helper.SdkClient.SdkSwitcher as IBMDSwitcherRecordAV;
@@ -118,7 +118,7 @@ namespace LibAtem.MockTests
         [Fact]
         public void TestStopRecording()
         {
-            var handler = CommandGenerator.MatchCommand(new RecordingActiveSetCommand {IsRecording = false});
+            var handler = CommandGenerator.MatchCommand(new RecordingStatusSetCommand { IsRecording = false});
             AtemMockServerWrapper.Each(_output, _pool, handler, DeviceTestCases.Streaming, helper =>
             {
                 var switcher = helper.SdkClient.SdkSwitcher as IBMDSwitcherRecordAV;
@@ -145,7 +145,7 @@ namespace LibAtem.MockTests
         [Fact]
         public void TestTotalRecordingTimeAvailable()
         {
-            var handler = CommandGenerator.CreateAutoCommandHandler<StreamingActiveSetCommand, StreamingStateCommand>("IsStreaming", true);
+            var handler = CommandGenerator.CreateAutoCommandHandler<RecordingStatusSetCommand, RecordingStatusGetCommand>("IsRecording", true);
             AtemMockServerWrapper.Each(_output, _pool, handler, DeviceTestCases.Streaming, helper =>
             {
                 var switcher = helper.SdkClient.SdkSwitcher as IBMDSwitcherStreamRTMP;
@@ -156,7 +156,7 @@ namespace LibAtem.MockTests
 
                 for (int i = 0; i < 10; i++)
                 {
-                    var cmd = new RecordingStatusCommand
+                    var cmd = new RecordingStatusGetCommand
                     {
                         TotalRecordingTimeAvailable = Randomiser.RangeInt(int.MaxValue)
                     };
@@ -186,10 +186,10 @@ namespace LibAtem.MockTests
                 {
                     stateBefore.Recording.Status.State = Randomiser.EnumValue<RecordingStatus>();
                     stateBefore.Recording.Status.Error = Randomiser.EnumValue<RecordingError>();
-                    var cmd = new RecordingStatusCommand()
+                    var cmd = new RecordingStatusGetCommand()
                     {
-                        RecordingStatus = RecordingStatusExt.EncodeRecordingStatus(stateBefore.Recording.Status.State,
-                            stateBefore.Recording.Status.Error)
+                        Status = stateBefore.Recording.Status.State,
+                        Error = stateBefore.Recording.Status.Error,
                     };
                     helper.SendFromServerAndWaitForChange(stateBefore, cmd);
                 }
@@ -323,9 +323,9 @@ namespace LibAtem.MockTests
             stateBefore.Recording.Status.State = RecordingStatus.Recording;
             stateBefore.Recording.Status.Error = RecordingError.None;
 
-            var rtms = parsedCmds.OfType<RecordingStatusCommand>().SingleOrDefault();
-            rtms.RecordingStatus = RecordingStatusExt.EncodeRecordingStatus(stateBefore.Recording.Status.State,
-                stateBefore.Recording.Status.Error);
+            var rtms = parsedCmds.OfType<RecordingStatusGetCommand>().SingleOrDefault();
+            rtms.Status = stateBefore.Recording.Status.State;
+            rtms.Error = stateBefore.Recording.Status.Error;
 
             helper.SendFromServerAndWaitForChange(stateBefore, rtms);
         }
@@ -380,7 +380,7 @@ namespace LibAtem.MockTests
         [Fact]
         public void TestBasicDisk()
         {
-            var handler = CommandGenerator.CreateAutoCommandHandler<StreamingActiveSetCommand, StreamingStateCommand>("IsStreaming", true);
+            var handler = CommandGenerator.CreateAutoCommandHandler<RecordingStatusSetCommand, RecordingStatusGetCommand>("IsRecording", true);
             AtemMockServerWrapper.Each(_output, _pool, handler, DeviceTestCases.Streaming, helper =>
             {
                 var switcher = helper.SdkClient.SdkSwitcher as IBMDSwitcherStreamRTMP;
@@ -398,7 +398,7 @@ namespace LibAtem.MockTests
         [Fact]
         public void TestDiskStatus()
         {
-            var handler = CommandGenerator.CreateAutoCommandHandler<StreamingActiveSetCommand, StreamingStateCommand>("IsStreaming", true);
+            var handler = CommandGenerator.CreateAutoCommandHandler<RecordingStatusSetCommand, RecordingStatusGetCommand>("IsRecording", true);
             AtemMockServerWrapper.Each(_output, _pool, handler, DeviceTestCases.Streaming, helper =>
             {
                 var switcher = helper.SdkClient.SdkSwitcher as IBMDSwitcherStreamRTMP;
@@ -411,7 +411,7 @@ namespace LibAtem.MockTests
                 for (int i = 0; i < 10; i++)
                 {
                     stateBefore.Recording.Disks[cmd.DiskId].Status =
-                        cmd.Status = Randomiser.EnumValue<RecordingDiskStatus>(RecordingDiskStatus.Removed);
+                        cmd.Status = Randomiser.EnumValue<RecordingDiskStatus>();
 
                     helper.SendFromServerAndWaitForChange(stateBefore, cmd);
                 }
@@ -421,7 +421,7 @@ namespace LibAtem.MockTests
         [Fact]
         public void TestDiskName()
         {
-            var handler = CommandGenerator.CreateAutoCommandHandler<StreamingActiveSetCommand, StreamingStateCommand>("IsStreaming", true);
+            var handler = CommandGenerator.CreateAutoCommandHandler<RecordingStatusSetCommand, RecordingStatusGetCommand>("IsRecording", true);
             AtemMockServerWrapper.Each(_output, _pool, handler, DeviceTestCases.Streaming, helper =>
             {
                 var switcher = helper.SdkClient.SdkSwitcher as IBMDSwitcherStreamRTMP;
@@ -444,7 +444,7 @@ namespace LibAtem.MockTests
         [Fact]
         public void TestDiskRecordingTimeAvailable()
         {
-            var handler = CommandGenerator.CreateAutoCommandHandler<StreamingActiveSetCommand, StreamingStateCommand>("IsStreaming", true);
+            var handler = CommandGenerator.CreateAutoCommandHandler<RecordingStatusSetCommand, RecordingStatusGetCommand>("IsRecording", true);
             AtemMockServerWrapper.Each(_output, _pool, handler, DeviceTestCases.Streaming, helper =>
             {
                 var switcher = helper.SdkClient.SdkSwitcher as IBMDSwitcherStreamRTMP;
@@ -467,7 +467,7 @@ namespace LibAtem.MockTests
         [Fact]
         public void TestDiskRemoval()
         {
-            var handler = CommandGenerator.CreateAutoCommandHandler<StreamingActiveSetCommand, StreamingStateCommand>("IsStreaming", true);
+            var handler = CommandGenerator.CreateAutoCommandHandler<RecordingStatusSetCommand, RecordingStatusGetCommand>("IsRecording", true);
             AtemMockServerWrapper.Each(_output, _pool, handler, DeviceTestCases.Streaming, helper =>
             {
                 var switcher = helper.SdkClient.SdkSwitcher as IBMDSwitcherStreamRTMP;
@@ -484,7 +484,7 @@ namespace LibAtem.MockTests
                     var cmd = InitDisk(helper, stateBefore, id);
 
                     // Simulate removal
-                    cmd.Status = RecordingDiskStatus.Removed;
+                    cmd.IsDelete = true;
                     stateBefore.Recording.Disks.Remove(id);
                     helper.SendFromServerAndWaitForChange(stateBefore, cmd);
                 }

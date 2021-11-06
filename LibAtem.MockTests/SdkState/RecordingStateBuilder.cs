@@ -22,7 +22,8 @@ namespace LibAtem.MockTests.SdkState
             recordingSwitcher.GetRecordInAllCameras(out int recordInAllCameras);
             recordingSwitcher.GetWorkingSetLimit(out uint workingSetLimit);
             recordingSwitcher.GetActiveDiskIndex(out uint activeDiskIndex);
-            recordingSwitcher.GetDuration(out byte hours, out byte minutes, out byte seconds, out byte frames, out int dropFrame);
+            //recordingSwitcher.GetDuration(out ulong duration);
+            recordingSwitcher.GetTimeCode(out byte hours, out byte minutes, out byte seconds, out byte frames, out int dropFrame);
 
             recordingSwitcher.GetWorkingSetDisk(0, out uint workingSet1Id);
             recordingSwitcher.GetWorkingSetDisk(1, out uint workingSet2Id);
