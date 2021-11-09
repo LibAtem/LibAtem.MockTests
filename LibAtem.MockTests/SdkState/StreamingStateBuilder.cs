@@ -24,6 +24,7 @@ namespace LibAtem.MockTests.SdkState
             streamingSwitcher.GetEncodingBitrate(out uint encodingBitrate);
             streamingSwitcher.GetCacheUsed(out double cacheUsed);
             streamingSwitcher.GetAuthentication(out string username, out string password);
+            streamingSwitcher.GetLowLatency(out int lowLatency);
 
             //state.Streaming.Status.IsStreaming = isStreaming != 0;
             state.Streaming.Stats.CacheUsed = (uint) (cacheUsed * 100);
@@ -50,6 +51,7 @@ namespace LibAtem.MockTests.SdkState
             state.Streaming.Authentication.Username = username;
             state.Streaming.Authentication.Password = password;
 
+            state.Streaming.IsLowLatency = lowLatency != 0;
 #endif
         }
     }

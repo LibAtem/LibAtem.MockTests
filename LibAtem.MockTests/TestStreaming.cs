@@ -345,6 +345,30 @@ namespace LibAtem.MockTests
                 }
             });
         }
+
+        [Fact]
+        public void TestLowLatency()
+        {
+            var handler =
+                CommandGenerator
+                    .CreateAutoCommandHandler<StreamingLatencyCommand, StreamingLatencyCommand>(
+                        new[] { "LowLatency" }, true);
+            AtemMockServerWrapper.Each(_output, _pool, handler, DeviceTestCases.Streaming, helper =>
+            {
+                var switcher = helper.SdkClient.SdkSwitcher as IBMDSwitcherStreamRTMP;
+                Assert.NotNull(switcher);
+
+                AtemState stateBefore = helper.Helper.BuildLibState();
+
+                for (int i = 0; i < 5; i++)
+                {
+                    bool target = i % 2 == 0;
+                    stateBefore.Streaming.IsLowLatency = target;
+
+                    helper.SendAndWaitForChange(stateBefore, () => { switcher.SetLowLatency(target ? 1 : 0); });
+                }
+            });
+        }
 #endif
     }
 }

@@ -35,10 +35,6 @@
     <ProjectReference Include="..\LibAtem\LibAtem\LibAtem.csproj" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Folder Include="TestFiles\" />
-  </ItemGroup>
-
   <Choose>
     <When Condition=" '$(Platform)'=='v8.1' OR '$(WORKFLOW_VERSION)'=='v8.1' ">
       <ItemGroup>
@@ -102,7 +98,13 @@
     <None Update="TestFiles\Handshake\constellation-v8.2.3.data">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
+    <None Update="TestFiles\Handshake\mini-extreme-v8.6.data">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
     <None Update="TestFiles\Handshake\mini-pro-iso-v8.4.data">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="TestFiles\Handshake\mini-pro-iso-v8.6.1.data">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
     <None Update="TestFiles\Handshake\mini-pro-v8.2.data">
