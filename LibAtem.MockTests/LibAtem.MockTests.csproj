@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>netcoreapp3.1</TargetFramework>
+    <TargetFramework>net6.0-windows</TargetFramework>
 
     <IsPackable>false</IsPackable>
     <NoWarn>NU1701</NoWarn>
@@ -35,7 +35,7 @@
     <ProjectReference Include="..\LibAtem\LibAtem\LibAtem.csproj" />
   </ItemGroup>
 
-  <Choose>
+  <!-- <Choose>
     <When Condition=" '$(Platform)'=='v8.1' OR '$(WORKFLOW_VERSION)'=='v8.1' ">
       <ItemGroup>
         <Reference Include="Interop.BMDSwitcherAPI">
@@ -46,11 +46,11 @@
     <When Condition=" '$(Platform)'=='v8.1.1' OR '$(WORKFLOW_VERSION)'=='v8.1.1' ">
       <ItemGroup>
         <Reference Include="Interop.BMDSwitcherAPI">
-          <HintPath>..\AtemSDK\v8.6.4\Interop.BMDSwitcherAPI.dll</HintPath>
+          <HintPath>..\AtemSDK\v8.7.0\Interop.BMDSwitcherAPI.dll</HintPath>
         </Reference>
       </ItemGroup>
     </When>
-    <Otherwise>
+    <Otherwise> -->
       <ItemGroup>
         <COMReference Include="BMDSwitcherAPI">
           <Guid>{8A92B919-156C-4D61-94EF-03F9BE4004B0}</Guid>
@@ -61,8 +61,8 @@
           <Isolated>False</Isolated>
         </COMReference>
       </ItemGroup>
-    </Otherwise>
-  </Choose>
+    <!-- </Otherwise>
+  </Choose> -->
 
   <ItemGroup>
     <None Update="log4net.config">
