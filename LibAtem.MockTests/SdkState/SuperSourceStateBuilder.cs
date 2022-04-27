@@ -26,7 +26,11 @@ namespace LibAtem.MockTests.SdkState
             props.GetInverse(out int inverse);
             state.Properties.ArtInvertKey = inverse != 0;
 
-            BuildBorder(state.Border, (IBMDSwitcherSuperSourceBorder)props);
+            if (props is IBMDSwitcherSuperSourceBorder borderProps)
+            {
+                state.Border = new SuperSourceState.BorderState();
+                BuildBorder(state.Border, borderProps);
+            }
 
             var iterator = AtemSDKConverter.CastSdk<IBMDSwitcherSuperSourceBoxIterator>(props.CreateIterator);
             state.Boxes = AtemSDKConverter.IterateList<IBMDSwitcherSuperSourceBox, SuperSourceState.BoxState>(

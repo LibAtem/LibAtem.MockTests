@@ -59,10 +59,34 @@ namespace LibAtem.MockTests.SdkState
             state.Gain = gain;
             props.GetInputMasterOutGain(out double pgmGain);
             state.InputMasterGain = pgmGain;
-            props.GetInputTalkbackGain(out double tbGain);
-            state.InputTalkbackGain = tbGain;
-            props.GetInputSidetoneGain(out double sidetoneGain);
-            state.InputSidetoneGain = sidetoneGain;
+
+            props.DoesSupportMute(out int supportsMute);
+            if (supportsMute > 0)
+            {
+                // TODO
+            }
+
+            props.DoesSupportTalkback(out int supportsTalkback);
+            if (supportsTalkback > 0)
+            {
+                props.GetInputTalkbackGain(out double tbGain);
+                state.InputTalkbackGain = tbGain;
+            }
+            else
+            {
+                state.InputTalkbackGain = -60;
+            }
+
+            props.DoesSupportSidetone(out int supportsSidetone);
+            if (supportsSidetone > 0)
+            {
+                props.GetInputSidetoneGain(out double sidetoneGain);
+                state.InputSidetoneGain = sidetoneGain;
+            }
+            else
+            {
+                state.InputSidetoneGain = -60;
+            }
 
             return state;
         }

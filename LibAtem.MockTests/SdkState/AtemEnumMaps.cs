@@ -180,7 +180,9 @@ namespace LibAtem.MockTests.SdkState
                 {VideoMode.P8KHDp50, _BMDSwitcherVideoMode.bmdSwitcherVideoMode8KHDp50},
                 {VideoMode.N8KHDp5994, _BMDSwitcherVideoMode.bmdSwitcherVideoMode8KHDp5994},
                 {VideoMode.N1080p30, _BMDSwitcherVideoMode.bmdSwitcherVideoMode1080p30},
-                {VideoMode.N1080p60, _BMDSwitcherVideoMode.bmdSwitcherVideoMode1080p60}
+                {VideoMode.N1080p60, _BMDSwitcherVideoMode.bmdSwitcherVideoMode1080p60},
+                {VideoMode.N720p60, _BMDSwitcherVideoMode.bmdSwitcherVideoMode720p60},
+                {VideoMode.N1080i60, _BMDSwitcherVideoMode.bmdSwitcherVideoMode1080i60}
             };
 
             SDDownconvertModesMap = new Dictionary<DownConvertMode, _BMDSwitcherDownConversionMethod>()
@@ -517,6 +519,12 @@ namespace LibAtem.MockTests.SdkState
                         break;
                     case _BMDSwitcherInputAvailability.bmdSwitcherInputAvailabilityInputCut:
                         source |= SourceAvailability.KeySource;
+                        break;
+                    case _BMDSwitcherInputAvailability.bmdSwitcherInputAvailabilityAux1Output:
+                        source |= SourceAvailability.Aux1Output;
+                        break;
+                    case _BMDSwitcherInputAvailability.bmdSwitcherInputAvailabilityAux2Output:
+                        source |= SourceAvailability.Aux2Output;
                         break;
                     default:
                         throw new ArgumentOutOfRangeException();
