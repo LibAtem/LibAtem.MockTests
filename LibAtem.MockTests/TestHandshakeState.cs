@@ -40,6 +40,9 @@ namespace LibAtem.MockTests
         public void TestStateMockConstellation() => RunTest(DeviceTestCases.Constellation);
 
         [Fact]
+        public void TestStateMockConstellation2MEHD() => RunTest(DeviceTestCases.Constellation2MEHD);
+
+        [Fact]
         public void TestStateMockMini() => RunTest(DeviceTestCases.Mini);
         
         [Fact]

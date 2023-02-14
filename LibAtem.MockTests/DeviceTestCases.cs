@@ -12,6 +12,7 @@ namespace LibAtem.MockTests
         public static readonly string MiniExtremeIso = "";
         public static readonly string Mini = "mini-v8.1";
         public static readonly string Constellation = "constellation-v8.0.2";
+        public static readonly string Constellation2ME = "";
         public static readonly string TwoME = "2me-v8.1";
         public static readonly string TwoME4K = "2me4k-v8.0.1";
         public static readonly string FourME4K = "";
@@ -22,6 +23,7 @@ namespace LibAtem.MockTests
         public static readonly string MiniExtremeIso = "mini-extreme-iso-v8.6.1";
         public static readonly string Mini = "mini-v8.3";
         public static readonly string Constellation = "constellation-v8.2.3";
+        public static readonly string Constellation2MEHD = "constellation-2me-hd-v8.7";
         public static readonly string TwoME = "2me-v8.3";
         public static readonly string TwoME4K = "";
         public static readonly string FourME4K = "4me-bs4k-v8.2";
@@ -29,7 +31,7 @@ namespace LibAtem.MockTests
         public static readonly string TVS = "tvs-v8.1.1";
 #endif
 
-        public static readonly string[] All = { MiniExtremeIso, Mini, Constellation, TwoME, TVSHD, TVS, TwoME4K, FourME4K};
+        public static readonly string[] All = { MiniExtremeIso, Mini, Constellation, Constellation2MEHD, TwoME, TVSHD, TVS, TwoME4K, FourME4K};
         public static readonly string[] DownConvertSDMode = { TwoME };
         public static readonly string[] DownConvertHDMode = { FourME4K };
         public static readonly string[] AutoVideoMode = {Mini, MiniExtremeIso };
