@@ -169,6 +169,10 @@ namespace LibAtem.MockTests
         public void EnsureRecordingDiskStatusMap() => EnumMap.EnsureIsComplete(AtemEnumMaps.RecordingDiskStatusMap);
         [Fact]
         public void EnsureRecordingErrorMap() => EnumMap.EnsureIsComplete(AtemEnumMaps.RecordingErrorMap);
+        [Fact]
+        public void EnsureDisplayClockModeMap() => EnumMap.EnsureIsComplete(AtemEnumMaps.DisplayClockModeMap);
+        [Fact]
+        public void EnsureDisplayClockStateMap() => EnumMap.EnsureIsComplete(AtemEnumMaps.DisplayClockStateMap);
 #endif
     }
 }

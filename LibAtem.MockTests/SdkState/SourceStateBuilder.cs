@@ -1,7 +1,10 @@
 ﻿using BMDSwitcherAPI;
 using LibAtem.Common;
+using LibAtem.Serialization;
 using LibAtem.State;
+using System;
 using System.Collections.Generic;
+using System.Configuration;
 
 namespace LibAtem.MockTests.SdkState
 {
@@ -21,8 +24,16 @@ namespace LibAtem.MockTests.SdkState
 
                 state.Settings.Inputs[src] = BuildOne(input);
 
-                if (input is IBMDSwitcherInputAux aux)
+                if (input is IBMDSwitcherInputAux aux) {
                     auxes.Add(AuxInput(aux));
+
+                    if (input is IBMDSwitcherDisplayClock dc)
+                    {
+                        if (src != VideoSource.Auxilary1) throw new Exception("Got IBMDSwitcherDisplayClock for unexpected aux");
+
+                        state.DisplayCounter = DisplayCounter(dc);
+                    }
+                }
 
                 if (input is IBMDSwitcherInputColor col)
                     cols.Add(ColorInput(col));
@@ -86,6 +97,46 @@ namespace LibAtem.MockTests.SdkState
             state.Saturation = saturation * 100;
             props.GetLuma(out double luma);
             state.Luma = luma * 100;
+
+            return state;
+        }
+
+        private static DisplayCounterState DisplayCounter(IBMDSwitcherDisplayClock props)
+        {
+            var state = new DisplayCounterState();
+
+            props.GetEnabled(out int enabled);
+            state.Properties.Enabled = enabled != 0;
+            props.GetOpacity(out ushort opacity);
+            state.Properties.Opacity = opacity;
+            props.GetSize(out ushort size);
+            state.Properties.Size = size;
+            props.GetPositionX(out double positionX);
+            state.Properties.PositionX = positionX;
+            props.GetPositionY(out double positionY);
+            state.Properties.PositionY = positionY;
+            props.GetAutoHide(out int autoHide);
+            state.Properties.AutoHide = autoHide != 0;
+            props.GetStartFrom(out byte startHours, out byte startMinutes, out byte startSeconds, out byte startFrames);
+            state.Properties.StartFrom = new HyperDeckTime()
+            {
+                Hour = startHours,
+                Minute = startMinutes,
+                Second = startSeconds,
+                Frame = startFrames,
+            };
+            props.GetClockMode(out _BMDSwitcherDisplayClockMode clockMode);
+            state.Properties.ClockMode = AtemEnumMaps.DisplayClockModeMap.FindByValue(clockMode);
+            props.GetClockState(out _BMDSwitcherDisplayClockState clockState);
+            state.Properties.ClockState = AtemEnumMaps.DisplayClockStateMap.FindByValue(clockState);
+            props.GetClockTime(out byte clockHours, out byte clockMinutes, out byte clockSeconds, out byte clockFrames);
+            state.CurrentTime= new HyperDeckTime()
+            {
+                Hour = clockHours,
+                Minute = clockMinutes,
+                Second = clockSeconds,
+                Frame = clockFrames,
+            };
 
             return state;
         }

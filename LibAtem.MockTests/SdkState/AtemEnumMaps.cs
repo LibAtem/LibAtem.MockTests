@@ -48,6 +48,8 @@ namespace LibAtem.MockTests.SdkState
         public static readonly IReadOnlyDictionary<RecordingDiskStatus, _BMDSwitcherRecordDiskStatus> RecordingDiskStatusMap;
         public static readonly IReadOnlyDictionary<RecordingStatus, _BMDSwitcherRecordAVState> RecordingStateMap;
         public static readonly IReadOnlyDictionary<RecordingError, _BMDSwitcherRecordAVError> RecordingErrorMap;
+        public static readonly IReadOnlyDictionary<DisplayCounterClockMode, _BMDSwitcherDisplayClockMode> DisplayClockModeMap;
+        public static readonly IReadOnlyDictionary<DisplayCounterClockState, _BMDSwitcherDisplayClockState> DisplayClockStateMap;
 #endif
 
         static AtemEnumMaps()
@@ -409,6 +411,18 @@ namespace LibAtem.MockTests.SdkState
                 {RecordingDiskStatus.Unformatted, _BMDSwitcherRecordDiskStatus.bmdSwitcherRecordDiskUnformatted},
                 {RecordingDiskStatus.Active, _BMDSwitcherRecordDiskStatus.bmdSwitcherRecordDiskActive},
                 {RecordingDiskStatus.Recording, _BMDSwitcherRecordDiskStatus.bmdSwitcherRecordDiskRecording},
+            };
+            DisplayClockModeMap = new Dictionary<DisplayCounterClockMode, _BMDSwitcherDisplayClockMode>
+            {
+                {DisplayCounterClockMode.Countdown, _BMDSwitcherDisplayClockMode.bmdSwitcherDisplayClockModeCountdown},
+                {DisplayCounterClockMode.Countup, _BMDSwitcherDisplayClockMode.bmdSwitcherDisplayClockModeCountup},
+                {DisplayCounterClockMode.TimeOfDay, _BMDSwitcherDisplayClockMode.bmdSwitcherDisplayClockModeTimeOfDay},
+            };
+            DisplayClockStateMap = new Dictionary<DisplayCounterClockState, _BMDSwitcherDisplayClockState>
+            {
+                {DisplayCounterClockState.Reset, _BMDSwitcherDisplayClockState.bmdSwitcherDisplayClockStateReset},
+                {DisplayCounterClockState.Stopped, _BMDSwitcherDisplayClockState.bmdSwitcherDisplayClockStateStopped},
+                {DisplayCounterClockState.Running, _BMDSwitcherDisplayClockState.bmdSwitcherDisplayClockStateRunning},
             };
 #endif
         }
