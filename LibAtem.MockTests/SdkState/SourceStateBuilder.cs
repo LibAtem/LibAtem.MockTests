@@ -31,7 +31,7 @@ namespace LibAtem.MockTests.SdkState
                     {
                         if (src != VideoSource.Auxilary1) throw new Exception("Got IBMDSwitcherDisplayClock for unexpected aux");
 
-                        state.DisplayCounter = DisplayCounter(dc);
+                        state.DisplayClock = DisplayClock(dc);
                     }
                 }
 
@@ -101,9 +101,9 @@ namespace LibAtem.MockTests.SdkState
             return state;
         }
 
-        private static DisplayCounterState DisplayCounter(IBMDSwitcherDisplayClock props)
+        private static DisplayClockState DisplayClock(IBMDSwitcherDisplayClock props)
         {
-            var state = new DisplayCounterState();
+            var state = new DisplayClockState();
 
             props.GetEnabled(out int enabled);
             state.Properties.Enabled = enabled != 0;

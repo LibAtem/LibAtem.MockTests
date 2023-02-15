@@ -11,18 +11,16 @@ using LibAtem.State;
 using Xunit;
 using Xunit.Abstractions;
 using LibAtem.Commands.Settings;
-using LibAtem.Commands.Media;
-using LibAtem.Commands.Audio;
 
 namespace LibAtem.MockTests
 {
     [Collection("ServerClientPool")]
-    public class TestDisplayCounter
+    public class TestDisplayClock
     {
         private readonly ITestOutputHelper _output;
         private readonly AtemServerClientPool _pool;
 
-        public TestDisplayCounter(ITestOutputHelper output, AtemServerClientPool pool)
+        public TestDisplayClock(ITestOutputHelper output, AtemServerClientPool pool)
         {
             _output = output;
             _pool = pool;
@@ -31,10 +29,10 @@ namespace LibAtem.MockTests
         [Fact]
         public void TestEnabled()
         {
-            var handler = CommandGenerator.CreateAutoCommandHandler<DisplayCounterPropertiesSetCommand, DisplayCounterPropertiesGetCommand>("Enabled");
-            AtemMockServerWrapper.Each(_output, _pool, handler, DeviceTestCases.DisplayCounter, helper =>
+            var handler = CommandGenerator.CreateAutoCommandHandler<DisplayClockPropertiesSetCommand, DisplayClockPropertiesGetCommand>("Enabled");
+            AtemMockServerWrapper.Each(_output, _pool, handler, DeviceTestCases.DisplayClock, helper =>
             {
-                IBMDSwitcherDisplayClock displayClock = GetDisplayCounter(helper);
+                IBMDSwitcherDisplayClock displayClock = GetDisplayClock(helper);
                 Assert.NotNull(displayClock);
 
                 AtemState stateBefore = helper.Helper.BuildLibState();
@@ -43,7 +41,7 @@ namespace LibAtem.MockTests
                 {
                     bool setEnabled = i % 2 == 0;
 
-                    stateBefore.DisplayCounter.Properties.Enabled = setEnabled;
+                    stateBefore.DisplayClock.Properties.Enabled = setEnabled;
                     helper.SendAndWaitForChange(stateBefore, () =>
                     {
                         displayClock.SetEnabled(setEnabled ? 1 : 0);
@@ -56,10 +54,10 @@ namespace LibAtem.MockTests
         [Fact]
         public void TestOpacity()
         {
-            var handler = CommandGenerator.CreateAutoCommandHandler<DisplayCounterPropertiesSetCommand, DisplayCounterPropertiesGetCommand>("Opacity");
-            AtemMockServerWrapper.Each(_output, _pool, handler, DeviceTestCases.DisplayCounter, helper =>
+            var handler = CommandGenerator.CreateAutoCommandHandler<DisplayClockPropertiesSetCommand, DisplayClockPropertiesGetCommand>("Opacity");
+            AtemMockServerWrapper.Each(_output, _pool, handler, DeviceTestCases.DisplayClock, helper =>
             {
-                IBMDSwitcherDisplayClock displayClock = GetDisplayCounter(helper);
+                IBMDSwitcherDisplayClock displayClock = GetDisplayClock(helper);
                 Assert.NotNull(displayClock);
 
                 AtemState stateBefore = helper.Helper.BuildLibState();
@@ -68,7 +66,7 @@ namespace LibAtem.MockTests
                 {
                     uint opacity = Randomiser.RangeInt(100);
 
-                    stateBefore.DisplayCounter.Properties.Opacity = opacity;
+                    stateBefore.DisplayClock.Properties.Opacity = opacity;
                     helper.SendAndWaitForChange(stateBefore, () =>
                     {
                         displayClock.SetOpacity((ushort)opacity);
@@ -81,10 +79,10 @@ namespace LibAtem.MockTests
         [Fact]
         public void TestSize()
         {
-            var handler = CommandGenerator.CreateAutoCommandHandler<DisplayCounterPropertiesSetCommand, DisplayCounterPropertiesGetCommand>("Size");
-            AtemMockServerWrapper.Each(_output, _pool, handler, DeviceTestCases.DisplayCounter, helper =>
+            var handler = CommandGenerator.CreateAutoCommandHandler<DisplayClockPropertiesSetCommand, DisplayClockPropertiesGetCommand>("Size");
+            AtemMockServerWrapper.Each(_output, _pool, handler, DeviceTestCases.DisplayClock, helper =>
             {
-                IBMDSwitcherDisplayClock displayClock = GetDisplayCounter(helper);
+                IBMDSwitcherDisplayClock displayClock = GetDisplayClock(helper);
                 Assert.NotNull(displayClock);
 
                 AtemState stateBefore = helper.Helper.BuildLibState();
@@ -93,7 +91,7 @@ namespace LibAtem.MockTests
                 {
                     uint size = Randomiser.RangeInt(100);
 
-                    stateBefore.DisplayCounter.Properties.Size = size;
+                    stateBefore.DisplayClock.Properties.Size = size;
                     helper.SendAndWaitForChange(stateBefore, () =>
                     {
                         displayClock.SetSize((ushort)size);
@@ -106,10 +104,10 @@ namespace LibAtem.MockTests
         [Fact]
         public void TestPositionX()
         {
-            var handler = CommandGenerator.CreateAutoCommandHandler<DisplayCounterPropertiesSetCommand, DisplayCounterPropertiesGetCommand>("PositionX");
-            AtemMockServerWrapper.Each(_output, _pool, handler, DeviceTestCases.DisplayCounter, helper =>
+            var handler = CommandGenerator.CreateAutoCommandHandler<DisplayClockPropertiesSetCommand, DisplayClockPropertiesGetCommand>("PositionX");
+            AtemMockServerWrapper.Each(_output, _pool, handler, DeviceTestCases.DisplayClock, helper =>
             {
-                IBMDSwitcherDisplayClock displayClock = GetDisplayCounter(helper);
+                IBMDSwitcherDisplayClock displayClock = GetDisplayClock(helper);
                 Assert.NotNull(displayClock);
 
                 AtemState stateBefore = helper.Helper.BuildLibState();
@@ -118,7 +116,7 @@ namespace LibAtem.MockTests
                 {
                     double pos = Randomiser.Range(-16, 16);
 
-                    stateBefore.DisplayCounter.Properties.PositionX = pos;
+                    stateBefore.DisplayClock.Properties.PositionX = pos;
                     helper.SendAndWaitForChange(stateBefore, () =>
                     {
                         displayClock.SetPositionX(pos);
@@ -131,10 +129,10 @@ namespace LibAtem.MockTests
         [Fact]
         public void TestPositionY()
         {
-            var handler = CommandGenerator.CreateAutoCommandHandler<DisplayCounterPropertiesSetCommand, DisplayCounterPropertiesGetCommand>("PositionY");
-            AtemMockServerWrapper.Each(_output, _pool, handler, DeviceTestCases.DisplayCounter, helper =>
+            var handler = CommandGenerator.CreateAutoCommandHandler<DisplayClockPropertiesSetCommand, DisplayClockPropertiesGetCommand>("PositionY");
+            AtemMockServerWrapper.Each(_output, _pool, handler, DeviceTestCases.DisplayClock, helper =>
             {
-                IBMDSwitcherDisplayClock displayClock = GetDisplayCounter(helper);
+                IBMDSwitcherDisplayClock displayClock = GetDisplayClock(helper);
                 Assert.NotNull(displayClock);
 
                 AtemState stateBefore = helper.Helper.BuildLibState();
@@ -143,7 +141,7 @@ namespace LibAtem.MockTests
                 {
                     double pos = Randomiser.Range(-9, 9);
 
-                    stateBefore.DisplayCounter.Properties.PositionY = pos;
+                    stateBefore.DisplayClock.Properties.PositionY = pos;
                     helper.SendAndWaitForChange(stateBefore, () =>
                     {
                         displayClock.SetPositionY(pos);
@@ -156,10 +154,10 @@ namespace LibAtem.MockTests
         [Fact]
         public void TestAutoHide()
         {
-            var handler = CommandGenerator.CreateAutoCommandHandler<DisplayCounterPropertiesSetCommand, DisplayCounterPropertiesGetCommand>("AutoHide");
-            AtemMockServerWrapper.Each(_output, _pool, handler, DeviceTestCases.DisplayCounter, helper =>
+            var handler = CommandGenerator.CreateAutoCommandHandler<DisplayClockPropertiesSetCommand, DisplayClockPropertiesGetCommand>("AutoHide");
+            AtemMockServerWrapper.Each(_output, _pool, handler, DeviceTestCases.DisplayClock, helper =>
             {
-                IBMDSwitcherDisplayClock displayClock = GetDisplayCounter(helper);
+                IBMDSwitcherDisplayClock displayClock = GetDisplayClock(helper);
                 Assert.NotNull(displayClock);
 
                 AtemState stateBefore = helper.Helper.BuildLibState();
@@ -168,7 +166,7 @@ namespace LibAtem.MockTests
                 {
                     bool setAutoHide = i % 2 == 0;
 
-                    stateBefore.DisplayCounter.Properties.AutoHide = setAutoHide;
+                    stateBefore.DisplayClock.Properties.AutoHide = setAutoHide;
                     helper.SendAndWaitForChange(stateBefore, () =>
                     {
                         displayClock.SetAutoHide(setAutoHide ? 1 : 0);
@@ -181,19 +179,19 @@ namespace LibAtem.MockTests
         [Fact]
         public void TestClockMode()
         {
-            var handler = CommandGenerator.CreateAutoCommandHandler<DisplayCounterPropertiesSetCommand, DisplayCounterPropertiesGetCommand>("ClockMode");
-            AtemMockServerWrapper.Each(_output, _pool, handler, DeviceTestCases.DisplayCounter, helper =>
+            var handler = CommandGenerator.CreateAutoCommandHandler<DisplayClockPropertiesSetCommand, DisplayClockPropertiesGetCommand>("ClockMode");
+            AtemMockServerWrapper.Each(_output, _pool, handler, DeviceTestCases.DisplayClock, helper =>
             {
-                IBMDSwitcherDisplayClock displayClock = GetDisplayCounter(helper);
+                IBMDSwitcherDisplayClock displayClock = GetDisplayClock(helper);
                 Assert.NotNull(displayClock);
 
                 AtemState stateBefore = helper.Helper.BuildLibState();
 
                 for (int i = 0; i < 5; i++)
                 {
-                    DisplayCounterClockMode mode = Randomiser.EnumValue<DisplayCounterClockMode>();
+                    DisplayClockClockMode mode = Randomiser.EnumValue<DisplayClockClockMode>();
 
-                    stateBefore.DisplayCounter.Properties.ClockMode = mode;
+                    stateBefore.DisplayClock.Properties.ClockMode = mode;
                     helper.SendAndWaitForChange(stateBefore, () =>
                     {
                         displayClock.SetClockMode(AtemEnumMaps.DisplayClockModeMap[mode]);
@@ -206,10 +204,10 @@ namespace LibAtem.MockTests
         [Fact]
         public void TestStartFrom()
         {
-            var handler = CommandGenerator.CreateAutoCommandHandler<DisplayCounterPropertiesSetCommand, DisplayCounterPropertiesGetCommand>("StartFrom");
-            AtemMockServerWrapper.Each(_output, _pool, handler, DeviceTestCases.DisplayCounter, helper =>
+            var handler = CommandGenerator.CreateAutoCommandHandler<DisplayClockPropertiesSetCommand, DisplayClockPropertiesGetCommand>("StartFrom");
+            AtemMockServerWrapper.Each(_output, _pool, handler, DeviceTestCases.DisplayClock, helper =>
             {
-                IBMDSwitcherDisplayClock displayClock = GetDisplayCounter(helper);
+                IBMDSwitcherDisplayClock displayClock = GetDisplayClock(helper);
                 Assert.NotNull(displayClock);
 
                 AtemState stateBefore = helper.Helper.BuildLibState();
@@ -223,7 +221,7 @@ namespace LibAtem.MockTests
                     var time = new HyperDeckTime
                     { Hour = hours, Minute = minutes, Second = seconds, Frame = frames };
 
-                    stateBefore.DisplayCounter.Properties.StartFrom = time;
+                    stateBefore.DisplayClock.Properties.StartFrom = time;
                     helper.SendAndWaitForChange(stateBefore, () =>
                     {
                         displayClock.SetStartFrom((byte)hours, (byte)minutes, (byte)seconds, (byte)frames);
@@ -236,28 +234,28 @@ namespace LibAtem.MockTests
         [Fact]
         public void TestClockState()
         {
-            AtemMockServerWrapper.Each(_output, _pool, ClockStateCommandHandler, DeviceTestCases.DisplayCounter, helper =>
+            AtemMockServerWrapper.Each(_output, _pool, ClockStateCommandHandler, DeviceTestCases.DisplayClock, helper =>
             {
-                IBMDSwitcherDisplayClock displayClock = GetDisplayCounter(helper);
+                IBMDSwitcherDisplayClock displayClock = GetDisplayClock(helper);
                 Assert.NotNull(displayClock);
 
                 AtemState stateBefore = helper.Helper.BuildLibState();
 
-                Assert.Equal(DisplayCounterClockState.Reset, stateBefore.DisplayCounter.Properties.ClockState);
+                Assert.Equal(DisplayClockClockState.Reset, stateBefore.DisplayClock.Properties.ClockState);
 
-                stateBefore.DisplayCounter.Properties.ClockState = DisplayCounterClockState.Running;
+                stateBefore.DisplayClock.Properties.ClockState = DisplayClockClockState.Running;
                 helper.SendAndWaitForChange(stateBefore, () =>
                 {
                     displayClock.Start();
                 });
 
-                stateBefore.DisplayCounter.Properties.ClockState = DisplayCounterClockState.Stopped;
+                stateBefore.DisplayClock.Properties.ClockState = DisplayClockClockState.Stopped;
                 helper.SendAndWaitForChange(stateBefore, () =>
                 {
                     displayClock.Stop();
                 });
 
-                stateBefore.DisplayCounter.Properties.ClockState = DisplayCounterClockState.Reset;
+                stateBefore.DisplayClock.Properties.ClockState = DisplayClockClockState.Reset;
                 helper.SendAndWaitForChange(stateBefore, () =>
                 {
                     displayClock.Reset();
@@ -266,9 +264,9 @@ namespace LibAtem.MockTests
         }
         private static IEnumerable<ICommand> ClockStateCommandHandler(Lazy<ImmutableList<ICommand>> previousCommands, ICommand cmd)
         {
-            if (cmd is DisplayCounterStateSetCommand stateCmd)
+            if (cmd is DisplayClockStateSetCommand stateCmd)
             {
-                var previous = previousCommands.Value.OfType<DisplayCounterPropertiesGetCommand>().Last(); // TODO Id?
+                var previous = previousCommands.Value.OfType<DisplayClockPropertiesGetCommand>().Last(); // TODO Id?
                 Assert.NotNull(previous);
 
                 previous.ClockState = stateCmd.State;
@@ -280,9 +278,9 @@ namespace LibAtem.MockTests
         [Fact]
         public void TestStartFromFrames()
         {
-            AtemMockServerWrapper.Each(_output, _pool, StartFromFramesCommandHandler, DeviceTestCases.DisplayCounter, helper =>
+            AtemMockServerWrapper.Each(_output, _pool, StartFromFramesCommandHandler, DeviceTestCases.DisplayClock, helper =>
             {
-                IBMDSwitcherDisplayClock displayClock = GetDisplayCounter(helper);
+                IBMDSwitcherDisplayClock displayClock = GetDisplayClock(helper);
                 Assert.NotNull(displayClock);
 
                 AtemState stateBefore = helper.Helper.BuildLibState();
@@ -299,7 +297,7 @@ namespace LibAtem.MockTests
                     { Hour = hours, Minute = minutes, Second = seconds, Frame = frames };
                     uint totalFrames = (hours * 3600 + minutes * 60 + seconds) * frameRate + frames;
 
-                    stateBefore.DisplayCounter.Properties.StartFrom = time;
+                    stateBefore.DisplayClock.Properties.StartFrom = time;
                     helper.SendAndWaitForChange(stateBefore, () =>
                     {
                         displayClock.SetStartFromFrames(totalFrames);
@@ -310,12 +308,12 @@ namespace LibAtem.MockTests
         }
         private static IEnumerable<ICommand> StartFromFramesCommandHandler(Lazy<ImmutableList<ICommand>> previousCommands, ICommand cmd)
         {
-            if (cmd is DisplayCounterPropertiesSetCommand propsCmd)
+            if (cmd is DisplayClockPropertiesSetCommand propsCmd)
             {
                 var modeCmd = previousCommands.Value.OfType<VideoModeGetCommand>().Last();
                 Assert.NotNull(modeCmd);
 
-                var previous = previousCommands.Value.OfType<DisplayCounterPropertiesGetCommand>().Last(); // TODO Id?
+                var previous = previousCommands.Value.OfType<DisplayClockPropertiesGetCommand>().Last(); // TODO Id?
                 Assert.NotNull(previous);
 
                 uint frameRate = (uint)Math.Round(modeCmd.VideoMode.GetRate());
@@ -334,10 +332,10 @@ namespace LibAtem.MockTests
         [Fact]
         public void TestRequestTime()
         {
-            var handler = CommandGenerator.MatchCommand(new DisplayCounterRequestTimeCommand());
-            AtemMockServerWrapper.Each(_output, _pool, handler, DeviceTestCases.DisplayCounter, helper =>
+            var handler = CommandGenerator.MatchCommand(new DisplayClockRequestTimeCommand());
+            AtemMockServerWrapper.Each(_output, _pool, handler, DeviceTestCases.DisplayClock, helper =>
             {
-                IBMDSwitcherDisplayClock displayClock = GetDisplayCounter(helper);
+                IBMDSwitcherDisplayClock displayClock = GetDisplayClock(helper);
                 Assert.NotNull(displayClock);
 
                 helper.SendAndWaitForChange(null, () =>
@@ -350,14 +348,14 @@ namespace LibAtem.MockTests
         [Fact]
         public void TestUpdateTime()
         {
-            AtemMockServerWrapper.Each(_output, _pool, null, DeviceTestCases.DisplayCounter, helper =>
+            AtemMockServerWrapper.Each(_output, _pool, null, DeviceTestCases.DisplayClock, helper =>
             {
-                IBMDSwitcherDisplayClock displayClock = GetDisplayCounter(helper);
+                IBMDSwitcherDisplayClock displayClock = GetDisplayClock(helper);
                 Assert.NotNull(displayClock);
 
                 AtemState expectedState = helper.Helper.BuildLibState();
 
-                var testCmd = new DisplayCounterCurrentTimeCommand()
+                var testCmd = new DisplayClockCurrentTimeCommand()
                 {
                     Time = new HyperDeckTime
                     {
@@ -368,7 +366,7 @@ namespace LibAtem.MockTests
                     },
                 };
 
-                expectedState.DisplayCounter.CurrentTime = testCmd.Time;
+                expectedState.DisplayClock.CurrentTime = testCmd.Time;
 
                 helper.SendAndWaitForChange(expectedState, () =>
                 {
@@ -377,7 +375,7 @@ namespace LibAtem.MockTests
             });
         }
 
-        private static IBMDSwitcherDisplayClock GetDisplayCounter(AtemMockServerWrapper helper)
+        private static IBMDSwitcherDisplayClock GetDisplayClock(AtemMockServerWrapper helper)
         {
             Dictionary<VideoSource, IBMDSwitcherInputAux> allAuxes = helper.GetSdkInputsOfType<IBMDSwitcherInputAux>();
             foreach (KeyValuePair<VideoSource, IBMDSwitcherInputAux> aux in allAuxes)

@@ -82,6 +82,6 @@ namespace LibAtem.MockTests
         public static readonly string[] ClassicAudioMonitors = { TwoME4K, FourME4K };
         public static readonly string[] ClassicAudioXLRLevel = { TVSHD };
 
-        public static readonly string[] DisplayCounter = { Constellation2MEHD };
+        public static readonly string[] DisplayClock = { Constellation2MEHD };
     }
 }

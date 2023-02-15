@@ -48,8 +48,8 @@ namespace LibAtem.MockTests.SdkState
         public static readonly IReadOnlyDictionary<RecordingDiskStatus, _BMDSwitcherRecordDiskStatus> RecordingDiskStatusMap;
         public static readonly IReadOnlyDictionary<RecordingStatus, _BMDSwitcherRecordAVState> RecordingStateMap;
         public static readonly IReadOnlyDictionary<RecordingError, _BMDSwitcherRecordAVError> RecordingErrorMap;
-        public static readonly IReadOnlyDictionary<DisplayCounterClockMode, _BMDSwitcherDisplayClockMode> DisplayClockModeMap;
-        public static readonly IReadOnlyDictionary<DisplayCounterClockState, _BMDSwitcherDisplayClockState> DisplayClockStateMap;
+        public static readonly IReadOnlyDictionary<DisplayClockClockMode, _BMDSwitcherDisplayClockMode> DisplayClockModeMap;
+        public static readonly IReadOnlyDictionary<DisplayClockClockState, _BMDSwitcherDisplayClockState> DisplayClockStateMap;
 #endif
 
         static AtemEnumMaps()
@@ -412,17 +412,17 @@ namespace LibAtem.MockTests.SdkState
                 {RecordingDiskStatus.Active, _BMDSwitcherRecordDiskStatus.bmdSwitcherRecordDiskActive},
                 {RecordingDiskStatus.Recording, _BMDSwitcherRecordDiskStatus.bmdSwitcherRecordDiskRecording},
             };
-            DisplayClockModeMap = new Dictionary<DisplayCounterClockMode, _BMDSwitcherDisplayClockMode>
+            DisplayClockModeMap = new Dictionary<DisplayClockClockMode, _BMDSwitcherDisplayClockMode>
             {
-                {DisplayCounterClockMode.Countdown, _BMDSwitcherDisplayClockMode.bmdSwitcherDisplayClockModeCountdown},
-                {DisplayCounterClockMode.Countup, _BMDSwitcherDisplayClockMode.bmdSwitcherDisplayClockModeCountup},
-                {DisplayCounterClockMode.TimeOfDay, _BMDSwitcherDisplayClockMode.bmdSwitcherDisplayClockModeTimeOfDay},
+                {DisplayClockClockMode.Countdown, _BMDSwitcherDisplayClockMode.bmdSwitcherDisplayClockModeCountdown},
+                {DisplayClockClockMode.Countup, _BMDSwitcherDisplayClockMode.bmdSwitcherDisplayClockModeCountup},
+                {DisplayClockClockMode.TimeOfDay, _BMDSwitcherDisplayClockMode.bmdSwitcherDisplayClockModeTimeOfDay},
             };
-            DisplayClockStateMap = new Dictionary<DisplayCounterClockState, _BMDSwitcherDisplayClockState>
+            DisplayClockStateMap = new Dictionary<DisplayClockClockState, _BMDSwitcherDisplayClockState>
             {
-                {DisplayCounterClockState.Reset, _BMDSwitcherDisplayClockState.bmdSwitcherDisplayClockStateReset},
-                {DisplayCounterClockState.Stopped, _BMDSwitcherDisplayClockState.bmdSwitcherDisplayClockStateStopped},
-                {DisplayCounterClockState.Running, _BMDSwitcherDisplayClockState.bmdSwitcherDisplayClockStateRunning},
+                {DisplayClockClockState.Reset, _BMDSwitcherDisplayClockState.bmdSwitcherDisplayClockStateReset},
+                {DisplayClockClockState.Stopped, _BMDSwitcherDisplayClockState.bmdSwitcherDisplayClockStateStopped},
+                {DisplayClockClockState.Running, _BMDSwitcherDisplayClockState.bmdSwitcherDisplayClockStateRunning},
             };
 #endif
         }
