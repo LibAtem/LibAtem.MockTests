@@ -50,6 +50,8 @@ namespace LibAtem.MockTests.SdkState
         public static readonly IReadOnlyDictionary<RecordingError, _BMDSwitcherRecordAVError> RecordingErrorMap;
         public static readonly IReadOnlyDictionary<DisplayClockClockMode, _BMDSwitcherDisplayClockMode> DisplayClockModeMap;
         public static readonly IReadOnlyDictionary<DisplayClockClockState, _BMDSwitcherDisplayClockState> DisplayClockStateMap;
+        public static readonly IReadOnlyDictionary<AudioChannelPair, _BMDSwitcherAudioChannelPair> AudioChannelPairMap;
+        public static readonly IReadOnlyDictionary<AudioInternalPortType, _BMDSwitcherAudioInternalPortType> AudioInternalPortTypeMap;
 #endif
 
         static AtemEnumMaps()
@@ -424,6 +426,32 @@ namespace LibAtem.MockTests.SdkState
                 {DisplayClockClockState.Stopped, _BMDSwitcherDisplayClockState.bmdSwitcherDisplayClockStateStopped},
                 {DisplayClockClockState.Running, _BMDSwitcherDisplayClockState.bmdSwitcherDisplayClockStateRunning},
             };
+            AudioChannelPairMap = new Dictionary<AudioChannelPair, _BMDSwitcherAudioChannelPair>
+            {
+                 {AudioChannelPair.Channel1_2, _BMDSwitcherAudioChannelPair.bmdSwitcherAudioChannelPair_1_2},
+                 {AudioChannelPair.Channel3_4, _BMDSwitcherAudioChannelPair.bmdSwitcherAudioChannelPair_3_4},
+                 {AudioChannelPair.Channel5_6, _BMDSwitcherAudioChannelPair.bmdSwitcherAudioChannelPair_5_6},
+                 {AudioChannelPair.Channel7_8, _BMDSwitcherAudioChannelPair.bmdSwitcherAudioChannelPair_7_8},
+                 {AudioChannelPair.Channel9_10, _BMDSwitcherAudioChannelPair.bmdSwitcherAudioChannelPair_9_10},
+                 {AudioChannelPair.Channel11_12, _BMDSwitcherAudioChannelPair.bmdSwitcherAudioChannelPair_11_12},
+                 {AudioChannelPair.Channel13_14, _BMDSwitcherAudioChannelPair.bmdSwitcherAudioChannelPair_13_14},
+                 {AudioChannelPair.Channel15_16, _BMDSwitcherAudioChannelPair.bmdSwitcherAudioChannelPair_15_16},
+            };
+            AudioInternalPortTypeMap = new Dictionary<AudioInternalPortType, _BMDSwitcherAudioInternalPortType> {
+
+                { AudioInternalPortType.NotInternal,  _BMDSwitcherAudioInternalPortType. bmdSwitcherAudioInternalPortTypeNotInternal },
+                {AudioInternalPortType.NoAudio,  _BMDSwitcherAudioInternalPortType. bmdSwitcherAudioInternalPortTypeNoAudio },
+                { AudioInternalPortType.TalkbackMix, _BMDSwitcherAudioInternalPortType. bmdSwitcherAudioInternalPortTypeTalkbackMix } ,
+                {AudioInternalPortType.EngineeringTalkbackMix,  _BMDSwitcherAudioInternalPortType.  bmdSwitcherAudioInternalPortTypeEngineeringTalkbackMix } ,
+                {AudioInternalPortType.ProductionTalkbackMix, _BMDSwitcherAudioInternalPortType.  bmdSwitcherAudioInternalPortTypeProductionTalkbackMix} ,
+                {AudioInternalPortType.MediaPlayer, _BMDSwitcherAudioInternalPortType.  bmdSwitcherAudioInternalPortTypeMediaPlayer },
+                {AudioInternalPortType.Program,  _BMDSwitcherAudioInternalPortType.  bmdSwitcherAudioInternalPortTypeProgram },
+                {AudioInternalPortType.Return, _BMDSwitcherAudioInternalPortType.  bmdSwitcherAudioInternalPortTypeReturn },
+                {AudioInternalPortType.Monitor,  _BMDSwitcherAudioInternalPortType. bmdSwitcherAudioInternalPortTypeMonitor },
+                {AudioInternalPortType.Madi,   _BMDSwitcherAudioInternalPortType. bmdSwitcherAudioInternalPortTypeMadi},
+                {AudioInternalPortType.AuxOut, _BMDSwitcherAudioInternalPortType.  bmdSwitcherAudioInternalPortTypeAuxOut} ,
+                {AudioInternalPortType.AudioAuxOut,  _BMDSwitcherAudioInternalPortType. bmdSwitcherAudioInternalPortTypeAudioAuxOut }
+            };
 #endif
         }
 
@@ -506,7 +534,8 @@ namespace LibAtem.MockTests.SdkState
 
             foreach (_BMDSwitcherInputAvailability val in sdkInput.FindFlagComponents())
             {
-                switch (val) {
+                switch (val)
+                {
                     case _BMDSwitcherInputAvailability.bmdSwitcherInputAvailabilityMixEffectBlock0:
                         me |= MeAvailability.Me1;
                         break;

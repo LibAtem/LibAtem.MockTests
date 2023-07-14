@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using BMDSwitcherAPI;
 using LibAtem.Commands;
+using LibAtem.Common;
 using LibAtem.MockTests.DeviceMock;
 using LibAtem.State;
 using LibAtem.State.Builder;
@@ -128,6 +129,18 @@ namespace LibAtem.MockTests.Util
                         });
                     });
                     state.Fairlight.ProgramOut.Equalizer.Bands = new List<FairlightAudioState.EqualizerBandState>();
+                }
+            }
+
+            if (state.AudioRouting != null)
+            {
+                foreach(var src in state.AudioRouting.Sources.Values)
+                {
+                    // HACK as SDK is mangling this data in 9.0.1
+                    if (src.ExternalPortType == AudioPortType.RJ45)
+                    {
+                        src.ExternalPortType = 0;
+                    }
                 }
             }
 

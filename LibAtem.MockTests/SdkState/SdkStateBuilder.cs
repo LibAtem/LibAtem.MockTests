@@ -198,7 +198,64 @@ namespace LibAtem.MockTests.SdkState
                 CameraControlBuilder.Build(state, camera, updateSettings);
             }
 
+            AudioRouting(state, switcher);
+
             return state;
+        }
+
+        private static void AudioRouting(AtemState state, IBMDSwitcher switcher)
+        {
+            var outputIterator = AtemSDKConverter.CastSdk<IBMDSwitcherAudioRoutingOutputIterator>(switcher.CreateIterator);
+            var outputsList = AtemSDKConverter.ToList<IBMDSwitcherAudioRoutingOutput>(outputIterator.Next);
+
+            var sourceIterator = AtemSDKConverter.CastSdk<IBMDSwitcherAudioRoutingSourceIterator>(switcher.CreateIterator);
+            var sourcesList = AtemSDKConverter.ToList<IBMDSwitcherAudioRoutingSource>(sourceIterator.Next);
+
+            if (outputsList.Count == 0 && sourcesList.Count == 0) return;
+
+            state.AudioRouting = new AudioRoutingState();
+
+            foreach (IBMDSwitcherAudioRoutingOutput output in outputsList)
+            {
+                var outputState = new AudioRoutingOutputState();
+
+                output.GetId(out uint id);
+
+                output.GetAudioOutputId(out ushort outputId);
+                outputState.AudioOutputId = outputId;
+                output.GetChannelPair(out _BMDSwitcherAudioChannelPair pair);
+                outputState.AudioChannelPair = AtemEnumMaps.AudioChannelPairMap.FindByValue(pair); ;
+                output.GetSource(out uint sourceId);
+                outputState.SourceId = sourceId;
+                output.GetName(out string name);
+                outputState.Name = name;
+                output.GetExternalPortType(out _BMDSwitcherExternalPortType externalPortType);
+                outputState.ExternalPortType = AtemEnumMaps.AudioPortTypeMap.FindByValue(externalPortType);
+                output.GetInternalPortType(out _BMDSwitcherAudioInternalPortType internalPortType);
+                outputState.InternalPortType = AtemEnumMaps.AudioInternalPortTypeMap.FindByValue(internalPortType);
+
+                state.AudioRouting.Outputs.Add(id, outputState);
+            }
+
+            foreach (IBMDSwitcherAudioRoutingSource source in sourcesList)
+            {
+                var sourceState = new AudioRoutingSourceState();
+
+                source.GetId(out uint id);
+
+                source.GetAudioInputId(out long inputId);
+                sourceState.AudioInputId = inputId;
+                source.GetChannelPair(out _BMDSwitcherAudioChannelPair pair);
+                sourceState.AudioChannelPair = AtemEnumMaps.AudioChannelPairMap.FindByValue(pair); ;
+                source.GetName(out string name);
+                sourceState.Name = name;
+                source.GetExternalPortType(out _BMDSwitcherExternalPortType externalPortType);
+                sourceState.ExternalPortType = externalPortType == 0 ? AudioPortType.Unknown : AtemEnumMaps.AudioPortTypeMap.FindByValue(externalPortType);
+                source.GetInternalPortType(out _BMDSwitcherAudioInternalPortType internalPortType);
+                sourceState.InternalPortType = AtemEnumMaps.AudioInternalPortTypeMap.FindByValue(internalPortType);
+
+                state.AudioRouting.Sources.Add(id, sourceState);
+            }
         }
 
         private static void DveInfo(AtemState state, IBMDSwitcher switcher)
@@ -215,7 +272,7 @@ namespace LibAtem.MockTests.SdkState
             var dveTrans = me as IBMDSwitcherTransitionDVEParameters;
 
             if (flyKey == null || dveTrans == null) return;
-            
+
             flyKey.GetCanRotate(out int canRotate);
             flyKey.GetCanScaleUp(out int canScaleUp);
 
@@ -238,7 +295,7 @@ namespace LibAtem.MockTests.SdkState
                 CanRotate = canRotate != 0,
                 SupportedTransitions = dveStyles,
             };
-    }
+        }
         private static void SerialPorts(AtemState state, IBMDSwitcher switcher)
         {
             var iterator = AtemSDKConverter.CastSdk<IBMDSwitcherSerialPortIterator>(switcher.CreateIterator);
@@ -325,10 +382,10 @@ namespace LibAtem.MockTests.SdkState
 
                 props.GetCurrentClipTime(out ushort clipHours, out byte clipMinutes, out byte clipSeconds, out byte clipFrames);
                 st.Player.ClipTime = new HyperDeckTime
-                    {Hour = clipHours, Minute = clipMinutes, Second = clipSeconds, Frame = clipFrames};
+                { Hour = clipHours, Minute = clipMinutes, Second = clipSeconds, Frame = clipFrames };
                 props.GetCurrentTimelineTime(out ushort tlHours, out byte tlMinutes, out byte tlSeconds, out byte tlFrames);
                 st.Player.TimelineTime = new HyperDeckTime
-                    {Hour = tlHours, Minute = tlMinutes, Second = tlSeconds, Frame = tlFrames};
+                { Hour = tlHours, Minute = tlMinutes, Second = tlSeconds, Frame = tlFrames };
 
                 props.GetCurrentClip(out long clipId);
                 st.Storage.CurrentClipId = (int)clipId;
@@ -344,7 +401,7 @@ namespace LibAtem.MockTests.SdkState
                 props.GetEstimatedRecordTimeRemaining(out ushort recordHours, out byte recordMinutes,
                     out byte recordSeconds, out byte recordFrames);
                 st.Storage.RemainingRecordTime = new HyperDeckTime
-                    {Hour = recordHours, Minute = recordMinutes, Second = recordSeconds, Frame = recordFrames};
+                { Hour = recordHours, Minute = recordMinutes, Second = recordSeconds, Frame = recordFrames };
 
                 props.GetConnectionStatus(out _BMDSwitcherHyperDeckConnectionStatus status);
                 st.Settings.Status = AtemEnumMaps.HyperDeckConnectionStatusMap.FindByValue(status);
@@ -358,7 +415,7 @@ namespace LibAtem.MockTests.SdkState
                 st.Storage.ActiveStorageMedia = activeMedia;
                 if (activeMedia >= 0)
                 {
-                    props.GetStorageMediaState((uint) activeMedia, out _BMDSwitcherHyperDeckStorageMediaState storageState);
+                    props.GetStorageMediaState((uint)activeMedia, out _BMDSwitcherHyperDeckStorageMediaState storageState);
                     st.Storage.ActiveStorageStatus = AtemEnumMaps.HyperDeckStorageStatusMap.FindByValue(storageState);
                 }
 
@@ -383,22 +440,22 @@ namespace LibAtem.MockTests.SdkState
                     {
                         Name = name,
                         Duration = infoAvailable != 0
-                            ? new HyperDeckTime {Hour = hours, Minute = minutes, Second = seconds, Frame = frames}
+                            ? new HyperDeckTime { Hour = hours, Minute = minutes, Second = seconds, Frame = frames }
                             : null,
                         TimelineStart = infoAvailable != 0
                             ? new HyperDeckTime
-                                {Hour = startHours, Minute = startMinutes, Second = startSeconds, Frame = startFrames}
+                            { Hour = startHours, Minute = startMinutes, Second = startSeconds, Frame = startFrames }
                             : null,
                         TimelineEnd = infoAvailable != 0
                             ? new HyperDeckTime
-                                {Hour = endHours, Minute = endMinutes, Second = endSeconds, Frame = endFrames}
+                            { Hour = endHours, Minute = endMinutes, Second = endSeconds, Frame = endFrames }
                             : null,
                     };
                 });
 
                 props.GetClipCount(out uint count);
-                Assert.Equal((int) count, st.Clips.Count);
-                
+                Assert.Equal((int)count, st.Clips.Count);
+
                 return st;
             });
         }
@@ -412,7 +469,7 @@ namespace LibAtem.MockTests.SdkState
                     props.GetAvailableAudioModes(out _BMDSwitcherMixMinusOutputAudioMode availableModes);
                     props.GetAudioMode(out _BMDSwitcherMixMinusOutputAudioMode mode);
                     props.HasMinusAudioInputId(out int hasInputId);
-                    
+
                     long inputId = 0;
                     if (hasInputId != 0)
                         props.GetMinusAudioInputId(out inputId);
@@ -420,7 +477,7 @@ namespace LibAtem.MockTests.SdkState
                     return new SettingsState.MixMinusOutputState
                     {
                         HasAudioInputId = hasInputId != 0,
-                        AudioInputId = (AudioSource) inputId,
+                        AudioInputId = (AudioSource)inputId,
                         SupportedModes = AtemEnumMaps.MixMinusModeMap.FindFlagsByValue(availableModes),
                         Mode = AtemEnumMaps.MixMinusModeMap.FindByValue(mode),
                     };

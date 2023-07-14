@@ -25,12 +25,15 @@ namespace LibAtem.MockTests.SdkState
             // Analog
             if (props is IBMDSwitcherFairlightAnalogAudioInput analog)
             {
-                state.Analog = new FairlightAudioState.AnalogState();
-                analog.GetInputLevel(out _BMDSwitcherFairlightAudioAnalogInputLevel level);
-                state.Analog.InputLevel = AtemEnumMaps.FairlightAnalogInputLevelMap.FindByValue(level);
-
                 analog.GetSupportedInputLevels(out _BMDSwitcherFairlightAudioAnalogInputLevel supportedLevels);
-                state.Analog.SupportedInputLevel = (FairlightAnalogInputLevel) supportedLevels;
+                if (supportedLevels != 0)
+                {
+                    state.Analog = new FairlightAudioState.AnalogState();
+                    analog.GetInputLevel(out _BMDSwitcherFairlightAudioAnalogInputLevel level);
+                    state.Analog.InputLevel = AtemEnumMaps.FairlightAnalogInputLevelMap.FindByValue(level);
+
+                    state.Analog.SupportedInputLevel = (FairlightAnalogInputLevel)supportedLevels;
+                }
             }
 
 #if ATEM_v8_1

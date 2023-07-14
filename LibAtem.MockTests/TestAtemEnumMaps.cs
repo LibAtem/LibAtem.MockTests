@@ -173,6 +173,10 @@ namespace LibAtem.MockTests
         public void EnsureDisplayClockModeMap() => EnumMap.EnsureIsComplete(AtemEnumMaps.DisplayClockModeMap);
         [Fact]
         public void EnsureDisplayClockStateMap() => EnumMap.EnsureIsComplete(AtemEnumMaps.DisplayClockStateMap);
+        [Fact]
+        public void EnsureAudioChannelPairMap() => EnumMap.EnsureIsComplete(AtemEnumMaps.AudioChannelPairMap);
+        [Fact]
+        public void EnsureAudioInternalPortTypeMap() => EnumMap.EnsureIsComplete(AtemEnumMaps.AudioInternalPortTypeMap);
 #endif
     }
 }

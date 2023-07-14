@@ -18,6 +18,7 @@ namespace LibAtem.MockTests
         public static readonly string FourME4K = "";
         public static readonly string TVSHD = "tvshd-v8.1.0";
         public static readonly string TVS = "tvs-v8.1.0";
+        public static readonly string TVSHD8 = "";
 #elif ATEM_v8_1_1
         public static readonly ProtocolVersion Version = ProtocolVersion.V8_1_1;
         public static readonly string MiniExtremeIso = "mini-extreme-iso-v8.6.1";
@@ -29,9 +30,10 @@ namespace LibAtem.MockTests
         public static readonly string FourME4K = "4me-bs4k-v8.2";
         public static readonly string TVSHD = "tvshd-v8.2.0";
         public static readonly string TVS = "tvs-v8.1.1";
+        public static readonly string TVSHD8 = "tvs-hd8-v9.0";
 #endif
 
-        public static readonly string[] All = { MiniExtremeIso, Mini, Constellation, Constellation2MEHD, TwoME, TVSHD, TVS, TwoME4K, FourME4K};
+        public static readonly string[] All = { MiniExtremeIso, Mini, Constellation, Constellation2MEHD, TwoME, TVSHD, TVS, TwoME4K, FourME4K, TVSHD8 };
         public static readonly string[] DownConvertSDMode = { TwoME };
         public static readonly string[] DownConvertHDMode = { FourME4K };
         public static readonly string[] AutoVideoMode = {Mini, MiniExtremeIso };
@@ -82,6 +84,9 @@ namespace LibAtem.MockTests
         public static readonly string[] ClassicAudioMonitors = { TwoME4K, FourME4K };
         public static readonly string[] ClassicAudioXLRLevel = { TVSHD };
 
+        public static readonly string[] AudioRouting = { TVSHD8 };
+
         public static readonly string[] DisplayClock = { Constellation2MEHD };
+
     }
 }
