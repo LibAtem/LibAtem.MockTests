@@ -33,7 +33,7 @@ jobs:
         dotnet restore
 
         msbuild .\LibAtem.ComparisonTests.sln /property:Platform=v8.1 /property:Configuration=Release
-        cp Env:GITHUB_WORKSPACE/AtemSDK/v8.1.0/Interop.BMDSwitcherAPI.dll ibAtem.MockTests/bin/v8.1.1/Release/net8.0-windows/
+        cp Env:GITHUB_WORKSPACE/AtemSDK/v8.1.0/Interop.BMDSwitcherAPI.dll LibAtem.MockTests/bin/v8.1.1/Release/net8.0-windows/
     - name: Test
       run: |
         vstest.console.exe LibAtem.MockTests/bin/v8.1/Release/net8.0-windows/LibAtem.MockTests.dll
@@ -66,7 +66,7 @@ jobs:
 
         dotnet restore
 
-        cp Env:GITHUB_WORKSPACE/AtemSDK/v9.5.0/Interop.BMDSwitcherAPI.dll ibAtem.MockTests/bin/v8.1.1/Release/net8.0-windows/
+        cp Env:GITHUB_WORKSPACE/AtemSDK/v9.5.0/Interop.BMDSwitcherAPI.dll LibAtem.MockTests/bin/v8.1.1/Release/net8.0-windows/
         msbuild .\LibAtem.ComparisonTests.sln /property:Platform=v8.1.1 /property:Configuration=Release
     - name: Test
       run: |
