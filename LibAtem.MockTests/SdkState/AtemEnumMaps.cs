@@ -186,7 +186,9 @@ namespace LibAtem.MockTests.SdkState
                 {VideoMode.N1080p30, _BMDSwitcherVideoMode.bmdSwitcherVideoMode1080p30},
                 {VideoMode.N1080p60, _BMDSwitcherVideoMode.bmdSwitcherVideoMode1080p60},
                 {VideoMode.N720p60, _BMDSwitcherVideoMode.bmdSwitcherVideoMode720p60},
-                {VideoMode.N1080i60, _BMDSwitcherVideoMode.bmdSwitcherVideoMode1080i60}
+                {VideoMode.N1080i60, _BMDSwitcherVideoMode.bmdSwitcherVideoMode1080i60},
+                {VideoMode.N4KHDp30, _BMDSwitcherVideoMode.bmdSwitcherVideoMode4KHDp30},
+                {VideoMode.N4KHDp60, _BMDSwitcherVideoMode.bmdSwitcherVideoMode4KHDp60}
             };
 
             SDDownconvertModesMap = new Dictionary<DownConvertMode, _BMDSwitcherDownConversionMethod>()
@@ -450,7 +452,9 @@ namespace LibAtem.MockTests.SdkState
                 {AudioInternalPortType.Monitor,  _BMDSwitcherAudioInternalPortType. bmdSwitcherAudioInternalPortTypeMonitor },
                 {AudioInternalPortType.Madi,   _BMDSwitcherAudioInternalPortType. bmdSwitcherAudioInternalPortTypeMadi},
                 {AudioInternalPortType.AuxOut, _BMDSwitcherAudioInternalPortType.  bmdSwitcherAudioInternalPortTypeAuxOut} ,
-                {AudioInternalPortType.AudioAuxOut,  _BMDSwitcherAudioInternalPortType. bmdSwitcherAudioInternalPortTypeAudioAuxOut }
+                {AudioInternalPortType.AudioAuxOut,  _BMDSwitcherAudioInternalPortType. bmdSwitcherAudioInternalPortTypeAudioAuxOut },
+                {AudioInternalPortType.ReturnStreaming,  _BMDSwitcherAudioInternalPortType. bmdSwitcherAudioInternalPortTypeReturnStreaming},
+                {AudioInternalPortType.MixMinus,  _BMDSwitcherAudioInternalPortType. bmdSwitcherAudioInternalPortTypeMixMinus}
             };
 #endif
         }
@@ -568,6 +572,9 @@ namespace LibAtem.MockTests.SdkState
                         break;
                     case _BMDSwitcherInputAvailability.bmdSwitcherInputAvailabilityAux2Output:
                         source |= SourceAvailability.Aux2Output;
+                        break;
+                    case _BMDSwitcherInputAvailability.bmdSwitcherInputAvailabilityWebcamOut:
+                        source |= SourceAvailability.WebcamOutput;
                         break;
                     default:
                         throw new ArgumentOutOfRangeException();

@@ -133,7 +133,7 @@ namespace LibAtem.MockTests
         public void EnsureFairlightAudioSourceTypeMap() => EnumMap.EnsureIsComplete(AtemEnumMaps.FairlightAudioSourceTypeMap);
 
         [Fact]
-        public void EnsureFairlightAnalogInputLevelMap() => EnumMap.EnsureIsComplete(AtemEnumMaps.FairlightAnalogInputLevelMap);
+        public void EnsureFairlightAnalogInputLevelMap() => EnumMap.EnsureIsComplete(AtemEnumMaps.FairlightAnalogInputLevelMap, true);
 
         [Fact]
         public void EnsureSDI3GOutputLevelMap() => EnumMap.EnsureIsComplete(AtemEnumMaps.SDI3GOutputLevelMap);
