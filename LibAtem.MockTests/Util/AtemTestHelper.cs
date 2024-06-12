@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using BMDSwitcherAPI;
 using LibAtem.Commands;
 using LibAtem.Common;
@@ -98,7 +99,7 @@ namespace LibAtem.MockTests.Util
             }
             Assert.Empty(before);
         }
-        
+
         public ITestOutputHelper Output { get; }
 
         public AtemState BuildSdkState() => SdkClient.BuildState();
@@ -134,13 +135,34 @@ namespace LibAtem.MockTests.Util
 
             if (state.AudioRouting != null)
             {
-                foreach(var src in state.AudioRouting.Sources.Values)
+                foreach (var src in state.AudioRouting.Sources.Values)
                 {
                     // HACK as SDK is mangling this data in 9.0.1
                     if (src.ExternalPortType == AudioPortType.RJ45)
                     {
                         src.ExternalPortType = 0;
                     }
+                }
+            }
+
+            if (state.Info.DVE != null)
+            {
+                var supportedTransitions = state.Info.DVE.SupportedTransitions.ToList();
+                supportedTransitions.Sort();
+                state.Info.DVE.SupportedTransitions = supportedTransitions;
+            }
+
+            if (state.Info.SupportedVideoModes != null)
+            {
+                foreach (var mode in state.Info.SupportedVideoModes)
+                {
+                    var mvModes = mode.MultiviewModes.ToArray();
+                    Array.Sort(mvModes);
+                    mode.MultiviewModes = mvModes;
+
+                    var dcModes = mode.DownConvertModes.ToArray();
+                    Array.Sort(dcModes);
+                    mode.DownConvertModes = dcModes;
                 }
             }
 
