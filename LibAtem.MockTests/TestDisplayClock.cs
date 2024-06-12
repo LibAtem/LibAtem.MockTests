@@ -388,8 +388,8 @@ namespace LibAtem.MockTests
 
             return null;
         }
-    }
 
 #endif
 
+    }
 }

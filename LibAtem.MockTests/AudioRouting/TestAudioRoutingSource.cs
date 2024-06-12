@@ -70,8 +70,8 @@ namespace LibAtem.MockTests.AudioRouting
                 }
             });
         }
-    }
 
 #endif
 
+    }
 }

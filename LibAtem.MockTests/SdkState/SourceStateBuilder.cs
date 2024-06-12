@@ -142,6 +142,6 @@ namespace LibAtem.MockTests.SdkState
 
             return state;
         }
-    }
 #endif
+    }
 }
