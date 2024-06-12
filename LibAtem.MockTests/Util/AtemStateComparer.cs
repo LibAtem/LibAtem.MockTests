@@ -39,8 +39,12 @@ namespace LibAtem.MockTests.Util
             return res.Count == 0;
         }
 
-        public static IEnumerable<string> CompareObject(string name, IReadOnlyList<string> ignoreNodes, object state1, object state2)
+
+        public static IEnumerable<string> CompareObject(string name, IReadOnlyList<string> ignoreNodes, object state1, object state2, PropertyInfo prop = null)
         {
+            if (ignoreNodes.Contains(name))
+                yield break;
+
             if (state1 == null)
             {
                 yield return "IsNull (Expected): " + name;
@@ -52,170 +56,172 @@ namespace LibAtem.MockTests.Util
                 yield break;
             }
 
-            if (state1.GetType() != state2.GetType())
-                Assert.Fail("Mismatched types: " + state1.GetType().Name + ", " + state2.GetType().Name);
+            var stateType = state1.GetType();
+            if (stateType != state2.GetType())
+                Assert.Fail("Mismatched types: " + stateType.Name + ", " + state2.GetType().Name);
 
-            foreach (PropertyInfo prop in state1.GetType().GetProperties())
+
+            bool isDictionary = stateType.IsGenericType && stateType.GetGenericTypeDefinition() == typeof(Dictionary<,>);
+            bool isList = stateType.IsGenericType && (stateType.GetGenericTypeDefinition() == typeof(List<>) || stateType.GetGenericTypeDefinition() == typeof(IReadOnlyList<>));
+            if (isDictionary)
             {
-                if (ignoreNodes.Contains(name + prop.Name))
-                    continue;
+                dynamic oldDict = Convert.ChangeType(state1, stateType);
+                dynamic newDict = Convert.ChangeType(state2, stateType);
 
-                object newVal = prop.GetValue(state2);
-                object oldVal = prop.GetValue(state1);
-
-                // Both null is good
-                if (newVal == null && oldVal == null)
-                    continue;
-
-                bool isDictionary = prop.PropertyType.IsGenericType && prop.PropertyType.GetGenericTypeDefinition() == typeof(Dictionary<,>);
-                bool isList = prop.PropertyType.IsGenericType && (prop.PropertyType.GetGenericTypeDefinition() == typeof(List<>) || prop.PropertyType.GetGenericTypeDefinition() == typeof(IReadOnlyList<>));
-                if (isDictionary)
+                if (newDict == null || newDict?.Count != oldDict?.Count)
                 {
-                    dynamic oldDict = Convert.ChangeType(oldVal, prop.PropertyType);
-                    dynamic newDict = Convert.ChangeType(newVal, prop.PropertyType);
+                    yield return "Value: " + name + " length mismatch Expected: " + oldDict?.Count + " Actual: " + newDict?.Count;
+                    yield break;
+                }
 
-                    if (newDict == null || newDict?.Count != oldDict?.Count)
+                string newName = name + ".";
+                foreach (dynamic newInner in newDict)
+                {
+                    if (!oldDict.ContainsKey(newInner.Key))
                     {
-                        yield return "Value: " + name + prop.Name + " length mismatch Expected: " + oldDict?.Count + " Actual: " + newDict?.Count;
+                        yield return "Value: " + newName + newInner.Key + " missing from expected";
                         continue;
                     }
 
-                    string newName = name + prop.Name + ".";
-                    foreach (dynamic newInner in newDict)
-                    {
-                        if (!oldDict.ContainsKey(newInner.Key))
-                        {
-                            yield return "Value: " + newName + newInner.Key + " missing from expected";
-                            continue;
-                        }
+                    dynamic oldInner = oldDict[newInner.Key];
 
-                        dynamic oldInner = oldDict[newInner.Key];
+                    string newInnerName = name + "." + newInner.Key + ".";
 
-                        string newInnerName = name + prop.Name + "." + newInner.Key + ".";
-
-                        IEnumerable<string> res = CompareObject(newInnerName, ignoreNodes, oldInner, newInner.Value);
-                        foreach (string r in res)
-                            yield return r;
-                    }
-                }
-                else if (isList)
-                {
-                    dynamic oldList = oldVal;
-                    dynamic newList = newVal;
-
-                    if (newList?.Count != oldList?.Count)
-                    {
-                        yield return "Value: " + name + prop.Name + " length mismatch Expected: " + oldList?.Count +
-                                     " Actual: " + newList?.Count;
-                        continue;
-                    }
-
-                    string newName = name + prop.Name + ".";
-                    for (int i = 0; i < newList.Count; i++)
-                    {
-                        IEnumerable<string> res = CompareObject($"{newName}{i}.", ignoreNodes, oldList[i],
-                            newList[i]);
-                        foreach (string r in res)
-                            yield return r;
-                    }
-                }
-                else if (prop.PropertyType.IsArray)
-                {
-                    dynamic oldList = oldVal;
-                    dynamic newList = newVal;
-
-                    if (newList?.Length != oldList?.Length)
-                    {
-                        yield return "Value: " + name + prop.Name + " length mismatch Expected: " + oldList?.Length + " Actual: " + newList?.Length;
-                        continue;
-                    }
-
-                    string newName = name + prop.Name + ".";
-                    for (int i = 0; i < newList.Length; i++)
-                    {
-                        IEnumerable<string> res = CompareObject($"{newName}{i}.", ignoreNodes, oldList[i], newList[i]);
-                        foreach (string r in res)
-                            yield return r;
-                    }
-                }
-                else if (prop.PropertyType == typeof(double))
-                {
-                    ToleranceAttribute attr = prop.GetCustomAttribute<ToleranceAttribute>();
-                    if (attr != null)
-                    {
-                        var oldDbl = (double)oldVal;
-                        var newDbl = (double)newVal;
-
-                        if (!attr.AreEqual(oldDbl, newDbl))
-                        {
-                            yield return "Value: " + name + prop.Name + " Expected: " + oldVal + " Actual: " + newVal;
-                        }
-                    }
-                    else if (!oldVal.Equals(newVal))
-                    {
-                        yield return "Value: " + name + prop.Name + " Expected: " + oldVal + " Actual: " + newVal;
-                    }
-                }
-                else if (prop.PropertyType == typeof(double[]))
-                {
-                    var oldDbl = (double[])oldVal;
-                    var newDbl = (double[])newVal;
-
-                    string arrToStr(double[] arr) => "[" + string.Join(", ", arr.Select(a => $"{a:0.####}")) + "]";
-
-                    ToleranceAttribute attr = prop.GetCustomAttribute<ToleranceAttribute>();
-                    if (attr != null)
-                    {
-                        if (!oldDbl.SequenceEqual(newDbl, attr))
-                        {
-                            yield return "Value: " + name + prop.Name + " Expected: " + arrToStr(oldDbl) + " Actual: " + arrToStr(newDbl);
-                        }
-                    }
-                    else if (!oldDbl.SequenceEqual(newDbl))
-                    {
-                        yield return "Value: " + name + prop.Name + " Expected: " + arrToStr(oldDbl) + " Actual: " + arrToStr(newDbl);
-                    }
-                }
-                else if (prop.PropertyType == typeof(uint))
-                {
-                    UintToleranceAttribute attr = prop.GetCustomAttribute<UintToleranceAttribute>();
-                    if (attr != null)
-                    {
-                        var oldDbl = (uint)oldVal;
-                        var newDbl = (uint)newVal;
-
-                        if (!attr.AreEqual(oldDbl, newDbl))
-                        {
-                            yield return "Value: " + name + prop.Name + " Expected: " + oldVal + " Actual: " + newVal;
-                        }
-                    }
-                    else if (!oldVal.Equals(newVal))
-                    {
-                        yield return "Value: " + name + prop.Name + " Expected: " + oldVal + " Actual: " + newVal;
-                    }
-                }
-                else if (prop.PropertyType == typeof(byte[]))
-                {
-                    byte[] oldVal2 = (byte[])oldVal;
-                    byte[] newVal2 = (byte[])newVal;
-                    if (oldVal2 == null || newVal2 == null || !oldVal2.SequenceEqual(newVal2))
-                    {
-                        yield return "Value: " + name + prop.Name + " Expected: " + oldVal + " Actual: " + newVal;
-                    }
-                }
-                else if (!prop.PropertyType.IsClass || prop.PropertyType == typeof(string))
-                {
-                    if (oldVal == null || !oldVal.Equals(newVal))
-                    {
-                        yield return "Value: " + name + prop.Name + " Expected: " + oldVal + " Actual: " + newVal;
-                    }
-                }
-                else
-                {
-                    string newName = name + prop.Name + ".";
-                    IEnumerable<string> res = CompareObject(newName, ignoreNodes, oldVal, newVal);
+                    IEnumerable<string> res = CompareObject(newInnerName, ignoreNodes, oldInner, newInner.Value);
                     foreach (string r in res)
                         yield return r;
+                }
+            }
+            else if (isList)
+            {
+                dynamic oldList = state1;
+                dynamic newList = state2;
+
+                if (newList?.Count != oldList?.Count)
+                {
+                    yield return "Value: " + name + " length mismatch Expected: " + oldList?.Count +
+                                 " Actual: " + newList?.Count;
+                    yield break;
+                }
+
+                string newName = name + ".";
+                for (int i = 0; i < newList.Count; i++)
+                {
+                    IEnumerable<string> res = CompareObject($"{newName}{i}.", ignoreNodes, oldList[i],
+                        newList[i]);
+                    foreach (string r in res)
+                        yield return r;
+                }
+            }
+            else if (stateType.IsArray)
+            {
+                dynamic oldList = state1;
+                dynamic newList = state2;
+
+                if (newList?.Length != oldList?.Length)
+                {
+                    yield return "Value: " + name + " length mismatch Expected: " + oldList?.Length + " Actual: " + newList?.Length;
+                    yield break;
+                }
+
+                for (int i = 0; i < newList.Length; i++)
+                {
+                    IEnumerable<string> res = CompareObject($"{name}{i}.", ignoreNodes, oldList[i], newList[i]);
+                    foreach (string r in res)
+                        yield return r;
+                }
+            }
+            else if (stateType == typeof(double))
+            {
+                ToleranceAttribute attr = prop.GetCustomAttribute<ToleranceAttribute>();
+                if (attr != null)
+                {
+                    var oldDbl = (double)state1;
+                    var newDbl = (double)state2;
+
+                    if (!attr.AreEqual(oldDbl, newDbl))
+                    {
+                        yield return "Value: " + name + " Expected: " + state1 + " Actual: " + state2;
+                    }
+                }
+                else if (!state1.Equals(state2))
+                {
+                    yield return "Value: " + name + " Expected: " + state1 + " Actual: " + state2;
+                }
+            }
+            else if (stateType == typeof(double[]))
+            {
+                var oldDbl = (double[])state1;
+                var newDbl = (double[])state2;
+
+                string arrToStr(double[] arr) => "[" + string.Join(", ", arr.Select(a => $"{a:0.####}")) + "]";
+
+                ToleranceAttribute attr = prop.GetCustomAttribute<ToleranceAttribute>();
+                if (attr != null)
+                {
+                    if (!oldDbl.SequenceEqual(newDbl, attr))
+                    {
+                        yield return "Value: " + name + " Expected: " + arrToStr(oldDbl) + " Actual: " + arrToStr(newDbl);
+                    }
+                }
+                else if (!oldDbl.SequenceEqual(newDbl))
+                {
+                    yield return "Value: " + name + " Expected: " + arrToStr(oldDbl) + " Actual: " + arrToStr(newDbl);
+                }
+            }
+            else if (stateType == typeof(uint))
+            {
+                UintToleranceAttribute attr = prop.GetCustomAttribute<UintToleranceAttribute>();
+                if (attr != null)
+                {
+                    var oldDbl = (uint)state1;
+                    var newDbl = (uint)state2;
+
+                    if (!attr.AreEqual(oldDbl, newDbl))
+                    {
+                        yield return "Value: " + name + " Expected: " + state1 + " Actual: " + state2;
+                    }
+                }
+                else if (!state1.Equals(state2))
+                {
+                    yield return "Value: " + name + " Expected: " + state1 + " Actual: " + state2;
+                }
+            }
+            else if (stateType == typeof(byte[]))
+            {
+                byte[] oldVal2 = (byte[])state1;
+                byte[] newVal2 = (byte[])state2;
+                if (oldVal2 == null || newVal2 == null || !oldVal2.SequenceEqual(newVal2))
+                {
+                    yield return "Value: " + name + " Expected: " + state1 + " Actual: " + state2;
+                }
+            }
+            else if (!stateType.IsClass || stateType == typeof(string))
+            {
+                if (state1 == null || !state1.Equals(state2))
+                {
+                    yield return "Value: " + name + " Expected: " + state1 + " Actual: " + state2;
+                }
+            }
+            else
+            {
+                foreach (PropertyInfo prop2 in state1.GetType().GetProperties())
+                {
+                    if (ignoreNodes.Contains(name + prop2.Name))
+                        continue;
+
+                    object newVal = prop2.GetValue(state2);
+                    object oldVal = prop2.GetValue(state1);
+
+                    // Both null is good
+                    if (newVal == null && oldVal == null)
+                        continue;
+
+                    string newName = name.Length > 0 ? name + "." + prop2.Name : prop2.Name;
+                    IEnumerable<string> res = CompareObject(newName, ignoreNodes, oldVal, newVal, prop2);
+                    foreach (string r in res)
+                        yield return r;
+
                 }
             }
 
