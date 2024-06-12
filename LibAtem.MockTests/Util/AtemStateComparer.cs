@@ -53,7 +53,7 @@ namespace LibAtem.MockTests.Util
             }
 
             if (state1.GetType() != state2.GetType())
-                Assert.True(false, "Mismatched types: " + state1.GetType().Name + ", " + state2.GetType().Name);
+                Assert.Fail("Mismatched types: " + state1.GetType().Name + ", " + state2.GetType().Name);
 
             foreach (PropertyInfo prop in state1.GetType().GetProperties())
             {

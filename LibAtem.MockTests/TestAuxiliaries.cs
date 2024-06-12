@@ -41,7 +41,7 @@ namespace LibAtem.MockTests
                     // GetInputAvailabilityMask is used when checking if another input can be used for this output.
                     // We track this another way
                     aux.GetInputAvailabilityMask(out _BMDSwitcherInputAvailability availabilityMask);
-                    Assert.Equal(availabilityMask, (_BMDSwitcherInputAvailability)((int)SourceAvailability.Auxiliary << 2));
+                    Assert.Equal((_BMDSwitcherInputAvailability)((int)SourceAvailability.Auxiliary << 2), availabilityMask);
 
                     AtemState stateBefore = helper.Helper.BuildLibState();
 

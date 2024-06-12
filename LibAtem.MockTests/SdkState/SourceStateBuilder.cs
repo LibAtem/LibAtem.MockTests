@@ -55,8 +55,7 @@ namespace LibAtem.MockTests.SdkState
             state.Properties.ShortName = name;
             props.GetLongName(out string longName);
             state.Properties.LongName = longName;
-            int isDefault = 0;
-            props.AreNamesDefault(ref isDefault);
+            props.AreNamesDefault(out int isDefault);
             state.Properties.AreNamesDefault = isDefault != 0;
             props.IsProgramTallied(out int progTally);
             state.Tally.ProgramTally = progTally != 0;
