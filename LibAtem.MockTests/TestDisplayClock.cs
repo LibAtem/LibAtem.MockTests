@@ -26,6 +26,8 @@ namespace LibAtem.MockTests
             _pool = pool;
         }
 
+#if !ATEM_v8_1
+
         [Fact]
         public void TestEnabled()
         {
@@ -387,4 +389,7 @@ namespace LibAtem.MockTests
             return null;
         }
     }
+
+#endif
+
 }

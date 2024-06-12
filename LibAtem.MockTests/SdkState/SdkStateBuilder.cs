@@ -205,6 +205,7 @@ namespace LibAtem.MockTests.SdkState
 
         private static void AudioRouting(AtemState state, IBMDSwitcher switcher)
         {
+#if !ATEM_v8_1
             var outputIterator = AtemSDKConverter.CastSdk<IBMDSwitcherAudioRoutingOutputIterator>(switcher.CreateIterator);
             var outputsList = AtemSDKConverter.ToList<IBMDSwitcherAudioRoutingOutput>(outputIterator.Next);
 
@@ -256,6 +257,7 @@ namespace LibAtem.MockTests.SdkState
 
                 state.AudioRouting.Sources.Add(id, sourceState);
             }
+#endif
         }
 
         private static void DveInfo(AtemState state, IBMDSwitcher switcher)

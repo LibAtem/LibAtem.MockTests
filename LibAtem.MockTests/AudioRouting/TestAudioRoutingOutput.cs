@@ -22,6 +22,8 @@ namespace LibAtem.MockTests.AudioRouting
             _pool = pool;
         }
 
+#if !ATEM_v8_1
+
         private static Dictionary<uint, IBMDSwitcherAudioRoutingOutput> GetRoutableOutputs(AtemMockServerWrapper helper)
         {
             var res = new Dictionary<uint, IBMDSwitcherAudioRoutingOutput>();
@@ -100,4 +102,7 @@ namespace LibAtem.MockTests.AudioRouting
             });
         }
     }
+
+#endif
+
 }

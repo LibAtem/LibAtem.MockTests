@@ -27,12 +27,14 @@ namespace LibAtem.MockTests.SdkState
                 if (input is IBMDSwitcherInputAux aux) {
                     auxes.Add(AuxInput(aux));
 
+#if !ATEM_v8_1
                     if (input is IBMDSwitcherDisplayClock dc)
                     {
                         if (src != VideoSource.Auxilary1) throw new Exception("Got IBMDSwitcherDisplayClock for unexpected aux");
 
                         state.DisplayClock = DisplayClock(dc);
                     }
+#endif
                 }
 
                 if (input is IBMDSwitcherInputColor col)
@@ -100,6 +102,7 @@ namespace LibAtem.MockTests.SdkState
             return state;
         }
 
+#if !ATEM_v8_1
         private static DisplayClockState DisplayClock(IBMDSwitcherDisplayClock props)
         {
             var state = new DisplayClockState();
@@ -140,4 +143,5 @@ namespace LibAtem.MockTests.SdkState
             return state;
         }
     }
+#endif
 }
