@@ -19,12 +19,21 @@ jobs:
       uses: actions/setup-dotnet@v4
       with:
         dotnet-version: 8.0
+
+    - name: Setup msbuild
+      uses: microsoft/setup-msbuild@v2
+    - name: Setup VSTest Path
+      uses: darenm/Setup-VSTest@v1.2
+
     - name: Test
       run: |
-        $Env:WORKFLOW_VERSION = 'v8.1'
         regsvr32 $Env:GITHUB_WORKSPACE/AtemSDK/v8.1.0/BMDSwitcherAPI.dll /s
         regsvr32 $Env:GITHUB_WORKSPACE/AtemSDK/v8.1.0/BMDSwitcherAPI64.dll /s
-        dotnet test LibAtem.MockTests -c Release
+        
+        dotnet restore
+
+        msbuild .\LibAtem.ComparisonTests.sln /property:Platform=v8.1 /property:Configuration=Release
+        vstest.console.exe LibAtem.MockTests/bin/v8.1/Release/net8.0-windows/LibAtem.MockTests.dll
   test_v8_1_1_-_v9_5_0:
     runs-on: windows-latest
     steps:
@@ -41,9 +50,18 @@ jobs:
       uses: actions/setup-dotnet@v4
       with:
         dotnet-version: 8.0
+        
+    - name: Setup msbuild
+      uses: microsoft/setup-msbuild@v2
+    - name: Setup VSTest Path
+      uses: darenm/Setup-VSTest@v1.2
+      
     - name: Test
       run: |
-        $Env:WORKFLOW_VERSION = 'v8.1.1'
         # regsvr32 $Env:GITHUB_WORKSPACE/AtemSDK/v9.5.0/BMDSwitcherAPI.dll /s
         regsvr32 $Env:GITHUB_WORKSPACE/AtemSDK/v9.5.0/BMDSwitcherAPI64.dll /s
-        dotnet test LibAtem.MockTests -c Release
+
+        dotnet restore
+
+        msbuild .\LibAtem.ComparisonTests.sln /property:Platform=v8.1.1 /property:Configuration=Release
+        vstest.console.exe LibAtem.MockTests/bin/v8.1.1/Release/net8.0-windows/LibAtem.MockTests.dll
