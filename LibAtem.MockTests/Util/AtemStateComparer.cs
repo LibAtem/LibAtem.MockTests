@@ -85,7 +85,7 @@ namespace LibAtem.MockTests.Util
 
                     dynamic oldInner = oldDict[newInner.Key];
 
-                    string newInnerName = name + "." + newInner.Key + ".";
+                    string newInnerName = newName + newInner.Key; 
 
                     IEnumerable<string> res = CompareObject(newInnerName, ignoreNodes, oldInner, newInner.Value);
                     foreach (string r in res)
@@ -104,10 +104,9 @@ namespace LibAtem.MockTests.Util
                     yield break;
                 }
 
-                string newName = name + ".";
                 for (int i = 0; i < newList.Count; i++)
                 {
-                    IEnumerable<string> res = CompareObject($"{newName}{i}.", ignoreNodes, oldList[i],
+                    IEnumerable<string> res = CompareObject($"{name}.{i}", ignoreNodes, oldList[i],
                         newList[i]);
                     foreach (string r in res)
                         yield return r;
@@ -126,7 +125,7 @@ namespace LibAtem.MockTests.Util
 
                 for (int i = 0; i < newList.Length; i++)
                 {
-                    IEnumerable<string> res = CompareObject($"{name}{i}.", ignoreNodes, oldList[i], newList[i]);
+                    IEnumerable<string> res = CompareObject($"{name}.{i}", ignoreNodes, oldList[i], newList[i]);
                     foreach (string r in res)
                         yield return r;
                 }
