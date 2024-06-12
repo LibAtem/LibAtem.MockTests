@@ -6,41 +6,41 @@ jobs:
   test_v8_0_3_-_v8_1_0:
     runs-on: windows-latest
     steps:
-    - uses: actions/checkout@v1
+    - uses: actions/checkout@v4
       with:
         submodules: recursive
     - name: Checkout SDK
-      uses: actions/checkout@v2
+      uses: actions/checkout@v4
       with:
         repository: julusian/atemsdk
         token: ${{ secrets.ATEMSDK_TOKEN }}
         path: AtemSDK
     - name: Setup .NET Core
-      uses: actions/setup-dotnet@v1
+      uses: actions/setup-dotnet@v4
       with:
-        dotnet-version: 3.1.100
+        dotnet-version: 8.0
     - name: Test
       run: |
         $Env:WORKFLOW_VERSION = 'v8.1'
         regsvr32 $Env:GITHUB_WORKSPACE/AtemSDK/v8.1.0/BMDSwitcherAPI.dll /s
         regsvr32 $Env:GITHUB_WORKSPACE/AtemSDK/v8.1.0/BMDSwitcherAPI64.dll /s
         dotnet test LibAtem.MockTests -c Release
-  test_v8_1_1_-_v8_6_4:
+  test_v8_1_1_-_v9_5_0:
     runs-on: windows-latest
     steps:
-    - uses: actions/checkout@v1
+    - uses: actions/checkout@v4
       with:
         submodules: recursive
     - name: Checkout SDK
-      uses: actions/checkout@v2
+      uses: actions/checkout@v4
       with:
         repository: julusian/atemsdk
         token: ${{ secrets.ATEMSDK_TOKEN }}
         path: AtemSDK
     - name: Setup .NET Core
-      uses: actions/setup-dotnet@v1
+      uses: actions/setup-dotnet@v4
       with:
-        dotnet-version: 3.1.100
+        dotnet-version: 8.0
     - name: Test
       run: |
         $Env:WORKFLOW_VERSION = 'v8.1.1'
