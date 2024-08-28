@@ -98,6 +98,7 @@ namespace LibAtem.MockTests.SdkState
                         supportsMultiviewer = false;
                     }
                 }
+                multiviewModes.Sort();
 
                 var downConvertModes = new List<VideoMode>();
                 if (supportsDownConvert)
@@ -116,6 +117,7 @@ namespace LibAtem.MockTests.SdkState
                         supportsDownConvert = false;
                     }
                 }
+                downConvertModes.Sort();
 
                 modes.Add(new VideoModeInfo
                 {

@@ -5,6 +5,7 @@ using System.Linq;
 using BMDSwitcherAPI;
 using LibAtem.Commands;
 using LibAtem.Commands.Settings.Multiview;
+using LibAtem.Commands.SuperSource;
 using LibAtem.Common;
 using LibAtem.MockTests.SdkState;
 using LibAtem.MockTests.Util;
@@ -67,7 +68,7 @@ namespace LibAtem.MockTests
                         stateBefore.Settings.MultiViewers[(int)mv.Item1].Properties.Layout = newValue;
                         helper.SendAndWaitForChange(stateBefore, () =>
                             {
-                                mv.Item2.SetLayout((_BMDSwitcherMultiViewLayout) newValue);
+                                mv.Item2.SetLayout((_BMDSwitcherMultiViewLayout)newValue);
                             });
                     }
                 }
@@ -86,7 +87,7 @@ namespace LibAtem.MockTests
                     Assert.Equal(1, supportsSwap);
 
                     AtemState stateBefore = helper.Helper.BuildLibState();
-                    MultiViewerState mvState = stateBefore.Settings.MultiViewers[(int) mv.Item1];
+                    MultiViewerState mvState = stateBefore.Settings.MultiViewers[(int)mv.Item1];
 
                     for (int i = 0; i < 5; i++)
                     {
@@ -123,7 +124,7 @@ namespace LibAtem.MockTests
                     mv.Item2.SupportsQuadrantLayout(out int supportsQuadrant);
 
                     int[] windows = supportsQuadrant == 0
-                        ? new[] {0, 1}
+                        ? new[] { 0, 1 }
                         : Randomiser.SelectionOfGroup(Enumerable.Range(0, 16).ToList()).ToArray();
 
                     foreach (int window in windows)
@@ -132,10 +133,10 @@ namespace LibAtem.MockTests
                         for (int i = 0; i < 5; i++)
                         {
                             bool newValue = i % 2 == 0;
-                            stateBefore.Settings.MultiViewers[(int) mv.Item1].Windows[window].SafeAreaEnabled = newValue;
+                            stateBefore.Settings.MultiViewers[(int)mv.Item1].Windows[window].SafeAreaEnabled = newValue;
 
                             helper.SendAndWaitForChange(stateBefore,
-                                () => { mv.Item2.SetSafeAreaEnabled((uint) window, newValue ? 1 : 0); });
+                                () => { mv.Item2.SetSafeAreaEnabled((uint)window, newValue ? 1 : 0); });
                         }
                     }
                 }
@@ -206,7 +207,7 @@ namespace LibAtem.MockTests
                     for (int i = 0; i < 5; i++)
                     {
                         double newValue = Randomiser.Range(0, 100);
-                        stateBefore.Settings.MultiViewers[(int) mv.Item1].VuMeterOpacity = newValue;
+                        stateBefore.Settings.MultiViewers[(int)mv.Item1].VuMeterOpacity = newValue;
 
                         helper.SendAndWaitForChange(stateBefore,
                             () => { mv.Item2.SetVuMeterOpacity(newValue / 100); });
@@ -264,7 +265,7 @@ namespace LibAtem.MockTests
                     foreach (int window in windows)
                     {
                         AtemState stateBefore = helper.Helper.BuildLibState();
-                        MultiViewerState.WindowState windowState = stateBefore.Settings.MultiViewers[(int) mv.Item1].Windows[window];
+                        MultiViewerState.WindowState windowState = stateBefore.Settings.MultiViewers[(int)mv.Item1].Windows[window];
 
                         MultiviewWindowInputGetCommand cmd = cmds.Single(c => c.WindowIndex == window && c.MultiviewIndex == mv.Item1);
 
@@ -368,7 +369,7 @@ namespace LibAtem.MockTests
 
                             helper.SendAndWaitForChange(stateBefore, () =>
                             {
-                                mv.Item2.SetWindowInput((uint) window, (long) src);
+                                mv.Item2.SetWindowInput((uint)window, (long)src);
                             });
                         }
                     }
@@ -388,5 +389,120 @@ namespace LibAtem.MockTests
             }
         }
 
+        [Fact]
+        public void TestWindowLabelVisible()
+        {
+            var handler = CommandGenerator.CreateAutoCommandHandler<MultiviewWindowOverlaySetCommand, MultiviewWindowOverlayGetCommand>("LabelVisible", true);
+
+            AtemMockServerWrapper.Each(_output, _pool, handler, DeviceTestCases.MultiviewBorders, helper =>
+            {
+                foreach (Tuple<uint, IBMDSwitcherMultiView> mv in GetMultiviewers(helper))
+                {
+                    // TODO: re-enable this
+                    // mv.Item2.CanChangeOverlayProperties(out int supported);
+                    // Assert.Equal(1, supported);
+
+                    int[] windows = Randomiser
+                        .SelectionOfGroup(Enumerable.Range(0, 16).ToList()).ToArray();
+
+                    foreach (int window in windows)
+                    {
+                        AtemState stateBefore = helper.Helper.BuildLibState();
+                        MultiViewerState.WindowState windowState = stateBefore.Settings.MultiViewers[(int)mv.Item1].Windows[window];
+
+                        for (int i = 0; i < 5; i++)
+                        {
+                            bool newValue = i % 2 == 0;
+                            windowState.LabelVisible = newValue;
+
+                            helper.SendAndWaitForChange(stateBefore, () =>
+                            {
+                                mv.Item2.SetLabelVisible((uint)window, newValue ? 1 : 0);
+                            });
+                        }
+                    }
+                }
+            });
+        }
+
+        [Fact]
+        public void TestWindowBorderVisible()
+        {
+            var handler = CommandGenerator.CreateAutoCommandHandler<MultiviewWindowOverlaySetCommand, MultiviewWindowOverlayGetCommand>("BorderVisible", true);
+
+            AtemMockServerWrapper.Each(_output, _pool, handler, DeviceTestCases.MultiviewBorders, helper =>
+            {
+                foreach (Tuple<uint, IBMDSwitcherMultiView> mv in GetMultiviewers(helper))
+                {
+                    // TODO: re-enable this
+                    // mv.Item2.CanChangeOverlayProperties(out int supported);
+                    // Assert.Equal(1, supported);
+
+                    int[] windows = Randomiser
+                        .SelectionOfGroup(Enumerable.Range(0, 16).ToList()).ToArray();
+
+                    foreach (int window in windows)
+                    {
+                        AtemState stateBefore = helper.Helper.BuildLibState();
+                        MultiViewerState.WindowState windowState = stateBefore.Settings.MultiViewers[(int)mv.Item1].Windows[window];
+
+                        for (int i = 0; i < 5; i++)
+                        {
+                            bool newValue = i % 2 == 0;
+                            windowState.BorderVisible = newValue;
+
+                            helper.SendAndWaitForChange(stateBefore, () =>
+                            {
+                                mv.Item2.SetBorderVisible((uint)window, newValue ? 1 : 0);
+                            });
+                        }
+                    }
+                }
+            });
+        }
+
+        [Fact]
+        public void TestBorderColor()
+        {
+            var expectedCmd = new MultiviewBorderColorGetCommand();
+            var handler = CommandGenerator.EchoCommand(expectedCmd);
+
+            AtemMockServerWrapper.Each(_output, _pool, handler, DeviceTestCases.MultiviewBorders, helper =>
+            {
+                foreach (Tuple<uint, IBMDSwitcherMultiView> mv in GetMultiviewers(helper))
+                {
+                    // TODO: re-enable this
+                    // mv.Item2.CanChangeOverlayProperties(out int supported);
+                    // Assert.Equal(1, supported);
+
+
+                    AtemState stateBefore = helper.Helper.BuildLibState();
+                    MultiViewerState mvState = stateBefore.Settings.MultiViewers[(int)mv.Item1];
+
+                    for (int i = 0; i < 5; i++)
+                    {
+                        expectedCmd.MultiviewIndex = mv.Item1;
+                        expectedCmd.Red = Randomiser.Range(0, 1, 100);
+                        expectedCmd.Green = Randomiser.Range(0, 1, 100);
+                        expectedCmd.Blue = Randomiser.Range(0, 1, 100);
+                        expectedCmd.Alpha = Randomiser.Range(0, 1, 100);
+
+                        mvState.BorderColor = new MultiViewerState.BorderColorState
+                        {
+                            Red = expectedCmd.Red,
+                            Green = expectedCmd.Green,
+                            Blue = expectedCmd.Blue,
+                            Alpha = expectedCmd.Alpha
+                        };
+
+                        helper.SendAndWaitForChange(stateBefore, () =>
+                        {
+                            mv.Item2.SetBorderColor(expectedCmd.Red, expectedCmd.Green, expectedCmd.Blue, expectedCmd.Alpha);
+                        });
+                        
+                    }
+                }
+            });
+        }
     }
 }

@@ -98,6 +98,12 @@
     <None Update="TestFiles\Handshake\constellation-2me-hd-v8.7.data">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
+    <None Update="TestFiles\Handshake\constellation-4me-4k-v9.4.data">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="TestFiles\Handshake\constellation-8k-v9.4.data">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
     <None Update="TestFiles\Handshake\constellation-v8.0.2.data">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>

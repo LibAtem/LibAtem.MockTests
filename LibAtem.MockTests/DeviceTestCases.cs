@@ -23,7 +23,7 @@ namespace LibAtem.MockTests
         public static readonly ProtocolVersion Version = ProtocolVersion.V8_1_1;
         public static readonly string MiniExtremeIso = "mini-extreme-iso-v8.6.1";
         public static readonly string Mini = "mini-v8.3";
-        public static readonly string Constellation = "constellation-v8.2.3";
+        public static readonly string Constellation = "constellation-8k-v9.4";
         public static readonly string Constellation2MEHD = "constellation-2me-hd-v8.7";
         public static readonly string TwoME = "2me-v8.3";
         public static readonly string TwoME4K = "";
@@ -50,6 +50,7 @@ namespace LibAtem.MockTests
         public static readonly string[] MultiviewToggleSafeArea = { TwoME4K, FourME4K, Constellation };
         public static readonly string[] MultiviewVuMeters = { TwoME4K, FourME4K, Constellation };
         public static readonly string[] MultiviewLabelSample = { TwoME4K, TwoME, Constellation, MiniExtremeIso, Mini };
+        public static readonly string[] MultiviewBorders = { Constellation };
 
         public static readonly string[] CameraControl = {TwoME, Constellation};
         public static readonly string[] SerialPort = { TwoME, Constellation };

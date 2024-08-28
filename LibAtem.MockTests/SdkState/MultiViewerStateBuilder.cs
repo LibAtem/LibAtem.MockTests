@@ -44,6 +44,15 @@ namespace LibAtem.MockTests.SdkState
             info.CanChangeLayout = canChangeLayout != 0;
             props.CanAdjustVuMeterOpacity(out int canChangeVuOpacity);
             info.CanChangeVuMeterOpacity = canChangeVuOpacity != 0;
+
+            props.CanChangeOverlayProperties(out int canChangeOverlayProperties);
+            info.SupportsOverlayProperties = canChangeOverlayProperties != 0;
+
+            if (info.SupportsOverlayProperties)
+            {
+                props.GetBorderColor(out double red, out double green, out double blue, out double alpha);
+                state.BorderColor = new MultiViewerState.BorderColorState() { Red = red, Green = green, Blue = blue, Alpha = alpha };
+            }
 #endif
 
             props.GetLayout(out _BMDSwitcherMultiViewLayout layout);
@@ -81,6 +90,16 @@ namespace LibAtem.MockTests.SdkState
                     st.SupportsVuMeter = windowSupportsVu != 0;
                     props.GetVuMeterEnabled((uint)window, out int vuEnabled);
                     st.VuMeterEnabled = vuEnabled != 0;
+                }
+
+                if (info.SupportsOverlayProperties)
+                {
+                    //  props.CurrentInputSupportsLabelOverlay((uint)window, out int windowSupportsLabel);
+                    // st.SupportsLabelVisible = windowSupportsLabel != 0;
+                    props.GetLabelVisible((uint)window, out int labelVisible);
+                    st.LabelVisible = labelVisible != 0;
+                    props.GetBorderVisible((uint)window, out int borderVisible);
+                    st.BorderVisible = borderVisible != 0;
                 }
 
                 return st;

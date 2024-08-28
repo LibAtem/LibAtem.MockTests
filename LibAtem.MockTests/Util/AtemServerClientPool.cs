@@ -138,6 +138,7 @@ namespace LibAtem.MockTests.Util
         {
             _pool = new Dictionary<string, AtemMockServerPoolItem>();
             StateSettings = new AtemStateBuilderSettings();
+            StateSettings.IgnoreUnknownCameraControlProperties = true;
         }
 
         public AtemMockServerPoolItem GetCase(string caseId)

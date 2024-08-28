@@ -123,6 +123,7 @@ namespace LibAtem.MockTests
 
             using var server = new AtemMockServer("127.0.0.1", commandData, DeviceTestCases.Version);
             var stateSettings = new AtemStateBuilderSettings();
+            stateSettings.IgnoreUnknownCameraControlProperties = true;
             using var helper = new AtemSdkClientWrapper("127.0.0.1", stateSettings, 1);
 
             var libAtemState = AtemTestHelper.SanitiseStateIncompabalities(DeviceTestCases.Version,
