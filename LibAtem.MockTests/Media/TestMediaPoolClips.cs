@@ -53,9 +53,9 @@ namespace LibAtem.MockTests.Media
         public void TestClipLengths()
         {
             uint maxFrames = 0;
-            Func< Lazy<ImmutableList<ICommand>>, ICommand, IEnumerable<ICommand>> handler2 = (previousCommands, cmd) =>
+            Func<Lazy<ImmutableList<ICommand>>, ICommand, IEnumerable<ICommand>> handler2 = (previousCommands, cmd) =>
             {
-                var cmd2 = (MediaPoolSettingsSetCommand) cmd;
+                var cmd2 = (MediaPoolSettingsSetCommand)cmd;
                 long allUsed = cmd2.MaxFrames.Sum(d => d);
                 long remaining = Math.Max(maxFrames - allUsed, 0);
                 return new List<ICommand>
@@ -91,16 +91,17 @@ namespace LibAtem.MockTests.Media
                         {
                             v = remainingFrames;
                             remainingFrames = 0;
-                        } else if (remainingFrames != 0)
+                        }
+                        else if (remainingFrames != 0)
                         {
                             v = Randomiser.RangeInt(remainingFrames / 2);
                             remainingFrames -= v;
                         }
 
                         stateBefore.MediaPool.Clips[o].MaxFrames = v;
-                        stateBefore.MediaPool.Clips[o].Frames = Enumerable.Range(0, (int) v)
+                        stateBefore.MediaPool.Clips[o].Frames = Enumerable.Range(0, (int)v)
                             .Select(i => new MediaPoolState.FrameState()).ToList();
-                        Marshal.WriteInt32(ptr, o * sizeof(uint), (int) v);
+                        Marshal.WriteInt32(ptr, o * sizeof(uint), (int)v);
                     }
 
                     stateBefore.MediaPool.UnassignedFrames = remainingFrames;
@@ -110,8 +111,8 @@ namespace LibAtem.MockTests.Media
                         {
                             unsafe
                             {
-                                uint* ptr2 = (uint*) ptr.ToPointer();
-                                pool.SetClipMaxFrameCounts((uint) clipCount, ref *ptr2);
+                                uint* ptr2 = (uint*)ptr.ToPointer();
+                                pool.SetClipMaxFrameCounts((uint)clipCount, ref *ptr2);
                             }
                         });
                 }
@@ -144,7 +145,7 @@ namespace LibAtem.MockTests.Media
                 }
             });
         }
-        
+
         [Fact]
         public void TestSetInvalid()
         {
@@ -157,7 +158,7 @@ namespace LibAtem.MockTests.Media
                 {
                     AtemState stateBefore = helper.Helper.BuildLibState();
 
-                    IBMDSwitcherClip clip = GetClip(helper, (uint) index);
+                    IBMDSwitcherClip clip = GetClip(helper, (uint)index);
 
                     for (int i = 0; i < 5; i++)
                     {
@@ -195,7 +196,7 @@ namespace LibAtem.MockTests.Media
                 int clipCount = helper.Helper.BuildLibState().MediaPool.Clips.Count;
                 for (int index = 0; index < clipCount; index++)
                 {
-                    IBMDSwitcherClip clip = GetClip(helper, (uint) index);
+                    IBMDSwitcherClip clip = GetClip(helper, (uint)index);
 
                     for (int i = 0; i < 5; i++)
                     {
@@ -249,7 +250,7 @@ namespace LibAtem.MockTests.Media
                 int clipCount = helper.Helper.BuildLibState().MediaPool.Clips.Count;
                 for (int index = 0; index < clipCount; index++)
                 {
-                    IBMDSwitcherClip clip = GetClip(helper, (uint) index);
+                    IBMDSwitcherClip clip = GetClip(helper, (uint)index);
 
                     AtemState stateBefore = helper.Helper.BuildLibState();
 
@@ -341,7 +342,7 @@ namespace LibAtem.MockTests.Media
                     Assert.True(cb.Wait.WaitOne(2000));
 
                     byte[] bytes = MediaPoolUtil.RandomFrame(sampleCount);
-                    pool.CreateAudio((uint) bytes.Length, out IBMDSwitcherAudio frame);
+                    pool.CreateAudio((uint)bytes.Length, out IBMDSwitcherAudio frame);
                     MediaPoolUtil.FillSdkAudio(frame, bytes);
 
                     var clipState = stateBefore.MediaPool.Clips[(int)index];
@@ -366,6 +367,17 @@ namespace LibAtem.MockTests.Media
                     helper.SendAndWaitForChange(stateBefore, () =>
                     {
                         clip.Unlock(cb);
+                    }, -1, (sdkState, libState) =>
+                    {
+                        // Manually compare the hash, we can't reliably predict the value
+                        var libAudio = libState.MediaPool.Clips[(int)index].Audio;
+                        var sdkAudio = sdkState.MediaPool.Clips[(int)index].Audio;
+
+                        Assert.True(libAudio.Hash.SequenceEqual(sdkAudio.Hash));
+                        Assert.False(libAudio.Hash.SequenceEqual(new byte[16]));
+
+                        //libAudio.Hash = new byte[16];
+                        //sdkAudio.Hash = new byte[16];
                     });
                 }
             });
@@ -440,7 +452,7 @@ namespace LibAtem.MockTests.Media
                     uint sampleCount = 10000;
 
                     {
-                        var clipState = stateBefore.MediaPool.Clips[(int) index];
+                        var clipState = stateBefore.MediaPool.Clips[(int)index];
                         clipState.Audio.Name = "Some file";
                         clipState.Audio.IsUsed = true;
                         clipState.Audio.Hash = new byte[16];
@@ -471,7 +483,7 @@ namespace LibAtem.MockTests.Media
 
                     Assert.Null(downloadCb.Frame);
                     Assert.NotNull(downloadCb.Audio);
-                    Assert.Equal((int) (sampleCount * 4), downloadCb.Audio.GetSize());
+                    Assert.Equal((int)(sampleCount * 4), downloadCb.Audio.GetSize());
                     byte[] sdkBytes = MediaPoolUtil.GetSdkAudioBytes(downloadCb.Audio);
 
                     // TODO - this needs a better rule that can be properly exposed via the lib
@@ -547,7 +559,7 @@ namespace LibAtem.MockTests.Media
                     AtemState stateBefore = helper.Helper.BuildLibState();
                     Tuple<uint, uint> resolution = stateBefore.Settings.VideoMode.GetResolution().GetSize();
                     uint index = Randomiser.RangeInt((uint)stateBefore.MediaPool.Clips.Count);
-                    uint frameIndex = Randomiser.RangeInt(stateBefore.MediaPool.Clips[(int) index].MaxFrames);
+                    uint frameIndex = Randomiser.RangeInt(stateBefore.MediaPool.Clips[(int)index].MaxFrames);
                     IBMDSwitcherClip clip = GetClip(helper, index);
 
                     worker = new UploadJobWorker(resolution.Item1 * resolution.Item2 * 4, _output,
@@ -563,7 +575,7 @@ namespace LibAtem.MockTests.Media
                     MediaPoolUtil.FillSdkFrame(frame, bytes);
 
                     var clipState = stateBefore.MediaPool.Clips[(int)index];
-                    clipState.Frames[(int) frameIndex].IsUsed = true;
+                    clipState.Frames[(int)frameIndex].IsUsed = true;
                     //clipState.Audio.Name = name;
 
                     var uploadCb = new TransferCallback();
@@ -578,7 +590,19 @@ namespace LibAtem.MockTests.Media
 
                     helper.SendAndWaitForChange(stateBefore, () =>
                     {
+
                         clip.Unlock(cb);
+                    }, -1, (sdkState, libState) =>
+                    {
+                        // Manually compare the hash, we can't reliably predict the value
+                        var libFrame = libState.MediaPool.Clips[(int)index].Frames[(int)frameIndex];
+                        var sdkFrame = sdkState.MediaPool.Clips[(int)index].Frames[(int)frameIndex];
+
+                        Assert.True(libFrame.Hash.SequenceEqual(sdkFrame.Hash));
+                        Assert.False(libFrame.Hash.SequenceEqual(new byte[16]));
+
+                        libFrame.Hash = new byte[16];
+                        sdkFrame.Hash = new byte[16];
                     });
                 }
             });
@@ -661,12 +685,12 @@ namespace LibAtem.MockTests.Media
                     IBMDSwitcherClip clip = GetClip(helper, index);
 
                     {
-                        var frameState = stateBefore.MediaPool.Clips[(int) index].Frames[(int) frameIndex];
+                        var frameState = stateBefore.MediaPool.Clips[(int)index].Frames[(int)frameIndex];
                         frameState.IsUsed = true;
                         frameState.Hash = new byte[16];
                         helper.SendFromServerAndWaitForChange(stateBefore, new MediaPoolFrameDescriptionCommand
                         {
-                            Bank = (MediaPoolFileType) index + 1,
+                            Bank = (MediaPoolFileType)index + 1,
                             Filename = "",
                             Index = frameIndex,
                             IsUsed = true
@@ -680,7 +704,7 @@ namespace LibAtem.MockTests.Media
                     var cb = new LockCallback();
                     helper.SendAndWaitForChange(stateBefore, () => { clip.Lock(cb); });
                     Assert.True(cb.Wait.WaitOne(2000));
-                    
+
                     var downloadCb = new TransferCallback();
                     clip.AddCallback(downloadCb);
                     clip.DownloadFrame(frameIndex);
